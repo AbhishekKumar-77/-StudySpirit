@@ -13,7 +13,7 @@ router.post('/social-login', authController.socialLogin); // Keep for manual tes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/google/callback',
-    passport.authenticate('google', { session: true, failureRedirect: 'http://localhost:5173/login?error=auth_failed' }),
+    passport.authenticate('google', { session: true, failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed` }),
     (req, res) => {
         // Pass user data to frontend via URL params
         const userData = encodeURIComponent(JSON.stringify({
@@ -24,7 +24,7 @@ router.get('/google/callback',
             avatar: req.user.avatar,
             stats: req.user.stats
         }));
-        res.redirect(`http://localhost:5173/dashboard?user=${userData}`);
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?user=${userData}`);
     }
 );
 
@@ -32,7 +32,7 @@ router.get('/google/callback',
 router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
 
 router.get('/github/callback',
-    passport.authenticate('github', { session: true, failureRedirect: 'http://localhost:5173/login?error=auth_failed' }),
+    passport.authenticate('github', { session: true, failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed` }),
     (req, res) => {
         const userData = encodeURIComponent(JSON.stringify({
             id: req.user._id,
@@ -43,7 +43,7 @@ router.get('/github/callback',
             stats: req.user.stats,
             githubProfile: req.user.githubProfile
         }));
-        res.redirect(`http://localhost:5173/dashboard?user=${userData}`);
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?user=${userData}`);
     }
 );
 
@@ -95,7 +95,7 @@ router.get('/me', async (req, res) => {
 router.get('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) { return next(err); }
-        res.redirect('http://localhost:5173/');
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/`);
     });
 });
 

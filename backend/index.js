@@ -27,6 +27,8 @@ const passport = require('./config/passport');
 
 // ============== APP SETUP ==============
 const app = express();
+// Trust proxy is required for secure cookies on Render/Vercel/Heroku
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 
