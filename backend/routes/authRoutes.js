@@ -4,6 +4,18 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const passport = require('passport');
 
+// Determine correct frontend URL, handling optional outdated environment variable
+const getFrontendUrl = () => {
+    const specifiedUrl = process.env.FRONTEND_URL;
+    // Redirect old preview URL to production URL if detected
+    if (specifiedUrl === 'https://study-spirit-wv4j.vercel.app') {
+        return 'https://study-spirit.vercel.app';
+    }
+    return specifiedUrl || 'http://localhost:5173';
+};
+
+const FRONTEND_URL = getFrontendUrl();
+
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/verify-email', authController.verifyEmail);
@@ -13,7 +25,7 @@ router.post('/social-login', authController.socialLogin); // Keep for manual tes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/google/callback',
-    passport.authenticate('google', { session: true, failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed` }),
+    passport.authenticate('google', { session: true, failureRedirect: `${FRONTEND_URL}/login?error=auth_failed` }),
     (req, res) => {
         // Pass user data to frontend via URL params
         const userData = encodeURIComponent(JSON.stringify({
@@ -24,7 +36,7 @@ router.get('/google/callback',
             avatar: req.user.avatar,
             stats: req.user.stats
         }));
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?user=${userData}`);
+        res.redirect(`${FRONTEND_URL}/dashboard?user=${userData}`);
     }
 );
 
@@ -32,7 +44,7 @@ router.get('/google/callback',
 router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
 
 router.get('/github/callback',
-    passport.authenticate('github', { session: true, failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=auth_failed` }),
+    passport.authenticate('github', { session: true, failureRedirect: `${FRONTEND_URL}/login?error=auth_failed` }),
     (req, res) => {
         const userData = encodeURIComponent(JSON.stringify({
             id: req.user._id,
@@ -43,7 +55,7 @@ router.get('/github/callback',
             stats: req.user.stats,
             githubProfile: req.user.githubProfile
         }));
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?user=${userData}`);
+        res.redirect(`${FRONTEND_URL}/dashboard?user=${userData}`);
     }
 );
 
@@ -95,7 +107,7 @@ router.get('/me', async (req, res) => {
 router.get('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) { return next(err); }
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/`);
+        res.redirect(`${FRONTEND_URL}/`);
     });
 });
 

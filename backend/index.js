@@ -33,11 +33,21 @@ const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 
 // Dynamic CORS — works in dev AND production
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://study-spirit.vercel.app',
+    'https://study-spirit-wv4j.vercel.app'
+];
+
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+if (FRONTEND_URL && !allowedOrigins.includes(FRONTEND_URL)) {
+    allowedOrigins.push(FRONTEND_URL);
+}
 
 const io = new Server(server, {
     cors: {
-        origin: FRONTEND_URL,
+        origin: allowedOrigins,
         methods: ['GET', 'POST'],
         credentials: true
     },
@@ -51,7 +61,7 @@ const io = new Server(server, {
 
 // CORS
 app.use(cors({
-    origin: FRONTEND_URL,
+    origin: allowedOrigins,
     credentials: true
 }));
 
