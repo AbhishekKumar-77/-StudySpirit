@@ -40,7 +40,7 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ? process.env.GOOGLE
 passport.use(new GoogleStrategy({
     clientID: googleClientId,
     clientSecret: googleClientSecret,
-    callbackURL: "http://localhost:3000/api/auth/google/callback"
+    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/google/callback`
 },
     async (accessToken, refreshToken, profile, done) => {
         try {
@@ -109,7 +109,7 @@ passport.use(new GoogleStrategy({
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID || "PLACEHOLDER_ID",
     clientSecret: process.env.GITHUB_CLIENT_SECRET || "PLACEHOLDER_SECRET",
-    callbackURL: "http://localhost:3000/api/auth/github/callback",
+    callbackURL: `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/github/callback`,
     scope: ['user:email', 'read:user']
 },
     async (accessToken, refreshToken, profile, done) => {
