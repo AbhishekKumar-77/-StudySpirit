@@ -1,0 +1,29 @@
+services:
+  # Backend Service
+  - type: web
+    name: studyspirit-api
+    env: node
+    plan: free # Change to starter/standard for production
+    region: singapore # Choose closest to your users
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    autoDeploy: true
+
+  # Frontend Service (Static Site) - Optional if using Vercel
+  # But if you want everything on Render:
+  # - type: web
+  #   name: studyspirit-web
+  #   env: static
+  #   buildCommand: cd frontend && npm install && npm run build
+  #   staticPublishPath: frontend/dist
+  #   envVars:
+  #     - key: VITE_API_URL
+  #       fromService:
+  #         type: web
+  #         name: studyspirit-api
+  #         property: url

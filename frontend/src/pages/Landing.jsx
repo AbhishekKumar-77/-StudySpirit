@@ -1,0 +1,318 @@
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const FeatureCard = ({ icon, title, desc, index, hoveredCard, setHoveredCard }) => {
+    return (
+        <div
+            className={`relative p-10 bg-gradient-to-br from-gray-900/70 to-purple-950/50 backdrop-blur-3xl rounded-3xl border transition-all duration-500 cursor-pointer min-h-[400px] flex flex-col items-center justify-center text-center overflow-hidden
+        ${hoveredCard === index
+                    ? 'scale-105 -translate-y-3 border-purple-500/80 shadow-[0_30px_80px_rgba(139,92,246,0.5)]'
+                    : 'border-white/10'}`}
+            onMouseEnter={() => setHoveredCard(index)}
+            onMouseLeave={() => setHoveredCard(null)}
+        >
+            <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-purple-500 to-transparent transition-transform duration-500 transform ${hoveredCard === index ? 'scale-x-100' : 'scale-x-0'}`} />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
+
+            <div className="text-6xl mb-8 filter drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] animate-bounce-slow">
+                {icon}
+            </div>
+
+            <h3 className="text-2xl font-bold text-white mb-4 uppercase tracking-wider">{title}</h3>
+            <p className="text-gray-400 leading-relaxed">{desc}</p>
+        </div>
+    );
+};
+
+export default function Landing() {
+    const navigate = useNavigate();
+    const [hoveredCard, setHoveredCard] = useState(null);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [ripples, setRipples] = useState([]);
+    const [typedText, setTypedText] = useState('');
+    const [showCursor, setShowCursor] = useState(true);
+
+    const fullText = "Study the way you want, succeed the way you dream.";
+
+    useEffect(() => {
+        let index = 0;
+        const typingInterval = setInterval(() => {
+            if (index <= fullText.length) {
+                setTypedText(fullText.slice(0, index));
+                index++;
+            } else {
+                clearInterval(typingInterval);
+                setShowCursor(false);
+            }
+        }, 30);
+        return () => clearInterval(typingInterval);
+    }, []);
+
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            setMousePosition({
+                x: (e.clientX / window.innerWidth) * 100,
+                y: (e.clientY / window.innerHeight) * 100
+            });
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    const handleButtonClick = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const ripple = { x: e.clientX - rect.left, y: e.clientY - rect.top, id: Date.now() };
+        setRipples([...ripples, ripple]);
+        setTimeout(() => setRipples(prev => prev.filter(r => r.id !== ripple.id)), 600);
+        setTimeout(() => navigate('/login'), 300);
+    };
+
+    return (
+        <div className="relative min-h-screen bg-[#0d0d15] text-white flex flex-col items-center justify-center overflow-hidden py-20 px-6 font-sans">
+            {/* Background Blobs */}
+            <div className="absolute -top-[15%] -left-[10%] w-[700px] height-[700px] rounded-full bg-purple-500/20 blur-[100px] animate-float-dynamic opacity-60 pointer-events-none" />
+            <div className="absolute -bottom-[20%] -right-[10%] w-[800px] height-[800px] rounded-full bg-blue-500/15 blur-[120px] animate-float-dynamic opacity-50 pointer-events-none rev" />
+            <div className="absolute top-1/3 right-[5%] w-[600px] height-[600px] rounded-full bg-pink-500/12 blur-[100px] animate-pulse-custom pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none"
+                style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(139, 92, 246, 0.1) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+
+            {/* Navbar */}
+            <nav className="absolute top-0 left-0 w-full z-50 p-6 flex justify-between items-center max-w-[1400px] mx-auto left-0 right-0">
+                <div className="flex items-center gap-3">
+                    <img src="/logo.png" alt="StudySpirit Logo" className="w-12 h-12 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                    <div className="text-2xl font-black italic tracking-tighter bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
+                        STUDYSPIRIT
+                    </div>
+                </div>
+                <button
+                    onClick={() => navigate('/login')}
+                    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full backdrop-blur-md transition-all font-bold text-sm tracking-wide"
+                >
+                    LOGIN
+                </button>
+            </nav>
+
+            {/* Floating Particles */}
+            {[...Array(15)].map((_, i) => (
+                <div
+                    key={`p-${i}`}
+                    className="absolute rounded-full pointer-events-none blur-[1px]"
+                    style={{
+                        width: `${Math.random() * 6 + 2}px`,
+                        height: `${Math.random() * 6 + 2}px`,
+                        background: ['#8b5cf6', '#ec4899', '#3b82f6'][i % 3],
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        transform: `translate(${(mousePosition.x - 50) * (i * 0.05)}px, ${(mousePosition.y - 50) * (i * 0.05)}px)`,
+                        transition: 'transform 0.5s cubic-bezier(0.1, 0, 0.2, 1)',
+                        boxShadow: `0 0 15px ${['#8b5cf6', '#ec4899', '#3b82f6'][i % 3]}`,
+                        opacity: 0.4
+                    }}
+                />
+            ))}
+
+            {/* Hero Content */}
+            <div className="relative z-10 max-w-7xl w-full flex flex-col items-center">
+
+                {/* TAGLINE WITH ICON - FROM USER CODE */}
+                <div className="flex items-center justify-center gap-4 mb-10 group cursor-default">
+                    <span className="text-3xl animate-spin-slow text-yellow-500">⚡</span>
+                    <div className="text-sm md:text-base font-black tracking-[0.3em] text-purple-400 uppercase drop-shadow-[0_0_10px_rgba(167,139,250,0.8)]">
+                        AI-POWERED LEARNING PLATFORM
+                    </div>
+                    <span className="text-3xl animate-spin-slow rev text-yellow-500">⚡</span>
+                </div>
+
+                <h1 className="text-6xl md:text-9xl font-black mb-6 animate-title-3d italic tracking-tighter bg-gradient-to-br from-white via-purple-200 to-purple-600 bg-clip-text text-transparent">
+                    STUDYSPIRIT
+                </h1>
+
+                <p className="text-lg md:text-2xl text-gray-300 max-w-2xl mb-12 min-h-[60px] leading-relaxed">
+                    {typedText}
+                    {showCursor && <span className="animate-blink ml-1 border-r-2 border-purple-500">&nbsp;</span>}
+                </p>
+
+                <button
+                    onClick={handleButtonClick}
+                    className="group relative px-12 py-5 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 rounded-full text-xl font-bold uppercase tracking-widest overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-[0_0_60px_rgba(139,92,246,0.7)] active:scale-95"
+                >
+                    {ripples.map(r => (
+                        <span key={r.id} className="absolute bg-white/40 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ripple"
+                            style={{ left: r.x, top: r.y }} />
+                    ))}
+                    <span className="relative z-10 flex items-center gap-3">
+                        Get Started
+                        <svg className="w-6 h-6 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                    </span>
+                </button>
+
+                {/* Feature Stats Cards - EXACT CONTENT FROM USER CODE */}
+                <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-10 w-full px-4">
+                    <FeatureCard
+                        index={0} icon="🚀" title="17+ Powerful Features"
+                        desc="Complete learning ecosystem with AI mentorship and smart tracking."
+                        hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
+                    />
+                    <FeatureCard
+                        index={1} icon="🤖" title="AI Powered Learning"
+                        desc="Smart recommendations & personalized insights tailored to your unique study patterns."
+                        hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
+                    />
+                    <FeatureCard
+                        index={2} icon="👥" title="24/7 Active Community"
+                        desc="Connect, collaborate & grow together with thousands of students world wide."
+                        hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
+                    />
+                </div>
+
+
+                {/* ==================== WHY CHOOSE SECTION ==================== */}
+                <div className="mt-40 w-full flex flex-col items-center relative z-10 px-4">
+                    <h2 className="text-4xl md:text-6xl font-black text-center mb-20 italic bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
+                        WHY CHOOSE STUDYSPIRIT?
+                    </h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+                        {[
+                            { icon: '🧠', title: 'AI Mentorship', desc: 'Get instant feedback on your code and personalized study plans tailored to your goals.' },
+                            { icon: '⚔️', title: 'Solo & Vs Mode', desc: 'Practice alone or challenge friends in real-time coding battles to rank up.' },
+                            { icon: '🔥', title: 'Gamified Growth', desc: 'Earn XP, maintain streaks, and unlock achievements as you master new skills.' },
+                            { icon: '🧘', title: 'Wellness First', desc: 'Integrated breathing exercises and mood tracking to prevent burnout.' },
+                            { icon: '📊', title: 'Unified Dashboard', desc: 'Track your progress across LeetCode, HackerRank, and more in one place.' },
+                            { icon: '🤝', title: 'Community', desc: 'Join a thriving community of developers sharing resources and opportunities.' }
+                        ].map((feature, i) => (
+                            <div
+                                key={i}
+                                className="group relative p-8 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-md transition-all duration-500 hover:border-purple-500/50 hover:bg-white/10 hover:-translate-y-2"
+                            >
+                                <div className="text-5xl mb-6">{feature.icon}</div>
+                                <h3 className="text-2xl font-bold text-white mb-4 italic uppercase">{feature.title}</h3>
+                                <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+
+
+                {/* How it Works Expanded */}
+                <section className="mt-40 w-full max-w-5xl">
+                    <h2 className="text-4xl md:text-6xl font-bold text-center mb-24 italic">3 STEPS TO MASTER ANY SKILL</h2>
+                    <div className="space-y-32">
+                        {[
+                            { num: '01', title: 'Connect Your Soul', desc: 'Sync your calendars, tasks, and favorite resources. Our AI creates a unified dashboard of your upcoming challenges.' },
+                            { num: '02', title: 'Enter Flow State', desc: 'Activate focus sessions. We block distractions and keep you in the zone with dynamic ambient sounds.' },
+                            { num: '03', title: 'Rise in Ranks', desc: 'Review your analytics, earn XP, and level up your StudySpirit as you conquer goals and beat challenges.' }
+                        ].map((step, i) => (
+                            <div key={i} className={`flex flex-col md:flex-row items-center gap-16 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>
+                                <div className="text-8xl md:text-[12rem] font-black text-white/5 select-none">{step.num}</div>
+                                <div className="flex-1 text-left">
+                                    <h3 className="text-3xl font-bold text-purple-400 mb-6 tracking-tighter">{step.title}</h3>
+                                    <p className="text-xl text-gray-400 leading-relaxed font-light">{step.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* ==================== JOIN AS SECTION ==================== */}
+                <div className="mt-40 w-full flex flex-col items-center relative z-10 px-4">
+                    <h2 className="text-4xl md:text-6xl font-black text-center mb-20 italic bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                        JOIN THE REVOLUTION AS
+                    </h2>
+
+                    <div className="flex justify-center w-full">
+                        {[
+                            {
+                                role: 'student',
+                                icon: '👨‍💻',
+                                title: 'Developer / Student',
+                                desc: 'Master skills, build projects, and compete with peers.',
+                                path: '/login/student',
+                                color: 'from-blue-500/20 to-purple-500/20',
+                                border: 'hover:border-blue-400'
+                            }
+                        ].map((item, i) => (
+                            <div
+                                key={i}
+                                onClick={() => navigate(item.path)}
+                                className={`group relative p-10 bg-gradient-to-b ${item.color} border border-white/10 rounded-[2rem] backdrop-blur-md transition-all duration-500 ${item.border} hover:bg-white/10 hover:-translate-y-2 cursor-pointer text-center overflow-hidden max-w-md w-full`}
+                            >
+                                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">{item.icon}</div>
+                                <h3 className="text-2xl font-bold text-white mb-4 italic uppercase">{item.title}</h3>
+                                <p className="text-gray-400 leading-relaxed relative z-10">{item.desc}</p>
+
+                                <div className="mt-8 inline-block px-6 py-2 rounded-full border border-white/20 text-sm font-bold uppercase tracking-widest group-hover:bg-white group-hover:text-black transition-all">
+                                    Login as {item.role}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+
+
+                {/* CTA */}
+                <div className="mt-80 p-20 w-full bg-gradient-to-t from-purple-950/30 to-transparent rounded-[4rem] text-center border-x border-t border-white/5">
+                    <h2 className="text-5xl md:text-8xl font-black mb-10 leading-none italic uppercase tracking-tighter">DON'T JUST STUDY.<br />RISE.</h2>
+                    <button onClick={() => navigate('/login')} className="px-20 py-8 bg-white text-black font-black text-2xl uppercase tracking-tighter italic hover:bg-purple-400 hover:text-white transition-all transform hover:-rotate-3 duration-500">
+                        Unlock Your Potential Now
+                    </button>
+                </div>
+
+                {/* Footer */}
+                <footer className="mt-40 pt-20 pb-10 w-full border-t border-white/5 text-gray-500">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-left mb-20">
+                        <div>
+                            <h4 className="text-white font-black text-sm mb-6 tracking-widest uppercase italic">The App</h4>
+                            <ul className="space-y-3 text-xs font-bold">
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Dashboard</li>
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Focus Mode</li>
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Pricing</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-white font-black text-sm mb-6 tracking-widest uppercase italic">Company</h4>
+                            <ul className="space-y-3 text-xs font-bold">
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">About Us</li>
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Roadmap</li>
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Careers</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-white font-black text-sm mb-6 tracking-widest uppercase italic">Social</h4>
+                            <ul className="space-y-3 text-xs font-bold">
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Twitter</li>
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Discord</li>
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Github</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-white font-black text-sm mb-6 tracking-widest uppercase italic">Legal</h4>
+                            <ul className="space-y-3 text-xs font-bold">
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Privacy</li>
+                                <li className="hover:text-white cursor-pointer transition-colors uppercase lg:tracking-widest">Terms</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-black tracking-widest uppercase">
+                        <span>© 2025 StudySpirit INC.</span>
+                        <span className="italic">Built for the brave.</span>
+                    </div>
+                </footer>
+            </div>
+
+            <style>{`
+        .animate-bounce-slow { animation: bounce 4s infinite; }
+        .rev { animation-direction: reverse; }
+        .animate-spin-slow { animation: spin 10s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+      `}</style>
+        </div>
+    );
+}
