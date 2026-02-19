@@ -243,7 +243,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="name@example.com"
-                                pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
                                 title="Please enter a valid email address (e.g., name@domain.com)"
                                 className="w-full bg-black/20 border border-white/10 rounded-xl px-5 py-4 text-lg text-white placeholder-gray-600 focus:outline-none focus:border-white/30 focus:bg-black/40 transition-all font-medium"
                                 required
