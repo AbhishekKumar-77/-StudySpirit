@@ -78,6 +78,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Session — stored in MongoDB (survives server restarts!)
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' || process.env.FRONTEND_URL?.includes('https');
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'spirit_key_super_secret',
     resave: false,
@@ -89,10 +91,10 @@ app.use(session({
         touchAfter: 24 * 3600 // Only update session once per day unless data changes
     }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+        secure: isProduction, // HTTPS only in production
         httpOnly: true, // Prevents XSS attacks
         maxAge: 24 * 60 * 60 * 1000, // 1 day
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        sameSite: isProduction ? 'none' : 'lax'
     }
 }));
 
