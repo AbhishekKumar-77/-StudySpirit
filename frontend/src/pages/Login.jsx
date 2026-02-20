@@ -188,22 +188,22 @@ const Login = () => {
                 />
             ))}
 
-            <div className="relative z-10 w-full max-w-2xl p-8">
+            <div className="relative z-10 w-full max-w-2xl p-4 sm:p-8">
                 {/* Header */}
-                <div className="text-center mb-10">
-                    <div className="text-8xl mb-6 animate-bounce-slow filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                <div className="text-center mb-8 sm:mb-10">
+                    <div className="text-7xl sm:text-8xl mb-4 sm:mb-6 animate-bounce-slow filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                         {currentRole.icon}
                     </div>
-                    <h1 className="text-6xl font-black italic tracking-tighter mb-4 bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent">
+                    <h1 className="text-4xl sm:text-6xl font-black italic tracking-tighter mb-4 bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent px-2">
                         {isLogin ? currentRole.title : "JOIN THE SQUAD"}
                     </h1>
-                    <p className="text-gray-400 text-lg tracking-widest uppercase">
+                    <p className="text-gray-400 text-sm sm:text-lg tracking-widest uppercase">
                         {isLogin ? currentRole.subtitle : "Start Your Journey Today"}
                     </p>
                 </div>
 
                 {/* Login/Signup Form */}
-                <div className="bg-white/5 border border-white/10 p-12 rounded-[2.5rem] backdrop-blur-xl shadow-2xl relative overflow-hidden group transition-all duration-500">
+                <div className="bg-white/5 border border-white/10 p-6 sm:p-12 rounded-3xl sm:rounded-[2.5rem] backdrop-blur-xl shadow-2xl relative overflow-hidden group transition-all duration-500">
                     <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${currentRole.color}`} />
 
                     {/* Toggle Switch */}
@@ -306,10 +306,10 @@ const Login = () => {
 
                     {/* Verification Overlay */}
                     {showVerification && (
-                        <div className="absolute inset-0 z-20 bg-[#0d0d15]/95 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+                        <div className="absolute inset-0 z-20 bg-[#0d0d15]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 sm:p-8 text-center animate-fade-in">
                             <div className="text-6xl mb-6">📩</div>
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-4">VERIFY EMAIL</h2>
-                            <p className="text-gray-400 mb-8 max-w-sm">
+                            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-4">VERIFY EMAIL</h2>
+                            <p className="text-gray-400 mb-8 max-w-sm text-sm sm:text-base">
                                 We've sent a 6-digit code to <br /><span className="text-white font-bold">{email}</span>
                             </p>
 
@@ -319,7 +319,7 @@ const Login = () => {
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                     placeholder="000000"
-                                    className="w-full bg-black/40 border border-white/20 rounded-xl px-5 py-6 text-3xl text-center tracking-[1em] font-mono text-white placeholder-gray-700 focus:outline-none focus:border-purple-500/50 transition-all font-bold"
+                                    className="w-full bg-black/40 border border-white/20 rounded-xl px-2 sm:px-5 py-6 text-2xl sm:text-3xl text-center tracking-[0.5em] sm:tracking-[1em] font-mono text-white placeholder-gray-700 focus:outline-none focus:border-purple-500/50 transition-all font-bold"
                                     required
                                     autoFocus
                                 />

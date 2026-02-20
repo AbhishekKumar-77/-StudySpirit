@@ -71,23 +71,23 @@ export default function Landing() {
     return (
         <div className="relative min-h-screen bg-[#0d0d15] text-white flex flex-col items-center justify-center overflow-hidden py-20 px-6 font-sans">
             {/* Background Blobs */}
-            <div className="absolute -top-[15%] -left-[10%] w-[700px] height-[700px] rounded-full bg-purple-500/20 blur-[100px] animate-float-dynamic opacity-60 pointer-events-none" />
-            <div className="absolute -bottom-[20%] -right-[10%] w-[800px] height-[800px] rounded-full bg-blue-500/15 blur-[120px] animate-float-dynamic opacity-50 pointer-events-none rev" />
-            <div className="absolute top-1/3 right-[5%] w-[600px] height-[600px] rounded-full bg-pink-500/12 blur-[100px] animate-pulse-custom pointer-events-none" />
+            <div className="absolute -top-[15%] -left-[10%] w-[400px] h-[400px] md:w-[700px] md:h-[700px] rounded-full bg-purple-500/20 blur-[100px] animate-float-dynamic opacity-60 pointer-events-none" />
+            <div className="absolute -bottom-[20%] -right-[10%] w-[500px] h-[500px] md:w-[800px] md:h-[800px] rounded-full bg-blue-500/15 blur-[120px] animate-float-dynamic opacity-50 pointer-events-none rev" />
+            <div className="absolute top-1/3 right-[5%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-pink-500/12 blur-[100px] animate-pulse-custom pointer-events-none" />
             <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none"
                 style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(139, 92, 246, 0.1) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
             {/* Navbar */}
-            <nav className="absolute top-0 left-0 w-full z-50 p-6 flex justify-between items-center max-w-[1400px] mx-auto left-0 right-0">
-                <div className="flex items-center gap-3">
-                    <img src="/logo.png" alt="StudySpirit Logo" className="w-12 h-12 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
-                    <div className="text-2xl font-black italic tracking-tighter bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
+            <nav className="absolute top-0 left-0 w-full z-50 p-4 md:p-6 flex justify-between items-center max-w-[1400px] mx-auto left-0 right-0">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <img src="/logo.png" alt="StudySpirit Logo" className="w-8 h-8 md:w-12 md:h-12 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                    <div className="text-xl md:text-2xl font-black italic tracking-tighter bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
                         STUDYSPIRIT
                     </div>
                 </div>
                 <button
                     onClick={() => navigate('/login')}
-                    className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full backdrop-blur-md transition-all font-bold text-sm tracking-wide"
+                    className="px-4 py-1.5 md:px-6 md:py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full backdrop-blur-md transition-all font-bold text-xs md:text-sm tracking-wide"
                 >
                     LOGIN
                 </button>
@@ -116,41 +116,41 @@ export default function Landing() {
             <div className="relative z-10 max-w-7xl w-full flex flex-col items-center">
 
                 {/* TAGLINE WITH ICON - FROM USER CODE */}
-                <div className="flex items-center justify-center gap-4 mb-10 group cursor-default">
-                    <span className="text-3xl animate-spin-slow text-yellow-500">⚡</span>
-                    <div className="text-sm md:text-base font-black tracking-[0.3em] text-purple-400 uppercase drop-shadow-[0_0_10px_rgba(167,139,250,0.8)]">
+                <div className="flex items-center justify-center gap-2 md:gap-4 mb-6 md:mb-10 group cursor-default text-center px-2">
+                    <span className="text-xl md:text-3xl animate-spin-slow text-yellow-500 hidden sm:inline-block">⚡</span>
+                    <div className="text-[10px] sm:text-xs md:text-base font-black tracking-[0.2em] md:tracking-[0.3em] text-purple-400 uppercase drop-shadow-[0_0_10px_rgba(167,139,250,0.8)]">
                         AI-POWERED LEARNING PLATFORM
                     </div>
-                    <span className="text-3xl animate-spin-slow rev text-yellow-500">⚡</span>
+                    <span className="text-xl md:text-3xl animate-spin-slow rev text-yellow-500 hidden sm:inline-block">⚡</span>
                 </div>
 
-                <h1 className="text-6xl md:text-9xl font-black mb-6 animate-title-3d italic tracking-tighter bg-gradient-to-br from-white via-purple-200 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-4 md:mb-6 animate-title-3d italic tracking-tighter bg-gradient-to-br from-white via-purple-200 to-purple-600 bg-clip-text text-transparent text-center px-4">
                     STUDYSPIRIT
                 </h1>
 
-                <p className="text-lg md:text-2xl text-gray-300 max-w-2xl mb-12 min-h-[60px] leading-relaxed">
+                <p className="text-base sm:text-lg md:text-2xl text-gray-300 max-w-2xl mb-8 md:mb-12 min-h-[60px] leading-relaxed text-center px-4">
                     {typedText}
                     {showCursor && <span className="animate-blink ml-1 border-r-2 border-purple-500">&nbsp;</span>}
                 </p>
 
                 <button
                     onClick={handleButtonClick}
-                    className="group relative px-12 py-5 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 rounded-full text-xl font-bold uppercase tracking-widest overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-[0_0_60px_rgba(139,92,246,0.7)] active:scale-95"
+                    className="group relative px-8 py-4 md:px-12 md:py-5 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 rounded-full text-lg md:text-xl font-bold uppercase tracking-widest overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-[0_0_60px_rgba(139,92,246,0.7)] active:scale-95"
                 >
                     {ripples.map(r => (
                         <span key={r.id} className="absolute bg-white/40 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ripple"
                             style={{ left: r.x, top: r.y }} />
                     ))}
-                    <span className="relative z-10 flex items-center gap-3">
+                    <span className="relative z-10 flex items-center justify-center gap-2 md:gap-3">
                         Get Started
-                        <svg className="w-6 h-6 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                     </span>
                 </button>
 
                 {/* Feature Stats Cards - EXACT CONTENT FROM USER CODE */}
-                <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-10 w-full px-4">
+                <div className="mt-20 md:mt-40 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 w-full px-4">
                     <FeatureCard
                         index={0} icon="🚀" title="17+ Powerful Features"
                         desc="Complete learning ecosystem with AI mentorship and smart tracking."
@@ -170,12 +170,12 @@ export default function Landing() {
 
 
                 {/* ==================== WHY CHOOSE SECTION ==================== */}
-                <div className="mt-40 w-full flex flex-col items-center relative z-10 px-4">
-                    <h2 className="text-4xl md:text-6xl font-black text-center mb-20 italic bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
+                <div className="mt-20 md:mt-40 w-full flex flex-col items-center relative z-10 px-4">
+                    <h2 className="text-3xl md:text-6xl font-black text-center mb-10 md:mb-20 italic bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
                         WHY CHOOSE STUDYSPIRIT?
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
                         {[
                             { icon: '🧠', title: 'AI Mentorship', desc: 'Get instant feedback on your code and personalized study plans tailored to your goals.' },
                             { icon: '⚔️', title: 'Solo & Vs Mode', desc: 'Practice alone or challenge friends in real-time coding battles to rank up.' },
@@ -199,19 +199,19 @@ export default function Landing() {
 
 
                 {/* How it Works Expanded */}
-                <section className="mt-40 w-full max-w-5xl">
-                    <h2 className="text-4xl md:text-6xl font-bold text-center mb-24 italic">3 STEPS TO MASTER ANY SKILL</h2>
-                    <div className="space-y-32">
+                <section className="mt-20 md:mt-40 w-full max-w-5xl px-4">
+                    <h2 className="text-3xl md:text-6xl font-bold text-center mb-12 md:mb-24 italic">3 STEPS TO MASTER ANY SKILL</h2>
+                    <div className="space-y-20 md:space-y-32">
                         {[
                             { num: '01', title: 'Connect Your Soul', desc: 'Sync your calendars, tasks, and favorite resources. Our AI creates a unified dashboard of your upcoming challenges.' },
                             { num: '02', title: 'Enter Flow State', desc: 'Activate focus sessions. We block distractions and keep you in the zone with dynamic ambient sounds.' },
                             { num: '03', title: 'Rise in Ranks', desc: 'Review your analytics, earn XP, and level up your StudySpirit as you conquer goals and beat challenges.' }
                         ].map((step, i) => (
-                            <div key={i} className={`flex flex-col md:flex-row items-center gap-16 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>
-                                <div className="text-8xl md:text-[12rem] font-black text-white/5 select-none">{step.num}</div>
-                                <div className="flex-1 text-left">
-                                    <h3 className="text-3xl font-bold text-purple-400 mb-6 tracking-tighter">{step.title}</h3>
-                                    <p className="text-xl text-gray-400 leading-relaxed font-light">{step.desc}</p>
+                            <div key={i} className={`flex flex-col md:flex-row items-center gap-6 md:gap-16 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>
+                                <div className="text-7xl md:text-[12rem] font-black text-white/5 select-none text-center md:text-left leading-none">{step.num}</div>
+                                <div className="flex-1 text-center md:text-left">
+                                    <h3 className="text-2xl md:text-3xl font-bold text-purple-400 mb-4 md:mb-6 tracking-tighter">{step.title}</h3>
+                                    <p className="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed font-light">{step.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -219,8 +219,8 @@ export default function Landing() {
                 </section>
 
                 {/* ==================== JOIN AS SECTION ==================== */}
-                <div className="mt-40 w-full flex flex-col items-center relative z-10 px-4">
-                    <h2 className="text-4xl md:text-6xl font-black text-center mb-20 italic bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                <div className="mt-20 md:mt-40 w-full flex flex-col items-center relative z-10 px-4">
+                    <h2 className="text-3xl md:text-6xl font-black text-center mb-10 md:mb-20 italic bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
                         JOIN THE REVOLUTION AS
                     </h2>
 
@@ -257,16 +257,16 @@ export default function Landing() {
 
 
                 {/* CTA */}
-                <div className="mt-80 p-20 w-full bg-gradient-to-t from-purple-950/30 to-transparent rounded-[4rem] text-center border-x border-t border-white/5">
-                    <h2 className="text-5xl md:text-8xl font-black mb-10 leading-none italic uppercase tracking-tighter">DON'T JUST STUDY.<br />RISE.</h2>
-                    <button onClick={() => navigate('/login')} className="px-20 py-8 bg-white text-black font-black text-2xl uppercase tracking-tighter italic hover:bg-purple-400 hover:text-white transition-all transform hover:-rotate-3 duration-500">
+                <div className="mt-32 md:mt-80 p-8 md:p-20 w-full bg-gradient-to-t from-purple-950/30 to-transparent rounded-[2rem] md:rounded-[4rem] text-center border-x border-t border-white/5 mx-4 max-w-[calc(100%-2rem)] md:max-w-none">
+                    <h2 className="text-4xl md:text-8xl font-black mb-6 md:mb-10 leading-none italic uppercase tracking-tighter">DON'T JUST STUDY.<br />RISE.</h2>
+                    <button onClick={() => navigate('/login')} className="px-8 py-4 md:px-20 md:py-8 bg-white text-black font-black text-lg md:text-2xl uppercase tracking-tighter italic hover:bg-purple-400 hover:text-white transition-all transform md:hover:-rotate-3 duration-500 rounded-full">
                         Unlock Your Potential Now
                     </button>
                 </div>
 
                 {/* Footer */}
-                <footer className="mt-40 pt-20 pb-10 w-full border-t border-white/5 text-gray-500">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-left mb-20">
+                <footer className="mt-20 md:mt-40 pt-10 md:pt-20 pb-10 w-full border-t border-white/5 text-gray-500 px-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-left mb-10 md:mb-20">
                         <div>
                             <h4 className="text-white font-black text-sm mb-6 tracking-widest uppercase italic">The App</h4>
                             <ul className="space-y-3 text-xs font-bold">
