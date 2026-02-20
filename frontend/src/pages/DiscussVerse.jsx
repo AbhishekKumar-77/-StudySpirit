@@ -803,8 +803,9 @@ export default function DiscussVerse() {
                                 .filter(dm => dm.user && (!searchQuery || dm.user.name?.toLowerCase().includes(searchQuery.toLowerCase())))
                                 .map(dm => (
                                     <button
-                                        key={dm.id}
-                                        onClick={() => handleStartDM(dm.user || dm)}
+                                        // We pass the full dm object but mapped as a user-like object to handleStartDM
+                                        // so it correctly finds the ID.
+                                        onClick={() => handleStartDM({ ...dm.user, id: dm.id })}
                                         className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-xl mb-1.5 transition-all duration-300 ${activeDM?.id === dm.id
                                             ? 'bg-gradient-to-r from-violet-500/20 to-pink-500/10 border border-violet-500/20 shadow-lg shadow-violet-500/10'
                                             : 'hover:bg-slate-800/60 border border-transparent'
