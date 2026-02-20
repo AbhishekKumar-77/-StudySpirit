@@ -45,13 +45,13 @@ exports.register = async (req, res) => {
 
         await user.save();
 
-        // Send real verification email
-        const emailResult = await sendVerificationEmail(email, otp, name);
-        if (!emailResult.success) {
-            console.error('⚠️ Email sending failed:', emailResult.error);
-            // Still allow registration even if email fails, log OTP to console as fallback
-            console.log(`📧 [FALLBACK] Verification Code for ${email}: ${otp}`);
-        }
+        // Send verification email asynchronously in the background
+        sendVerificationEmail(email, otp, name).catch(err => {
+            console.error('⚠️ Background Email sending failed:', err);
+        });
+
+        // Log OTP to console as fallback/developer backdoor
+        console.log(`📧 [FALLBACK] Verification Code for ${email}: ${otp}`);
 
         // DO NOT log in yet. Ask for verification.
         res.status(201).json({
