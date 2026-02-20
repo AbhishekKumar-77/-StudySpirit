@@ -7,16 +7,15 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
     const containerRef = useRef(null);
     const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
 
-    // For LOCAL user: respect the explicit isCameraOn toggle
-    // For REMOTE users: trust the actual stream — if video tracks exist and are active, show them
+    // For both local and remote users: respect the isCameraOn toggle and track validity
     const hasActiveVideoTrack = stream && stream.getVideoTracks().length > 0 && stream.getVideoTracks()[0].readyState !== 'ended';
-    const showVideo = isLocal
-        ? (isCameraOn && hasActiveVideoTrack)
-        : hasActiveVideoTrack;
+    const showVideo = Boolean(isCameraOn && hasActiveVideoTrack);
 
     useEffect(() => {
         if (videoRef.current && stream) {
             videoRef.current.srcObject = stream;
+            // Explicitly call play() to ensure video starts rendering (fixes occasional black screens)
+            videoRef.current.play().catch(e => console.error("Video auto-play failed:", e));
         }
     }, [stream, stream?.getVideoTracks()[0]?.id, stream?.getVideoTracks()[0]?.readyState]);
 
