@@ -33,6 +33,7 @@ router.get('/google/callback',
             name: req.user.name,
             email: req.user.email,
             role: req.user.role,
+            isAdmin: req.user.isAdmin,
             avatar: req.user.avatar,
             stats: req.user.stats
         }));
@@ -51,6 +52,7 @@ router.get('/github/callback',
             name: req.user.name,
             email: req.user.email,
             role: req.user.role,
+            isAdmin: req.user.isAdmin,
             avatar: req.user.avatar,
             stats: req.user.stats,
             githubProfile: req.user.githubProfile

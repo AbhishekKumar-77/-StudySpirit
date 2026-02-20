@@ -112,8 +112,9 @@ const Login = () => {
             if (data.token) {
                 localStorage.setItem('token', data.token);
             }
-            loginUser({ ...data.user, role: role || data.user.role });
-            navigate('/dashboard');
+            const finalRole = role || data.user.role;
+            loginUser({ ...data.user, role: finalRole });
+            navigate(data.user.isAdmin ? '/admin' : '/dashboard');
         } catch (err) {
             // Handle specific verification case from login
             if (isLogin && err.response && err.response.status === 403 && err.response.data.requiresVerification) {
@@ -140,13 +141,15 @@ const Login = () => {
             }
             // If verify response returns user, log them in
             if (data.user) {
-                loginUser({ ...data.user, role: role || data.user.role });
-                navigate('/dashboard');
+                const finalRole = role || data.user.role;
+                loginUser({ ...data.user, role: finalRole });
+                navigate(data.user.isAdmin ? '/admin' : '/dashboard');
             } else {
                 // Fallback if no user data returned, try login again
                 const loginData = await login(verificationEmail || email, password);
-                loginUser({ ...loginData.user, role: role || loginData.user.role });
-                navigate('/dashboard');
+                const finalRole = role || loginData.user.role;
+                loginUser({ ...loginData.user, role: finalRole });
+                navigate(loginData.user.isAdmin ? '/admin' : '/dashboard');
             }
         } catch (err) {
             setError(err.message || 'Invalid code. Please try again.');

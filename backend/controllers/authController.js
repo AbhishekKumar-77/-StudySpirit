@@ -103,6 +103,7 @@ exports.verifyEmail = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    isAdmin: user.isAdmin,
                     avatar: user.avatar,
                     stats: user.stats
                 }
@@ -189,6 +190,7 @@ exports.login = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    isAdmin: user.isAdmin,
                     avatar: user.avatar,
                     stats: user.stats
                 }
@@ -235,6 +237,7 @@ exports.socialLogin = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                isAdmin: user.isAdmin,
                 avatar: user.avatar,
                 stats: user.stats
             }
