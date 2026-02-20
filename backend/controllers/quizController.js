@@ -110,7 +110,8 @@ exports.generateAIQuestions = async (req, res) => {
 // Create Quiz (Save to DB)
 exports.createQuiz = async (req, res) => {
     try {
-        const { title, questions, settings, creatorName } = req.body;
+        const { title, questions, settings, creatorName, status } = req.body;
+        const creatorId = req.user ? req.user.id : null;
 
         // Generate simple code: e.g. SPZ9X2
         const code = "SP" + Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -120,13 +121,50 @@ exports.createQuiz = async (req, res) => {
             code,
             questions,
             settings,
-            creatorName
+            creatorName,
+            creatorId,
+            status: status || 'published'
         });
 
         res.status(201).json({ success: true, quizCode: code, message: "Quiz created successfully!" });
     } catch (error) {
         console.error("Create Quiz Error:", error);
         res.status(500).json({ success: false, message: "Failed to create quiz" });
+    }
+};
+
+// Get My Quizzes/Drafts
+exports.getMyQuizzes = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
+        const quizzes = await Quiz.find({ creatorId: req.user.id }).sort({ createdAt: -1 });
+        res.json({ success: true, quizzes });
+    } catch (error) {
+        console.error("Fetch My Quizzes Error:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch quizzes" });
+    }
+};
+
+// Publish a Draft
+exports.publishDraft = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
+
+        const { code } = req.params;
+        const quiz = await Quiz.findOneAndUpdate(
+            { code, creatorId: req.user.id },
+            { status: 'published' },
+            { new: true }
+        );
+
+        if (!quiz) {
+            return res.status(404).json({ success: false, message: "Draft not found or unauthorized to publish." });
+        }
+
+        res.json({ success: true, message: "Quiz published successfully!", quizCode: quiz.code });
+    } catch (error) {
+        console.error("Publish Draft Error:", error);
+        res.status(500).json({ success: false, message: "Failed to publish draft" });
     }
 };
 
@@ -138,6 +176,13 @@ exports.getQuiz = async (req, res) => {
 
         if (!quiz) {
             return res.status(404).json({ success: false, message: "Quiz not found with code: " + code });
+        }
+
+        if (quiz.status === 'draft') {
+            // Only creator can get draft details directly
+            if (!req.user || req.user.id.toString() !== (quiz.creatorId ? quiz.creatorId.toString() : '')) {
+                return res.status(403).json({ success: false, message: "This quiz is not published yet." });
+            }
         }
 
         res.json({ success: true, quiz });

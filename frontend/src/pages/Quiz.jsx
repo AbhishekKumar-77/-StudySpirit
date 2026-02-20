@@ -40,6 +40,7 @@ export default function StudySprintQuiz() {
     const [aiQuestionCount, setAiQuestionCount] = useState(10); // Default to 10 questions
     const [isSaving, setIsSaving] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [drafts, setDrafts] = useState([]);
 
     // Student Exam Mode
     const [studentQuizCodeInput, setStudentQuizCodeInput] = useState(""); // Input for student to join
@@ -85,6 +86,19 @@ export default function StudySprintQuiz() {
                 }
             };
             fetchLeaderboard();
+        } else if (activeTab === "teacher") {
+            const fetchDrafts = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/quiz/my-quizzes`, { credentials: 'include' });
+                    const data = await res.json();
+                    if (data.success) {
+                        setDrafts(data.quizzes || []);
+                    }
+                } catch (e) {
+                    console.error("Drafts fetch error", e);
+                }
+            };
+            fetchDrafts();
         }
     }, [activeTab]);
     // --------------------------- FUNCTIONS ---------------------------
@@ -298,7 +312,7 @@ export default function StudySprintQuiz() {
         }
     };
 
-    const saveQuiz = async () => {
+    const saveQuiz = async (status = "published") => {
         if (questions.length === 0) {
             alert("Add some questions first to create a quiz!");
             return;
@@ -309,18 +323,28 @@ export default function StudySprintQuiz() {
             const res = await fetch(`${API_BASE}/quiz/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // Needed for auth/creatorId
                 body: JSON.stringify({
                     title: quizTitle,
                     questions,
                     settings,
-                    creatorName: "Student Creator" // Could be dynamic if user auth is fully integrated
+                    creatorName: user?.name || "Teacher",
+                    status
                 })
             });
             const data = await res.json();
 
             if (data.success) {
                 setQuizCode(data.quizCode);
-                alert(`Quiz Created Successfully! \n\nShare this Code: ${data.quizCode}`);
+                if (status === "draft") {
+                    alert(`Draft Saved Successfully!\nYou can find it in your drafts.`);
+                    // Refresh drafts
+                    const draftRes = await fetch(`${API_BASE}/quiz/my-quizzes`, { credentials: 'include' });
+                    const draftData = await draftRes.json();
+                    if (draftData.success) setDrafts(draftData.quizzes || []);
+                } else {
+                    alert(`Quiz Published Successfully! \n\nShare this Code: ${data.quizCode}`);
+                }
             } else {
                 alert("Failed to save quiz: " + data.message);
             }
@@ -329,6 +353,36 @@ export default function StudySprintQuiz() {
             alert("Error saving quiz to server.");
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const loadDraft = (quiz) => {
+        setQuestions(quiz.questions || []);
+        setQuizTitle(quiz.title);
+        setQuizCode(quiz.code);
+        setSettings(quiz.settings);
+        setActiveTab("teacher");
+    };
+
+    const publishExistingDraft = async (code) => {
+        try {
+            const res = await fetch(`${API_BASE}/quiz/${code}/publish`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Quiz published! Share code: ${data.quizCode}`);
+                // Refresh drafts
+                const draftRes = await fetch(`${API_BASE}/quiz/my-quizzes`, { credentials: 'include' });
+                const draftData = await draftRes.json();
+                if (draftData.success) setDrafts(draftData.quizzes || []);
+            } else {
+                alert("Failed to publish: " + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error publishing.");
         }
     };
 
@@ -502,11 +556,11 @@ export default function StudySprintQuiz() {
 
                         {activeTab === "teacher" && questions.length > 0 && (
                             <div className="flex gap-3">
-                                <button onClick={saveQuiz} disabled={isSaving} className="px-8 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70">
-                                    <Share2 size={20} /> {isSaving ? "Publishing..." : "Publish Exam"}
+                                <button onClick={() => saveQuiz("draft")} disabled={isSaving} className="px-6 py-4 bg-slate-800 text-slate-300 font-bold rounded-xl shadow border border-slate-700 transition-all duration-300 hover:bg-slate-700 flex items-center gap-2">
+                                    <Edit size={20} /> Save as Draft
                                 </button>
-                                <button className="px-8 py-4 bg-gradient-to-br from-amber-500 to-amber-700 text-white font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2">
-                                    <Download size={20} /> Export
+                                <button onClick={() => saveQuiz("published")} disabled={isSaving} className="px-8 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70">
+                                    <Share2 size={20} /> {isSaving ? "Saving..." : "Publish Exam"}
                                 </button>
                             </div>
                         )}
@@ -545,6 +599,19 @@ export default function StudySprintQuiz() {
                             {getIcon(tab.icon)} {tab.label}
                         </button>
                     ))}
+
+                    <button
+                        onClick={() => setActiveTab("drafts")}
+                        className={`
+                            flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 ml-auto
+                            ${activeTab === "drafts"
+                                ? "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30 scale-105"
+                                : "bg-slate-800/60 text-slate-300 hover:bg-slate-700/80 hover:shadow-md"
+                            }
+                        `}
+                    >
+                        <BookOpen size={20} /> My Saved Quizzes
+                    </button>
                 </div>
 
                 {/* TAB CONTENT */}
@@ -797,6 +864,79 @@ export default function StudySprintQuiz() {
                                 ))}
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* MY DRAFTS */}
+                {activeTab === "drafts" && (
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-white/10 shadow-xl transition-all duration-300 min-h-[400px]">
+                        <h2 className="text-3xl font-black text-white mb-6 flex items-center gap-3 border-b-2 border-amber-500/30 pb-4">
+                            <BookOpen size={36} className="text-amber-500" /> My Saved Quizzes
+                        </h2>
+
+                        {drafts.length === 0 ? (
+                            <div className="text-center py-20 text-slate-500 bg-slate-900/40 rounded-2xl border border-dashed border-slate-700">
+                                <FilePlus size={64} className="mx-auto mb-4 opacity-40 text-violet-500" />
+                                <p className="text-xl">You have no saved drafts.</p>
+                                <p className="text-sm mt-2">Go to 'Create Quiz' to start building one.</p>
+                                <button
+                                    onClick={() => setActiveTab("teacher")}
+                                    className="mt-6 px-6 py-3 bg-violet-600 text-white rounded-lg hover:bg-violet-500 transition-colors"
+                                >
+                                    Create a Quiz
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {drafts.map((draft) => (
+                                    <div key={draft.code} className="bg-slate-900/60 p-6 rounded-2xl border border-white/10 hover:border-amber-500/50 transition-all group flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-2">
+                                                    {draft.title}
+                                                </h3>
+                                                <span className={`text-xs px-2 py-1 rounded-md font-bold ${draft.status === 'draft' ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/20 text-emerald-500'}`}>
+                                                    {draft.status.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div className="text-slate-400 text-sm mb-4 space-y-1">
+                                                <p className="flex items-center gap-2"><Target size={14} /> Code: {draft.code}</p>
+                                                <p className="flex items-center gap-2"><Settings size={14} /> Questions: {draft.questions?.length || 0}</p>
+                                                <p className="flex items-center gap-2"><Clock size={14} /> Time Limit: {draft.settings?.timeLimit || 30}m</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/5">
+                                            <button
+                                                onClick={() => loadDraft(draft)}
+                                                className="w-full py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition flex items-center justify-center gap-2 font-medium"
+                                            >
+                                                <Edit size={16} /> Edit
+                                            </button>
+
+                                            {draft.status === 'draft' ? (
+                                                <button
+                                                    onClick={() => publishExistingDraft(draft.code)}
+                                                    className="w-full py-2.5 bg-emerald-600/20 text-emerald-400 rounded-lg hover:bg-emerald-600/30 transition flex items-center justify-center gap-2 font-medium"
+                                                >
+                                                    <Share2 size={16} /> Publish
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(draft.code);
+                                                        alert("Code copied!");
+                                                    }}
+                                                    className="w-full py-2.5 bg-violet-600/20 text-violet-400 rounded-lg hover:bg-violet-600/30 transition flex items-center justify-center gap-2 font-medium"
+                                                >
+                                                    <Copy size={16} /> Copy Code
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
