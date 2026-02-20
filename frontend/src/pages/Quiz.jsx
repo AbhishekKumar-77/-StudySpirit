@@ -55,6 +55,7 @@ export default function StudySprintQuiz() {
     const [tabChangeDetected, setTabChangeDetected] = useState(false);
     const [warnings, setWarnings] = useState(0); // Track security warnings
     const [fullscreenActive, setFullscreenActive] = useState(false);
+    const [isReviewingAnswers, setIsReviewingAnswers] = useState(false);
     const fullscreenRef = useRef(null); // Ref for fullscreen element
 
     // AI Practice Mode
@@ -250,6 +251,8 @@ export default function StudySprintQuiz() {
                 setUserAnswers({});
                 setCurrentQuestionIndex(0);
                 setShowResult(false);
+                setIsReviewingAnswers(false);
+                setWarnings(0);
                 // Also update local quiz code display if needed, or just keep input
             } else {
                 alert(data.message || "Invalid Quiz Code!");
@@ -1126,16 +1129,91 @@ export default function StudySprintQuiz() {
                                 </p>
                                 <div className="flex gap-4 justify-center">
                                     {joinedQuiz.settings.allowReview && (
-                                        <button className="px-8 py-4 bg-gradient-to-br from-violet-500 to-blue-500 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105">
+                                        <button
+                                            onClick={() => setIsReviewingAnswers(true)}
+                                            className="px-8 py-4 bg-gradient-to-br from-violet-500 to-blue-500 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105"
+                                        >
                                             Review Answers
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => { setShowResult(false); setJoinedQuiz(null); setStudentQuizCodeInput(""); }}
+                                        onClick={() => { setShowResult(false); setJoinedQuiz(null); setStudentQuizCodeInput(""); setIsReviewingAnswers(false); }}
                                         className="px-8 py-4 bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-600 transition-all hover:scale-105"
                                     >
                                         Take Another Quiz
                                     </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* REVIEW ANSWERS UI */}
+                        {isReviewingAnswers && joinedQuiz && (
+                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-10 border border-white/10 shadow-xl max-w-4xl mx-auto mt-10 animate-fade-in-up mb-10">
+                                <div className="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
+                                    <h2 className="text-4xl font-black text-white flex items-center gap-3">
+                                        <BookOpen className="text-violet-500" size={36} /> Review Answers
+                                    </h2>
+                                    <button
+                                        onClick={() => setIsReviewingAnswers(false)}
+                                        className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold flex items-center gap-2"
+                                    >
+                                        <ArrowLeft size={18} /> Back to Results
+                                    </button>
+                                </div>
+
+                                <div className="space-y-8 text-left">
+                                    {joinedQuiz.questions.map((q, idx) => {
+                                        const userAnswerIdx = userAnswers[q.id];
+                                        const isCorrect = userAnswerIdx === q.correct;
+                                        const isSkipped = userAnswerIdx === undefined;
+
+                                        return (
+                                            <div key={q.id} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" :
+                                                    isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"
+                                                }`}>
+                                                <h4 className="text-xl text-white font-bold mb-6 flex items-start gap-3">
+                                                    <span className={`px-3 py-1 rounded text-sm font-black ${isCorrect ? "bg-emerald-500 text-slate-900" :
+                                                            isSkipped ? "bg-amber-500 text-slate-900" : "bg-red-500 text-white"
+                                                        }`}>
+                                                        Q{idx + 1}
+                                                    </span>
+                                                    {q.question}
+                                                </h4>
+
+                                                <div className="grid gap-3 ml-12">
+                                                    {q.options.map((opt, optIdx) => {
+                                                        const isThisUserAnswer = userAnswerIdx === optIdx;
+                                                        const isThisCorrectAnswer = q.correct === optIdx;
+
+                                                        let style = "bg-slate-900/40 border-slate-700/50 text-slate-400"; // Default
+                                                        let icon = null;
+
+                                                        if (isThisCorrectAnswer) {
+                                                            style = "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold";
+                                                            icon = <CheckCircle size={20} className="text-emerald-400 absolute right-4" />;
+                                                        } else if (isThisUserAnswer && !isThisCorrectAnswer) {
+                                                            style = "bg-red-500/20 border-red-500 text-red-300 font-bold";
+                                                            icon = <XCircle size={20} className="text-red-400 absolute right-4" />;
+                                                        }
+
+                                                        return (
+                                                            <div key={optIdx} className={`p-4 rounded-xl border relative flex items-center transition-all ${style}`}>
+                                                                <span className="font-bold mr-4 opacity-60 w-6">{String.fromCharCode(65 + optIdx)}.</span>
+                                                                {opt}
+                                                                {icon}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                {isSkipped && (
+                                                    <div className="ml-12 mt-4 text-amber-500 font-bold flex items-center gap-2">
+                                                        <AlertCircle size={18} /> You skipped this question.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
@@ -1370,7 +1448,10 @@ export default function StudySprintQuiz() {
                             )}
                         </div>
                         <div className="mt-10 text-center">
-                            <button className="px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg transition-all hover:opacity-90 flex items-center gap-2 mx-auto">
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg transition-all hover:opacity-90 flex items-center gap-2 mx-auto"
+                            >
                                 <BarChart size={20} /> View My Detailed Analytics
                             </button>
                         </div>
