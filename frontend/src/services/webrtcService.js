@@ -165,7 +165,22 @@ class WebRTCService {
             config: {
                 iceServers: [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
+                    { urls: 'stun:global.stun.twilio.com:3478' },
+                    {
+                        urls: "turn:openrelay.metered.ca:80",
+                        username: "openrelayproject",
+                        credential: "openrelayproject"
+                    },
+                    {
+                        urls: "turn:openrelay.metered.ca:443",
+                        username: "openrelayproject",
+                        credential: "openrelayproject"
+                    },
+                    {
+                        urls: "turn:openrelay.metered.ca:443?transport=tcp",
+                        username: "openrelayproject",
+                        credential: "openrelayproject"
+                    }
                 ]
             }
         });
@@ -204,6 +219,15 @@ class WebRTCService {
             // Emit event for UI to handle
             const event = new CustomEvent('webrtc:remoteStream', {
                 detail: { userId, stream }
+            });
+            window.dispatchEvent(event);
+        });
+
+        // Some modern browsers fire track events instead of populating stream beforehand
+        peer.on('track', (track, stream) => {
+            console.log(`Received track (${track.kind}) from:`, userId);
+            const event = new CustomEvent('webrtc:remoteTrack', {
+                detail: { userId, stream, track }
             });
             window.dispatchEvent(event);
         });

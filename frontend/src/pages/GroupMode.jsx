@@ -782,6 +782,7 @@ export default function GroupMode() {
 
             // Listen for remote streams
             window.addEventListener('webrtc:remoteStream', handleRemoteStream);
+            window.addEventListener('webrtc:remoteTrack', handleRemoteTrack);
             window.addEventListener('webrtc:userLeft', handleUserLeft);
 
             console.log('✅ WebRTC initialized successfully');
@@ -802,6 +803,27 @@ export default function GroupMode() {
 
             // Only add if not already present by id
             if (!existing.some(s => s.id === stream.id)) {
+                newStreams.set(userId, [...existing, stream]);
+            }
+            return newStreams;
+        });
+    };
+
+    // Handle remote track (sometimes needed for modern browsers that fire track events late)
+    const handleRemoteTrack = (event) => {
+        const { userId, stream } = event.detail;
+
+        setRemoteStreams(prev => {
+            const newStreams = new Map(prev);
+            const existing = newStreams.get(userId) || [];
+
+            // If the stream is already in the array, replace its reference to force a React re-render of the video component
+            const streamIndex = existing.findIndex(s => s.id === stream.id);
+            if (streamIndex !== -1) {
+                const newArray = [...existing];
+                newArray[streamIndex] = stream; // Replace reference
+                newStreams.set(userId, newArray);
+            } else {
                 newStreams.set(userId, [...existing, stream]);
             }
             return newStreams;
