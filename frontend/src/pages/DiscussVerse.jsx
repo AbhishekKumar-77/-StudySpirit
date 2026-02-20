@@ -509,8 +509,9 @@ export default function DiscussVerse() {
 
             // Update local state to show 'pending' or 'sent'
             setDirectMessages(prev => prev.map(dm =>
-                (dm.id === user.id) ? { ...dm, connectionStatus: 'sent' } : dm
+                (dm.id === (user.id || user._id)) ? { ...dm, connectionStatus: 'sent' } : dm
             ));
+            setSuggestedConnections(prev => prev.filter(u => u.id !== (user.id || user._id)));
 
         } catch (error) {
             console.error(error);
@@ -541,8 +542,7 @@ export default function DiscussVerse() {
     };
 
     const handleAttachment = () => {
-        console.log('File attachment feature - Coming soon!');
-        // TODO: Implement file upload
+        alert('File attachment feature - Coming soon!');
     };
 
     const handleNotifications = () => {
@@ -596,7 +596,10 @@ export default function DiscussVerse() {
                 id: g._id,
                 name: g.name,
                 members: g.members?.length || 0,
-                activeNow: Math.floor(Math.random() * 5),
+                activeNow: (g.members || []).filter(m => {
+                    const memberId = m._id || m;
+                    return onlineUserIds.has(String(memberId));
+                }).length,
                 topic: g.description || 'Study Group',
                 nextSession: 'TBD'
             })));
@@ -1313,79 +1316,14 @@ export default function DiscussVerse() {
                 </div >
             </div >
 
-            {/* New Post Modal */}
-            {
-                showNewPost && (
-                    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setShowNewPost(false)}>
-                        <div
-                            className="bg-slate-900/95 backdrop-blur-xl rounded-2xl w-full max-w-lg p-6 border border-slate-700/50 shadow-2xl animate-fade-in"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                                <Plus size={24} className="text-violet-500" />
-                                Create Discussion
-                            </h3>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Title</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-violet-500/50 outline-none font-semibold"
-                                        placeholder="What's on your mind?"
-                                        value={newPostTitle}
-                                        onChange={e => setNewPostTitle(e.target.value)}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Content</label>
-                                    <textarea
-                                        className="w-full bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-violet-500/50 outline-none h-32 resize-none"
-                                        placeholder="Share your thoughts, questions, or ideas..."
-                                        value={newPostContent}
-                                        onChange={e => setNewPostContent(e.target.value)}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Tags (comma separated)</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-slate-800 border-none rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-violet-500/50 outline-none"
-                                        placeholder="e.g. react, dsa, help"
-                                        value={newPostTags}
-                                        onChange={e => setNewPostTags(e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="flex gap-3 mt-6">
-                                    <button
-                                        onClick={() => setShowNewPost(false)}
-                                        className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleCreatePost}
-                                        disabled={!newPostTitle.trim() || !newPostContent.trim()}
-                                        className="flex-1 py-3 bg-gradient-to-r from-violet-600 to-pink-600 hover:shadow-lg hover:shadow-violet-500/25 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Post
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
 
             {/* User Profile Modal - Enhanced */}
             {
                 showUserProfile && (() => {
                     const isMe = showUserProfile.isMe;
+                    const memberId = showUserProfile.id || showUserProfile._id;
                     // Find the full DM entry for this user to get real stats
-                    const dmEntry = directMessages.find(d => String(d.id) === String(showUserProfile.id));
+                    const dmEntry = directMessages.find(d => String(d.id) === String(memberId));
                     const profileData = isMe ? {
                         name: user?.name || 'You',
                         avatar: user?.avatar || '👤',
@@ -1396,6 +1334,7 @@ export default function DiscussVerse() {
                         connections: connections.length
                     } : {
                         ...showUserProfile,
+                        id: memberId,
                         posts: dmEntry?.postCount ?? 0,
                         connections: dmEntry?.connectionCount ?? 0
                     };
