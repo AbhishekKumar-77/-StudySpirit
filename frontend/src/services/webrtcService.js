@@ -57,17 +57,13 @@ class WebRTCService {
 
             this.screenStream = screenStream;
 
-            // Replace video track in all peer connections
-            const videoTrack = screenStream.getVideoTracks()[0];
-
+            // Add screen stream to all peer connections instead of replacing
             this.peers.forEach((peer) => {
-                const sender = peer._pc.getSenders().find(s => s.track?.kind === 'video');
-                if (sender) {
-                    sender.replaceTrack(videoTrack);
-                }
+                peer.addStream(screenStream);
             });
 
             // Listen for screen share stop
+            const videoTrack = screenStream.getVideoTracks()[0];
             videoTrack.onended = () => {
                 this.stopScreenShare();
             };
@@ -82,19 +78,16 @@ class WebRTCService {
     // Stop screen sharing
     stopScreenShare() {
         if (this.screenStream) {
+            this.peers.forEach((peer) => {
+                try {
+                    peer.removeStream(this.screenStream);
+                } catch (e) {
+                    console.error('Error removing screen stream:', e);
+                }
+            });
+
             this.screenStream.getTracks().forEach(track => track.stop());
             this.screenStream = null;
-
-            // Restore camera video track
-            if (this.localStream) {
-                const videoTrack = this.localStream.getVideoTracks()[0];
-                this.peers.forEach((peer) => {
-                    const sender = peer._pc.getSenders().find(s => s.track?.kind === 'video');
-                    if (sender && videoTrack) {
-                        sender.replaceTrack(videoTrack);
-                    }
-                });
-            }
         }
     }
 

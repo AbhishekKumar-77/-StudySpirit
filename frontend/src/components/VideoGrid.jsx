@@ -210,31 +210,51 @@ const VideoGrid = ({
     // Add remote participants from the participants list
     participants.forEach(participant => {
         if (participant.id === currentUserId) return;
-        const stream = remoteStreams.get(participant.id);
-        allVideos.push({
-            userId: participant.id,
-            stream,
-            userName: participant.name || participant.userName || 'Participant',
-            userAvatar: participant.avatar || '👤',
-            isMuted: participant.isMuted ?? false,
-            isCameraOn: participant.isCameraOn ?? true,
-            isLocal: false
+
+        let streams = remoteStreams.get(participant.id);
+        if (!streams) return;
+
+        // Convert to array if it's a single stream
+        if (!Array.isArray(streams)) {
+            streams = [streams];
+        }
+
+        streams.forEach((stream, index) => {
+            // Usually the second stream or one without active camera track is the screen share
+            const isScreen = index > 0 || (stream && stream.getVideoTracks()[0]?.label.toLowerCase().includes('screen'));
+            allVideos.push({
+                userId: `${participant.id}_${index}`,
+                stream,
+                userName: participant.name + (isScreen ? ' (Screen)' : ''),
+                userAvatar: participant.avatar || '👤',
+                isMuted: isScreen ? true : (participant.isMuted ?? false),
+                isCameraOn: participant.isCameraOn ?? true,
+                isLocal: false
+            });
         });
+
         addedUserIds.add(participant.id);
     });
 
     // Also add any remote streams not in the participants list
     if (remoteStreams && remoteStreams.size > 0) {
-        remoteStreams.forEach((stream, peerId) => {
+        remoteStreams.forEach((streams, peerId) => {
             if (!addedUserIds.has(peerId)) {
-                allVideos.push({
-                    userId: peerId,
-                    stream,
-                    userName: 'Participant',
-                    userAvatar: '👤',
-                    isMuted: false,
-                    isCameraOn: true,
-                    isLocal: false
+                if (!Array.isArray(streams)) {
+                    streams = [streams];
+                }
+
+                streams.forEach((stream, index) => {
+                    const isScreen = index > 0;
+                    allVideos.push({
+                        userId: `${peerId}_${index}`,
+                        stream,
+                        userName: `Participant${isScreen ? ' (Screen)' : ''}`,
+                        userAvatar: '👤',
+                        isMuted: isScreen ? true : false,
+                        isCameraOn: true,
+                        isLocal: false
+                    });
                 });
                 addedUserIds.add(peerId);
             }

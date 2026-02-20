@@ -444,44 +444,41 @@ export default function GroupMode() {
             const senderId = msg.senderId || null;
 
             if (content === 'SYSTEM:WHITEBOARD_OPEN') {
-                // Only viewers (not the presenter) go into viewer fullscreen mode
-                // The presenter already has the whiteboard open
                 if (senderName !== (user?.name || 'You')) {
+                    setShowWhiteboard(true);
                     setPresenterUserId(senderId || senderName);
                     setPresenterName(senderName);
                     setPresenterType('whiteboard');
-                    setIsViewerFullscreen(true);
                 }
                 return;
             }
 
             if (content === 'SYSTEM:WHITEBOARD_CLOSE') {
-                // Presenter stopped presenting — exit viewer fullscreen
-                setPresenterUserId(null);
-                setPresenterName('');
-                setPresenterType(null);
-                setIsViewerFullscreen(false);
+                if (senderName !== (user?.name || 'You')) {
+                    setShowWhiteboard(false);
+                    setPresenterUserId(null);
+                    setPresenterName('');
+                    setPresenterType(null);
+                }
                 return;
             }
 
             if (content === 'SYSTEM:SCREENSHARE_START') {
-                // Another user started screen sharing
                 if (senderName !== (user?.name || 'You')) {
                     setPresenterUserId(senderId || senderName);
                     setPresenterName(senderName);
                     setPresenterType('screenshare');
-                    setIsViewerFullscreen(true);
+                    setSpotlightUserId(senderId || senderName); // Spotlight the presenter automatically
                 }
                 return;
             }
 
             if (content === 'SYSTEM:SCREENSHARE_STOP') {
-                // Screen share stopped
                 if (presenterType === 'screenshare') {
                     setPresenterUserId(null);
                     setPresenterName('');
                     setPresenterType(null);
-                    setIsViewerFullscreen(false);
+                    setSpotlightUserId(null); // Remove spotlight
                 }
                 return;
             }
@@ -801,7 +798,12 @@ export default function GroupMode() {
 
         setRemoteStreams(prev => {
             const newStreams = new Map(prev);
-            newStreams.set(userId, stream);
+            const existing = newStreams.get(userId) || [];
+
+            // Only add if not already present by id
+            if (!existing.some(s => s.id === stream.id)) {
+                newStreams.set(userId, [...existing, stream]);
+            }
             return newStreams;
         });
     };
@@ -2085,139 +2087,6 @@ export default function GroupMode() {
                 </div>
             )}
 
-            {/* Viewer Fullscreen Overlay — shown to participants when someone else is presenting */}
-            {isViewerFullscreen && presenterUserId && (
-                <div className="fixed inset-0 bg-black z-[99999] flex flex-col animate-fadeIn">
-                    {/* Top bar */}
-                    <div className="flex items-center justify-between px-6 py-3 bg-gradient-to-r from-slate-900/95 to-purple-900/95 border-b border-violet-500/30">
-                        <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                            <span className="text-white font-bold text-lg">
-                                {presenterName || 'Presenter'} is {presenterType === 'whiteboard' ? 'presenting on Whiteboard' : 'sharing their screen'}
-                            </span>
-                        </div>
-                        <button
-                            onClick={() => {
-                                setIsViewerFullscreen(false);
-                                setPresenterUserId(null);
-                                setPresenterName('');
-                                setPresenterType(null);
-                            }}
-                            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg font-bold flex items-center gap-2 hover:bg-red-500/30 transition-all"
-                        >
-                            <Minimize2 size={16} />
-                            Exit Fullscreen
-                        </button>
-                    </div>
-
-                    {/* Main content area */}
-                    <div className="flex-1 flex items-center justify-center p-4">
-                        {presenterType === 'screenshare' ? (
-                            /* For screen share, show the presenter's remote stream */
-                            (() => {
-                                // Find the presenter's stream from remoteStreams
-                                let presenterStream = null;
-                                if (remoteStreams && remoteStreams.size > 0) {
-                                    // Try to find by presenter user ID
-                                    presenterStream = remoteStreams.get(presenterUserId);
-                                    // If not found by ID, try the first remote stream (likely the presenter)
-                                    if (!presenterStream) {
-                                        const firstEntry = remoteStreams.entries().next().value;
-                                        if (firstEntry) presenterStream = firstEntry[1];
-                                    }
-                                }
-
-                                if (presenterStream) {
-                                    return (
-                                        <video
-                                            ref={(el) => {
-                                                if (el && presenterStream) {
-                                                    el.srcObject = presenterStream;
-                                                }
-                                            }}
-                                            autoPlay
-                                            playsInline
-                                            className="w-full h-full object-contain rounded-xl"
-                                        />
-                                    );
-                                }
-
-                                return (
-                                    <div className="text-center">
-                                        <Monitor size={80} className="text-violet-400 mx-auto mb-6 animate-pulse" />
-                                        <h2 className="text-3xl font-black text-white mb-3">
-                                            {presenterName} is sharing their screen
-                                        </h2>
-                                        <p className="text-slate-400 text-lg">
-                                            Connecting to screen share stream...
-                                        </p>
-                                    </div>
-                                );
-                            })()
-                        ) : (
-                            /* For whiteboard, show a message indicating whiteboard is being presented */
-                            <div className="text-center max-w-lg">
-                                <div className="mb-8">
-                                    <div className="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center mb-6">
-                                        <PenTool size={48} className="text-cyan-400" />
-                                    </div>
-                                    <h2 className="text-3xl font-black text-white mb-3">
-                                        📝 {presenterName} is presenting
-                                    </h2>
-                                    <p className="text-slate-400 text-lg mb-2">
-                                        Whiteboard is being shared with you in real-time.
-                                    </p>
-                                    <p className="text-slate-500 text-sm">
-                                        The presenter is using the interactive whiteboard. You can see
-                                        their work through their screen share stream.
-                                    </p>
-                                </div>
-
-                                {/* Show presenter's stream if available */}
-                                {(() => {
-                                    let presenterStream = null;
-                                    if (remoteStreams && remoteStreams.size > 0) {
-                                        presenterStream = remoteStreams.get(presenterUserId);
-                                        if (!presenterStream) {
-                                            const firstEntry = remoteStreams.entries().next().value;
-                                            if (firstEntry) presenterStream = firstEntry[1];
-                                        }
-                                    }
-
-                                    if (presenterStream) {
-                                        return (
-                                            <div className="w-full aspect-video rounded-xl overflow-hidden border border-violet-500/30">
-                                                <video
-                                                    ref={(el) => {
-                                                        if (el && presenterStream) {
-                                                            el.srcObject = presenterStream;
-                                                        }
-                                                    }}
-                                                    autoPlay
-                                                    playsInline
-                                                    className="w-full h-full object-contain"
-                                                />
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })()}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Bottom status bar */}
-                    <div className="px-6 py-3 bg-slate-900/95 border-t border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-3 text-slate-400 text-sm">
-                            <Radio size={16} className="text-red-500 animate-pulse" />
-                            <span>Live presentation in progress</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-500 text-xs">
-                            <span>Press Exit Fullscreen to return to the room</span>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Group Detail Modal */}
             {showGroupDetail && groupDetailData && (
