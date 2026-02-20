@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { connectSocket, getSocket } from '../services/groupAPI';
 
 const AppContext = createContext();
 
@@ -51,6 +52,14 @@ export const AppProvider = ({ children }) => {
     const loginUser = (userData) => {
         setUser(userData);
         localStorage.setItem('studySpiritUser', JSON.stringify(userData));
+        if (userData?._id) {
+            const socket = connectSocket();
+            if (socket.connected) {
+                socket.emit('user:online', String(userData._id));
+            } else {
+                socket.once('connect', () => socket.emit('user:online', String(userData._id)));
+            }
+        }
     };
 
     const logoutUser = async () => {
@@ -62,6 +71,19 @@ export const AppProvider = ({ children }) => {
         setUser(null);
         localStorage.removeItem('studySpiritUser');
     };
+
+    // Connect socket for presence when user is set
+    useEffect(() => {
+        if (user?._id) {
+            const socket = connectSocket();
+            const announceOnline = () => socket.emit('user:online', String(user._id));
+            if (socket.connected) announceOnline();
+            socket.on('connect', announceOnline);
+            return () => {
+                socket.off('connect', announceOnline);
+            };
+        }
+    }, [user?._id]);
 
     return (
         <AppContext.Provider value={{ user, setUser, loginUser, logoutUser, stats, setStats, loading }}>

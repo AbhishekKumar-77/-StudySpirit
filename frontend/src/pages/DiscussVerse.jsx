@@ -122,19 +122,25 @@ export default function DiscussVerse() {
                     return [...prev, msg];
                 });
             }
-            // Update DM list sidebar — show last message + bump unread
-            setDirectMessages(prev => prev.map(dm => {
-                if (String(dm.id) === String(senderId)) {
-                    const isActive = currentDM && String(currentDM.id) === String(senderId);
-                    return {
-                        ...dm,
+            // Update DM list sidebar — show last message + bump unread + move to top
+            setDirectMessages(prev => {
+                const isActive = currentDM && String(currentDM.id) === String(senderId);
+                let senderDM = prev.find(dm => String(dm.id) === String(senderId));
+
+                if (senderDM) {
+                    senderDM = {
+                        ...senderDM,
                         lastMessage: msg.content,
                         timestamp: msg.timestamp || 'Just now',
-                        unread: isActive ? dm.unread : (dm.unread || 0) + 1
+                        unread: isActive ? 0 : (senderDM.unread || 0) + 1
                     };
+                    const others = prev.filter(dm => String(dm.id) !== String(senderId));
+                    return [senderDM, ...others];
                 }
-                return dm;
-            }));
+
+                // If the user isn't in our DM list yet, we'll wait for them to be fetched or added 
+                return prev;
+            });
         };
         socket.on('dm:receive', handleDMReceive);
 
@@ -357,12 +363,16 @@ export default function DiscussVerse() {
                 });
             }
 
-            // 3. Update sidebar last message
-            setDirectMessages(prev => prev.map(dm =>
-                String(dm.id) === String(activeDM.id)
-                    ? { ...dm, lastMessage: content, timestamp: 'Just now' }
-                    : dm
-            ));
+            // 3. Update sidebar last message and move to top
+            setDirectMessages(prev => {
+                let current = prev.find(dm => String(dm.id) === String(activeDM.id));
+                if (current) {
+                    current = { ...current, lastMessage: content, timestamp: 'Just now' };
+                    const others = prev.filter(dm => String(dm.id) !== String(activeDM.id));
+                    return [current, ...others];
+                }
+                return prev;
+            });
         } catch (error) {
             console.error('Failed to send message', error);
             setMessageInput(content); // Restore on failure
@@ -522,20 +532,29 @@ export default function DiscussVerse() {
     const handleStartDM = (user) => {
         const userId = String(user.id || user._id);
         const existingDM = directMessages.find(d => String(d.id) === userId);
+
+        let targetDM = existingDM;
         if (existingDM) {
-            setActiveDM(existingDM);
+            // Unread reset
+            if (existingDM.unread > 0) {
+                targetDM = { ...existingDM, unread: 0 };
+                // Also update the list internally
+                setDirectMessages(prev => prev.map(d => String(d.id) === userId ? targetDM : d));
+            }
         } else {
             // Mock new DM
-            const newDM = {
+            targetDM = {
                 id: userId,
                 user: user, // user may have more properties like name, avatar
                 lastMessage: '',
                 timestamp: 'Now',
                 unread: 0
             };
-            setDirectMessages(prev => [newDM, ...prev]);
-            setActiveDM(newDM);
+            setDirectMessages(prev => [targetDM, ...prev]);
         }
+
+        setActiveDM(targetDM);
+        setMessages([]); // clear current messages right away to avoid cross-flash
         setActiveView('dms');
         setActiveChannel(null); // Clear channel
         setShowUserProfile(null);
@@ -785,7 +804,7 @@ export default function DiscussVerse() {
                                 .map(dm => (
                                     <button
                                         key={dm.id}
-                                        onClick={() => { setActiveDM(dm); setActiveChannel(null); }}
+                                        onClick={() => handleStartDM(dm.user || dm)}
                                         className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-xl mb-1.5 transition-all duration-300 ${activeDM?.id === dm.id
                                             ? 'bg-gradient-to-r from-violet-500/20 to-pink-500/10 border border-violet-500/20 shadow-lg shadow-violet-500/10'
                                             : 'hover:bg-slate-800/60 border border-transparent'
