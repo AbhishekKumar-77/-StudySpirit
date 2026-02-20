@@ -520,14 +520,15 @@ export default function DiscussVerse() {
     };
 
     const handleStartDM = (user) => {
-        const existingDM = directMessages.find(d => d.user.id === user.id);
+        const userId = String(user.id || user._id);
+        const existingDM = directMessages.find(d => String(d.id) === userId);
         if (existingDM) {
             setActiveDM(existingDM);
         } else {
             // Mock new DM
             const newDM = {
-                id: user.id, // Using user ID as DM session ID for this demo
-                user: user,
+                id: userId,
+                user: user, // user may have more properties like name, avatar
                 lastMessage: '',
                 timestamp: 'Now',
                 unread: 0

@@ -139,21 +139,25 @@ exports.sendDirectMessage = async (req, res) => {
 
         // Find recipient socket ID
         // Note: onlineUsers forces keys to strings, so ensure lookup uses string
-        const recipientSocketId = onlineUsers.get(recipientId.toString());
+        const recipientSocketIds = onlineUsers.get(recipientId.toString());
+        console.log("DM send attempt to:", recipientId.toString());
+        console.log("Online users keys:", Array.from(onlineUsers.keys()));
 
-        if (recipientSocketId) {
-            io.to(recipientSocketId).emit('dm:receive', {
-                senderId: req.user._id.toString(),
-                senderName: req.user.name,
-                senderAvatar: req.user.avatar,
-                message: {
-                    _id: msg._id,
-                    content: msg.content,
-                    isMine: false,
-                    timestamp: formatTimeOnly(msg.createdAt),
-                    createdAt: msg.createdAt
-                }
-            });
+        if (recipientSocketIds && recipientSocketIds.size > 0) {
+            for (const recipientSocketId of recipientSocketIds) {
+                io.to(recipientSocketId).emit('dm:receive', {
+                    senderId: req.user._id.toString(),
+                    senderName: req.user.name,
+                    senderAvatar: req.user.avatar,
+                    message: {
+                        _id: msg._id,
+                        content: msg.content,
+                        isMine: false,
+                        timestamp: formatTimeOnly(msg.createdAt),
+                        createdAt: msg.createdAt
+                    }
+                });
+            }
             console.log(`💬 DM forwarded directly from controller: ${req.user._id} -> ${recipientId}`);
         }
 

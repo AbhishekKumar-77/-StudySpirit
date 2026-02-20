@@ -8,7 +8,7 @@ const registerWebRTCEvents = require('./webrtcEvents');
 const User = require('../models/User');
 
 // Shared state — tracked per-process
-const onlineUsers = new Map();      // userId -> socketId
+const onlineUsers = new Map();      // userId -> Set(socketId)
 const socketUserMap = new Map();    // socketId -> userId  (for disconnect lookup)
 const roomParticipants = new Map();
 const webrtcRooms = new Map();
@@ -19,8 +19,10 @@ module.exports = function setupSocketHandlers(io) {
 
         // User comes online — update DB status + broadcast
         socket.on('user:online', async (userId) => {
-            if (!userId) return;
-            onlineUsers.set(userId, socket.id);
+            if (!onlineUsers.has(userId)) {
+                onlineUsers.set(userId, new Set());
+            }
+            onlineUsers.get(userId).add(socket.id);
             socketUserMap.set(socket.id, userId);
 
             // Update status in MongoDB
@@ -42,20 +44,23 @@ module.exports = function setupSocketHandlers(io) {
             const { recipientId, message } = data;
             if (!recipientId || !message) return;
 
-            const recipientSocketId = onlineUsers.get(String(recipientId));
-            if (recipientSocketId) {
-                io.to(recipientSocketId).emit('dm:receive', {
-                    senderId: message.senderId,
-                    senderName: message.senderName,
-                    senderAvatar: message.senderAvatar,
-                    message: {
-                        _id: message._id,
-                        content: message.content,
-                        isMine: false,  // For the recipient, it's NOT their message
-                        timestamp: message.timestamp,
-                        createdAt: message.createdAt
-                    }
-                });
+            const recipientSocketIds = onlineUsers.get(String(recipientId));
+            if (recipientSocketIds && recipientSocketIds.size > 0) {
+                // emit to all the sockets for the recipient
+                for (const recipientSocketId of recipientSocketIds) {
+                    io.to(recipientSocketId).emit('dm:receive', {
+                        senderId: message.senderId,
+                        senderName: message.senderName,
+                        senderAvatar: message.senderAvatar,
+                        message: {
+                            _id: message._id,
+                            content: message.content,
+                            isMine: false,  // For the recipient, it's NOT their message
+                            timestamp: message.timestamp,
+                            createdAt: message.createdAt
+                        }
+                    });
+                }
                 console.log(`💬 DM forwarded from ${message.senderId} to ${recipientId}`);
             }
         });
@@ -64,9 +69,11 @@ module.exports = function setupSocketHandlers(io) {
         socket.on('dm:typing', (data) => {
             const { recipientId, isTyping, senderId, senderName } = data;
             if (!recipientId) return;
-            const recipientSocketId = onlineUsers.get(String(recipientId));
-            if (recipientSocketId) {
-                io.to(recipientSocketId).emit('dm:typing', { senderId, senderName, isTyping });
+            const recipientSocketIds = onlineUsers.get(String(recipientId));
+            if (recipientSocketIds && recipientSocketIds.size > 0) {
+                for (const recipientSocketId of recipientSocketIds) {
+                    io.to(recipientSocketId).emit('dm:typing', { senderId, senderName, isTyping });
+                }
             }
         });
 
@@ -80,17 +87,23 @@ module.exports = function setupSocketHandlers(io) {
             const userId = socketUserMap.get(socket.id);
 
             if (userId) {
-                onlineUsers.delete(userId);
-                socketUserMap.delete(socket.id);
+                const userSockets = onlineUsers.get(userId);
+                if (userSockets) {
+                    userSockets.delete(socket.id);
+                    if (userSockets.size === 0) {
+                        onlineUsers.delete(userId);
 
-                // Update status in MongoDB
-                try {
-                    await User.findByIdAndUpdate(userId, { status: 'offline' });
-                } catch (e) {
-                    console.error('Failed to set user offline:', e.message);
+                        // Update status in MongoDB
+                        try {
+                            await User.findByIdAndUpdate(userId, { status: 'offline' });
+                        } catch (e) {
+                            console.error('Failed to set user offline:', e.message);
+                        }
+
+                        console.log(`❌ User ${userId} went offline completely`);
+                    }
                 }
-
-                console.log(`❌ User ${userId} went offline`);
+                socketUserMap.delete(socket.id);
             }
 
             // Clean up room participants
