@@ -1169,11 +1169,11 @@ export default function StudySprintQuiz() {
 
                                         return (
                                             <div key={q.id} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" :
-                                                    isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"
+                                                isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"
                                                 }`}>
                                                 <h4 className="text-xl text-white font-bold mb-6 flex items-start gap-3">
                                                     <span className={`px-3 py-1 rounded text-sm font-black ${isCorrect ? "bg-emerald-500 text-slate-900" :
-                                                            isSkipped ? "bg-amber-500 text-slate-900" : "bg-red-500 text-white"
+                                                        isSkipped ? "bg-amber-500 text-slate-900" : "bg-red-500 text-white"
                                                         }`}>
                                                         Q{idx + 1}
                                                     </span>
@@ -1447,14 +1447,7 @@ export default function StudySprintQuiz() {
                                 ))
                             )}
                         </div>
-                        <div className="mt-10 text-center">
-                            <button
-                                onClick={() => navigate('/dashboard')}
-                                className="px-8 py-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg transition-all hover:opacity-90 flex items-center gap-2 mx-auto"
-                            >
-                                <BarChart size={20} /> View My Detailed Analytics
-                            </button>
-                        </div>
+
                     </div>
                 )}
             </div>
