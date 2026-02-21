@@ -653,9 +653,11 @@ export default function AIInterview() {
                                             }}
                                             className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm text-slate-300 focus:border-violet-500/50 focus:outline-none mb-4"
                                         >
-                                            <option value="">Select a natural human voice...</option>
+                                            <option value="" className="bg-[#1e1e2d] text-white">Select a natural human voice...</option>
                                             {availableVoices.map((v, i) => (
-                                                <option key={i} value={v.voiceURI}>{v.name} ({v.lang})</option>
+                                                <option key={i} value={v.voiceURI} className="bg-[#1e1e2d] text-white">
+                                                    {v.name} ({v.lang})
+                                                </option>
                                             ))}
                                         </select>
                                     </div>
