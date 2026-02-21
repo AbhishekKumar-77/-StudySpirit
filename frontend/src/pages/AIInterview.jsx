@@ -43,7 +43,8 @@ export default function AIInterview() {
         experience: '',
         education: '',
         skills: '',
-        additionalInfo: ''
+        additionalInfo: '',
+        template: 'Modern Professional'
     });
     const [generatedResume, setGeneratedResume] = useState('');
     const [isGeneratingResume, setIsGeneratingResume] = useState(false);
@@ -520,7 +521,8 @@ export default function AIInterview() {
                     experience: resumeForm.experience,
                     education: resumeForm.education,
                     skills: resumeForm.skills,
-                    additionalInfo: resumeForm.additionalInfo
+                    additionalInfo: resumeForm.additionalInfo,
+                    template: resumeForm.template
                 })
             });
             const data = await res.json();
@@ -932,6 +934,19 @@ export default function AIInterview() {
                                 </div>
 
                                 <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Design Template</label>
+                                    <select
+                                        value={resumeForm.template}
+                                        onChange={e => setResumeForm({ ...resumeForm, template: e.target.value })}
+                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white focus:outline-none focus:border-cyan-500/50"
+                                    >
+                                        <option value="Modern Professional" className="bg-[#1e1e2d]">Modern Professional</option>
+                                        <option value="Creative Tech" className="bg-[#1e1e2d]">Creative Tech</option>
+                                        <option value="Executive Minimalist" className="bg-[#1e1e2d]">Executive Minimalist</option>
+                                    </select>
+                                </div>
+
+                                <div>
                                     <label className="text-xs font-bold text-slate-500 uppercase">Professional Skills (comma separated)</label>
                                     <textarea
                                         value={resumeForm.skills}
@@ -991,16 +1006,18 @@ export default function AIInterview() {
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText(generatedResume);
-                                            alert("Resume Markdown copied to clipboard!");
+                                            alert("Resume Code copied to clipboard!");
                                         }}
                                         className="text-xs font-bold text-cyan-600 hover:text-cyan-700 hover:underline px-3 py-1 rounded border border-cyan-200 bg-white"
                                     >
-                                        Copy Markdown
+                                        Copy HTML
                                     </button>
                                 )}
                             </div>
-                            <div className="flex-1 p-8 overflow-y-auto font-serif text-sm leading-relaxed whitespace-pre-wrap">
-                                {generatedResume ? generatedResume : (
+                            <div className="flex-1 p-8 overflow-y-auto">
+                                {generatedResume ? (
+                                    <div dangerouslySetInnerHTML={{ __html: generatedResume }} />
+                                ) : (
                                     <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50 select-none">
                                         <FileText size={48} className="mb-4 text-slate-300" />
                                         <p className="font-medium">Fill details and click Generate</p>

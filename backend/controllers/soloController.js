@@ -2377,7 +2377,7 @@ exports.evaluateSpeech = async (req, res) => {
 // AI Resume Generator
 exports.generateResume = async (req, res) => {
     try {
-        const { personalInfo, experience, education, skills, additionalInfo } = req.body;
+        const { personalInfo, experience, education, skills, additionalInfo, template = "Modern Professional" } = req.body;
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
@@ -2385,8 +2385,8 @@ exports.generateResume = async (req, res) => {
         }
 
         const prompt = `
-        You are an expert Resume Writer and Career Coach.
-        Create a professional, ATS-friendly resume based on the following details.
+        You are an expert Resume Writer, Career Coach, and Web Designer.
+        Create a professional, ATS-friendly resume using the EXACT STYLE TEMPLATE requested: "${template}".
         
         **User Details:**
         - Name: ${personalInfo.name}
@@ -2407,12 +2407,14 @@ exports.generateResume = async (req, res) => {
         ${additionalInfo}
         
         **Instructions:**
-        1. Structure the resume cleanly with sections: Header, Professional Summary, Skills, Experience, Education, Projects/Certifications.
-        2. Use professional, action-oriented language (e.g., "Led", "Developed", "Optimized", "Architected").
-        3. Write a compelling Professional Summary (3-4 lines).
-        4. Enhance the experience descriptions to sound impactful and results-driven.
-        5. Return the result in cleanly formatted **Markdown**. Use headings (##), bullet points (-), and bold text (**).
-        6. Do NOT include any conversational filler (no "Here is your resume" or "Sure!"). Just the resume content.
+        1. Format the resume as a SINGLE, CLEAN HTML \`<div>\` block. DO NOT use markdown, DO NOT wrap in \`\`\`html tags.
+        2. Use inline CSS styles to make it look incredibly beautiful and professional according to the "${template}" style.
+          - "Modern Professional": Clean, white background, dark gray text, modern fonts, subtle blue accents.
+          - "Creative Tech": Dark theme, neon accents, highly dynamic and aesthetic for developers or designers.
+          - "Executive Minimalist": Grayscale, very wide margins, serif elegant fonts like Georgia or Playfair Display, understated luxury.
+        3. Structure the resume sections: Header, Professional Summary (make it compelling), Skills, Experience (enhance action verbs), Education, Additional Info.
+        4. Make the layout visually stunning but clean.
+        5. Return ONLY the raw HTML string. No extra text, no conversation filler, no markdown wrappers.
         `;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
