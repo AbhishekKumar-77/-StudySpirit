@@ -2385,8 +2385,8 @@ exports.generateResume = async (req, res) => {
         }
 
         const prompt = `
-        You are an expert Resume Writer, Career Coach, and Web Designer.
-        Create a professional, ATS-friendly resume using the EXACT STYLE TEMPLATE requested: "${template}".
+        You are an expert Resume Writer and Career Coach.
+        Enhance and format the following details into a professional resume.
         
         **User Details:**
         - Name: ${personalInfo.name}
@@ -2407,14 +2407,36 @@ exports.generateResume = async (req, res) => {
         ${additionalInfo}
         
         **Instructions:**
-        1. Format the resume as a SINGLE, CLEAN HTML \`<div>\` block. DO NOT use markdown, DO NOT wrap in \`\`\`html tags.
-        2. Use inline CSS styles to make it look incredibly beautiful and professional according to the "${template}" style.
-          - "Modern Professional": Clean, white background, dark gray text, modern fonts, subtle blue accents.
-          - "Creative Tech": Dark theme, neon accents, highly dynamic and aesthetic for developers or designers.
-          - "Executive Minimalist": Grayscale, very wide margins, serif elegant fonts like Georgia or Playfair Display, understated luxury.
-        3. Structure the resume sections: Header, Professional Summary (make it compelling), Skills, Experience (enhance action verbs), Education, Additional Info.
-        4. Make the layout visually stunning but clean.
-        5. Return ONLY the raw HTML string. No extra text, no conversation filler, no markdown wrappers.
+        1. Write a compelling Professional Summary (3-4 lines).
+        2. Enhance the experience descriptions to be impactful, action-oriented, and results-driven.
+        3. You MUST return strictly a JSON object using the following exact structure:
+        {
+          "personalInfo": {
+            "name": "enhanced name",
+            "email": "email",
+            "phone": "phone",
+            "links": "links"
+          },
+          "summary": "enhanced summary",
+          "skills": ["Skill 1", "Skill 2", "Skill 3"],
+          "experience": [
+            {
+              "role": "Job Title",
+              "company": "Company Name",
+              "duration": "2020 - Present",
+              "description": ["Action-oriented bullet 1", "Action-oriented bullet 2"]
+            }
+          ],
+          "education": [
+            {
+              "degree": "Degree Name",
+              "institution": "University/School",
+              "year": "Graduation Year",
+              "details": "GPA or relevant coursework"
+            }
+          ],
+          "additionalInfo": ["Award 1", "Certification 1"]
+        }
         `;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -2426,15 +2448,20 @@ exports.generateResume = async (req, res) => {
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [{ role: 'user', content: prompt }],
-                temperature: 0.6,
-                max_tokens: 2000
+                temperature: 0.4,
+                max_tokens: 3000,
+                response_format: { type: "json_object" }
             })
         });
 
         const data = await response.json();
-        const resumeContent = data.choices && data.choices[0]?.message?.content
-            ? data.choices[0].message.content
-            : "Failed to generate resume.";
+        let resumeContent;
+        try {
+            resumeContent = JSON.parse(data.choices[0].message.content);
+        } catch (e) {
+            console.error("Failed to parse JSON resume:", e);
+            resumeContent = { error: "Failed to generate resume format." };
+        }
 
         res.json({ resume: resumeContent });
 
