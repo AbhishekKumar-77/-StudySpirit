@@ -536,7 +536,7 @@ export default function AIInterview() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0d0d15] text-white font-sans relative overflow-hidden">
+        <div className="min-h-screen bg-[#0d0d15] text-white font-sans relative overflow-y-auto overflow-x-hidden">
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[100px]" />
@@ -606,7 +606,7 @@ export default function AIInterview() {
                 </div>
             </nav>
 
-            <main className="max-w-7xl mx-auto p-6 flex gap-6 h-[calc(100vh-80px)]">
+            <main className="max-w-7xl mx-auto p-6 flex gap-6 min-h-[calc(100vh-80px)]">
 
                 {/* SETUP VIEW */}
                 {view === 'setup' && (
