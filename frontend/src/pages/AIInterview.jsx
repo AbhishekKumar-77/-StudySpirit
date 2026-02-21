@@ -9,7 +9,7 @@ import {
     Settings, Play, ArrowLeft, Loader,
     Volume2, VolumeX, UploadCloud, Camera, CameraOff,
     Trophy, History, BarChart2, CheckCircle, AlertCircle, X,
-    ChevronRight, Star, Sparkles
+    ChevronRight, Star, Sparkles, Clock, Activity, Type
 } from 'lucide-react';
 
 export default function AIInterview() {
@@ -25,6 +25,14 @@ export default function AIInterview() {
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [autoSpeak, setAutoSpeak] = useState(true);
     const [cameraEnabled, setCameraEnabled] = useState(true);
+
+    // Advanced Analysers State
+    const [availableVoices, setAvailableVoices] = useState([]);
+    const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
+    const [fillerWordCount, setFillerWordCount] = useState(0);
+    const [wpm, setWpm] = useState(0);
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const [vocalVolume, setVocalVolume] = useState(0);
 
     // Resume Builder State
     const [resumeForm, setResumeForm] = useState({
@@ -56,6 +64,15 @@ export default function AIInterview() {
     const videoRef = useRef(null);
     const streamRef = useRef(null);
     const speechStoppedRef = useRef(false);
+
+    // Advanced Analysers Refs
+    const audioContextRef = useRef(null);
+    const analyserRef = useRef(null);
+    const microphoneRef = useRef(null);
+    const volIntervalRef = useRef(null);
+    const startTimeRef = useRef(null);
+    const timerIntervalRef = useRef(null);
+    const wordsSpokenRef = useRef(0);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -95,6 +112,44 @@ export default function AIInterview() {
         }
     };
 
+    const startVolumeMeter = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            analyserRef.current = audioContextRef.current.createAnalyser();
+            microphoneRef.current = audioContextRef.current.createMediaStreamSource(stream);
+            microphoneRef.current.connect(analyserRef.current);
+            analyserRef.current.fftSize = 256;
+            const bufferLength = analyserRef.current.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            const updateVolume = () => {
+                if (!analyserRef.current) return;
+                analyserRef.current.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    sum += dataArray[i];
+                }
+                const average = sum / bufferLength;
+                setVocalVolume(average);
+                volIntervalRef.current = requestAnimationFrame(updateVolume);
+            };
+            updateVolume();
+        } catch (err) {
+            console.error("Volume meter error:", err);
+        }
+    };
+
+    const stopVolumeMeter = () => {
+        if (volIntervalRef.current) cancelAnimationFrame(volIntervalRef.current);
+        if (microphoneRef.current) microphoneRef.current.disconnect();
+        if (audioContextRef.current) {
+            audioContextRef.current.close().catch(() => { });
+        }
+        analyserRef.current = null;
+        setVocalVolume(0);
+    };
+
     // Initialize Speech Recognition
     useEffect(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -111,6 +166,18 @@ export default function AIInterview() {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
                         finalTranscript += transcript;
+
+                        // Advanced Analytics: Filler Words
+                        const words = transcript.toLowerCase().split(/\s+/);
+                        const fillerWords = ['um', 'uh', 'like', 'literally', 'basically', 'actually', 'sort of'];
+                        let fillers = 0;
+                        words.forEach(w => {
+                            if (fillerWords.includes(w.replace(/[^a-z]/g, ''))) fillers++;
+                        });
+                        setFillerWordCount(prev => prev + fillers);
+
+                        // Advanced Analytics: WPM
+                        wordsSpokenRef.current += words.length;
                     }
                 }
                 if (finalTranscript) {
@@ -146,53 +213,28 @@ export default function AIInterview() {
         }
     };
 
-    // Text-to-Speech — Natural human-like voice
-    const getBestVoice = () => {
-        const voices = window.speechSynthesis.getVoices();
-        if (!voices.length) return null;
-
-        // Priority list: best natural-sounding female voices (top = best)
-        const preferred = [
-            // Microsoft Edge natural voices (very human-like)
-            v => v.name.includes('Microsoft Aria Online'),
-            v => v.name.includes('Microsoft Jenny'),
-            v => v.name.includes('Microsoft Zira'),
-            v => v.name.includes('Aria Online'),
-            v => v.name.includes('Jenny Online'),
-            // Google natural voices
-            v => v.name.includes('Google UK English Female'),
-            v => v.name.includes('Google US English'),
-            // Apple voices (Safari)
-            v => v.name === 'Samantha',
-            v => v.name === 'Karen',
-            v => v.name === 'Moira',
-            // Any "Online" or "Natural" voice (usually high quality)
-            v => v.name.includes('Online') && v.lang.startsWith('en'),
-            v => v.name.includes('Natural') && v.lang.startsWith('en'),
-            // Fallback: any female-sounding English voice
-            v => v.name.includes('Female') && v.lang.startsWith('en'),
-            v => v.name.includes('Zira'),
-            v => v.name.includes('Hazel'),
-            v => v.name.includes('Susan'),
-            // Last resort: any English voice
-            v => v.lang.startsWith('en-US'),
-            v => v.lang.startsWith('en'),
-        ];
-
-        for (const match of preferred) {
-            const found = voices.find(match);
-            if (found) return found;
-        }
-        return voices[0];
-    };
-
-    // Pre-load voices (some browsers need this)
+    // Load Human-like voices
     useEffect(() => {
-        window.speechSynthesis.getVoices();
-        window.speechSynthesis.onvoiceschanged = () => {
-            window.speechSynthesis.getVoices();
+        const loadVoices = () => {
+            let voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                let engVoices = voices.filter(v => v.lang.startsWith('en'));
+                engVoices.sort((a, b) => {
+                    const aNat = a.name.includes('Natural') || a.name.includes('Online') || a.name.includes('Google') || a.name.includes('Microsoft');
+                    const bNat = b.name.includes('Natural') || b.name.includes('Online') || b.name.includes('Google') || a.name.includes('Microsoft');
+                    return (aNat === bNat) ? 0 : aNat ? -1 : 1;
+                });
+                setAvailableVoices(engVoices);
+                if (!selectedVoiceURI) {
+                    // Default to Aria/Jenny natural if available
+                    const best = engVoices.find(v => v.name.includes('Aria') || v.name.includes('Jenny')) || engVoices[0];
+                    setSelectedVoiceURI(best?.voiceURI || '');
+                }
+            }
         };
-    }, []);
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }, [selectedVoiceURI]);
 
     const speak = (text) => {
         if (!autoSpeak) return;
@@ -203,7 +245,8 @@ export default function AIInterview() {
 
         // Split into sentences for natural pauses
         const sentences = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
-        const voice = getBestVoice();
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => v.voiceURI === selectedVoiceURI) || voices[0];
 
         setIsSpeaking(true);
         speechStoppedRef.current = false;
@@ -259,12 +302,22 @@ export default function AIInterview() {
         if (isListening) {
             recognitionRef.current?.stop();
             setIsListening(false);
+            stopVolumeMeter();
         } else {
             stopSpeaking();
             recognitionRef.current?.start();
             setIsListening(true);
+            startVolumeMeter();
         }
     };
+
+    // Cleanup intervals
+    useEffect(() => {
+        return () => {
+            if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+            stopVolumeMeter();
+        };
+    }, []);
 
     const startInterview = async () => {
         if (!resumeText.trim() && !resumeFile && mode === 'resume') {
@@ -277,6 +330,22 @@ export default function AIInterview() {
         setIsLoading(true);
         setCurrentQuestionNum(1);
         setSessionId(null);
+        setFillerWordCount(0);
+        setWpm(0);
+        wordsSpokenRef.current = 0;
+        setElapsedTime(0);
+
+        // Start Timer
+        startTimeRef.current = Date.now();
+        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+            setElapsedTime(elapsed);
+            if (elapsed > 10) {
+                const mins = elapsed / 60;
+                setWpm(Math.round(wordsSpokenRef.current / mins));
+            }
+        }, 1000);
 
         try {
             let response;
@@ -376,6 +445,11 @@ export default function AIInterview() {
     };
 
     const finishInterview = async (lastAnswer, lastQuestion) => {
+        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+        stopVolumeMeter();
+        if (isListening) recognitionRef.current?.stop();
+        setIsListening(false);
+
         setIsLoading(true);
         try {
             const response = await soloApi.endInterview({
@@ -566,6 +640,27 @@ export default function AIInterview() {
                                 <div className="space-y-4">
 
                                     <div>
+                                        <label className="block text-sm text-slate-400 mb-2">Interviewer Voice</label>
+                                        <select
+                                            value={selectedVoiceURI}
+                                            onChange={e => {
+                                                setSelectedVoiceURI(e.target.value);
+                                                // Test voice
+                                                const u = new SpeechSynthesisUtterance("Hi! I will be your interviewer.");
+                                                const v = availableVoices.find(voice => voice.voiceURI === e.target.value);
+                                                if (v) u.voice = v;
+                                                window.speechSynthesis.speak(u);
+                                            }}
+                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm text-slate-300 focus:border-violet-500/50 focus:outline-none mb-4"
+                                        >
+                                            <option value="">Select a natural human voice...</option>
+                                            {availableVoices.map((v, i) => (
+                                                <option key={i} value={v.voiceURI}>{v.name} ({v.lang})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
                                         <label className="block text-sm text-slate-400 mb-2">Resume (Optional)</label>
                                         <div className="flex gap-4 items-center">
                                             <button
@@ -694,13 +789,29 @@ export default function AIInterview() {
 
                             {/* Status Card */}
                             <div className="bg-[#1e1e2d] p-4 rounded-xl border border-white/5 space-y-3">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-slate-400">Time Elapsed</span>
-                                    <span className="font-mono text-white">04:23</span>
+                                <div className="flex justify-between items-center text-sm mb-4">
+                                    <span className="text-slate-400 flex items-center gap-2"><Clock className="w-4 h-4" /> Time</span>
+                                    <span className="font-mono text-white">{String(Math.floor(elapsedTime / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-slate-400">Score</span>
-                                    <span className="text-emerald-400 font-bold text-lg">--</span>
+                                <div className="space-y-2 pt-3 border-t border-white/5">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-slate-400 flex items-center gap-2" title="Avoid filler words like 'um', 'uh', 'like'"><Type className="w-4 h-4" /> Filler Words</span>
+                                        <span className={`font-bold ${fillerWordCount > 5 ? 'text-amber-400' : 'text-emerald-400'}`}>{fillerWordCount}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-slate-400 flex items-center gap-2" title="Optimal pacing is ~120 WPM"><Activity className="w-4 h-4" /> Pace (WPM)</span>
+                                        <span className="font-bold text-slate-200">{wpm || '--'}</span>
+                                    </div>
+                                </div>
+
+                                <div className="pt-3 border-t border-white/5">
+                                    <span className="text-slate-400 text-xs mb-2 block">Vocal Confidence</span>
+                                    <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden flex">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-75"
+                                            style={{ width: `${Math.min(100, (vocalVolume / 128) * 100)}%` }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
