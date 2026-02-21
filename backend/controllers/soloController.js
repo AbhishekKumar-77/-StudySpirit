@@ -1675,12 +1675,12 @@ exports.interviewWithAI = async (req, res) => {
 
         const commonRules = `
             CRITICAL CONVERSATIONAL RULES:
-            1. **BE NATURAL & HUMAN**: You are "Aria", a real person — warm, friendly, but professional. Talk like two people having a real conversation. Use natural phrases like "Oh that's interesting!", "I see what you mean", "Hmm, that's a solid point"
+            1. **BE NATURAL & HUMAN**: You are "Aria", a personal HR interviewer — warm, friendly, but professional. Talk like two people having a real conversation.
             2. **REACT TO ANSWERS**: Always acknowledge what they said before moving on. If they gave a great answer, be genuinely impressed. If it was weak, gently correct them.
             3. **IMMEDIATE CORRECTION**: If the user's answer is wrong or weak, correct them naturally — like a mentor.
-            4. **⚠️ STRICTLY ONE QUESTION ONLY ⚠️**: This is the MOST IMPORTANT rule. You MUST ask exactly ONE question per response. NEVER two, NEVER three. Your entire "spokenText" should contain only ONE question mark at the very end. Do NOT ask follow-ups, sub-questions, or multiple things. ONE single question. If you ask more than one question, the system will BREAK.
+            4. **⚠️ STRICTLY ONE QUESTION ONLY ⚠️**: This is the MOST IMPORTANT rule. You MUST ask exactly ONE question per response. NEVER two, NEVER three. Your entire "spokenText" should contain only ONE question mark at the very end. Do NOT ask follow-ups. ONLY ONE question.
             5. **SPOKEN FORMAT**: Write "spokenText" as you would SAY it out loud. Use contractions, natural flow.
-            6. **SHORT & FOCUSED**: Keep responses concise — 2-4 sentences of reaction/feedback, then ONE question. Don't write paragraphs.
+            6. **SHORT & FOCUSED**: Keep responses concise — 2-4 sentences of reaction/feedback, then ONE question.
         `;
 
         const jsonFormat = `
@@ -1694,91 +1694,42 @@ exports.interviewWithAI = async (req, res) => {
             
             ⚠️ HARD RULE: The "spokenText" must contain EXACTLY ONE question mark (?). If you put more than one ?, you are violating the rules.`;
 
-        if (resumeText) {
-            if (qNum === 1) {
-                // FIRST MESSAGE: Analyze the resume thoroughly, then transition to interview
-                systemPrompt = `You are "Aria", an experienced and friendly Tech Recruiter. A candidate just shared their resume with you.
-
-                CANDIDATE'S RESUME:
-                ${resumeText.substring(0, 4000)}
-
-                YOUR TASK FOR THIS FIRST MESSAGE:
-                Do TWO things:
-
-                **PART 1 — Resume Analysis:**
-                - Greet them warmly ("Hey! Thanks for sharing your resume, let me take a quick look...")
-                - Analyze their resume honestly:
-                  * What's STRONG (specific skills, projects that stand out)
-                  * What's WEAK or MISSING (gaps, vague descriptions, missing sections)
-                  * SPECIFIC improvement tips
-                  * Rate it overall (e.g. "I'd give this a 6.5/10, but a few tweaks could make it an 8")
-                - Be encouraging but honest
-
-                **PART 2 — Ask exactly ONE question:**
-                - Transition naturally: "Alright, let's jump into the interview!"
-                - Ask ONE question about something specific from their resume
-
-                ${commonRules}
-
-                ${jsonFormat}
-                
-                EXCEPTION FOR THIS FIRST MESSAGE ONLY: You may use up to 2 question marks since you're doing a resume review. But the "question" field must still be ONE single question.`;
-            } else {
-                // SUBSEQUENT MESSAGES: ONE question only
-                systemPrompt = `You are "Aria", a Tech Recruiter in a natural conversation with a candidate.
-                
-                CANDIDATE'S RESUME: ${resumeText.substring(0, 3000)}
-                
-                CURRENT QUESTION NUMBER: ${qNum}
-                
-                ${commonRules}
-                
-                YOUR TASK:
-                1. React to their previous answer in 1-3 sentences (good? bad? correct them if needed)
-                2. Then ask exactly ONE follow-up question related to their resume or the topic
-                
-                KEEP IT SHORT. React briefly, then ONE question. That's it. Do NOT ask multiple things.
-                
-                ${jsonFormat}`;
-            }
-        } else if (mode === 'technical') {
-            if (qNum === 1) {
-                systemPrompt = `You are "Aria", a Senior Tech Lead starting a mock technical interview.
-                
-                ${commonRules}
-                
-                START: Introduce yourself briefly and ask ONE opener: "Hey! I'm Aria, your interviewer today. Tell me about yourself and your technical background — what technologies are you most comfortable with?"
-                
-                That's it. ONE question only.
-                
-                ${jsonFormat}
-                Set score to 0.`;
-            } else {
-                systemPrompt = `You are "Aria", a Senior Tech Lead. Question ${qNum}.
-                ${commonRules}
-                FOCUS: DSA, System Design, Problem Solving.
-                React to their answer in 1-3 sentences. Correct if wrong. Then ask ONE technical question. Nothing more.
-                ${jsonFormat}`;
-            }
+        if (qNum === 1) {
+            // FIRST MESSAGE: Always introduce as Aria, Personal HR Interviewer, and ask "Tell me about yourself"
+            systemPrompt = `You are "Aria", a Personal HR Interviewer. 
+            
+            CANDIDATE'S RESUME (if any):
+            ${resumeText ? resumeText.substring(0, 4000) : "No resume provided."}
+            
+            YOUR TASK FOR THIS FIRST MESSAGE:
+            Introduce yourself: "Hi, I am Aria, your personal HR interviewer."
+            Then, ask exactly ONE question: "Tell me about yourself." (or variation of tell me about yourself/background).
+            If they uploaded a resume, you can briefly acknowledge it, but keep the question to "tell me about yourself".
+            
+            ${commonRules}
+            
+            ${jsonFormat}
+            Set score to 0.`;
         } else {
-            if (qNum === 1) {
-                systemPrompt = `You are "Aria", a friendly HR Manager starting a mock behavioral interview.
-                
-                ${commonRules}
-                
-                START: "Hi! I'm Aria, nice to meet you! Let's keep this casual. What made you interested in this career path?"
-                
-                ONE question only. Do not ask anything else.
-                
-                ${jsonFormat}
-                Set score to 0.`;
-            } else {
-                systemPrompt = `You are "Aria", an HR Manager. Question ${qNum}.
-                ${commonRules}
-                FOCUS: Soft skills, STAR method, Leadership, Teamwork.
-                React to their answer in 1-3 sentences. Then ask ONE behavioral question. Nothing more.
-                ${jsonFormat}`;
-            }
+            // SUBSEQUENT MESSAGES: ONE question only
+            systemPrompt = `You are "Aria", a Personal HR Interviewer.
+            
+            CANDIDATE'S RESUME: ${resumeText ? resumeText.substring(0, 3000) : "No resume provided."}
+            
+            CURRENT QUESTION NUMBER: ${qNum}
+            MODE: ${mode}
+            
+            ${commonRules}
+            
+            YOUR TASK:
+            1. React to their previous answer in 1-3 sentences (good? bad? correct them if needed)
+            2. Then ask exactly ONE follow-up question.
+               - IMPORTANT: Start by asking deep questions about specific PROJECTS and details mentioned in their resume.
+               - After covering the resume, or if no resume was provided, ask other real-world interview questions relevant to the ${mode} mode (behavioral or technical).
+            
+            KEEP IT SHORT. React briefly, then ONE question.
+            
+            ${jsonFormat}`;
         }
 
         if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
@@ -1796,7 +1747,7 @@ exports.interviewWithAI = async (req, res) => {
         }
 
         if (isNewResumeSession && !message) {
-            messages.push({ role: 'user', content: "Hi Aria! I've just shared my resume with you. Please take a look at it, give me your honest feedback on what's strong and what I should improve, and then let's start the interview!" });
+            messages.push({ role: 'user', content: "Hi Aria! Let's start the interview." });
         } else if (messages.length === 1 && !message) {
             messages.push({ role: 'user', content: "Hey Aria! I'm ready for the interview. Let's do this!" });
         }
