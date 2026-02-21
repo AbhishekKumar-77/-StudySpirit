@@ -184,9 +184,8 @@ export default function SoftSkills() {
                 correction: correction
             }]);
 
-            // Speak AI response (and correction if exists, or just reply? usually just reply helps flow)
-            // Let's speak correction then reply for full feedback
-            const fullSpeech = correction ? `Correction: ${correction}. ${reply}` : reply;
+            // Speak only the AI conversational reply (do not speak the correction verbally to improve flow)
+            const fullSpeech = reply;
             speakText(fullSpeech);
 
         } catch (error) {
