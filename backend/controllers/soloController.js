@@ -1712,7 +1712,7 @@ exports.interviewWithAI = async (req, res) => {
             Set score to 0.`;
         } else {
             // SUBSEQUENT MESSAGES: ONE question only
-            systemPrompt = `You are "Aria", a Personal HR Interviewer.
+            systemPrompt = `You are "Aria", a Personal ${mode === 'technical' ? 'Technical' : 'HR'} Interviewer.
             
             CANDIDATE'S RESUME: ${resumeText ? resumeText.substring(0, 3000) : "No resume provided."}
             
@@ -1724,8 +1724,10 @@ exports.interviewWithAI = async (req, res) => {
             YOUR TASK:
             1. React to their previous answer in 1-3 sentences (good? bad? correct them if needed)
             2. Then ask exactly ONE follow-up question.
-               - IMPORTANT: Start by asking deep questions about specific PROJECTS and details mentioned in their resume.
-               - After covering the resume, or if no resume was provided, ask other real-world interview questions relevant to the ${mode} mode (behavioral or technical).
+${mode === 'technical'
+                    ? '               - IMPORTANT: Scrutinize the resume for specific programming languages, frameworks (e.g., React, Node.js), and tools. Ask deeply technical, challenging questions about how those specific technologies work under the hood, or how they applied them. (e.g. "I see you used React, how does the Virtual DOM work?" or "Explain the time complexity of the algorithm you wrote for XYZ project").'
+                    : '               - IMPORTANT: Start by asking deep questions about specific PROJECTS and details mentioned in their resume.'}
+               - After covering the resume, or if no resume was provided, ask other real-world interview questions relevant to the ${mode} mode.
             
             KEEP IT SHORT. React briefly, then ONE question.
             
