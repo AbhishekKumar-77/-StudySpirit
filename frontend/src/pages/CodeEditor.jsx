@@ -361,14 +361,14 @@ export default function CodeEditor() {
     return (
         <div className={`min-h-screen font-sans ${theme === "light" ? "bg-gray-100 text-gray-900" : "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white"}`}>
             {/* Navbar */}
-            <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 ${theme === "light" ? "bg-white/80 border-gray-200" : "bg-slate-900/80 border-violet-500/10"}`}>
+            <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 ${theme === "light" ? "bg-white/80 border-gray-200" : "bg-slate-900/80 border-cyan-500/10"}`}>
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-                    <button onClick={() => navigate(isChallengeMode ? "/codespirit" : "/dashboard")} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === "light" ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-violet-500/10 text-violet-300 hover:bg-violet-500/20"}`}>
+                    <button onClick={() => navigate(isChallengeMode ? "/codespirit" : "/dashboard")} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === "light" ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-cyan-/10 text-violet-300 hover:bg-cyan-/20"}`}>
                         <ArrowLeft size={18} /> {isChallengeMode ? "Exit Challenge" : "Back"}
                     </button>
 
                     <div className="flex items-center gap-3">
-                        {isChallengeMode ? <Zap className="text-violet-500" size={28} /> : <Code className="text-violet-500" size={28} />}
+                        {isChallengeMode ? <Zap className="text-cyan-" size={28} /> : <Code className="text-cyan-" size={28} />}
                         <span className="text-xl font-bold">
                             {isChallengeMode
                                 ? totalQuestions > 1
@@ -385,7 +385,7 @@ export default function CodeEditor() {
                             <button
                                 onClick={() => setShowQuestionNav(!showQuestionNav)}
                                 className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all ${showQuestionNav
-                                    ? (theme === "light" ? "bg-violet-200 text-violet-800" : "bg-violet-500/30 text-violet-300")
+                                    ? (theme === "light" ? "bg-violet-200 text-violet-800" : "bg-cyan-/30 text-violet-300")
                                     : (theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-800 hover:bg-slate-700")
                                     }`}
                             >
@@ -408,7 +408,7 @@ export default function CodeEditor() {
                     <div className="max-w-[1600px] mx-auto">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-semibold flex items-center gap-2">
-                                <Target size={14} className="text-violet-500" />
+                                <Target size={14} className="text-cyan-" />
                                 Question {currentIndex + 1} of {totalQuestions}
                             </span>
                             <span className="text-sm font-semibold flex items-center gap-2">
@@ -419,7 +419,7 @@ export default function CodeEditor() {
                         {/* Progress bar */}
                         <div className={`h-2 rounded-full overflow-hidden ${theme === "light" ? "bg-gray-200" : "bg-slate-800"}`}>
                             <div
-                                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-emerald-500 transition-all duration-500"
+                                className="h-full rounded-full bg-gradient-to-r from-cyan- to-emerald-500 transition-all duration-500"
                                 style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }}
                             />
                         </div>
@@ -430,7 +430,7 @@ export default function CodeEditor() {
                                     key={idx}
                                     onClick={() => goToQuestion(idx)}
                                     className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${idx === currentIndex
-                                        ? "bg-violet-500 text-white shadow-lg shadow-violet-500/30 scale-110"
+                                        ? "bg-cyan- text-white shadow-lg shadow-violet-500/30 scale-110"
                                         : completedQuestions[idx]
                                             ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                                             : theme === "light"
@@ -449,7 +449,7 @@ export default function CodeEditor() {
             <div className={`max-w-[1600px] mx-auto p-6 ${isChallengeMode ? 'h-[calc(100vh-88px)]' : ''}`}>
                 {/* Toolbar */}
                 <div className={`flex flex-wrap items-center gap-3 mb-4 p-4 rounded-xl ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-white/5"}`}>
-                    <select value={language.id} onChange={(e) => changeLanguage(e.target.value)} className={`px-4 py-2 rounded-lg font-semibold ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-slate-900 border border-violet-500/30"}`}>
+                    <select value={language.id} onChange={(e) => changeLanguage(e.target.value)} className={`px-4 py-2 rounded-lg font-semibold ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-slate-900 border border-cyan-500/30"}`}>
                         {LANGUAGES.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>
                     <button onClick={runCode} disabled={isRunning} className={`px-5 py-2 rounded-lg font-bold flex items-center gap-2 transition-all ${isRunning ? "opacity-50 cursor-not-allowed" : ""} bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/30`}>
@@ -492,14 +492,14 @@ export default function CodeEditor() {
                             >
                                 <ChevronLeft size={18} /> Prev
                             </button>
-                            <span className={`px-3 py-2 rounded-lg font-bold text-sm ${theme === "light" ? "bg-violet-100 text-violet-700" : "bg-violet-500/20 text-violet-300"}`}>
+                            <span className={`px-3 py-2 rounded-lg font-bold text-sm ${theme === "light" ? "bg-violet-100 text-violet-700" : "bg-cyan-/20 text-violet-300"}`}>
                                 {currentIndex + 1} / {totalQuestions}
                             </span>
                             <button
                                 onClick={goNext}
                                 disabled={currentIndex === totalQuestions - 1}
                                 className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-1 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${currentIndex < totalQuestions - 1
-                                    ? "bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40"
+                                    ? "bg-gradient-to-r from-cyan- to-indigo-500 text-white shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40"
                                     : (theme === "light" ? "bg-gray-200" : "bg-slate-700")
                                     }`}
                             >
@@ -517,7 +517,7 @@ export default function CodeEditor() {
                         <div className="flex flex-wrap items-center gap-6">
                             <div className="flex items-center gap-3">
                                 <span className="text-sm font-semibold">Theme:</span>
-                                <select value={theme} onChange={(e) => setTheme(e.target.value)} className={`px-3 py-1 rounded-lg ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-slate-900 border border-violet-500/30"}`}>
+                                <select value={theme} onChange={(e) => setTheme(e.target.value)} className={`px-3 py-1 rounded-lg ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-slate-900 border border-cyan-500/30"}`}>
                                     {THEMES.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                 </select>
                             </div>
@@ -537,7 +537,7 @@ export default function CodeEditor() {
                         <div className={`rounded-xl overflow-y-auto p-6 border ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-800/50 border-white/5"}`}>
                             {/* Question badge */}
                             <div className="flex items-center justify-between mb-4">
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-violet-500/20 text-violet-400`}>
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-cyan-/20 text-cyan-`}>
                                     {totalQuestions > 1 ? `Question ${currentIndex + 1} of ${totalQuestions}` : "Daily Challenge"}
                                 </span>
                                 {currentProblem.difficulty && (
@@ -601,7 +601,7 @@ export default function CodeEditor() {
                                         onClick={goNext}
                                         disabled={currentIndex === totalQuestions - 1}
                                         className={`px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${currentIndex < totalQuestions - 1
-                                            ? "bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/20"
+                                            ? "bg-gradient-to-r from-cyan- to-indigo-500 text-white shadow-lg shadow-violet-500/20"
                                             : (theme === "light" ? "bg-gray-200" : "bg-slate-700")
                                             }`}
                                     >
@@ -618,7 +618,7 @@ export default function CodeEditor() {
                                     <p className="text-sm opacity-70">You solved all {totalQuestions} challenges. Great job!</p>
                                     <button
                                         onClick={() => navigate("/codespirit")}
-                                        className="mt-4 px-6 py-3 bg-gradient-to-r from-violet-500 to-indigo-500 text-white font-bold rounded-xl shadow-lg"
+                                        className="mt-4 px-6 py-3 bg-gradient-to-r from-cyan- to-indigo-500 text-white font-bold rounded-xl shadow-lg"
                                     >
                                         Generate More Challenges
                                     </button>
@@ -630,7 +630,7 @@ export default function CodeEditor() {
                     {/* MAIN EDITOR AREA */}
                     <div className="flex flex-col gap-4">
                         {/* Code Editor */}
-                        <div className={`rounded-xl overflow-hidden border flex-1 min-h-[400px] ${theme === "light" ? "border-gray-200" : "border-violet-500/20"}`}>
+                        <div className={`rounded-xl overflow-hidden border flex-1 min-h-[400px] ${theme === "light" ? "border-gray-200" : "border-cyan-500/20"}`}>
                             <Editor
                                 height="100%"
                                 language={language.id}
@@ -661,7 +661,7 @@ export default function CodeEditor() {
                         {["python", "java", "cpp", "c"].includes(language.id) && (
                             <div className={`rounded-xl p-4 ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-white/5"}`}>
                                 <div className="text-sm font-semibold mb-2 flex items-center gap-2"><Terminal size={16} /> Input (stdin)</div>
-                                <textarea value={stdin} onChange={(e) => setStdin(e.target.value)} rows={2} placeholder="Input..." className={`w-full p-3 rounded-lg font-mono text-sm resize-none ${theme === "light" ? "bg-gray-50 border border-gray-200" : "bg-slate-900 border border-violet-500/20"}`} />
+                                <textarea value={stdin} onChange={(e) => setStdin(e.target.value)} rows={2} placeholder="Input..." className={`w-full p-3 rounded-lg font-mono text-sm resize-none ${theme === "light" ? "bg-gray-50 border border-gray-200" : "bg-slate-900 border border-cyan-500/20"}`} />
                             </div>
                         )}
 
@@ -688,7 +688,7 @@ export default function CodeEditor() {
                                 ) : (
                                     <div className="flex flex-col gap-2 max-h-[200px] overflow-auto">
                                         {savedFiles.map(f => (
-                                            <div key={f.name} className={`p-3 rounded-lg flex justify-between items-center cursor-pointer transition-all ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-slate-900/60 hover:bg-violet-500/10"}`}>
+                                            <div key={f.name} className={`p-3 rounded-lg flex justify-between items-center cursor-pointer transition-all ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-slate-900/60 hover:bg-cyan-/10"}`}>
                                                 <div onClick={() => loadFile(f)} className="flex-1">
                                                     <div className="font-semibold text-sm">{f.name}</div>
                                                     <div className="text-xs opacity-50">{LANGUAGES.find(l => l.id === f.language)?.name}</div>
@@ -710,7 +710,7 @@ export default function CodeEditor() {
                             </div>
 
                             {/* Tips */}
-                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-violet-50 border border-violet-200" : "bg-violet-500/10 border border-violet-500/20"}`}>
+                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-violet-50 border border-cyan-200" : "bg-cyan-/10 border border-cyan-500/20"}`}>
                                 <div className="text-sm font-semibold mb-2">💡 Tips</div>
                                 <ul className="text-xs space-y-1 opacity-80">
                                     <li>• Ctrl+S to save</li>

@@ -100,7 +100,7 @@
 
 @layer base {
     body {
-        @apply bg-[#0d0d15] text-white overflow-x-hidden;
+        @apply bg-[#09090b] text-white overflow-x-hidden;
     }
 }
 

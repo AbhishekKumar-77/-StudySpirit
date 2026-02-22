@@ -91,7 +91,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                             {userName || 'User'} {isLocal && '(You)'}
                         </span>
                         {isSpotlight && !isBrowserFullscreen && (
-                            <span className="bg-violet-500 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
+                            <span className="bg-cyan- text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
                                 PRESENTING
                             </span>
                         )}
@@ -121,7 +121,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                 {/* TRUE FULLSCREEN button — opens full PC screen */}
                 <button
                     onClick={enterFullscreen}
-                    className="p-2 bg-black/70 rounded-lg text-white hover:bg-violet-600 transition-all"
+                    className="p-2 bg-black/70 rounded-lg text-white hover:bg-cyan- transition-all"
                     title={isBrowserFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen (Full PC Screen)'}
                 >
                     {isBrowserFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}

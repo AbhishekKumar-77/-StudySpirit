@@ -157,7 +157,7 @@ export default function ProjectLab() {
         const isOwner = project.owner?._id === user?._id || project.owner === user?._id;
 
         return (
-            <div className={`bg-[#1e1e2d] rounded-2xl border border-white/5 overflow-hidden hover:border-violet-500/30 transition-all group ${viewMode === 'list' ? 'flex items-center' : ''}`}>
+            <div className={`bg-[#1e1e2d] rounded-2xl border border-white/5 overflow-hidden hover:border-cyan-500/30 transition-all group ${viewMode === 'list' ? 'flex items-center' : ''}`}>
                 {/* Thumbnail / Header */}
                 <div className={`bg-gradient-to-br ${categoryColors[project.category]} p-4 ${viewMode === 'list' ? 'w-20 h-20 flex-shrink-0' : 'h-32'} flex items-center justify-center relative`}>
                     <CategoryIcon className={`text-white/80 ${viewMode === 'list' ? 'w-8 h-8' : 'w-12 h-12'}`} />
@@ -172,7 +172,7 @@ export default function ProjectLab() {
                 <div className={`p-4 ${viewMode === 'list' ? 'flex-1 flex items-center justify-between' : ''}`}>
                     <div className={viewMode === 'list' ? 'flex-1' : ''}>
                         <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold text-white group-hover:text-violet-400 transition-colors line-clamp-1">
+                            <h3 className="font-semibold text-white group-hover:text-cyan- transition-colors line-clamp-1">
                                 {project.name}
                             </h3>
                             {isOwner && viewMode !== 'list' && (
@@ -203,7 +203,7 @@ export default function ProjectLab() {
                         {viewMode !== 'list' && project.techStack?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-3">
                                 {project.techStack.slice(0, 3).map((tech, idx) => (
-                                    <span key={idx} className="px-2 py-0.5 bg-violet-500/20 text-violet-300 text-xs rounded-full">
+                                    <span key={idx} className="px-2 py-0.5 bg-cyan-/20 text-violet-300 text-xs rounded-full">
                                         {tech}
                                     </span>
                                 ))}
@@ -262,7 +262,7 @@ export default function ProjectLab() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0d0d15] text-white">
+        <div className="min-h-screen bg-[#09090b] text-white">
             {/* Background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[100px]" />
@@ -439,7 +439,7 @@ export default function ProjectLab() {
                                     value={newProject.name}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
                                     placeholder="My Awesome Project"
-                                    className="w-full px-4 py-2 bg-[#0d0d15] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                 />
                             </div>
 
@@ -451,7 +451,7 @@ export default function ProjectLab() {
                                     onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
                                     placeholder="A brief description of your project..."
                                     rows={3}
-                                    className="w-full px-4 py-2 bg-[#0d0d15] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none resize-none"
+                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none resize-none"
                                 />
                             </div>
 
@@ -461,7 +461,7 @@ export default function ProjectLab() {
                                 <select
                                     value={newProject.category}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, category: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-[#0d0d15] border border-white/10 rounded-lg text-white focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white focus:border-emerald-500/50 focus:outline-none"
                                 >
                                     <option value="web">Web Development</option>
                                     <option value="mobile">Mobile App</option>
@@ -512,7 +512,7 @@ export default function ProjectLab() {
                                         onChange={(e) => setTechInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTechStack())}
                                         placeholder="e.g. React, Node.js"
-                                        className="flex-1 px-4 py-2 bg-[#0d0d15] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                        className="flex-1 px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                     />
                                     <button
                                         onClick={addTechStack}
@@ -524,7 +524,7 @@ export default function ProjectLab() {
                                 {newProject.techStack.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         {newProject.techStack.map((tech, idx) => (
-                                            <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-violet-500/20 text-violet-300 text-sm rounded-full">
+                                            <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-cyan-/20 text-violet-300 text-sm rounded-full">
                                                 {tech}
                                                 <button onClick={() => removeTechStack(tech)} className="hover:text-red-400">
                                                     <X className="w-3 h-3" />
@@ -543,7 +543,7 @@ export default function ProjectLab() {
                                     value={newProject.githubUrl}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, githubUrl: e.target.value }))}
                                     placeholder="https://github.com/username/repo"
-                                    className="w-full px-4 py-2 bg-[#0d0d15] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                 />
                             </div>
 
@@ -555,7 +555,7 @@ export default function ProjectLab() {
                                     value={newProject.liveUrl}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, liveUrl: e.target.value }))}
                                     placeholder="https://myproject.vercel.app"
-                                    className="w-full px-4 py-2 bg-[#0d0d15] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                 />
                             </div>
                         </div>

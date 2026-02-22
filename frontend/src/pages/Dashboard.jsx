@@ -144,7 +144,7 @@ export default function Dashboard() {
         { id: 7, name: 'AI Interview Prep', path: '/interview', icon: Mic, from: 'from-fuchsia-500', to: 'to-pink-600', desc: 'Mock interview simulator' },
         { id: 8, name: 'CareerSprint', path: '/career', icon: Briefcase, from: 'from-indigo-400', to: 'to-blue-500', desc: 'Job & internship portal' },
         { id: 9, name: 'Project Lab', path: '/project-lab', icon: Folder, from: 'from-purple-500', to: 'to-fuchsia-500', desc: 'Build & showcase projects' },
-        { id: 14, name: 'DiscussVerse', path: '/discuss', icon: MessageCircle, from: 'from-violet-500', to: 'to-purple-600', desc: 'Global coding community' },
+        { id: 14, name: 'DiscussVerse', path: '/discuss', icon: MessageCircle, from: 'from-cyan-', to: 'to-purple-600', desc: 'Global coding community' },
         { id: 16, name: 'Soft Skills Lab', path: '/soft-skills', icon: Brain, from: 'from-pink-500', to: 'to-rose-400', desc: 'Communication training' },
         { id: 17, name: 'Code Editors', path: '/code-editor', icon: Edit3, from: 'from-cyan-500', to: 'to-blue-600', desc: 'Online IDE & compiler' }
     ];

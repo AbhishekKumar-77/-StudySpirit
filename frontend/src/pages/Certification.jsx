@@ -148,7 +148,7 @@ export default function Certification() {
             logo: '🚀',
             url: 'https://www.udacity.com',
             categories: ['AI', 'Data Science', 'Cloud', 'Programming'],
-            color: 'from-violet-500 to-purple-600'
+            color: 'from-cyan- to-purple-600'
         },
         {
             id: 12,
@@ -215,11 +215,11 @@ export default function Certification() {
     });
 
     return (
-        <div className="min-h-screen bg-[#0d0d15] relative overflow-hidden font-sans selection:bg-violet-500/30">
+        <div className="min-h-screen bg-[#09090b] relative overflow-hidden font-sans selection:bg-cyan-/30">
             {/* Animated Background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-amber-600/20 rounded-full blur-[80px] animate-float" />
-                <div className="absolute bottom-[10%] right-[10%] w-[700px] h-[700px] bg-violet-500/15 rounded-full blur-[80px] animate-float-reverse" />
+                <div className="absolute bottom-[10%] right-[10%] w-[700px] h-[700px] bg-cyan-/15 rounded-full blur-[80px] animate-float-reverse" />
                 <div className="absolute top-1/2 right-[5%] w-[500px] h-[500px] bg-pink-500/15 rounded-full blur-[70px] animate-pulse-slow" />
             </div>
 
@@ -259,7 +259,7 @@ export default function Certification() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 bg-[#1e1e32]/80 px-5 py-2 rounded-2xl border border-amber-500/20">
+                        <div className="flex items-center gap-3 bg-[#18181b]/80 px-5 py-2 rounded-2xl border border-amber-500/20">
                             <GraduationCap className="w-5 h-5 text-amber-400" />
                             <span className="text-white font-bold">{certificates.length}</span>
                             <span className="text-slate-400 text-sm">Certificates</span>
@@ -280,7 +280,7 @@ export default function Certification() {
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === tab.id
                                 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-[0_10px_40px_rgba(251,191,36,0.4)]'
-                                : 'bg-[#1e1e32]/80 text-slate-400 hover:text-white hover:bg-[#2a2a40]'
+                                : 'bg-[#18181b]/80 text-slate-400 hover:text-white hover:bg-[#2a2a40]'
                                 }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -301,7 +301,7 @@ export default function Certification() {
                                     placeholder="Search certificates..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#1e1e32]/80 border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -310,7 +310,7 @@ export default function Certification() {
                                 <select
                                     value={selectedCategory}
                                     onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="px-4 py-4 rounded-xl bg-[#1e1e32]/80 border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
+                                    className="px-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
                                 >
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -472,7 +472,7 @@ export default function Certification() {
                     onClick={() => setShowUploadModal(false)}
                 >
                     <div
-                        className="bg-gradient-to-br from-[#1e1e32] to-[#0d0d15] rounded-3xl p-8 max-w-lg w-full border border-amber-500/30 shadow-[0_30px_100px_rgba(251,191,36,0.3)] max-h-[90vh] overflow-y-auto"
+                        className="bg-gradient-to-br from-[#18181b] to-[#09090b] rounded-3xl p-8 max-w-lg w-full border border-amber-500/30 shadow-[0_30px_100px_rgba(251,191,36,0.3)] max-h-[90vh] overflow-y-auto"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-6">
@@ -496,7 +496,7 @@ export default function Certification() {
                                     value={uploadForm.name}
                                     onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })}
                                     placeholder="e.g., Python for Data Science"
-                                    className="w-full px-4 py-3 rounded-xl bg-[#0d0d15] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                     required
                                 />
                             </div>
@@ -511,7 +511,7 @@ export default function Certification() {
                                     value={uploadForm.platform}
                                     onChange={(e) => setUploadForm({ ...uploadForm, platform: e.target.value })}
                                     placeholder="e.g., Coursera, Udemy, Google"
-                                    className="w-full px-4 py-3 rounded-xl bg-[#0d0d15] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                     required
                                 />
                             </div>
@@ -525,7 +525,7 @@ export default function Certification() {
                                     type="date"
                                     value={uploadForm.issueDate}
                                     onChange={(e) => setUploadForm({ ...uploadForm, issueDate: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-[#0d0d15] border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -539,7 +539,7 @@ export default function Certification() {
                                     value={uploadForm.credentialId}
                                     onChange={(e) => setUploadForm({ ...uploadForm, credentialId: e.target.value })}
                                     placeholder="e.g., ABC123XYZ"
-                                    className="w-full px-4 py-3 rounded-xl bg-[#0d0d15] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -553,7 +553,7 @@ export default function Certification() {
                                     value={uploadForm.credentialUrl}
                                     onChange={(e) => setUploadForm({ ...uploadForm, credentialUrl: e.target.value })}
                                     placeholder="https://..."
-                                    className="w-full px-4 py-3 rounded-xl bg-[#0d0d15] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -565,7 +565,7 @@ export default function Certification() {
                                 <select
                                     value={uploadForm.category}
                                     onChange={(e) => setUploadForm({ ...uploadForm, category: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-[#0d0d15] border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
                                 >
                                     {categories.filter(c => c.id !== 'all').map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -588,7 +588,7 @@ export default function Certification() {
                                     />
                                     <label
                                         htmlFor="cert-image"
-                                        className="flex items-center justify-center gap-3 w-full px-4 py-8 rounded-xl bg-[#0d0d15] border-2 border-dashed border-slate-700 text-slate-400 hover:border-amber-500/50 hover:text-amber-400 cursor-pointer transition-all"
+                                        className="flex items-center justify-center gap-3 w-full px-4 py-8 rounded-xl bg-[#09090b] border-2 border-dashed border-slate-700 text-slate-400 hover:border-amber-500/50 hover:text-amber-400 cursor-pointer transition-all"
                                     >
                                         <Upload className="w-6 h-6" />
                                         <span>{uploadForm.image ? 'Image Selected' : 'Click to upload certificate image'}</span>

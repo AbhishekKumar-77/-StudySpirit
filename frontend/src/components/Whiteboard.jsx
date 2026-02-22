@@ -595,7 +595,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                                 if (t.id !== 'select') setSelectedTextId(null);
                             }}
                             className={`p-2.5 rounded-lg transition-all relative group ${tool === t.id
-                                ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-lg shadow-violet-500/30'
+                                ? 'bg-gradient-to-r from-cyan- to-purple-500 text-white shadow-lg shadow-violet-500/30'
                                 : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
                                 }`}
                             title={t.label}
@@ -720,7 +720,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <div className="w-px h-6 bg-slate-700 mx-1" />
                     <button
                         onClick={toggleBrowserFullscreen}
-                        className="p-2.5 rounded-lg bg-gradient-to-r from-violet-500/30 to-purple-500/30 text-violet-300 hover:from-violet-500/50 hover:to-purple-500/50 transition-all flex items-center gap-2"
+                        className="p-2.5 rounded-lg bg-gradient-to-r from-cyan-/30 to-purple-500/30 text-violet-300 hover:from-cyan-/50 hover:to-purple-500/50 transition-all flex items-center gap-2"
                         title={isBrowserFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen (Entire Screen)'}
                     >
                         {isBrowserFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -765,7 +765,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <div
                         key={textObj.id}
                         className={`absolute cursor-move select-none transition-all ${selectedTextId === textObj.id
-                            ? 'ring-2 ring-violet-500 ring-offset-2 ring-offset-slate-900 bg-violet-500/10 rounded-lg'
+                            ? 'ring-2 ring-violet-500 ring-offset-2 ring-offset-slate-900 bg-cyan-/10 rounded-lg'
                             : 'hover:ring-2 hover:ring-violet-500/50 hover:rounded-lg'
                             }`}
                         style={{
@@ -795,7 +795,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                         {textObj.text}
                         {selectedTextId === textObj.id && (
                             <div className="absolute -top-8 left-0 flex items-center gap-1 bg-slate-800 rounded-lg px-2 py-1 shadow-lg">
-                                <Move size={14} className="text-violet-400" />
+                                <Move size={14} className="text-cyan-" />
                                 <span className="text-xs text-slate-300">Drag to move</span>
                                 <button
                                     onClick={(e) => {
@@ -815,7 +815,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
             {/* Text Input Modal */}
             {showTextInput && textPosition && (
                 <div
-                    className="absolute bg-slate-800 border border-violet-500/50 rounded-xl p-4 shadow-2xl shadow-violet-500/20 z-50"
+                    className="absolute bg-slate-800 border border-cyan-500/50 rounded-xl p-4 shadow-2xl shadow-violet-500/20 z-50"
                     style={{
                         left: Math.min(textPosition.x, (containerRef.current?.clientWidth || 500) - 350),
                         top: Math.min(textPosition.y + 70, (containerRef.current?.clientHeight || 500) - 250),
@@ -824,7 +824,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                 >
                     <div className="flex items-center justify-between mb-3">
                         <span className="text-white font-bold flex items-center gap-2">
-                            <Type size={18} className="text-violet-400" />
+                            <Type size={18} className="text-cyan-" />
                             Add Text
                         </span>
                         <div className="flex items-center gap-2">
@@ -855,7 +855,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                         placeholder="Type your text here..."
                         autoFocus
                         rows={3}
-                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-violet-500 resize-none"
+                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 resize-none"
                         style={{ color, fontSize: `${Math.min(fontSize * 0.7, 24)}px`, fontFamily }}
                     />
 
@@ -877,7 +877,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <div className="flex gap-2">
                         <button
                             onClick={handleAddText}
-                            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg font-bold hover:from-violet-600 hover:to-purple-600 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-cyan- to-purple-500 text-white rounded-lg font-bold hover:from-cyan- hover:to-purple-600 transition-all flex items-center justify-center gap-2"
                         >
                             <Type size={16} />
                             Add Text
@@ -900,7 +900,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
             <div className="px-4 py-2 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-4">
                     <span className="text-sm text-slate-300">
-                        <span className="text-violet-400 font-bold">{tools.find(t => t.id === tool)?.label}</span>
+                        <span className="text-cyan- font-bold">{tools.find(t => t.id === tool)?.label}</span>
                     </span>
                     {selectedTextId && (
                         <span className="text-sm text-emerald-400 flex items-center gap-1">
@@ -910,7 +910,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-slate-500">
-                    {isBrowserFullscreen && <span className="text-violet-400">Press Esc to exit fullscreen</span>}
+                    {isBrowserFullscreen && <span className="text-cyan-">Press Esc to exit fullscreen</span>}
                     <span>•</span>
                     <span>Select tool to move text</span>
                 </div>

@@ -64,7 +64,7 @@ export default function EventsHub() {
     const categories = ['All', 'Hackathon', 'Webinar', 'Contest', 'Conference', 'Workshop'];
 
     return (
-        <div className="min-h-screen bg-[#0d0d15] text-white font-sans p-8 pb-20">
+        <div className="min-h-screen bg-[#09090b] text-white font-sans p-8 pb-20">
             {/* Header */}
             <header className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 animate-fade-in-up">
                 <div>

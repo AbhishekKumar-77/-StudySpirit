@@ -164,7 +164,7 @@ const Login = () => {
     };
 
     return (
-        <div className="relative min-h-screen bg-[#0d0d15] text-white flex flex-col items-center justify-center overflow-hidden font-sans">
+        <div className="relative min-h-screen bg-[#09090b] text-white flex flex-col items-center justify-center overflow-hidden font-sans">
 
             {/* Background Effects */}
             <div className={`absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none ${currentRole.bgGlow} blur-[150px] transition-all duration-1000`} />
@@ -306,7 +306,7 @@ const Login = () => {
 
                     {/* Verification Overlay */}
                     {showVerification && (
-                        <div className="absolute inset-0 z-20 bg-[#0d0d15]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 sm:p-8 text-center animate-fade-in">
+                        <div className="absolute inset-0 z-20 bg-[#09090b]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 sm:p-8 text-center animate-fade-in">
                             <div className="text-6xl mb-6">📩</div>
                             <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-4">VERIFY EMAIL</h2>
                             <p className="text-gray-400 mb-8 max-w-sm text-sm sm:text-base">
