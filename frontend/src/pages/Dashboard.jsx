@@ -496,7 +496,7 @@ export default function Dashboard() {
                                 <div className={`absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-cyan-400 transform group-hover:translate-x-1 group-hover:-translate-y-1`}>
                                     <ChevronRight className="w-5 h-5" />
                                 </div>
-                                <div className={`p-4 rounded-2xl inline-flex mb-6 shadow-lg bg-gradient-to-br ${feature.from} ${feature.to} group-hover:-translate-y-2 transition-transform duration-300 drop-shadow-[0_0_15px_currentColor] border border-white/20`}>
+                                <div className={`p-4 rounded-2xl inline-flex mb-6 shadow-lg bg-gradient-to-br ${feature.from} ${feature.to} group-hover:-translate-y-2 transition-transform duration-300 border border-white/20`}>
                                     <feature.icon className="w-8 h-8 text-white" />
                                 </div>
 
