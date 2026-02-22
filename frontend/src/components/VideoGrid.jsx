@@ -58,7 +58,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
     return (
         <div
             ref={containerRef}
-            className={`relative bg-slate-900 rounded-xl overflow-hidden group cursor-pointer transition-all duration-300 ${isSpotlight
+            className={`relative bg-[var(--bg-secondary)] rounded-xl overflow-hidden group cursor-pointer transition-all duration-300 ${isSpotlight
                 ? 'col-span-full row-span-2 aspect-video'
                 : 'aspect-video hover:ring-2 hover:ring-violet-500/50'
                 } ${isBrowserFullscreen ? 'fixed inset-0 z-[999999] rounded-none w-screen h-screen' : ''}`}
@@ -300,9 +300,9 @@ const VideoGrid = ({
             {sortedVideos.length === 0 && (
                 <div className="col-span-full flex items-center justify-center h-full">
                     <div className="text-center">
-                        <Users size={64} className="text-slate-600 mx-auto mb-4" />
-                        <p className="text-slate-400 text-lg">No participants yet</p>
-                        <p className="text-slate-500 text-sm">Waiting for others to join...</p>
+                        <Users size={64} className="text-[var(--text-primary)] mx-auto mb-4" />
+                        <p className="text-[var(--text-secondary)] text-lg">No participants yet</p>
+                        <p className="text-[var(--text-muted)] text-sm">Waiting for others to join...</p>
                     </div>
                 </div>
             )}

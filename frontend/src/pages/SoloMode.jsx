@@ -31,9 +31,9 @@ function FormatAIMessage({ text }) {
                 elements.push(
                     <div key={`code-${i}`} className="my-3 rounded-xl overflow-hidden">
                         {codeBlock && (
-                            <div className="bg-slate-800 px-4 py-1.5 text-xs text-slate-400 font-mono border-b border-slate-700">{codeBlock}</div>
+                            <div className="bg-[var(--bg-secondary)] px-4 py-1.5 text-xs text-[var(--text-secondary)] font-mono border-b border-[var(--border-color)]">{codeBlock}</div>
                         )}
-                        <pre className="bg-slate-900/80 p-4 overflow-x-auto text-sm leading-relaxed">
+                        <pre className="bg-[var(--glass-bg)] p-4 overflow-x-auto text-sm leading-relaxed">
                             <code className="text-emerald-300 font-mono">{codeLines.join('\n')}</code>
                         </pre>
                     </div>
@@ -77,7 +77,7 @@ function FormatAIMessage({ text }) {
             elements.push(
                 <div key={i} className="flex gap-2.5 ml-2 my-0.5">
                     <span className="text-cyan- mt-0.5 shrink-0">•</span>
-                    <span className="text-slate-200 text-sm leading-relaxed">{formatInlineText(trimmed.slice(2))}</span>
+                    <span className="text-[var(--text-primary)] text-sm leading-relaxed">{formatInlineText(trimmed.slice(2))}</span>
                 </div>
             );
             return;
@@ -89,7 +89,7 @@ function FormatAIMessage({ text }) {
             elements.push(
                 <div key={i} className="flex gap-2.5 ml-2 my-0.5">
                     <span className="text-cyan-400 font-bold text-sm shrink-0 min-w-[20px]">{numMatch[1]}.</span>
-                    <span className="text-slate-200 text-sm leading-relaxed">{formatInlineText(numMatch[2])}</span>
+                    <span className="text-[var(--text-primary)] text-sm leading-relaxed">{formatInlineText(numMatch[2])}</span>
                 </div>
             );
             return;
@@ -103,7 +103,7 @@ function FormatAIMessage({ text }) {
             elements.push(
                 <div key={i} className="flex gap-4 py-1 text-sm">
                     {cells.map((cell, ci) => (
-                        <span key={ci} className="text-slate-300 flex-1">{formatInlineText(cell.trim())}</span>
+                        <span key={ci} className="text-[var(--text-secondary)] flex-1">{formatInlineText(cell.trim())}</span>
                     ))}
                 </div>
             );
@@ -111,14 +111,14 @@ function FormatAIMessage({ text }) {
         }
 
         // Regular paragraph
-        elements.push(<p key={i} className="text-slate-200 text-sm leading-relaxed my-0.5">{formatInlineText(trimmed)}</p>);
+        elements.push(<p key={i} className="text-[var(--text-primary)] text-sm leading-relaxed my-0.5">{formatInlineText(trimmed)}</p>);
     });
 
     // If code block was never closed
     if (codeBlock !== null && codeLines.length > 0) {
         elements.push(
             <div key="code-unclosed" className="my-3 rounded-xl overflow-hidden">
-                <pre className="bg-slate-900/80 p-4 overflow-x-auto text-sm leading-relaxed">
+                <pre className="bg-[var(--glass-bg)] p-4 overflow-x-auto text-sm leading-relaxed">
                     <code className="text-emerald-300 font-mono">{codeLines.join('\n')}</code>
                 </pre>
             </div>
@@ -179,7 +179,7 @@ function formatInlineText(text) {
         }
 
         if (matchType === 'code') {
-            parts.push(<code key={key++} className="bg-slate-700/80 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono">{matchContent}</code>);
+            parts.push(<code key={key++} className="bg-[var(--border-color)]/80 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono">{matchContent}</code>);
         } else if (matchType === 'bold') {
             parts.push(<strong key={key++} className="text-[var(--text-primary)] font-bold">{matchContent}</strong>);
         }
@@ -412,7 +412,7 @@ export default function SoloMode() {
         hackerearth: { bg: 'bg-[#2C3454]', text: 'text-[#2C3454]', border: 'border-[#2C3454]' },
         codechef: { bg: 'bg-[#5B4638]', text: 'text-[#C4A574]', border: 'border-[#C4A574]' },
         linkedin: { bg: 'bg-[#0A66C2]', text: 'text-[#0A66C2]', border: 'border-[#0A66C2]' },
-        github: { bg: 'bg-[#171515]', text: 'text-[var(--text-primary)]', border: 'border-slate-600' }
+        github: { bg: 'bg-[#171515]', text: 'text-[var(--text-primary)]', border: 'border-[var(--border-color)]' }
     };
 
     const platformIcons = {
@@ -931,7 +931,7 @@ export default function SoloMode() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#09090b] via-[#1a0f2e] to-[#0d1b2a] relative pb-16 overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br    relative pb-16 overflow-hidden">
             {/* Animated Background Orbs */}
             <div className="fixed -top-[10%] -left-[5%] w-[600px] h-[600px] bg-cyan-/15 rounded-full blur-[80px] animate-float pointer-events-none" />
             <div className="fixed -bottom-[10%] -right-[5%] w-[700px] h-[700px] bg-pink-500/12 rounded-full blur-[80px] animate-float-reverse pointer-events-none" />
@@ -974,7 +974,7 @@ export default function SoloMode() {
 
             {/* FULLSCREEN FOCUS MODE OVERLAY */}
             {isFullscreenFocus && (
-                <div className="fixed inset-0 bg-gradient-to-br from-[#0a0a12] via-[#150d25] to-[#0a1520] z-[10000] flex flex-col">
+                <div className="fixed inset-0 bg-gradient-to-br    z-[10000] flex flex-col">
                     {/* Distraction Warning Toast */}
                     {showDistractionWarning && (
                         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500/90 text-[var(--text-primary)] px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl animate-bounce z-50">
@@ -1011,13 +1011,13 @@ export default function SoloMode() {
                             </button>
                             <button
                                 onClick={() => setSoundEnabled(!soundEnabled)}
-                                className={`p-3 rounded-xl transition-all ${soundEnabled ? 'bg-cyan-/20 text-cyan-' : 'bg-white/5 text-slate-400'}`}
+                                className={`p-3 rounded-xl transition-all ${soundEnabled ? 'bg-cyan-/20 text-cyan-' : 'bg-white/5 text-[var(--text-secondary)]'}`}
                             >
                                 {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
                             </button>
                             <button
                                 onClick={() => setShowFocusSettings(!showFocusSettings)}
-                                className="p-3 bg-white/5 rounded-xl text-slate-400 hover:bg-white/10 transition-all"
+                                className="p-3 bg-white/5 rounded-xl text-[var(--text-secondary)] hover:bg-white/10 transition-all"
                             >
                                 <Settings className="w-5 h-5" />
                             </button>
@@ -1037,13 +1037,13 @@ export default function SoloMode() {
                         <div className="flex p-1.5 bg-white/5 rounded-xl gap-1">
                             <button
                                 onClick={() => { setTimerMode('countdown'); setIsTimerRunning(false); }}
-                                className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${timerMode === 'countdown' ? 'bg-indigo-500 text-[var(--text-primary)] shadow-lg' : 'text-slate-400 hover:text-[var(--text-primary)]'}`}
+                                className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${timerMode === 'countdown' ? 'bg-indigo-500 text-[var(--text-primary)] shadow-lg' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                             >
                                 Countdown
                             </button>
                             <button
                                 onClick={() => { setTimerMode('stopwatch'); setIsTimerRunning(false); }}
-                                className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${timerMode === 'stopwatch' ? 'bg-indigo-500 text-[var(--text-primary)] shadow-lg' : 'text-slate-400 hover:text-[var(--text-primary)]'}`}
+                                className={`px-6 py-2.5 rounded-lg font-bold text-sm transition-all ${timerMode === 'stopwatch' ? 'bg-indigo-500 text-[var(--text-primary)] shadow-lg' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                             >
                                 Stopwatch
                             </button>
@@ -1066,7 +1066,7 @@ export default function SoloMode() {
                                         }}
                                         className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all text-sm ${sessionType === type
                                             ? type === 'focus' ? 'bg-cyan- text-[var(--text-primary)] shadow-lg shadow-violet-500/30' : 'bg-emerald-500 text-[var(--text-primary)] shadow-lg shadow-emerald-500/30'
-                                            : 'text-slate-400 hover:text-[var(--text-primary)] hover:bg-white/5'
+                                            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5'
                                             }`}
                                     >
                                         <Icon className="w-4 h-4" />
@@ -1118,7 +1118,7 @@ export default function SoloMode() {
 
                         {/* Control Buttons */}
                         <div className="flex items-center gap-5">
-                            <button onClick={resetTimer} className="p-4 bg-white/5 rounded-2xl text-slate-400 hover:bg-white/10 hover:text-[var(--text-primary)] transition-all">
+                            <button onClick={resetTimer} className="p-4 bg-white/5 rounded-2xl text-[var(--text-secondary)] hover:bg-white/10 hover:text-[var(--text-primary)] transition-all">
                                 <RotateCcw className="w-6 h-6" />
                             </button>
                             <button
@@ -1127,7 +1127,7 @@ export default function SoloMode() {
                             >
                                 {isTimerRunning ? <><Pause className="w-6 h-6" /> PAUSE</> : <><Play className="w-6 h-6" /> START</>}
                             </button>
-                            <button onClick={skipSession} className="p-4 bg-white/5 rounded-2xl text-slate-400 hover:bg-white/10 hover:text-[var(--text-primary)] transition-all">
+                            <button onClick={skipSession} className="p-4 bg-white/5 rounded-2xl text-[var(--text-secondary)] hover:bg-white/10 hover:text-[var(--text-primary)] transition-all">
                                 <ChevronRight className="w-6 h-6" />
                             </button>
                         </div>
@@ -1140,7 +1140,7 @@ export default function SoloMode() {
                                     className={`w-3 h-3 rounded-full transition-all ${session <= sessionsCompleted % 4 || (sessionsCompleted % 4 === 0 && sessionsCompleted > 0 && session === 4) ? 'bg-cyan- shadow-lg shadow-violet-500/50' : 'bg-white/10'}`}
                                 />
                             ))}
-                            <span className="text-slate-400 ml-2 text-sm">
+                            <span className="text-[var(--text-secondary)] ml-2 text-sm">
                                 {4 - (sessionsCompleted % 4 || 4)} until long break
                             </span>
                         </div>
@@ -1169,7 +1169,7 @@ export default function SoloMode() {
                                         value={newTask}
                                         onChange={(e) => setNewTask(e.target.value)}
                                         placeholder="What do you want to focus on?"
-                                        className="w-full px-4 py-3 bg-slate-800/80 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] text-sm mb-3 focus:outline-none focus:border-cyan-500 placeholder-slate-500"
+                                        className="w-full px-4 py-3 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] text-sm mb-3 focus:outline-none focus:border-cyan-500 placeholder-slate-500"
                                         onKeyPress={(e) => e.key === 'Enter' && addTask()}
                                         autoFocus
                                     />
@@ -1177,7 +1177,7 @@ export default function SoloMode() {
                                         <button onClick={addTask} className="flex-1 bg-cyan- text-[var(--text-primary)] py-2.5 rounded-lg font-bold hover:bg-cyan- transition-all flex items-center justify-center gap-2">
                                             <Plus className="w-4 h-4" /> Add Task
                                         </button>
-                                        <button onClick={() => setShowAddTask(false)} className="flex-1 bg-white/5 text-slate-400 py-2.5 rounded-lg font-bold hover:bg-white/10 transition-all">
+                                        <button onClick={() => setShowAddTask(false)} className="flex-1 bg-white/5 text-[var(--text-secondary)] py-2.5 rounded-lg font-bold hover:bg-white/10 transition-all">
                                             Cancel
                                         </button>
                                     </div>
@@ -1190,13 +1190,13 @@ export default function SoloMode() {
                                         onClick={() => toggleTask(task.id)}
                                         className={`flex-shrink-0 px-5 py-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${focusedTaskId === task.id ? 'bg-cyan-/20 border-2 border-cyan-500' : 'bg-white/5 border-2 border-transparent hover:border-[var(--border-color)]'}`}
                                     >
-                                        <Circle className="w-5 h-5 text-slate-400" />
+                                        <Circle className="w-5 h-5 text-[var(--text-secondary)]" />
                                         <span className="text-[var(--text-primary)]">{task.title}</span>
                                         <span className="text-xs text-emerald-400 font-bold">+{task.xp} XP</span>
                                     </div>
                                 ))}
                                 {tasks.filter(t => !t.completed).length === 0 && (
-                                    <div className="text-slate-500 italic">No pending tasks. Add some tasks to stay productive!</div>
+                                    <div className="text-[var(--text-muted)] italic">No pending tasks. Add some tasks to stay productive!</div>
                                 )}
                             </div>
                         </div>
@@ -1204,14 +1204,14 @@ export default function SoloMode() {
 
                     {/* Settings Panel */}
                     {showFocusSettings && (
-                        <div className="absolute right-6 top-20 bg-slate-900/95 border border-[var(--border-color)] rounded-2xl p-6 w-80 shadow-2xl z-[101]">
+                        <div className="absolute right-6 top-20 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl p-6 w-80 shadow-2xl z-[101]">
                             <h3 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2">
                                 <Settings className="w-5 h-5" />
                                 Focus Settings
                             </h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-slate-400 text-sm block mb-2">Focus Duration</label>
+                                    <label className="text-[var(--text-secondary)] text-sm block mb-2">Focus Duration</label>
                                     <div className="flex gap-2">
                                         {[15, 25, 45, 60].map(mins => (
                                             <button
@@ -1224,7 +1224,7 @@ export default function SoloMode() {
                                                 }}
                                                 className={`flex-1 py-2 rounded-lg font-bold text-sm ${focusDuration === mins
                                                     ? 'bg-cyan- text-[var(--text-primary)]'
-                                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                                    : 'bg-white/5 text-[var(--text-secondary)] hover:bg-white/10'
                                                     }`}
                                             >
                                                 {mins}m
@@ -1233,7 +1233,7 @@ export default function SoloMode() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-slate-400 text-sm block mb-2">Short Break</label>
+                                    <label className="text-[var(--text-secondary)] text-sm block mb-2">Short Break</label>
                                     <div className="flex gap-2">
                                         {[3, 5, 10].map(mins => (
                                             <button
@@ -1241,7 +1241,7 @@ export default function SoloMode() {
                                                 onClick={() => setShortBreakDuration(mins)}
                                                 className={`flex-1 py-2 rounded-lg font-bold text-sm ${shortBreakDuration === mins
                                                     ? 'bg-emerald-500 text-[var(--text-primary)]'
-                                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                                    : 'bg-white/5 text-[var(--text-secondary)] hover:bg-white/10'
                                                     }`}
                                             >
                                                 {mins}m
@@ -1250,7 +1250,7 @@ export default function SoloMode() {
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between py-2">
-                                    <span className="text-slate-300">Auto-start breaks</span>
+                                    <span className="text-[var(--text-secondary)]">Auto-start breaks</span>
                                     <button
                                         onClick={() => setAutoStartBreaks(!autoStartBreaks)}
                                         className={`w-12 h-6 rounded-full transition-all ${autoStartBreaks ? 'bg-cyan-' : 'bg-white/10'}`}
@@ -1259,7 +1259,7 @@ export default function SoloMode() {
                                     </button>
                                 </div>
                                 <div className="flex items-center justify-between py-2">
-                                    <span className="text-slate-300">Sound notifications</span>
+                                    <span className="text-[var(--text-secondary)]">Sound notifications</span>
                                     <button
                                         onClick={() => setSoundEnabled(!soundEnabled)}
                                         className={`w-12 h-6 rounded-full transition-all ${soundEnabled ? 'bg-cyan-' : 'bg-white/10'}`}
@@ -1273,7 +1273,7 @@ export default function SoloMode() {
 
                     {/* Fullscreen AI Chat Panel */}
                     {showFullscreenAI && (
-                        <div className="absolute right-0 top-[88px] bottom-0 w-[400px] bg-slate-900/95 border-l border-[var(--border-color)] backdrop-blur-xl shadow-2xl flex flex-col z-[100]">
+                        <div className="absolute right-0 top-[88px] bottom-0 w-[400px] bg-[var(--glass-bg)] border-l border-[var(--border-color)] backdrop-blur-xl shadow-2xl flex flex-col z-[100]">
                             <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
                                 <h3 className="text-[var(--text-primary)] font-bold flex items-center gap-2">
                                     <Brain className="w-5 h-5 text-cyan-" />
@@ -1281,7 +1281,7 @@ export default function SoloMode() {
                                 </h3>
                                 <button
                                     onClick={() => setShowFullscreenAI(false)}
-                                    className="p-2 hover:bg-white/10 rounded-lg text-slate-400"
+                                    className="p-2 hover:bg-white/10 rounded-lg text-[var(--text-secondary)]"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -1289,15 +1289,15 @@ export default function SoloMode() {
 
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                 {chatHistory.length === 0 ? (
-                                    <div className="text-center text-slate-400 mt-10 p-4">
-                                        <Brain className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                                    <div className="text-center text-[var(--text-secondary)] mt-10 p-4">
+                                        <Brain className="w-12 h-12 text-[var(--text-primary)] mx-auto mb-3" />
                                         <p>Hi! I'm here to help you study.</p>
                                         <p className="text-sm mt-2">Ask me to explain a concept, give a hint for a problem, or just keep you motivated!</p>
                                     </div>
                                 ) : (
                                     chatHistory.map((msg, idx) => (
                                         <div key={idx} className={`${msg.type === 'user' ? 'self-end ml-auto' : 'self-start'} max-w-[85%]`}>
-                                            <div className={`p-3 rounded-2xl ${msg.type === 'user' ? 'bg-indigo-600 text-[var(--text-primary)]' : 'bg-slate-800 text-slate-200'} text-sm`}>
+                                            <div className={`p-3 rounded-2xl ${msg.type === 'user' ? 'bg-indigo-600 text-[var(--text-primary)]' : 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'} text-sm`}>
                                                 {msg.type === 'ai' ? (
                                                     <FormatAIMessage text={msg.message} />
                                                 ) : (
@@ -1308,13 +1308,13 @@ export default function SoloMode() {
                                     ))
                                 )}
                                 {isSendingMessage && (
-                                    <div className="flex items-center gap-2 text-slate-400 text-sm pl-2">
+                                    <div className="flex items-center gap-2 text-[var(--text-secondary)] text-sm pl-2">
                                         <Loader className="w-3 h-3 animate-spin" /> Thinking...
                                     </div>
                                 )}
                             </div>
 
-                            <div className="p-4 border-t border-[var(--border-color)] bg-slate-900/50">
+                            <div className="p-4 border-t border-[var(--border-color)] bg-[var(--glass-bg)]">
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -1322,7 +1322,7 @@ export default function SoloMode() {
                                         onChange={(e) => setChatMessage(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                         placeholder="Ask about concepts or motivation..."
-                                        className="w-full pl-4 pr-12 py-3 bg-slate-800 rounded-xl text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                                        className="w-full pl-4 pr-12 py-3 bg-[var(--bg-secondary)] rounded-xl text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                                     />
                                     <button
                                         onClick={handleSendMessage}
@@ -1363,7 +1363,7 @@ export default function SoloMode() {
                                 </button>
                             </div>
 
-                            <p className="text-slate-400 mb-4">Enter your {selectedPlatform} username to sync your progress and statistics from the platform.</p>
+                            <p className="text-[var(--text-secondary)] mb-4">Enter your {selectedPlatform} username to sync your progress and statistics from the platform.</p>
 
                             {/* Platform-specific info */}
                             <div className="mb-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
@@ -1383,7 +1383,7 @@ export default function SoloMode() {
                                 onKeyPress={(e) => e.key === 'Enter' && !isConnecting && handlePlatformConnect()}
                                 placeholder={`Enter ${selectedPlatform} username`}
                                 disabled={isConnecting}
-                                className="w-full px-4 py-4 bg-slate-700/80 border border-indigo-500/30 rounded-xl text-[var(--text-primary)] mb-3 focus:outline-none focus:border-indigo-500 disabled:opacity-50"
+                                className="w-full px-4 py-4 bg-[var(--border-color)]/80 border border-indigo-500/30 rounded-xl text-[var(--text-primary)] mb-3 focus:outline-none focus:border-indigo-500 disabled:opacity-50"
                             />
 
                             {/* Error Message */}
@@ -1412,7 +1412,7 @@ export default function SoloMode() {
                                 <button
                                     onClick={() => setShowPlatformConnect(false)}
                                     disabled={isConnecting}
-                                    className="flex-1 py-4 bg-slate-700/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-slate-600/80 transition-all disabled:opacity-50"
+                                    className="flex-1 py-4 bg-[var(--border-color)]/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--bg-secondary)]/80 transition-all disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
@@ -1438,7 +1438,7 @@ export default function SoloMode() {
                                     <button
                                         key={mood.id}
                                         onClick={() => { setCurrentMood(mood.id); setTimeout(() => setShowMoodTracker(false), 300); }}
-                                        className={`p - 5 rounded - xl flex flex - col items - center gap - 2 transition - all border - 2 ${currentMood === mood.id ? `border-${mood.color}-500 bg-${mood.color}-500/20` : 'border-transparent bg-slate-700/60 hover:border-white/20'} `}
+                                        className={`p - 5 rounded - xl flex flex - col items - center gap - 2 transition - all border - 2 ${currentMood === mood.id ? `border-${mood.color}-500 bg-${mood.color}-500/20` : 'border-transparent bg-[var(--border-color)]/60 hover:border-white/20'} `}
                                     >
                                         <mood.icon className={`w - 7 h - 7 text - ${mood.color} -500`} />
                                         <span className="text-[var(--text-primary)] text-xs font-semibold">{mood.label}</span>
@@ -1446,7 +1446,7 @@ export default function SoloMode() {
                                 ))}
                             </div>
                             <div className="p-4 bg-cyan-/10 rounded-xl border border-cyan-500/30">
-                                <p className="text-slate-300 text-sm">
+                                <p className="text-[var(--text-secondary)] text-sm">
                                     {currentMood === 'struggling' && '💡 Try solving an easier problem first to build momentum.'}
                                     {currentMood === 'tired' && '☕ Take a 10-minute break. Fresh mind = better code!'}
                                     {currentMood === 'productive' && '🚀 Great! Tackle those challenging problems now!'}
@@ -1480,7 +1480,7 @@ export default function SoloMode() {
                                 {breathingPhase === 'hold' && 'Hold'}
                                 {breathingPhase === 'exhale' && 'Breathe Out'}
                             </div>
-                            <p className="text-slate-400 text-sm">Follow the rhythm to relax</p>
+                            <p className="text-[var(--text-secondary)] text-sm">Follow the rhythm to relax</p>
                         </div>
                     </div>
                 )
@@ -1503,7 +1503,7 @@ export default function SoloMode() {
                                 value={journalEntry}
                                 onChange={(e) => setJournalEntry(e.target.value)}
                                 placeholder="What did you learn today? What problems did you solve? What concepts are still unclear?"
-                                className="w-full min-h-[250px] p-4 bg-slate-700/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] resize-y focus:outline-none focus:border-cyan-500 mb-4"
+                                className="w-full min-h-[250px] p-4 bg-[var(--border-color)]/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] resize-y focus:outline-none focus:border-cyan-500 mb-4"
                             />
                             <button onClick={() => { setJournalEntry(''); setShowJournal(false); }} className="w-full py-4 bg-gradient-to-r from-cyan- to-purple-500 rounded-xl text-[var(--text-primary)] font-bold hover:shadow-lg hover:shadow-violet-500/30 transition-all">
                                 Save Entry
@@ -1532,7 +1532,7 @@ export default function SoloMode() {
                                         <Target className="w-5 h-5 text-emerald-500" />
                                         <span className="text-[var(--text-primary)] font-bold">Daily Goal Reminder</span>
                                     </div>
-                                    <p className="text-slate-400 text-sm mb-3">
+                                    <p className="text-[var(--text-secondary)] text-sm mb-3">
                                         You've solved {problemsSolvedToday}/{dailyGoal} problems today. {dailyGoal - problemsSolvedToday > 0 ? `${dailyGoal - problemsSolvedToday} more to go!` : 'Goal achieved! 🎉'}
                                     </p>
                                     <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
@@ -1544,7 +1544,7 @@ export default function SoloMode() {
                                         <Flame className="w-5 h-5 text-amber-500" />
                                         <span className="text-[var(--text-primary)] font-bold">Streak Protection</span>
                                     </div>
-                                    <p className="text-slate-400 text-sm">🔥 Current streak: {studyStreak} days | Best: {highestStreak} days</p>
+                                    <p className="text-[var(--text-secondary)] text-sm">🔥 Current streak: {studyStreak} days | Best: {highestStreak} days</p>
                                     <p className="text-amber-400 text-xs mt-2">Solve at least 1 problem today to keep your streak alive!</p>
                                 </div>
                                 <div className="p-4 bg-cyan-/10 rounded-xl border border-cyan-500/30">
@@ -1552,13 +1552,13 @@ export default function SoloMode() {
                                         <Trophy className="w-5 h-5 text-cyan-" />
                                         <span className="text-[var(--text-primary)] font-bold">Upcoming Contest</span>
                                     </div>
-                                    <p className="text-slate-400 text-sm">Weekly Contest 387 in 2 days. Practice medium-level problems to prepare!</p>
+                                    <p className="text-[var(--text-secondary)] text-sm">Weekly Contest 387 in 2 days. Practice medium-level problems to prepare!</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mt-6">
                                     <button onClick={() => setShowCodingReminder(false)} className="py-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-[var(--text-primary)] font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-500/30 transition-all">
                                         <Play className="w-4 h-4" /> Start Solving
                                     </button>
-                                    <button onClick={() => setShowCodingReminder(false)} className="py-3 bg-slate-700/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-slate-600/80 transition-all">
+                                    <button onClick={() => setShowCodingReminder(false)} className="py-3 bg-[var(--border-color)]/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--bg-secondary)]/80 transition-all">
                                         Dismiss
                                     </button>
                                 </div>
@@ -1569,7 +1569,7 @@ export default function SoloMode() {
             }
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-slate-900/70 backdrop-blur-3xl border-b border-cyan-500/20 shadow-lg shadow-violet-500/15">
+            <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-3xl border-b border-cyan-500/20 shadow-lg shadow-violet-500/15">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
                         <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 bg-indigo-500/15 text-blue-400 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-indigo-500/25 transition-all">
@@ -1603,7 +1603,7 @@ export default function SoloMode() {
                         <div>
                             <div className="text-xs text-blue-400 font-bold tracking-widest mb-1 uppercase">🚀 Your Coding Journey</div>
                             <h1 className="text-3xl font-black text-[var(--text-primary)] mb-2">Solo Mode - Code & Conquer</h1>
-                            <p className="text-slate-300">Track your coding progress across platforms with AI-powered insights</p>
+                            <p className="text-[var(--text-secondary)]">Track your coding progress across platforms with AI-powered insights</p>
                         </div>
                     </div>
                     <div className="bg-gradient-to-r from-cyan-/15 to-purple-500/15 rounded-xl p-5 border border-cyan-500/30">
@@ -1612,7 +1612,7 @@ export default function SoloMode() {
                             <span className="text-cyan- text-xs font-bold uppercase tracking-wider">Daily Inspiration</span>
                         </div>
                         <p className="text-purple-200 italic text-lg">"{dailyQuote.text}"</p>
-                        <p className="text-slate-400 text-sm mt-1">— {dailyQuote.author}</p>
+                        <p className="text-[var(--text-secondary)] text-sm mt-1">— {dailyQuote.author}</p>
                     </div>
                 </header>
 
@@ -1634,7 +1634,7 @@ export default function SoloMode() {
                                 </div>
                                 <div>
                                     <div className="text-2xl font-black text-[var(--text-primary)]">{stat.value}</div>
-                                    <div className="text-xs text-slate-400">{stat.label}</div>
+                                    <div className="text-xs text-[var(--text-secondary)]">{stat.label}</div>
                                 </div>
                             </div>
                         </div>
@@ -1651,7 +1651,7 @@ export default function SoloMode() {
                             </div>
                             <div>
                                 <div className="text-lg font-black text-[var(--text-primary)] group-hover:text-pink-400 transition-colors">Focus Mode</div>
-                                <div className="text-xs text-slate-400">Enter Fullscreen</div>
+                                <div className="text-xs text-[var(--text-secondary)]">Enter Fullscreen</div>
                             </div>
                         </div>
                     </div>
@@ -1672,7 +1672,7 @@ export default function SoloMode() {
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wide transition-all ${activeTab === tab.id
                                     ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-[var(--text-primary)] shadow-lg shadow-indigo-500/30 border border-indigo-500/50'
-                                    : 'bg-slate-800/60 text-[var(--text-primary)] border border-[var(--border-color)] hover:bg-slate-700/60'
+                                    : 'bg-[var(--glass-bg)] text-[var(--text-primary)] border border-[var(--border-color)] hover:bg-[var(--border-color)]/60'
                                     }`}
                             >
                                 <tab.icon className="w-4 h-4" />
@@ -1705,7 +1705,7 @@ export default function SoloMode() {
                                 <div className="flex items-center gap-2 mb-5 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
                                     <Clock className="w-4 h-4 text-emerald-500" />
                                     <span className="text-xs text-emerald-300">Last refreshed: {getTimeAgo(lastRefreshTime)}</span>
-                                    <span className="text-xs text-slate-400 ml-auto">Auto-refresh: 1 hour</span>
+                                    <span className="text-xs text-[var(--text-secondary)] ml-auto">Auto-refresh: 1 hour</span>
                                 </div>
                                 <div className="space-y-5">
                                     {Object.entries(platformProfiles).map(([key, profile]) => {
@@ -1741,13 +1741,13 @@ export default function SoloMode() {
                                                                 {!profile.connected && (
                                                                     <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded uppercase tracking-wider">Not Connected</span>
                                                                 )}
-                                                                <ExternalLink className="w-4 h-4 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                <ExternalLink className="w-4 h-4 text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
                                                             </div>
                                                             {profile.connected && (
-                                                                <div className="text-sm text-slate-400">@{profile.username}</div>
+                                                                <div className="text-sm text-[var(--text-secondary)]">@{profile.username}</div>
                                                             )}
                                                             {profile.connected && isCodingPlatform && profile.rating > 0 && (
-                                                                <div className="text-sm text-slate-400">Rating: {profile.rating}</div>
+                                                                <div className="text-sm text-[var(--text-secondary)]">Rating: {profile.rating}</div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -1757,7 +1757,7 @@ export default function SoloMode() {
                                                                 {isCodingPlatform && (
                                                                     <div className="text-right mr-2">
                                                                         <span className={`${colors.text} font-black text-2xl`}>{profile.problemsSolved}</span>
-                                                                        <div className="text-xs text-slate-500 font-bold uppercase tracking-wider">Solved</div>
+                                                                        <div className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Solved</div>
                                                                     </div>
                                                                 )}
                                                                 <button
@@ -1786,17 +1786,17 @@ export default function SoloMode() {
                                                 </div>
                                                 {profile.connected && isCodingPlatform && (
                                                     <>
-                                                        <div className="w-full h-4 bg-slate-900/50 rounded-full overflow-hidden p-[2px] border border-[var(--border-color)]">
+                                                        <div className="w-full h-4 bg-[var(--glass-bg)] rounded-full overflow-hidden p-[2px] border border-[var(--border-color)]">
                                                             <div className={`h-full ${colors.bg} rounded-full transition-all duration-1000 shadow-[0_0_10px_currentColor]`} style={{ width: `${progress}%` }} />
                                                         </div>
-                                                        <div className="flex justify-between mt-2 text-xs font-semibold text-slate-500">
+                                                        <div className="flex justify-between mt-2 text-xs font-semibold text-[var(--text-muted)]">
                                                             <span>Level {Math.floor(progress / 10) + 1}</span>
                                                             <span>{progress.toFixed(1)}% Mastered</span>
                                                         </div>
                                                     </>
                                                 )}
                                                 {profile.connected && !isCodingPlatform && (
-                                                    <div className="mt-2 text-sm text-slate-400 italic">
+                                                    <div className="mt-2 text-sm text-[var(--text-secondary)] italic">
                                                         Click to visit your {key} profile
                                                     </div>
                                                 )}
@@ -1813,7 +1813,7 @@ export default function SoloMode() {
                                         <BarChart2 className="w-5 h-5 text-blue-500" />
                                         Weekly Activity
                                     </h3>
-                                    <span className="text-xs text-slate-400">Hours per day</span>
+                                    <span className="text-xs text-[var(--text-secondary)]">Hours per day</span>
                                 </div>
                                 <div className="flex gap-3 items-end justify-between px-2" style={{ height: '220px' }}>
                                     {weeklyActivityData.map((data, idx) => {
@@ -1854,22 +1854,22 @@ export default function SoloMode() {
                                                         }}
                                                     />
                                                 </div>
-                                                <span className="text-xs text-slate-400 font-bold mt-2">{data.day}</span>
+                                                <span className="text-xs text-[var(--text-secondary)] font-bold mt-2">{data.day}</span>
                                             </div>
                                         );
                                     })}
                                 </div>
                                 <div className="flex justify-around mt-5 p-4 bg-[var(--bg-secondary)]lue-500/10 rounded-xl">
                                     <div className="text-center">
-                                        <div className="text-xs text-slate-400">Total</div>
+                                        <div className="text-xs text-[var(--text-secondary)]">Total</div>
                                         <div className="text-lg font-bold text-blue-400">{weeklyActivityData.reduce((sum, d) => sum + d.hours, 0).toFixed(1)}h</div>
                                     </div>
                                     <div className="text-center">
-                                        <div className="text-xs text-slate-400">Problems</div>
+                                        <div className="text-xs text-[var(--text-secondary)]">Problems</div>
                                         <div className="text-lg font-bold text-emerald-400">{weeklyActivityData.reduce((sum, d) => sum + d.problems, 0)}</div>
                                     </div>
                                     <div className="text-center">
-                                        <div className="text-xs text-slate-400">Avg/Day</div>
+                                        <div className="text-xs text-[var(--text-secondary)]">Avg/Day</div>
                                         <div className="text-lg font-bold text-cyan-">{(weeklyActivityData.reduce((sum, d) => sum + d.hours, 0) / 7).toFixed(1)}h</div>
                                     </div>
                                 </div>
@@ -1884,7 +1884,7 @@ export default function SoloMode() {
                                 </h3>
                                 <div className="glass-card rounded-2xl p-6 overflow-x-auto">
                                     <div className="min-w-[700px]">
-                                        <h4 className="text-sm font-semibold text-slate-400 mb-2">Last 12 Months</h4>
+                                        <h4 className="text-sm font-semibold text-[var(--text-secondary)] mb-2">Last 12 Months</h4>
                                         <div className="flex gap-[3px]" style={{ height: '112px' }}>
                                             {(() => {
                                                 const weeks = [];
@@ -1944,7 +1944,7 @@ export default function SoloMode() {
                                                 ));
                                             })()}
                                         </div>
-                                        <div className="flex items-center gap-2 mt-4 text-xs text-slate-400">
+                                        <div className="flex items-center gap-2 mt-4 text-xs text-[var(--text-secondary)]">
                                             <span>Less</span>
                                             <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.05)' }} />
                                             <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: '#064e3b', border: '1px solid #065f46' }} />
@@ -1978,7 +1978,7 @@ export default function SoloMode() {
                                     return (
                                         <div
                                             key={key}
-                                            className={`${profile.connected ? `border-2 ${colors.border} bg-opacity-10` : 'border-2 border-[var(--border-color)] bg-slate-800/50'} rounded-2xl p-6 hover:shadow-lg transition-all cursor-pointer group`}
+                                            className={`${profile.connected ? `border-2 ${colors.border} bg-opacity-10` : 'border-2 border-[var(--border-color)] bg-[var(--glass-bg)]'} rounded-2xl p-6 hover:shadow-lg transition-all cursor-pointer group`}
                                             style={{ backgroundColor: profile.connected ? `${key === 'leetcode' ? '#FFA116' : key === 'hackerrank' ? '#00EA64' : key === 'codechef' ? '#C4A574' : key === 'linkedin' ? '#0A66C2' : key === 'github' ? '#171515' : '#2C3454'}10` : undefined }}
                                             onClick={() => window.open(platformUrl, '_blank')}
                                         >
@@ -1994,9 +1994,9 @@ export default function SoloMode() {
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <div className="text-xl font-bold text-[var(--text-primary)] capitalize">{key}</div>
-                                                            <ExternalLink className="w-4 h-4 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                            <ExternalLink className="w-4 h-4 text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
                                                         </div>
-                                                        <div className={`text-sm ${profile.connected ? colors.text : 'text-slate-500'}`}>
+                                                        <div className={`text-sm ${profile.connected ? colors.text : 'text-[var(--text-muted)]'}`}>
                                                             {profile.connected ? `@${profile.username}` : 'Not Connected'}
                                                         </div>
                                                     </div>
@@ -2034,22 +2034,22 @@ export default function SoloMode() {
                                                             <div className="grid grid-cols-2 gap-3 mb-4">
                                                                 <div className="bg-[var(--bg-secondary)]lack/20 rounded-xl p-4 text-center">
                                                                     <div className={`text-2xl font-black ${colors.text}`}>{profile.problemsSolved}</div>
-                                                                    <div className="text-xs text-slate-400">Problems</div>
+                                                                    <div className="text-xs text-[var(--text-secondary)]">Problems</div>
                                                                 </div>
                                                                 <div className="bg-[var(--bg-secondary)]lack/20 rounded-xl p-4 text-center">
                                                                     <div className={`text-2xl font-black ${colors.text}`}>{profile.rating || (profile.stars + ' ⭐') || profile.points}</div>
-                                                                    <div className="text-xs text-slate-400">{key === 'hackerrank' ? 'Stars' : 'Rating'}</div>
+                                                                    <div className="text-xs text-[var(--text-secondary)]">{key === 'hackerrank' ? 'Stars' : 'Rating'}</div>
                                                                 </div>
                                                             </div>
                                                             {key === 'leetcode' && (
                                                                 <div className="bg-[var(--bg-secondary)]lack/20 rounded-xl p-4">
-                                                                    <div className="text-xs text-slate-400 mb-3">Problem Distribution</div>
+                                                                    <div className="text-xs text-[var(--text-secondary)] mb-3">Problem Distribution</div>
                                                                     <div className="flex gap-2">
                                                                         <div className="h-2 rounded-full bg-emerald-500" style={{ flex: profile.easy }} />
                                                                         <div className="h-2 rounded-full bg-amber-500" style={{ flex: profile.medium }} />
                                                                         <div className="h-2 rounded-full bg-red-500" style={{ flex: profile.hard }} />
                                                                     </div>
-                                                                    <div className="flex justify-between mt-3 text-xs text-slate-400">
+                                                                    <div className="flex justify-between mt-3 text-xs text-[var(--text-secondary)]">
                                                                         <span>Easy: {profile.easy}</span>
                                                                         <span>Medium: {profile.medium}</span>
                                                                         <span>Hard: {profile.hard}</span>
@@ -2060,14 +2060,14 @@ export default function SoloMode() {
                                                     )}
                                                     {!isCodingPlatform && (
                                                         <div className="bg-[var(--bg-secondary)]lack/20 rounded-xl p-4 text-center">
-                                                            <div className="text-slate-300 text-sm">
+                                                            <div className="text-[var(--text-secondary)] text-sm">
                                                                 Click to visit your {key} profile
                                                             </div>
                                                         </div>
                                                     )}
                                                 </>
                                             ) : (
-                                                <p className="text-slate-400 text-sm">Connect your {key} account to sync your {isCodingPlatform ? 'progress and compete in challenges' : 'profile'}.</p>
+                                                <p className="text-[var(--text-secondary)] text-sm">Connect your {key} account to sync your {isCodingPlatform ? 'progress and compete in challenges' : 'profile'}.</p>
                                             )}
                                         </div>
                                     );
@@ -2098,7 +2098,7 @@ export default function SoloMode() {
                             <div className="glass-card rounded-2xl p-8 bg-gradient-to-br from-red-500/15 to-amber-500/15 relative">
                                 <button
                                     onClick={enterFullscreenFocus}
-                                    className="absolute top-4 right-4 p-2 bg-white/5 rounded-lg text-slate-400 hover:text-[var(--text-primary)] hover:bg-white/10 transition-all"
+                                    className="absolute top-4 right-4 p-2 bg-white/5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/10 transition-all"
                                     title="Enter Fullscreen Mode"
                                 >
                                     <Maximize2 className="w-5 h-5" />
@@ -2116,13 +2116,13 @@ export default function SoloMode() {
                                     <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`px-8 py-4 rounded-xl font-bold text-lg text-[var(--text-primary)] ${isTimerRunning ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-emerald-500 to-green-500'} hover:shadow-lg transition-all`}>
                                         {isTimerRunning ? 'Pause' : 'Start'}
                                     </button>
-                                    <button onClick={() => { setIsTimerRunning(false); setPomodoroTime(25 * 60); }} className="px-8 py-4 rounded-xl font-bold text-lg bg-slate-700/80 border border-white/20 text-[var(--text-primary)] hover:bg-slate-600/80 transition-all">
+                                    <button onClick={() => { setIsTimerRunning(false); setPomodoroTime(25 * 60); }} className="px-8 py-4 rounded-xl font-bold text-lg bg-[var(--border-color)]/80 border border-white/20 text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-all">
                                         Reset
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-3 gap-3">
                                     {[{ label: '25 min', value: 25 }, { label: '45 min', value: 45 }, { label: '60 min', value: 60 }].map((preset) => (
-                                        <button key={preset.value} onClick={() => { setIsTimerRunning(false); setPomodoroTime(preset.value * 60); }} className={`py-3 rounded-xl font-bold text-[var(--text-primary)] ${pomodoroTime === preset.value * 60 ? 'bg-amber-500/20' : 'bg-slate-700/60'} border border-[var(--border-color)] hover:bg-slate-600/60 transition-all`}>
+                                        <button key={preset.value} onClick={() => { setIsTimerRunning(false); setPomodoroTime(preset.value * 60); }} className={`py-3 rounded-xl font-bold text-[var(--text-primary)] ${pomodoroTime === preset.value * 60 ? 'bg-amber-500/20' : 'bg-[var(--border-color)]/60'} border border-[var(--border-color)] hover:bg-[var(--bg-secondary)]/60 transition-all`}>
                                             {preset.label}
                                         </button>
                                     ))}
@@ -2138,22 +2138,22 @@ export default function SoloMode() {
                                 <div className="space-y-4">
                                     <div className="p-4 bg-gradient-to-r from-cyan-/10 to-purple-500/10 rounded-xl border border-cyan-500/20">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-slate-400 text-sm">Today's Focus Time</span>
+                                            <span className="text-[var(--text-secondary)] text-sm">Today's Focus Time</span>
                                             <span className="text-cyan- font-bold text-lg">{formatFocusTime(todaysFocusTime)}</span>
                                         </div>
                                         <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                                             <div className="h-full bg-gradient-to-r from-cyan- to-purple-500 rounded-full transition-all" style={{ width: `${Math.min((todaysFocusTime / 14400) * 100, 100)}%` }} />
                                         </div>
-                                        <div className="text-xs text-slate-500 mt-1">Goal: 4 hours</div>
+                                        <div className="text-xs text-[var(--text-muted)] mt-1">Goal: 4 hours</div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="p-4 bg-[var(--bg-secondary)]lue-500/10 rounded-xl border border-blue-500/20 text-center">
                                             <div className="text-2xl font-black text-blue-400">{sessionsCompleted}</div>
-                                            <div className="text-xs text-slate-400">Sessions Today</div>
+                                            <div className="text-xs text-[var(--text-secondary)]">Sessions Today</div>
                                         </div>
                                         <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-center">
                                             <div className="text-2xl font-black text-emerald-400">{focusScore}%</div>
-                                            <div className="text-xs text-slate-400">Focus Score</div>
+                                            <div className="text-xs text-[var(--text-secondary)]">Focus Score</div>
                                         </div>
                                     </div>
                                     <div className="p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
@@ -2161,7 +2161,7 @@ export default function SoloMode() {
                                             <Flame className="w-5 h-5 text-amber-500" />
                                             <span className="text-[var(--text-primary)] font-bold">Streak</span>
                                         </div>
-                                        <div className="text-3xl font-black text-amber-400">{studyStreak} <span className="text-sm text-slate-400 font-normal">days</span></div>
+                                        <div className="text-3xl font-black text-amber-400">{studyStreak} <span className="text-sm text-[var(--text-secondary)] font-normal">days</span></div>
                                     </div>
                                 </div>
                             </div>
@@ -2174,17 +2174,17 @@ export default function SoloMode() {
                                 </h3>
                                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {achievements.map((ach) => (
-                                        <div key={ach.id} className={`p-5 ${ach.unlocked ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-500/30' : 'bg-slate-700/40 border-[var(--border-color)] opacity-60'} border rounded-xl transition-all ${ach.unlocked ? 'hover:shadow-lg hover:shadow-amber-500/20' : ''}`}>
+                                        <div key={ach.id} className={`p-5 ${ach.unlocked ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border-amber-500/30' : 'bg-[var(--border-color)]/40 border-[var(--border-color)] opacity-60'} border rounded-xl transition-all ${ach.unlocked ? 'hover:shadow-lg hover:shadow-amber-500/20' : ''}`}>
                                             <div className="flex items-center gap-4 mb-3">
-                                                <div className={`p-3 rounded-xl ${ach.unlocked ? 'bg-amber-500/30' : 'bg-slate-600/30'}`}>
-                                                    <ach.icon className={`w-6 h-6 ${ach.unlocked ? 'text-amber-400' : 'text-slate-500'}`} />
+                                                <div className={`p-3 rounded-xl ${ach.unlocked ? 'bg-amber-500/30' : 'bg-[var(--bg-secondary)]/30'}`}>
+                                                    <ach.icon className={`w-6 h-6 ${ach.unlocked ? 'text-amber-400' : 'text-[var(--text-muted)]'}`} />
                                                 </div>
                                                 <div>
-                                                    <div className={`font-bold ${ach.unlocked ? 'text-[var(--text-primary)]' : 'text-slate-400'}`}>{ach.title}</div>
-                                                    <div className={`text-xs ${ach.unlocked ? 'text-amber-400' : 'text-slate-500'}`}>+{ach.xp} XP</div>
+                                                    <div className={`font-bold ${ach.unlocked ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>{ach.title}</div>
+                                                    <div className={`text-xs ${ach.unlocked ? 'text-amber-400' : 'text-[var(--text-muted)]'}`}>+{ach.xp} XP</div>
                                                 </div>
                                             </div>
-                                            <p className={`text-sm ${ach.unlocked ? 'text-slate-300' : 'text-slate-500'}`}>{ach.description}</p>
+                                            <p className={`text-sm ${ach.unlocked ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]'}`}>{ach.description}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -2205,7 +2205,7 @@ export default function SoloMode() {
                                         AI Study Mentor
                                     </h3>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-slate-400 hidden sm:block">💡 Ask about DSA, algorithms, problem hints, study tips!</span>
+                                        <span className="text-xs text-[var(--text-secondary)] hidden sm:block">💡 Ask about DSA, algorithms, problem hints, study tips!</span>
                                         <button
                                             onClick={() => setIsFullscreenAIMentor(!isFullscreenAIMentor)}
                                             className="p-2 bg-cyan-/20 text-cyan- rounded-lg hover:bg-cyan-/30 transition-all"
@@ -2215,12 +2215,12 @@ export default function SoloMode() {
                                         </button>
                                     </div>
                                 </div>
-                                <div className={`flex-1 overflow-y-auto mb-4 p-5 bg-slate-900/50 rounded-xl space-y-4 ${isFullscreenAIMentor ? 'max-h-[calc(100vh-280px)]' : ''}`}>
+                                <div className={`flex-1 overflow-y-auto mb-4 p-5 bg-[var(--glass-bg)] rounded-xl space-y-4 ${isFullscreenAIMentor ? 'max-h-[calc(100vh-280px)]' : ''}`}>
                                     {chatHistory.length === 0 ? (
                                         <div className="text-center py-16">
                                             <Brain className="w-16 h-16 text-cyan-/30 mx-auto mb-4" />
                                             <p className="text-xl font-bold text-[var(--text-primary)] mb-2">Hi! I'm your AI Study Mentor 🎓</p>
-                                            <p className="text-slate-400 max-w-md mx-auto">Ask me about DSA, algorithms, coding problems, study strategies, or anything else you need help with!</p>
+                                            <p className="text-[var(--text-secondary)] max-w-md mx-auto">Ask me about DSA, algorithms, coding problems, study strategies, or anything else you need help with!</p>
                                             <div className="flex flex-wrap justify-center gap-2 mt-6">
                                                 {['Explain Binary Search', 'How to approach DP?', 'Study plan for interviews', 'Time complexity of sorting'].map((suggestion) => (
                                                     <button
@@ -2269,7 +2269,7 @@ export default function SoloMode() {
                                         value={chatMessage}
                                         onChange={(e) => setChatMessage(e.target.value)}
                                         placeholder="Ask about DSA, algorithms, study tips, problem hints..."
-                                        className="flex-1 px-5 py-4 bg-slate-700/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 text-sm"
+                                        className="flex-1 px-5 py-4 bg-[var(--border-color)]/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 text-sm"
                                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                     />
                                     <button
@@ -2295,7 +2295,7 @@ export default function SoloMode() {
                                     <GitBranch className="w-8 h-8 text-cyan-" />
                                     AI Skill Tree Generator
                                 </h3>
-                                <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
+                                <p className="text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
                                     Enter any programming language, framework, or technical topic. Our AI will construct a complete, step-by-step mastery path from scratch to expert.
                                 </p>
 
@@ -2305,7 +2305,7 @@ export default function SoloMode() {
                                         value={skillTopicInput}
                                         onChange={(e) => setSkillTopicInput(e.target.value)}
                                         placeholder="e.g. Python, C++, System Design, React..."
-                                        className="flex-1 px-5 py-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg focus:outline-none focus:border-cyan-500 shadow-xl transition-all"
+                                        className="flex-1 px-5 py-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg focus:outline-none focus:border-cyan-500 shadow-xl transition-all"
                                         onKeyPress={(e) => e.key === 'Enter' && handleGenerateSkillTree()}
                                     />
                                     <button
@@ -2325,7 +2325,7 @@ export default function SoloMode() {
                                         <Brain className="w-8 h-8 text-cyan- animate-bounce" />
                                     </div>
                                     <h4 className="text-xl font-bold text-[var(--text-primary)] mb-2">Constructing Knowledge Graph...</h4>
-                                    <p className="text-slate-400">Analyzing prerequisites, modules, and learning sequencing.</p>
+                                    <p className="text-[var(--text-secondary)]">Analyzing prerequisites, modules, and learning sequencing.</p>
                                 </div>
                             )}
 
@@ -2335,7 +2335,7 @@ export default function SoloMode() {
                                     <div className="flex items-center justify-between mb-8">
                                         <div>
                                             <h2 className="text-3xl font-black text-[var(--text-primary)] mb-1">{generatedSkillTree.title}</h2>
-                                            <p className="text-slate-400">{generatedSkillTree.description}</p>
+                                            <p className="text-[var(--text-secondary)]">{generatedSkillTree.description}</p>
                                         </div>
                                         <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-sm font-bold flex items-center gap-2">
                                             <CheckCircle className="w-4 h-4" /> AI Verified Path
@@ -2346,7 +2346,7 @@ export default function SoloMode() {
                                         {generatedSkillTree.levels.map((level, lvlIdx) => (
                                             <div key={lvlIdx} className="relative pl-8 md:pl-12">
                                                 {/* Level Marker */}
-                                                <div className="absolute -left-[11px] top-0 w-6 h-6 rounded-full bg-slate-900 border-4 border-cyan-500 z-10 shadow-[0_0_15px_rgba(139,92,246,0.5)]" />
+                                                <div className="absolute -left-[11px] top-0 w-6 h-6 rounded-full bg-[var(--bg-secondary)] border-4 border-cyan-500 z-10 shadow-[0_0_15px_rgba(139,92,246,0.5)]" />
 
                                                 <div className="glass-card rounded-2xl overflow-hidden border border-cyan-500/20">
                                                     {/* Level Header */}
@@ -2360,23 +2360,23 @@ export default function SoloMode() {
                                                     {/* Modules Grid */}
                                                     <div className="p-6 grid gap-4">
                                                         {level.modules.map((module, modIdx) => (
-                                                            <div key={modIdx} className="bg-slate-800/40 rounded-xl p-5 hover:bg-slate-700/40 transition-colors border border-[var(--border-color)]">
+                                                            <div key={modIdx} className="bg-[var(--glass-bg)] rounded-xl p-5 hover:bg-[var(--border-color)]/40 transition-colors border border-[var(--border-color)]">
                                                                 <h4 className="text-lg font-bold text-indigo-300 mb-2">{module.title}</h4>
-                                                                <p className="text-sm text-slate-300 mb-4">{module.description}</p>
+                                                                <p className="text-sm text-[var(--text-secondary)] mb-4">{module.description}</p>
 
                                                                 <div className="space-y-3 mt-4">
                                                                     {module.topics.map((topic, tIdx) => {
                                                                         if (typeof topic === 'string') {
                                                                             return (
                                                                                 <div key={tIdx} className="inline-block mr-2 mb-2">
-                                                                                    <span className="px-3 py-1 bg-slate-700/50 rounded-lg text-xs font-medium text-slate-300 border border-[var(--border-color)]">
+                                                                                    <span className="px-3 py-1 bg-[var(--border-color)]/50 rounded-lg text-xs font-medium text-[var(--text-secondary)] border border-[var(--border-color)]">
                                                                                         • {topic}
                                                                                     </span>
                                                                                 </div>
                                                                             );
                                                                         }
                                                                         return (
-                                                                            <div key={tIdx} className="p-3 bg-slate-900/40 rounded-lg border border-[var(--border-color)] hover:border-cyan-500/20 transition-colors">
+                                                                            <div key={tIdx} className="p-3 bg-[var(--glass-bg)] rounded-lg border border-[var(--border-color)] hover:border-cyan-500/20 transition-colors">
                                                                                 <div className="font-bold text-indigo-300 text-sm mb-2 flex items-start gap-2">
                                                                                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></span>
                                                                                     {topic.title}
@@ -2384,7 +2384,7 @@ export default function SoloMode() {
                                                                                 {topic.subtopics && topic.subtopics.length > 0 && (
                                                                                     <div className="flex flex-wrap gap-2 ml-3.5">
                                                                                         {topic.subtopics.map((sub, sIdx) => (
-                                                                                            <span key={sIdx} className="px-2 py-1 bg-slate-800/80 rounded text-[11px] text-slate-400 border border-[var(--border-color)]">
+                                                                                            <span key={sIdx} className="px-2 py-1 bg-[var(--glass-bg)] rounded text-[11px] text-[var(--text-secondary)] border border-[var(--border-color)]">
                                                                                                 {sub}
                                                                                             </span>
                                                                                         ))}
@@ -2403,7 +2403,7 @@ export default function SoloMode() {
 
                                         {/* Completion Marker */}
                                         <div className="relative pl-8 md:pl-12">
-                                            <div className="absolute -left-[11px] top-0 w-6 h-6 rounded-full bg-emerald-500 border-4 border-slate-900 z-10 shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+                                            <div className="absolute -left-[11px] top-0 w-6 h-6 rounded-full bg-emerald-500 border-4 border-[var(--border-color)] z-10 shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
                                             <div className="text-emerald-400 font-bold pt-1">Mastery Achieved 🏆</div>
                                         </div>
                                     </div>
@@ -2411,27 +2411,27 @@ export default function SoloMode() {
                             )}
 
                             {!generatedSkillTree && !isGeneratingTree && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 bg-slate-900/50 p-8 rounded-2xl border border-[var(--border-color)]">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 bg-[var(--glass-bg)] p-8 rounded-2xl border border-[var(--border-color)]">
                                     <div className="text-center p-4">
                                         <div className="w-12 h-12 bg-[var(--bg-secondary)]lue-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-blue-400">
                                             <GitBranch className="w-6 h-6" />
                                         </div>
                                         <h4 className="font-bold text-[var(--text-primary)] mb-2">Structured Path</h4>
-                                        <p className="text-xs text-slate-400">Logically ordered modules from fundamentals to advanced concepts.</p>
+                                        <p className="text-xs text-[var(--text-secondary)]">Logically ordered modules from fundamentals to advanced concepts.</p>
                                     </div>
                                     <div className="text-center p-4">
                                         <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-purple-400">
                                             <Brain className="w-6 h-6" />
                                         </div>
                                         <h4 className="font-bold text-[var(--text-primary)] mb-2">AI Curated</h4>
-                                        <p className="text-xs text-slate-400">Content generated by advanced LLMs tailored to modern industry standards.</p>
+                                        <p className="text-xs text-[var(--text-secondary)]">Content generated by advanced LLMs tailored to modern industry standards.</p>
                                     </div>
                                     <div className="text-center p-4">
                                         <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-emerald-400">
                                             <Target className="w-6 h-6" />
                                         </div>
                                         <h4 className="font-bold text-[var(--text-primary)] mb-2">Actionable Steps</h4>
-                                        <p className="text-xs text-slate-400">Clear topics and subtopics to guide your daily study sessions.</p>
+                                        <p className="text-xs text-[var(--text-secondary)]">Clear topics and subtopics to guide your daily study sessions.</p>
                                     </div>
                                 </div>
                             )}

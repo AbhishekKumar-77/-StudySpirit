@@ -452,7 +452,7 @@ export default function SoftSkills() {
 
     // Progress bar component
     const ProgressBar = ({ value, color = 'violet' }) => (
-        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
             <div
                 className={`h-full rounded-full transition-all duration-1000 bg-gradient-to-r ${color === 'violet' ? 'from-cyan- to-purple-600' :
                     color === 'cyan' ? 'from-cyan-500 to-blue-600' :
@@ -473,7 +473,7 @@ export default function SoftSkills() {
             <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-pink-500/10 rounded-full blur-[100px] pointer-events-none" />
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-cyan-500/10 px-8 py-5">
+            <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-cyan-500/10 px-8 py-5">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between">
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -516,20 +516,20 @@ export default function SoftSkills() {
                             <div>
                                 <div className="text-sm text-violet-300 font-bold tracking-widest uppercase mb-2">AI-Powered Training</div>
                                 <h1 className="text-4xl font-black mb-2">Communication & Interview Skills</h1>
-                                <p className="text-slate-400 text-lg">Master speaking, ace interviews, and build professional vocabulary</p>
+                                <p className="text-[var(--text-secondary)] text-lg">Master speaking, ace interviews, and build professional vocabulary</p>
                             </div>
                         </div>
 
                         <div className="flex gap-4">
-                            <div className="text-center p-4 bg-slate-800/50 rounded-xl border border-[var(--border-color)] min-w-[100px]">
+                            <div className="text-center p-4 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)] min-w-[100px]">
                                 <div className="text-2xl font-black text-cyan-">{progress.interviewsCompleted}</div>
-                                <div className="text-xs text-slate-400">Interviews</div>
+                                <div className="text-xs text-[var(--text-secondary)]">Interviews</div>
                             </div>
-                            <div className="text-center p-4 bg-slate-800/50 rounded-xl border border-[var(--border-color)] min-w-[100px]">
+                            <div className="text-center p-4 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)] min-w-[100px]">
                                 <div className="text-2xl font-black text-cyan-400">
                                     {Math.floor(progress.speechMinutes / 60)}h {Math.round(progress.speechMinutes % 60)}m
                                 </div>
-                                <div className="text-xs text-slate-400">Speech Time</div>
+                                <div className="text-xs text-[var(--text-secondary)]">Speech Time</div>
                             </div>
                         </div>
                     </div>
@@ -543,13 +543,13 @@ export default function SoftSkills() {
                         { icon: Briefcase, label: 'Interview Ready', value: `${stats.interviewReady}%`, color: 'amber', bg: 'bg-amber-500/20' },
                         { icon: TrendingUp, label: 'Growth', value: stats.overallGrowth, color: 'green', bg: 'bg-emerald-500/20' }
                     ].map((stat, idx) => (
-                        <div key={idx} className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:border-cyan-500/30 transition-all group">
+                        <div key={idx} className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:border-cyan-500/30 transition-all group">
                             <div className="flex items-center gap-4">
                                 <div className={`p-3 rounded-xl ${stat.bg} group-hover:scale-110 transition-transform`}>
                                     <stat.icon size={24} className={`text-${stat.color}-500`} />
                                 </div>
                                 <div>
-                                    <div className="text-sm text-slate-400">{stat.label}</div>
+                                    <div className="text-sm text-[var(--text-secondary)]">{stat.label}</div>
                                     <div className="text-2xl font-black">{stat.value}</div>
                                 </div>
                             </div>
@@ -565,7 +565,7 @@ export default function SoftSkills() {
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wide transition-all flex items-center gap-2 ${activeTab === tab.id
                                 ? 'bg-gradient-to-r from-cyan- to-pink-600 shadow-lg shadow-violet-500/30'
-                                : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-[var(--text-primary)]'
+                                : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
                                 }`}
                         >
                             {tab.label}
@@ -578,14 +578,14 @@ export default function SoftSkills() {
                     <div>
                         {/* AI Conversation Partner */}
                         {activeTab === 'speech' && (
-                            <div className="flex flex-col h-[600px] animate-fade-in relative rounded-3xl overflow-hidden border border-cyan-500/20 bg-slate-900/80 backdrop-blur-xl shadow-2xl">
+                            <div className="flex flex-col h-[600px] animate-fade-in relative rounded-3xl overflow-hidden border border-cyan-500/20 bg-[var(--glass-bg)] backdrop-blur-xl shadow-2xl">
                                 {/* Avatar Section */}
                                 <div className="absolute inset-0 z-0 flex items-center justify-center opacity-20 pointer-events-none">
                                     {/* AI Avatar Animation */}
                                     <div className={`relative transition-all duration-500 ${isAiSpeaking ? 'scale-110' : 'scale-100'}`}>
                                         <div className={`w-64 h-64 rounded-full bg-gradient-to-br from-cyan- to-pink-500 blur-3xl animate-pulse ${isAiSpeaking ? 'opacity-80' : 'opacity-30'}`} />
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className={`w-40 h-40 rounded-full border-4 border-cyan-400 shadow-[0_0_50px_rgba(139,92,246,0.5)] bg-slate-900 flex items-center justify-center relative overflow-hidden transition-all duration-300 ${isAiSpeaking ? 'shadow-[0_0_80px_rgba(139,92,246,0.8)] border-cyan-300' : ''}`}>
+                                            <div className={`w-40 h-40 rounded-full border-4 border-cyan-400 shadow-[0_0_50px_rgba(139,92,246,0.5)] bg-[var(--bg-secondary)] flex items-center justify-center relative overflow-hidden transition-all duration-300 ${isAiSpeaking ? 'shadow-[0_0_80px_rgba(139,92,246,0.8)] border-cyan-300' : ''}`}>
                                                 {/* Eyes */}
                                                 <div className="flex gap-8 z-10">
                                                     <div className={`w-3 h-8 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee] transition-all duration-100 ${isAiSpeaking ? 'h-4 animate-bounce' : 'h-8'}`} style={{ animationDelay: '0ms' }} />
@@ -624,7 +624,7 @@ export default function SoftSkills() {
 
                                             <div className={`max-w-[80%] p-5 rounded-3xl ${msg.role === 'user'
                                                 ? 'bg-gradient-to-br from-cyan- to-pink-600 rounded-br-none shadow-lg shadow-violet-500/20 text-[var(--text-primary)]'
-                                                : 'bg-slate-800/90 backdrop-blur-md rounded-bl-none border border-[var(--border-color)] text-slate-100 shadow-xl'
+                                                : 'bg-[var(--glass-bg)] backdrop-blur-md rounded-bl-none border border-[var(--border-color)] text-[var(--text-primary)] shadow-xl'
                                                 }`}>
                                                 {msg.role === 'ai' && (
                                                     <div className="flex items-center gap-2 mb-2">
@@ -638,7 +638,7 @@ export default function SoftSkills() {
                                     ))}
                                     {isAiSpeaking && (
                                         <div className="flex justify-start">
-                                            <div className="bg-slate-800/80 p-4 rounded-3xl rounded-bl-none border border-[var(--border-color)] flex gap-1 items-center">
+                                            <div className="bg-[var(--glass-bg)] p-4 rounded-3xl rounded-bl-none border border-[var(--border-color)] flex gap-1 items-center">
                                                 <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                                                 <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                                                 <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -649,11 +649,11 @@ export default function SoftSkills() {
                                 </div>
 
                                 {/* Controls */}
-                                <div className="p-6 bg-slate-900/90 border-t border-[var(--border-color)] backdrop-blur-xl z-20 flex items-center justify-center gap-6 relative">
+                                <div className="p-6 bg-[var(--glass-bg)] border-t border-[var(--border-color)] backdrop-blur-xl z-20 flex items-center justify-center gap-6 relative">
                                     {/* Live Transcription */}
                                     {interimTranscript && (
                                         <div className="absolute -top-16 left-0 right-0 flex justify-center">
-                                            <div className="bg-[var(--bg-secondary)]lack/60 backdrop-blur-md px-6 py-2 rounded-full text-slate-200 border border-[var(--border-color)] animate-pulse">
+                                            <div className="bg-[var(--bg-secondary)]lack/60 backdrop-blur-md px-6 py-2 rounded-full text-[var(--text-primary)] border border-[var(--border-color)] animate-pulse">
                                                 {interimTranscript}...
                                             </div>
                                         </div>
@@ -669,7 +669,7 @@ export default function SoftSkills() {
                                         {isRecording ? <MicOff size={32} className="text-[var(--text-primary)]" /> : <Mic size={32} className="text-[var(--text-primary)]" />}
                                     </button>
 
-                                    <div className="absolute right-8 text-xs text-slate-500 font-mono">
+                                    <div className="absolute right-8 text-xs text-[var(--text-muted)] font-mono">
                                         {isRecording ? "Listening..." : "Click Mic to Speak"}
                                     </div>
                                 </div>
@@ -681,7 +681,7 @@ export default function SoftSkills() {
                         {/* Vocabulary */}
                         {activeTab === 'vocabulary' && (
                             <div className="space-y-6 animate-fade-in pb-20">
-                                <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden">
+                                <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
                                     <div className="flex items-center justify-between mb-8 relative z-10">
@@ -692,14 +692,14 @@ export default function SoftSkills() {
                                                 </div>
                                                 Power Vocabulary
                                             </h3>
-                                            <p className="text-slate-400 text-lg">Master 50 advanced words to elevate your professional presence.</p>
+                                            <p className="text-[var(--text-secondary)] text-lg">Master 50 advanced words to elevate your professional presence.</p>
                                         </div>
 
                                         <button
                                             onClick={fetchVocabulary}
                                             disabled={isLoadingVocab}
                                             className={`px-8 py-4 rounded-xl font-bold flex items-center gap-3 shadow-lg transition-all ${isLoadingVocab
-                                                ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                                                ? 'bg-[var(--border-color)] text-[var(--text-secondary)] cursor-not-allowed'
                                                 : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:shadow-cyan-500/30 hover:-translate-y-1'
                                                 }`}
                                         >
@@ -710,37 +710,37 @@ export default function SoftSkills() {
 
                                     {vocabList.length === 0 && !isLoadingVocab ? (
                                         <div className="text-center py-20 border-2 border-dashed border-[var(--border-color)] rounded-2xl">
-                                            <BookOpen size={64} className="text-slate-600 mx-auto mb-4" />
-                                            <h4 className="text-xl font-bold text-slate-400">Ready to learn?</h4>
-                                            <p className="text-slate-500 mb-6">Click the button above to generate 50 advanced words tailored for you.</p>
-                                            <button onClick={fetchVocabulary} className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-all">Start Learning</button>
+                                            <BookOpen size={64} className="text-[var(--text-primary)] mx-auto mb-4" />
+                                            <h4 className="text-xl font-bold text-[var(--text-secondary)]">Ready to learn?</h4>
+                                            <p className="text-[var(--text-muted)] mb-6">Click the button above to generate 50 advanced words tailored for you.</p>
+                                            <button onClick={fetchVocabulary} className="px-6 py-2 bg-[var(--border-color)] hover:bg-[var(--bg-secondary)] rounded-lg font-semibold transition-all">Start Learning</button>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                             {vocabList.map((item, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="group p-6 bg-slate-900/80 rounded-2xl border border-[var(--border-color)] hover:border-cyan-500/50 hover:bg-slate-900 transition-all hover:shadow-lg hover:shadow-cyan-500/10 flex flex-col h-full relative overflow-hidden"
+                                                    className="group p-6 bg-[var(--glass-bg)] rounded-2xl border border-[var(--border-color)] hover:border-cyan-500/50 hover:bg-[var(--bg-secondary)] transition-all hover:shadow-lg hover:shadow-cyan-500/10 flex flex-col h-full relative overflow-hidden"
                                                 >
                                                     <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
 
                                                     <div className="flex items-start justify-between mb-4">
                                                         <div>
-                                                            <div className="text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">{item.context || 'General'}</div>
+                                                            <div className="text-xs font-bold text-[var(--text-muted)] mb-1 uppercase tracking-wider">{item.context || 'General'}</div>
                                                             <h4 className="text-2xl font-black text-cyan-400 group-hover:text-cyan-300">{item.word}</h4>
                                                         </div>
                                                         <button
                                                             onClick={() => speakText(item.word)}
-                                                            className="p-3 rounded-xl bg-slate-800 hover:bg-cyan-500/20 hover:text-cyan-400 transition-colors"
+                                                            className="p-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-cyan-500/20 hover:text-cyan-400 transition-colors"
                                                         >
                                                             <Volume2 size={18} />
                                                         </button>
                                                     </div>
 
                                                     <div className="flex-1">
-                                                        <p className="text-slate-200 font-medium mb-4 leading-relaxed">{item.meaning}</p>
-                                                        <div className="bg-slate-950/50 p-4 rounded-xl border border-[var(--border-color)]">
-                                                            <p className="text-sm text-slate-400 italic">"{item.usage}"</p>
+                                                        <p className="text-[var(--text-primary)] font-medium mb-4 leading-relaxed">{item.meaning}</p>
+                                                        <div className="bg-[var(--bg-secondary)]/50 p-4 rounded-xl border border-[var(--border-color)]">
+                                                            <p className="text-sm text-[var(--text-secondary)] italic">"{item.usage}"</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -749,10 +749,10 @@ export default function SoftSkills() {
                                     )}
 
                                     {isLoadingVocab && (
-                                        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center z-20">
+                                        <div className="absolute inset-0 bg-[var(--glass-bg)] backdrop-blur-sm flex flex-col items-center justify-center z-20">
                                             <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4" />
                                             <h4 className="text-xl font-bold animate-pulse">Curating your customized list...</h4>
-                                            <p className="text-slate-400">Consulting AI Linguist</p>
+                                            <p className="text-[var(--text-secondary)]">Consulting AI Linguist</p>
                                         </div>
                                     )}
                                 </div>
@@ -762,7 +762,7 @@ export default function SoftSkills() {
                         {/* Writing */}
                         {activeTab === 'writing' && (
                             <div className="space-y-6 animate-fade-in pb-20">
-                                <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden">
+                                <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden">
                                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
 
                                     <h3 className="text-3xl font-black flex items-center gap-3 mb-6 relative z-10">
@@ -774,9 +774,9 @@ export default function SoftSkills() {
 
                                     {!writingTopic && !writingFeedback && (
                                         <div className="text-center py-20 border-2 border-dashed border-[var(--border-color)] rounded-2xl">
-                                            <Sparkles size={64} className="text-slate-600 mx-auto mb-4" />
-                                            <h4 className="text-xl font-bold text-slate-400">Ready to write?</h4>
-                                            <p className="text-slate-500 mb-6 max-w-md mx-auto">Get an AI-generated professional topic, write for 5 minutes, and receive instant expert feedback.</p>
+                                            <Sparkles size={64} className="text-[var(--text-primary)] mx-auto mb-4" />
+                                            <h4 className="text-xl font-bold text-[var(--text-secondary)]">Ready to write?</h4>
+                                            <p className="text-[var(--text-muted)] mb-6 max-w-md mx-auto">Get an AI-generated professional topic, write for 5 minutes, and receive instant expert feedback.</p>
                                             <button
                                                 onClick={fetchWritingTopic}
                                                 disabled={isEvaluating}
@@ -791,13 +791,13 @@ export default function SoftSkills() {
                                     {(writingTopic || writingFeedback) && (
                                         <div className="space-y-6 relative z-10">
                                             {/* Topic & Timer */}
-                                            <div className="bg-slate-900/60 p-6 rounded-2xl border border-[var(--border-color)] flex flex-col md:flex-row gap-4 items-center justify-between">
+                                            <div className="bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)] flex flex-col md:flex-row gap-4 items-center justify-between">
                                                 <div>
                                                     <div className="text-sm text-pink-400 font-bold uppercase tracking-wider mb-1">Your Topic</div>
                                                     <h4 className="text-xl font-bold">{writingTopic}</h4>
                                                 </div>
                                                 {isWriting && (
-                                                    <div className={`px-4 py-2 rounded-xl border font-mono font-bold text-xl flex items-center gap-2 ${writingTimeLeft < 60 ? 'bg-red-500/10 border-red-500/30 text-red-400 animate-pulse' : 'bg-slate-800 border-[var(--border-color)]'}`}>
+                                                    <div className={`px-4 py-2 rounded-xl border font-mono font-bold text-xl flex items-center gap-2 ${writingTimeLeft < 60 ? 'bg-red-500/10 border-red-500/30 text-red-400 animate-pulse' : 'bg-[var(--bg-secondary)] border-[var(--border-color)]'}`}>
                                                         <Clock size={20} />
                                                         {formatTime(writingTimeLeft)}
                                                     </div>
@@ -812,12 +812,12 @@ export default function SoftSkills() {
                                                         onChange={(e) => setWritingInput(e.target.value)}
                                                         disabled={!isWriting || isEvaluating}
                                                         placeholder="Start writing here..."
-                                                        className="w-full h-80 p-6 rounded-2xl bg-slate-900/80 border border-[var(--border-color)] focus:border-pink-500/50 outline-none text-lg leading-relaxed resize-none"
+                                                        className="w-full h-80 p-6 rounded-2xl bg-[var(--glass-bg)] border border-[var(--border-color)] focus:border-pink-500/50 outline-none text-lg leading-relaxed resize-none"
                                                     />
                                                     <div className="flex justify-end gap-4">
                                                         <button
                                                             onClick={() => setWritingFeedback(null) || setWritingTopic('')}
-                                                            className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold"
+                                                            className="px-6 py-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] text-[var(--text-secondary)] font-bold"
                                                         >
                                                             Cancel
                                                         </button>
@@ -838,7 +838,7 @@ export default function SoftSkills() {
                                                 <div className="animate-fade-in space-y-6">
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                         {/* Score Card */}
-                                                        <div className="bg-slate-900/60 p-6 rounded-2xl border border-[var(--border-color)] flex flex-col items-center justify-center text-center">
+                                                        <div className="bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)] flex flex-col items-center justify-center text-center">
                                                             <div className="relative w-32 h-32 mb-4 flex items-center justify-center">
                                                                 <svg className="w-full h-full transform -rotate-90">
                                                                     <circle cx="64" cy="64" r="56" stroke="#1e293b" strokeWidth="8" fill="transparent" />
@@ -846,21 +846,21 @@ export default function SoftSkills() {
                                                                 </svg>
                                                                 <div className="absolute text-3xl font-black">{writingFeedback.score}</div>
                                                             </div>
-                                                            <div className="text-slate-400 font-bold">Overall Score</div>
+                                                            <div className="text-[var(--text-secondary)] font-bold">Overall Score</div>
                                                         </div>
 
                                                         {/* Feedback Text */}
-                                                        <div className="md:col-span-2 bg-slate-900/60 p-6 rounded-2xl border border-[var(--border-color)]">
+                                                        <div className="md:col-span-2 bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)]">
                                                             <h4 className="text-lg font-bold mb-4 flex items-center gap-2 text-pink-400">
                                                                 <Sparkles size={20} />
                                                                 Analysis
                                                             </h4>
-                                                            <p className="text-slate-300 leading-relaxed mb-6">{writingFeedback.feedback}</p>
+                                                            <p className="text-[var(--text-secondary)] leading-relaxed mb-6">{writingFeedback.feedback}</p>
 
-                                                            <h5 className="font-bold text-slate-400 mb-3 uppercase text-xs tracking-wider">Key Improvements</h5>
+                                                            <h5 className="font-bold text-[var(--text-secondary)] mb-3 uppercase text-xs tracking-wider">Key Improvements</h5>
                                                             <ul className="space-y-2">
                                                                 {writingFeedback.improvements?.map((imp, idx) => (
-                                                                    <li key={idx} className="flex items-start gap-2 text-sm text-slate-300">
+                                                                    <li key={idx} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
                                                                         <div className="mt-1 w-1.5 h-1.5 rounded-full bg-pink-500" />
                                                                         {imp}
                                                                     </li>
@@ -871,7 +871,7 @@ export default function SoftSkills() {
 
                                                     <button
                                                         onClick={() => { setWritingTopic(''); setWritingFeedback(null); }}
-                                                        className="w-full py-4 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold border border-[var(--border-color)] transition-all"
+                                                        className="w-full py-4 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] font-bold border border-[var(--border-color)] transition-all"
                                                     >
                                                         Start New Session
                                                     </button>
@@ -886,7 +886,7 @@ export default function SoftSkills() {
                         {/* Speaking / Extempore */}
                         {activeTab === 'speaking' && (
                             <div className="space-y-6 animate-fade-in pb-20">
-                                <div className="bg-slate-800/50 backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden">
+                                <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden">
                                     <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-/10 rounded-full blur-3xl pointer-events-none" />
 
                                     <h3 className="text-3xl font-black flex items-center gap-3 mb-6 relative z-10">
@@ -898,9 +898,9 @@ export default function SoftSkills() {
 
                                     {!speakingTopic && !speechFeedback && (
                                         <div className="text-center py-20 border-2 border-dashed border-[var(--border-color)] rounded-2xl">
-                                            <TrendingUp size={64} className="text-slate-600 mx-auto mb-4" />
-                                            <h4 className="text-xl font-bold text-slate-400">Ready for a Challenge?</h4>
-                                            <p className="text-slate-500 mb-6 max-w-md mx-auto">Get a surprise engineering/tech topic, speak for 2 minutes, and get evaluated on your delivery.</p>
+                                            <TrendingUp size={64} className="text-[var(--text-primary)] mx-auto mb-4" />
+                                            <h4 className="text-xl font-bold text-[var(--text-secondary)]">Ready for a Challenge?</h4>
+                                            <p className="text-[var(--text-muted)] mb-6 max-w-md mx-auto">Get a surprise engineering/tech topic, speak for 2 minutes, and get evaluated on your delivery.</p>
                                             <button
                                                 onClick={fetchSpeakingTopic}
                                                 disabled={isEvaluatingSpeech}
@@ -915,12 +915,12 @@ export default function SoftSkills() {
                                     {(speakingTopic || speechFeedback) && (
                                         <div className="space-y-6 relative z-10">
                                             {/* Topic & Controls */}
-                                            <div className="bg-slate-900/60 p-6 rounded-2xl border border-[var(--border-color)] flex flex-col items-center text-center gap-4">
+                                            <div className="bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)] flex flex-col items-center text-center gap-4">
                                                 <div className="text-sm text-cyan- font-bold uppercase tracking-wider">Your Topic</div>
                                                 <h4 className="text-2xl font-black max-w-2xl">{speakingTopic}</h4>
 
                                                 <div className="flex items-center gap-4 mt-2">
-                                                    <div className={`text-3xl font-mono font-black ${speechTimeLeft < 30 ? 'text-red-500 animate-pulse' : 'text-slate-200'}`}>
+                                                    <div className={`text-3xl font-mono font-black ${speechTimeLeft < 30 ? 'text-red-500 animate-pulse' : 'text-[var(--text-primary)]'}`}>
                                                         {formatTime(speechTimeLeft)}
                                                     </div>
                                                 </div>
@@ -940,7 +940,7 @@ export default function SoftSkills() {
                                                             <button
                                                                 onClick={submitSpeech}
                                                                 disabled={isEvaluatingSpeech}
-                                                                className="px-6 py-3 rounded-xl bg-slate-800 border border-[var(--border-color)] hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:text-emerald-400 transition-all font-bold flex items-center gap-2"
+                                                                className="px-6 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:text-emerald-400 transition-all font-bold flex items-center gap-2"
                                                             >
                                                                 {isEvaluatingSpeech ? <RefreshCw className="animate-spin" /> : <CheckCircle />}
                                                                 Finish & Evaluate
@@ -951,25 +951,25 @@ export default function SoftSkills() {
                                             </div>
 
                                             {/* Transcript Display */}
-                                            <div className="bg-slate-950/30 p-4 rounded-xl border border-[var(--border-color)] min-h-[100px] max-h-[200px] overflow-y-auto font-mono text-sm text-slate-400">
+                                            <div className="bg-[var(--bg-secondary)]/30 p-4 rounded-xl border border-[var(--border-color)] min-h-[100px] max-h-[200px] overflow-y-auto font-mono text-sm text-[var(--text-secondary)]">
                                                 {speechTranscript || (isRecording ? "Listening..." : "Your speech transcript will appear here...")}
-                                                {interimTranscript && <span className="text-slate-500 animate-pulse"> {interimTranscript}</span>}
+                                                {interimTranscript && <span className="text-[var(--text-muted)] animate-pulse"> {interimTranscript}</span>}
                                             </div>
 
                                             {/* Evaluation Result */}
                                             {speechFeedback && (
-                                                <div className="animate-fade-in bg-slate-900/60 p-6 rounded-2xl border border-[var(--border-color)]">
+                                                <div className="animate-fade-in bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)]">
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                        <div className="flex flex-col items-center justify-center p-4 bg-slate-950/50 rounded-xl">
+                                                        <div className="flex flex-col items-center justify-center p-4 bg-[var(--bg-secondary)]/50 rounded-xl">
                                                             <div className="text-4xl font-black text-cyan- mb-2">{speechFeedback.score}/100</div>
-                                                            <div className="text-xs text-slate-500 uppercase tracking-widest">Speaking Score</div>
+                                                            <div className="text-xs text-[var(--text-muted)] uppercase tracking-widest">Speaking Score</div>
                                                         </div>
                                                         <div className="md:col-span-2">
                                                             <h5 className="font-bold text-cyan- mb-2 flex items-center gap-2"><Sparkles size={16} /> Feedback</h5>
-                                                            <p className="text-slate-300 text-sm leading-relaxed mb-4">{speechFeedback.feedback}</p>
+                                                            <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">{speechFeedback.feedback}</p>
                                                             <ul className="space-y-1">
                                                                 {speechFeedback.improvements?.map((imp, idx) => (
-                                                                    <li key={idx} className="text-xs text-slate-400 flex items-start gap-2">
+                                                                    <li key={idx} className="text-xs text-[var(--text-secondary)] flex items-start gap-2">
                                                                         <div className="w-1 h-1 rounded-full bg-cyan- mt-1.5" />
                                                                         {imp}
                                                                     </li>
@@ -979,7 +979,7 @@ export default function SoftSkills() {
                                                     </div>
                                                     <button
                                                         onClick={() => { setSpeakingTopic(''); setSpeechFeedback(null); setSpeechTranscript(''); }}
-                                                        className="w-full mt-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold transition-all text-sm uppercase tracking-wide"
+                                                        className="w-full mt-6 py-3 rounded-xl bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] font-bold transition-all text-sm uppercase tracking-wide"
                                                     >
                                                         Try Another Topic
                                                     </button>
@@ -995,7 +995,7 @@ export default function SoftSkills() {
                     {/* Sidebar */}
                     <div className="space-y-5">
                         {/* Daily Challenges */}
-                        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)]">
+                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)]">
                             <div className="font-bold mb-4 flex items-center gap-2">
                                 <Flame className="text-amber-500" />
                                 Daily Challenges
@@ -1006,7 +1006,7 @@ export default function SoftSkills() {
                                         key={challenge.id}
                                         className={`p-4 rounded-xl border transition-all ${challenge.completed
                                             ? 'bg-emerald-500/10 border-emerald-500/30'
-                                            : 'bg-slate-900/60 border-[var(--border-color)] hover:border-amber-500/30 cursor-pointer'
+                                            : 'bg-[var(--glass-bg)] border-[var(--border-color)] hover:border-amber-500/30 cursor-pointer'
                                             }`}
                                         onClick={() => !challenge.completed && completeChallenge(challenge.id, challenge.xp)}
                                     >
@@ -1017,7 +1017,7 @@ export default function SoftSkills() {
                                                 ) : (
                                                     <div className="w-5 h-5 rounded-full border-2 border-amber-500/50" />
                                                 )}
-                                                <span className={`text-sm ${challenge.completed ? 'text-slate-400 line-through' : 'text-[var(--text-primary)]'}`}>
+                                                <span className={`text-sm ${challenge.completed ? 'text-[var(--text-secondary)] line-through' : 'text-[var(--text-primary)]'}`}>
                                                     {challenge.title}
                                                 </span>
                                             </div>
@@ -1031,7 +1031,7 @@ export default function SoftSkills() {
                         </div>
 
                         {/* Progress Stats */}
-                        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)]">
+                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)]">
                             <div className="font-bold mb-4 flex items-center gap-2">
                                 <BarChart3 className="text-cyan-" />
                                 Your Progress
@@ -1040,21 +1040,21 @@ export default function SoftSkills() {
                             <div className="space-y-4">
                                 <div>
                                     <div className="flex justify-between text-sm mb-2">
-                                        <span className="text-slate-400">Speech Confidence</span>
+                                        <span className="text-[var(--text-secondary)]">Speech Confidence</span>
                                         <span className="font-bold text-cyan-">{stats.speechScore}%</span>
                                     </div>
                                     <ProgressBar value={stats.speechScore} color="violet" />
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm mb-2">
-                                        <span className="text-slate-400">Interview Readiness</span>
+                                        <span className="text-[var(--text-secondary)]">Interview Readiness</span>
                                         <span className="font-bold text-cyan-400">{stats.interviewReady}%</span>
                                     </div>
                                     <ProgressBar value={stats.interviewReady} color="cyan" />
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm mb-2">
-                                        <span className="text-slate-400">Vocabulary</span>
+                                        <span className="text-[var(--text-secondary)]">Vocabulary</span>
                                         <span className="font-bold text-pink-400">{stats.vocabProgress}%</span>
                                     </div>
                                     <ProgressBar value={stats.vocabProgress} color="pink" />
@@ -1063,7 +1063,7 @@ export default function SoftSkills() {
                         </div>
 
                         {/* Achievements */}
-                        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)]">
+                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)]">
                             <div className="font-bold mb-4 flex items-center gap-2">
                                 <Trophy className="text-amber-500" />
                                 Achievements
@@ -1074,12 +1074,12 @@ export default function SoftSkills() {
                                         key={idx}
                                         className={`p-3 rounded-xl text-center ${badge.unlocked
                                             ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30'
-                                            : 'bg-slate-900/60 border border-[var(--border-color)] opacity-50'
+                                            : 'bg-[var(--glass-bg)] border border-[var(--border-color)] opacity-50'
                                             }`}
                                     >
-                                        <badge.icon size={24} className={badge.unlocked ? 'text-amber-400 mx-auto' : 'text-slate-500 mx-auto'} />
-                                        <div className="text-xs mt-2 text-slate-400">{badge.label}</div>
-                                        {!badge.unlocked && <Lock size={12} className="mx-auto mt-1 text-slate-600" />}
+                                        <badge.icon size={24} className={badge.unlocked ? 'text-amber-400 mx-auto' : 'text-[var(--text-muted)] mx-auto'} />
+                                        <div className="text-xs mt-2 text-[var(--text-secondary)]">{badge.label}</div>
+                                        {!badge.unlocked && <Lock size={12} className="mx-auto mt-1 text-[var(--text-primary)]" />}
                                     </div>
                                 ))}
                             </div>

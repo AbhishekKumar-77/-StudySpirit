@@ -361,7 +361,7 @@ export default function CodeEditor() {
     return (
         <div className={`min-h-screen font-sans ${theme === "light" ? "bg-gray-100 text-gray-900" : "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-[var(--text-primary)]"}`}>
             {/* Navbar */}
-            <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 ${theme === "light" ? "bg-white/80 border-gray-200" : "bg-slate-900/80 border-cyan-500/10"}`}>
+            <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 ${theme === "light" ? "bg-white/80 border-gray-200" : "bg-[var(--glass-bg)] border-cyan-500/10"}`}>
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between">
                     <button onClick={() => navigate(isChallengeMode ? "/codespirit" : "/dashboard")} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === "light" ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-cyan-/10 text-violet-300 hover:bg-cyan-/20"}`}>
                         <ArrowLeft size={18} /> {isChallengeMode ? "Exit Challenge" : "Back"}
@@ -386,16 +386,16 @@ export default function CodeEditor() {
                                 onClick={() => setShowQuestionNav(!showQuestionNav)}
                                 className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all ${showQuestionNav
                                     ? (theme === "light" ? "bg-violet-200 text-violet-800" : "bg-cyan-/30 text-violet-300")
-                                    : (theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-800 hover:bg-slate-700")
+                                    : (theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--bg-secondary)] hover:bg-[var(--border-color)]")
                                     }`}
                             >
                                 <Hash size={16} /> Q{currentIndex + 1}/{totalQuestions}
                             </button>
                         )}
-                        <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-lg transition-all ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-800 hover:bg-slate-700"}`}>
+                        <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-lg transition-all ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--bg-secondary)] hover:bg-[var(--border-color)]"}`}>
                             <Settings size={20} />
                         </button>
-                        <button onClick={() => setTheme(theme === "vs-dark" ? "light" : "vs-dark")} className={`p-2 rounded-lg transition-all ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-800 hover:bg-slate-700"}`}>
+                        <button onClick={() => setTheme(theme === "vs-dark" ? "light" : "vs-dark")} className={`p-2 rounded-lg transition-all ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--bg-secondary)] hover:bg-[var(--border-color)]"}`}>
                             {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
                         </button>
                     </div>
@@ -404,7 +404,7 @@ export default function CodeEditor() {
 
             {/* Progress Bar for multi-question mode */}
             {totalQuestions > 1 && (
-                <div className={`px-6 py-2 ${theme === "light" ? "bg-white border-b border-gray-200" : "bg-slate-900/60 border-b border-[var(--border-color)]"}`}>
+                <div className={`px-6 py-2 ${theme === "light" ? "bg-white border-b border-gray-200" : "bg-[var(--glass-bg)] border-b border-[var(--border-color)]"}`}>
                     <div className="max-w-[1600px] mx-auto">
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-semibold flex items-center gap-2">
@@ -417,7 +417,7 @@ export default function CodeEditor() {
                             </span>
                         </div>
                         {/* Progress bar */}
-                        <div className={`h-2 rounded-full overflow-hidden ${theme === "light" ? "bg-gray-200" : "bg-slate-800"}`}>
+                        <div className={`h-2 rounded-full overflow-hidden ${theme === "light" ? "bg-gray-200" : "bg-[var(--bg-secondary)]"}`}>
                             <div
                                 className="h-full rounded-full bg-gradient-to-r from-cyan- to-emerald-500 transition-all duration-500"
                                 style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }}
@@ -435,7 +435,7 @@ export default function CodeEditor() {
                                             ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                                             : theme === "light"
                                                 ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                                                : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--border-color)]"
                                         }`}
                                 >
                                     {idx + 1}
@@ -448,8 +448,8 @@ export default function CodeEditor() {
 
             <div className={`max-w-[1600px] mx-auto p-6 ${isChallengeMode ? 'h-[calc(100vh-88px)]' : ''}`}>
                 {/* Toolbar */}
-                <div className={`flex flex-wrap items-center gap-3 mb-4 p-4 rounded-xl ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-[var(--border-color)]"}`}>
-                    <select value={language.id} onChange={(e) => changeLanguage(e.target.value)} className={`px-4 py-2 rounded-lg font-semibold ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-slate-900 border border-cyan-500/30"}`}>
+                <div className={`flex flex-wrap items-center gap-3 mb-4 p-4 rounded-xl ${theme === "light" ? "bg-white border border-gray-200" : "bg-[var(--glass-bg)] border border-[var(--border-color)]"}`}>
+                    <select value={language.id} onChange={(e) => changeLanguage(e.target.value)} className={`px-4 py-2 rounded-lg font-semibold ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-[var(--bg-secondary)] border border-cyan-500/30"}`}>
                         {LANGUAGES.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>
                     <button onClick={runCode} disabled={isRunning} className={`px-5 py-2 rounded-lg font-bold flex items-center gap-2 transition-all ${isRunning ? "opacity-50 cursor-not-allowed" : ""} bg-gradient-to-r from-emerald-500 to-green-600 text-[var(--text-primary)] shadow-lg shadow-emerald-500/30`}>
@@ -475,7 +475,7 @@ export default function CodeEditor() {
                     <button onClick={exportPDF} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-purple-100 text-purple-700 hover:bg-purple-200" : "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"}`}>
                         <Download size={16} /> PDF
                     </button>
-                    <button onClick={copyCode} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-gray-100 hover:bg-gray-200" : "bg-slate-700 hover:bg-slate-600"}`}>
+                    <button onClick={copyCode} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-gray-100 hover:bg-gray-200" : "bg-[var(--border-color)] hover:bg-[var(--bg-secondary)]"}`}>
                         <Copy size={16} /> Copy
                     </button>
                     <button onClick={resetCode} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-red-500/20 text-red-400 hover:bg-red-500/30"}`}>
@@ -488,7 +488,7 @@ export default function CodeEditor() {
                             <button
                                 onClick={goPrev}
                                 disabled={currentIndex === 0}
-                                className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-1 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-700 hover:bg-slate-600"}`}
+                                className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-1 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--border-color)] hover:bg-[var(--bg-secondary)]"}`}
                             >
                                 <ChevronLeft size={18} /> Prev
                             </button>
@@ -500,7 +500,7 @@ export default function CodeEditor() {
                                 disabled={currentIndex === totalQuestions - 1}
                                 className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-1 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${currentIndex < totalQuestions - 1
                                     ? "bg-gradient-to-r from-cyan- to-indigo-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40"
-                                    : (theme === "light" ? "bg-gray-200" : "bg-slate-700")
+                                    : (theme === "light" ? "bg-gray-200" : "bg-[var(--border-color)]")
                                     }`}
                             >
                                 Next <ChevronRight size={18} />
@@ -513,11 +513,11 @@ export default function CodeEditor() {
 
                 {/* Settings Panel */}
                 {showSettings && (
-                    <div className={`mb-4 p-4 rounded-xl ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-[var(--border-color)]"}`}>
+                    <div className={`mb-4 p-4 rounded-xl ${theme === "light" ? "bg-white border border-gray-200" : "bg-[var(--glass-bg)] border border-[var(--border-color)]"}`}>
                         <div className="flex flex-wrap items-center gap-6">
                             <div className="flex items-center gap-3">
                                 <span className="text-sm font-semibold">Theme:</span>
-                                <select value={theme} onChange={(e) => setTheme(e.target.value)} className={`px-3 py-1 rounded-lg ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-slate-900 border border-cyan-500/30"}`}>
+                                <select value={theme} onChange={(e) => setTheme(e.target.value)} className={`px-3 py-1 rounded-lg ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-[var(--bg-secondary)] border border-cyan-500/30"}`}>
                                     {THEMES.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                 </select>
                             </div>
@@ -534,7 +534,7 @@ export default function CodeEditor() {
 
                     {/* LEFT PANEL: Problem Statement (Only if challenge mode) */}
                     {isChallengeMode && currentProblem && (
-                        <div className={`rounded-xl overflow-y-auto p-6 border ${theme === "light" ? "bg-white border-gray-200" : "bg-slate-800/50 border-[var(--border-color)]"}`}>
+                        <div className={`rounded-xl overflow-y-auto p-6 border ${theme === "light" ? "bg-white border-gray-200" : "bg-[var(--glass-bg)] border-[var(--border-color)]"}`}>
                             {/* Question badge */}
                             <div className="flex items-center justify-between mb-4">
                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-cyan-/20 text-cyan-`}>
@@ -584,7 +584,7 @@ export default function CodeEditor() {
                                     <button
                                         onClick={goPrev}
                                         disabled={currentIndex === 0}
-                                        className={`px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-slate-700 hover:bg-slate-600"}`}
+                                        className={`px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--border-color)] hover:bg-[var(--bg-secondary)]"}`}
                                     >
                                         <ChevronLeft size={18} /> Previous
                                     </button>
@@ -602,7 +602,7 @@ export default function CodeEditor() {
                                         disabled={currentIndex === totalQuestions - 1}
                                         className={`px-5 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed ${currentIndex < totalQuestions - 1
                                             ? "bg-gradient-to-r from-cyan- to-indigo-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/20"
-                                            : (theme === "light" ? "bg-gray-200" : "bg-slate-700")
+                                            : (theme === "light" ? "bg-gray-200" : "bg-[var(--border-color)]")
                                             }`}
                                     >
                                         Next <ChevronRight size={18} />
@@ -659,17 +659,17 @@ export default function CodeEditor() {
 
                         {/* Input (stdin) */}
                         {["python", "java", "cpp", "c"].includes(language.id) && (
-                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-[var(--border-color)]"}`}>
+                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-white border border-gray-200" : "bg-[var(--glass-bg)] border border-[var(--border-color)]"}`}>
                                 <div className="text-sm font-semibold mb-2 flex items-center gap-2"><Terminal size={16} /> Input (stdin)</div>
-                                <textarea value={stdin} onChange={(e) => setStdin(e.target.value)} rows={2} placeholder="Input..." className={`w-full p-3 rounded-lg font-mono text-sm resize-none ${theme === "light" ? "bg-gray-50 border border-gray-200" : "bg-slate-900 border border-cyan-500/20"}`} />
+                                <textarea value={stdin} onChange={(e) => setStdin(e.target.value)} rows={2} placeholder="Input..." className={`w-full p-3 rounded-lg font-mono text-sm resize-none ${theme === "light" ? "bg-gray-50 border border-gray-200" : "bg-[var(--bg-secondary)] border border-cyan-500/20"}`} />
                             </div>
                         )}
 
                         {/* Output */}
-                        <div className={`rounded-xl p-4 max-h-[200px] overflow-hidden flex flex-col ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-[var(--border-color)]"}`}>
+                        <div className={`rounded-xl p-4 max-h-[200px] overflow-hidden flex flex-col ${theme === "light" ? "bg-white border border-gray-200" : "bg-[var(--glass-bg)] border border-[var(--border-color)]"}`}>
                             <div className="flex justify-between items-center mb-2">
                                 <div className="text-sm font-semibold flex items-center gap-2"><Terminal size={16} /> Output</div>
-                                <button onClick={clearOutput} className="text-xs px-3 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-[var(--text-primary)]">Clear</button>
+                                <button onClick={clearOutput} className="text-xs px-3 py-1 rounded-lg bg-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]">Clear</button>
                             </div>
                             <pre className={`flex-1 overflow-auto p-3 rounded-lg font-mono text-sm ${theme === "light" ? "bg-gray-900 text-green-400" : "bg-[var(--bg-secondary)]lack/40 text-green-400"}`}>
                                 {output || "Run code to see output..."}
@@ -681,14 +681,14 @@ export default function CodeEditor() {
                     {!isChallengeMode && (
                         <div className="flex flex-col gap-4">
                             {/* Saved Files */}
-                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-[var(--border-color)]"}`}>
+                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-white border border-gray-200" : "bg-[var(--glass-bg)] border border-[var(--border-color)]"}`}>
                                 <div className="text-sm font-semibold mb-3 flex items-center gap-2"><FolderOpen size={16} /> Saved Files</div>
                                 {savedFiles.length === 0 ? (
                                     <div className="text-center py-6 text-sm opacity-50">No files</div>
                                 ) : (
                                     <div className="flex flex-col gap-2 max-h-[200px] overflow-auto">
                                         {savedFiles.map(f => (
-                                            <div key={f.name} className={`p-3 rounded-lg flex justify-between items-center cursor-pointer transition-all ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-slate-900/60 hover:bg-cyan-/10"}`}>
+                                            <div key={f.name} className={`p-3 rounded-lg flex justify-between items-center cursor-pointer transition-all ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-[var(--glass-bg)] hover:bg-cyan-/10"}`}>
                                                 <div onClick={() => loadFile(f)} className="flex-1">
                                                     <div className="font-semibold text-sm">{f.name}</div>
                                                     <div className="text-xs opacity-50">{LANGUAGES.find(l => l.id === f.language)?.name}</div>
@@ -701,7 +701,7 @@ export default function CodeEditor() {
                             </div>
 
                             {/* Language Info */}
-                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-white border border-gray-200" : "bg-slate-800/50 border border-[var(--border-color)]"}`}>
+                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-white border border-gray-200" : "bg-[var(--glass-bg)] border border-[var(--border-color)]"}`}>
                                 <div className="text-sm font-semibold mb-3 flex items-center gap-2"><FileText size={16} /> Info</div>
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between"><span className="opacity-70">Lang</span><span className="font-semibold">{language.name}</span></div>

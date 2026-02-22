@@ -157,7 +157,7 @@ export default function ProjectLab() {
         const isOwner = project.owner?._id === user?._id || project.owner === user?._id;
 
         return (
-            <div className={`bg-[#1e1e2d] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:border-cyan-500/30 transition-all group ${viewMode === 'list' ? 'flex items-center' : ''}`}>
+            <div className={`bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:border-cyan-500/30 transition-all group ${viewMode === 'list' ? 'flex items-center' : ''}`}>
                 {/* Thumbnail / Header */}
                 <div className={`bg-gradient-to-br ${categoryColors[project.category]} p-4 ${viewMode === 'list' ? 'w-20 h-20 flex-shrink-0' : 'h-32'} flex items-center justify-center relative`}>
                     <CategoryIcon className={`text-[var(--text-primary)]/80 ${viewMode === 'list' ? 'w-8 h-8' : 'w-12 h-12'}`} />
@@ -181,7 +181,7 @@ export default function ProjectLab() {
                                         onClick={(e) => { e.stopPropagation(); navigate(`/project-lab/${project._id}/edit`); }}
                                         className="p-1 hover:bg-white/10 rounded"
                                     >
-                                        <Edit className="w-4 h-4 text-slate-400" />
+                                        <Edit className="w-4 h-4 text-[var(--text-secondary)]" />
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleDeleteProject(project._id); }}
@@ -194,7 +194,7 @@ export default function ProjectLab() {
                         </div>
 
                         {viewMode !== 'list' && (
-                            <p className="text-sm text-slate-400 line-clamp-2 mb-3">
+                            <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-3">
                                 {project.description || 'No description'}
                             </p>
                         )}
@@ -208,7 +208,7 @@ export default function ProjectLab() {
                                     </span>
                                 ))}
                                 {project.techStack.length > 3 && (
-                                    <span className="px-2 py-0.5 bg-white/10 text-slate-400 text-xs rounded-full">
+                                    <span className="px-2 py-0.5 bg-white/10 text-[var(--text-secondary)] text-xs rounded-full">
                                         +{project.techStack.length - 3}
                                     </span>
                                 )}
@@ -217,7 +217,7 @@ export default function ProjectLab() {
                     </div>
 
                     {/* Stats */}
-                    <div className={`flex items-center gap-4 text-xs text-slate-500 ${viewMode === 'list' ? 'ml-4' : 'mt-3 pt-3 border-t border-[var(--border-color)]'}`}>
+                    <div className={`flex items-center gap-4 text-xs text-[var(--text-muted)] ${viewMode === 'list' ? 'ml-4' : 'mt-3 pt-3 border-t border-[var(--border-color)]'}`}>
                         <button
                             onClick={(e) => { e.stopPropagation(); handleToggleStar(project._id); }}
                             className="flex items-center gap-1 hover:text-yellow-400 transition-colors"
@@ -270,14 +270,14 @@ export default function ProjectLab() {
             </div>
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[#0f172a]/80 backdrop-blur-xl border-b border-emerald-500/20 px-6 py-4">
+            <nav className="sticky top-0 z-50 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-emerald-500/20 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate('/dashboard')}
                             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                         >
-                            <ArrowLeft className="w-6 h-6 text-slate-300" />
+                            <ArrowLeft className="w-6 h-6 text-[var(--text-secondary)]" />
                         </button>
                         <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-emerald-500 to-cyan-500 p-2 rounded-lg">
@@ -287,7 +287,7 @@ export default function ProjectLab() {
                                 <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
                                     Project Lab
                                 </h1>
-                                <p className="text-xs text-slate-400">Your Personal Project Portfolio</p>
+                                <p className="text-xs text-[var(--text-secondary)]">Your Personal Project Portfolio</p>
                             </div>
                         </div>
                     </div>
@@ -311,7 +311,7 @@ export default function ProjectLab() {
                             onClick={() => setActiveTab('my')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'my'
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                    : 'bg-white/5 text-[var(--text-secondary)] hover:bg-white/10'
                                 }`}
                         >
                             My Projects
@@ -320,7 +320,7 @@ export default function ProjectLab() {
                             onClick={() => setActiveTab('explore')}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'explore'
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                                    : 'bg-white/5 text-[var(--text-secondary)] hover:bg-white/10'
                                 }`}
                         >
                             Explore
@@ -330,20 +330,20 @@ export default function ProjectLab() {
                     {/* Search & View */}
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search projects..."
-                                className="pl-10 pr-4 py-2 bg-[#1e1e2d] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none w-64"
+                                className="pl-10 pr-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none w-64"
                             />
                         </div>
 
                         <select
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
-                            className="px-3 py-2 bg-[#1e1e2d] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:border-emerald-500/50 focus:outline-none"
+                            className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:border-emerald-500/50 focus:outline-none"
                         >
                             <option value="all">All Categories</option>
                             <option value="web">Web</option>
@@ -357,16 +357,16 @@ export default function ProjectLab() {
                             <option value="other">Other</option>
                         </select>
 
-                        <div className="flex bg-[#1e1e2d] rounded-lg border border-[var(--border-color)] overflow-hidden">
+                        <div className="flex bg-[var(--bg-primary)] rounded-lg border border-[var(--border-color)] overflow-hidden">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 ${viewMode === 'grid' ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-400 hover:bg-white/10'}`}
+                                className={`p-2 ${viewMode === 'grid' ? 'bg-emerald-500/20 text-emerald-400' : 'text-[var(--text-secondary)] hover:bg-white/10'}`}
                             >
                                 <Grid className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`p-2 ${viewMode === 'list' ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-400 hover:bg-white/10'}`}
+                                className={`p-2 ${viewMode === 'list' ? 'bg-emerald-500/20 text-emerald-400' : 'text-[var(--text-secondary)] hover:bg-white/10'}`}
                             >
                                 <List className="w-5 h-5" />
                             </button>
@@ -381,9 +381,9 @@ export default function ProjectLab() {
                     </div>
                 ) : filteredProjects.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-center">
-                        <FolderGit2 className="w-16 h-16 text-slate-600 mb-4" />
-                        <h3 className="text-xl font-semibold text-slate-400 mb-2">No Projects Yet</h3>
-                        <p className="text-slate-500 mb-4">
+                        <FolderGit2 className="w-16 h-16 text-[var(--text-primary)] mb-4" />
+                        <h3 className="text-xl font-semibold text-[var(--text-secondary)] mb-2">No Projects Yet</h3>
+                        <p className="text-[var(--text-muted)] mb-4">
                             {activeTab === 'my'
                                 ? "Create your first project to showcase your work!"
                                 : "No public projects found. Be the first to share!"}
@@ -419,21 +419,21 @@ export default function ProjectLab() {
             {/* Create Project Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-[var(--bg-secondary)]lack/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1e1e2d] rounded-2xl border border-[var(--border-color)] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                    <div className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] w-full max-w-lg max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-[var(--border-color)] flex items-center justify-between">
                             <h2 className="text-xl font-bold text-[var(--text-primary)]">Create New Project</h2>
                             <button
                                 onClick={() => setShowCreateModal(false)}
                                 className="p-2 hover:bg-white/10 rounded-lg"
                             >
-                                <X className="w-5 h-5 text-slate-400" />
+                                <X className="w-5 h-5 text-[var(--text-secondary)]" />
                             </button>
                         </div>
 
                         <div className="p-6 space-y-4">
                             {/* Project Name */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Project Name *</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Project Name *</label>
                                 <input
                                     type="text"
                                     value={newProject.name}
@@ -445,7 +445,7 @@ export default function ProjectLab() {
 
                             {/* Description */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Description</label>
                                 <textarea
                                     value={newProject.description}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
@@ -457,7 +457,7 @@ export default function ProjectLab() {
 
                             {/* Category */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Category</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Category</label>
                                 <select
                                     value={newProject.category}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, category: e.target.value }))}
@@ -477,13 +477,13 @@ export default function ProjectLab() {
 
                             {/* Visibility */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Visibility</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Visibility</label>
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => setNewProject(prev => ({ ...prev, visibility: 'public' }))}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-all ${newProject.visibility === 'public'
                                                 ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                                                : 'border-[var(--border-color)] text-slate-400 hover:bg-white/5'
+                                                : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-white/5'
                                             }`}
                                     >
                                         <Globe className="w-4 h-4" />
@@ -493,7 +493,7 @@ export default function ProjectLab() {
                                         onClick={() => setNewProject(prev => ({ ...prev, visibility: 'private' }))}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-all ${newProject.visibility === 'private'
                                                 ? 'bg-orange-500/20 border-orange-500 text-orange-400'
-                                                : 'border-[var(--border-color)] text-slate-400 hover:bg-white/5'
+                                                : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-white/5'
                                             }`}
                                     >
                                         <Lock className="w-4 h-4" />
@@ -504,7 +504,7 @@ export default function ProjectLab() {
 
                             {/* Tech Stack */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Tech Stack</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Tech Stack</label>
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
@@ -537,7 +537,7 @@ export default function ProjectLab() {
 
                             {/* GitHub URL */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">GitHub URL (optional)</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">GitHub URL (optional)</label>
                                 <input
                                     type="url"
                                     value={newProject.githubUrl}
@@ -549,7 +549,7 @@ export default function ProjectLab() {
 
                             {/* Live URL */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">Live Demo URL (optional)</label>
+                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Live Demo URL (optional)</label>
                                 <input
                                     type="url"
                                     value={newProject.liveUrl}
@@ -563,7 +563,7 @@ export default function ProjectLab() {
                         <div className="p-6 border-t border-[var(--border-color)] flex justify-end gap-3">
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="px-4 py-2 text-slate-400 hover:text-[var(--text-primary)] transition-colors"
+                                className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                             >
                                 Cancel
                             </button>

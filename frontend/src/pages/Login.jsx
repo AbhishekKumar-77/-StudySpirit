@@ -348,7 +348,7 @@ const Login = () => {
                                 <div className="absolute inset-0 flex items-center">
                                     <div className="w-full border-t border-[var(--border-color)]"></div>
                                 </div>
-                                <span className="relative z-10 bg-[#16161f] px-4 text-xs text-gray-500 uppercase tracking-widest">Or connect via</span>
+                                <span className="relative z-10 bg-[var(--bg-primary)] px-4 text-xs text-gray-500 uppercase tracking-widest">Or connect via</span>
                             </div>
 
                             <button type="button" onClick={() => redirectToProvider('google')} className="w-full flex items-center justify-center gap-4 py-4 bg-white/5 hover:bg-white/10 border border-[var(--border-color)] rounded-xl transition-all hover:-translate-y-1 hover:border-white/20 group">

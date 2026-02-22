@@ -1507,70 +1507,70 @@ export default function GroupMode() {
                         {/* Tabs for Create / Join */}
                         <div className="flex gap-4 mb-6 border-b border-[var(--border-color)] pb-4">
                             <button className="text-[var(--text-primary)] font-bold border-b-2 border-cyan-500 pb-2">Create Group</button>
-                            <button className="text-slate-400 font-semibold pb-2 hover:text-[var(--text-primary)] transition-colors">Join by Code</button>
+                            <button className="text-[var(--text-secondary)] font-semibold pb-2 hover:text-[var(--text-primary)] transition-colors">Join by Code</button>
                         </div>
 
                         <div className="mb-6">
-                            <label className="text-slate-400 text-sm mb-2 block">Group Name</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block">Group Name</label>
                             <input
                                 type="text"
                                 value={newGroupName}
                                 onChange={(e) => setNewGroupName(e.target.value)}
                                 placeholder="e.g., React Developers Squad"
-                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all"
+                                className="w-full p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all"
                             />
                         </div>
 
                         <div className="mb-6">
-                            <label className="text-slate-400 text-sm mb-2 block">Category</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block">Category</label>
                             <select
                                 value={newGroupCategory}
                                 onChange={(e) => setNewGroupCategory(e.target.value)}
-                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all"
+                                className="w-full p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all"
                             >
                                 {['General', 'DSA', 'Web Dev', 'AI/ML', 'System Design', 'Mobile Dev', 'DevOps'].map(c => (
-                                    <option key={c} value={c} className="bg-slate-900">{c}</option>
+                                    <option key={c} value={c} className="bg-[var(--bg-secondary)]">{c}</option>
                                 ))}
                             </select>
                         </div>
 
                         <div className="mb-6">
-                            <label className="text-slate-400 text-sm mb-2 block">Group Goal</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block">Group Goal</label>
                             <textarea
                                 value={newGroupGoal}
                                 onChange={(e) => setNewGroupGoal(e.target.value)}
                                 placeholder="What do you want to achieve together?"
-                                className="w-full min-h-[100px] p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base resize-y focus:outline-none focus:border-cyan-500 transition-all"
+                                className="w-full min-h-[100px] p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base resize-y focus:outline-none focus:border-cyan-500 transition-all"
                             />
                         </div>
 
                         <div className="mb-8">
-                            <label className="text-slate-400 text-sm mb-2 block">Custom Invite Code (Optional)</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block">Custom Invite Code (Optional)</label>
                             <input
                                 type="text"
                                 value={customInviteCode}
                                 onChange={(e) => setCustomInviteCode(e.target.value.toUpperCase())}
                                 placeholder="e.g. DSA123 (Leave empty for auto-generated)"
                                 maxLength={10}
-                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all uppercase"
+                                className="w-full p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all uppercase"
                             />
                         </div>
 
                         {/* Invide Code Section (for Joining) - To be implemented fully later */}
                         <div className="mb-6 border-t border-[var(--border-color)] pt-6">
-                            <label className="text-slate-400 text-sm mb-2 block">Or Join with Invite Code</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block">Or Join with Invite Code</label>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
                                     value={inviteCode}
                                     onChange={(e) => setInviteCode(e.target.value)}
                                     placeholder="Enter Code (e.g. DSA12345)"
-                                    className="flex-1 p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-emerald-500 transition-all"
+                                    className="flex-1 p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-emerald-500 transition-all"
                                 />
                                 <button
                                     onClick={handleJoinGroup}
                                     disabled={loading || !inviteCode}
-                                    className="px-6 bg-slate-700 hover:bg-emerald-600 rounded-xl text-[var(--text-primary)] font-bold transition-colors disabled:opacity-50"
+                                    className="px-6 bg-[var(--border-color)] hover:bg-emerald-600 rounded-xl text-[var(--text-primary)] font-bold transition-colors disabled:opacity-50"
                                 >
                                     Join
                                 </button>
@@ -1588,7 +1588,7 @@ export default function GroupMode() {
                             </button>
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="flex-1 p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-slate-700/80 transition-all"
+                                className="flex-1 p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--border-color)]/80 transition-all"
                             >
                                 Cancel
                             </button>
@@ -1622,77 +1622,77 @@ export default function GroupMode() {
 
                         {/* Challenge Title */}
                         <div className="mb-5">
-                            <label className="text-slate-400 text-sm mb-2 block font-semibold">Challenge Title *</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">Challenge Title *</label>
                             <input
                                 type="text"
                                 value={newChallenge.title}
                                 onChange={(e) => setNewChallenge(prev => ({ ...prev, title: e.target.value }))}
                                 placeholder="e.g., Complete 100 DSA Problems"
-                                className="w-full p-4 bg-slate-800/80 border border-amber-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
+                                className="w-full p-4 bg-[var(--glass-bg)] border border-amber-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                             />
                         </div>
 
                         {/* Description */}
                         <div className="mb-5">
-                            <label className="text-slate-400 text-sm mb-2 block font-semibold">Description *</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">Description *</label>
                             <textarea
                                 value={newChallenge.description}
                                 onChange={(e) => setNewChallenge(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="Describe the challenge rules and goals..."
                                 rows={3}
-                                className="w-full p-4 bg-slate-800/80 border border-amber-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all resize-none"
+                                className="w-full p-4 bg-[var(--glass-bg)] border border-amber-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all resize-none"
                             />
                         </div>
 
                         {/* Target & Days Row */}
                         <div className="grid grid-cols-2 gap-4 mb-5">
                             <div>
-                                <label className="text-slate-400 text-sm mb-2 block font-semibold">Target (number)</label>
+                                <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">Target (number)</label>
                                 <input
                                     type="number"
                                     value={newChallenge.target}
                                     onChange={(e) => setNewChallenge(prev => ({ ...prev, target: e.target.value }))}
                                     min="1"
-                                    className="w-full p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
+                                    className="w-full p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="text-slate-400 text-sm mb-2 block font-semibold">Days to Complete</label>
+                                <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">Days to Complete</label>
                                 <input
                                     type="number"
                                     value={newChallenge.days}
                                     onChange={(e) => setNewChallenge(prev => ({ ...prev, days: e.target.value }))}
                                     min="1"
                                     max="365"
-                                    className="w-full p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
+                                    className="w-full p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                                 />
                             </div>
                         </div>
 
                         {/* Category */}
                         <div className="mb-5">
-                            <label className="text-slate-400 text-sm mb-2 block font-semibold">Category</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">Category</label>
                             <select
                                 value={newChallenge.category}
                                 onChange={(e) => setNewChallenge(prev => ({ ...prev, category: e.target.value }))}
-                                className="w-full p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
+                                className="w-full p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                             >
                                 {['DSA', 'Web Dev', 'AI/ML', 'System Design', 'Mobile Dev', 'DevOps', 'General', 'Competitive', 'Interview Prep'].map(cat => (
-                                    <option key={cat} value={cat} className="bg-slate-900">{cat}</option>
+                                    <option key={cat} value={cat} className="bg-[var(--bg-secondary)]">{cat}</option>
                                 ))}
                             </select>
                         </div>
 
                         {/* Visibility Toggle */}
                         <div className="mb-5">
-                            <label className="text-slate-400 text-sm mb-3 block font-semibold">Visibility</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-3 block font-semibold">Visibility</label>
                             <div className="flex gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setNewChallenge(prev => ({ ...prev, visibility: 'public' }))}
                                     className={`flex-1 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${newChallenge.visibility === 'public'
                                         ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-[var(--text-primary)]'
-                                        : 'bg-slate-800/60 text-slate-400 border border-[var(--border-color)] hover:border-emerald-500/50'
+                                        : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-emerald-500/50'
                                         }`}
                                 >
                                     <Globe size={20} />
@@ -1703,14 +1703,14 @@ export default function GroupMode() {
                                     onClick={() => setNewChallenge(prev => ({ ...prev, visibility: 'private' }))}
                                     className={`flex-1 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${newChallenge.visibility === 'private'
                                         ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-[var(--text-primary)]'
-                                        : 'bg-slate-800/60 text-slate-400 border border-[var(--border-color)] hover:border-amber-500/50'
+                                        : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-amber-500/50'
                                         }`}
                                 >
                                     <Lock size={20} />
                                     Private
                                 </button>
                             </div>
-                            <p className="text-xs text-slate-500 mt-2">
+                            <p className="text-xs text-[var(--text-muted)] mt-2">
                                 {newChallenge.visibility === 'public'
                                     ? '🌍 Anyone on the platform can see and join this challenge'
                                     : '🔒 Only you can see this challenge'}
@@ -1719,7 +1719,7 @@ export default function GroupMode() {
 
                         {/* XP Reward */}
                         <div className="mb-6">
-                            <label className="text-slate-400 text-sm mb-2 block font-semibold">XP Reward</label>
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">XP Reward</label>
                             <div className="flex gap-3">
                                 {[100, 250, 500, 1000].map(xp => (
                                     <button
@@ -1728,7 +1728,7 @@ export default function GroupMode() {
                                         onClick={() => setNewChallenge(prev => ({ ...prev, reward: xp }))}
                                         className={`flex-1 p-3 rounded-xl font-bold transition-all flex items-center justify-center gap-1 ${newChallenge.reward === xp
                                             ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]'
-                                            : 'bg-slate-800/60 text-slate-400 border border-[var(--border-color)] hover:border-amber-500/50'
+                                            : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-amber-500/50'
                                             }`}
                                     >
                                         <Zap size={16} />
@@ -1750,7 +1750,7 @@ export default function GroupMode() {
                             </button>
                             <button
                                 onClick={() => setShowCreateChallengeModal(false)}
-                                className="flex-1 p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-slate-700/80 transition-all"
+                                className="flex-1 p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--border-color)]/80 transition-all"
                             >
                                 Cancel
                             </button>
@@ -1775,7 +1775,7 @@ export default function GroupMode() {
                                     <Trophy size={28} className="text-amber-500" />
                                     Challenge Leaderboard
                                 </h2>
-                                <p className="text-slate-400 text-sm mt-1">{selectedChallenge.title}</p>
+                                <p className="text-[var(--text-secondary)] text-sm mt-1">{selectedChallenge.title}</p>
                             </div>
                             <button
                                 onClick={() => setShowChallengeLeaderboard(false)}
@@ -1786,18 +1786,18 @@ export default function GroupMode() {
                         </div>
 
                         {/* Challenge Stats */}
-                        <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-slate-800/50 rounded-xl">
+                        <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-[var(--glass-bg)] rounded-xl">
                             <div className="text-center">
                                 <div className="text-2xl font-black text-[var(--text-primary)]">{selectedChallenge.target}</div>
-                                <div className="text-xs text-slate-400">{selectedChallenge.unit || 'Target'}</div>
+                                <div className="text-xs text-[var(--text-secondary)]">{selectedChallenge.unit || 'Target'}</div>
                             </div>
                             <div className="text-center border-l border-r border-[var(--border-color)]">
                                 <div className="text-2xl font-black text-cyan-">{selectedChallenge.participants?.length || 0}</div>
-                                <div className="text-xs text-slate-400">Participants</div>
+                                <div className="text-xs text-[var(--text-secondary)]">Participants</div>
                             </div>
                             <div className="text-center">
                                 <div className="text-2xl font-black text-amber-400">{selectedChallenge.reward?.xp || 0}</div>
-                                <div className="text-xs text-slate-400">XP Reward</div>
+                                <div className="text-xs text-[var(--text-secondary)]">XP Reward</div>
                             </div>
                         </div>
 
@@ -1805,24 +1805,24 @@ export default function GroupMode() {
                         <div className="space-y-3">
                             {challengeLeaderboard.length === 0 ? (
                                 <div className="text-center py-10">
-                                    <Medal size={48} className="mx-auto mb-3 text-slate-600" />
-                                    <p className="text-slate-400">No participants yet</p>
+                                    <Medal size={48} className="mx-auto mb-3 text-[var(--text-primary)]" />
+                                    <p className="text-[var(--text-secondary)]">No participants yet</p>
                                 </div>
                             ) : (
                                 challengeLeaderboard.map((participant, index) => (
                                     <div
                                         key={participant.id || index}
                                         className={`flex items-center gap-4 p-4 rounded-xl transition-all ${index === 0 ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30' :
-                                            index === 1 ? 'bg-slate-700/30 border border-slate-500/30' :
+                                            index === 1 ? 'bg-[var(--border-color)]/30 border border-[var(--border-color)]' :
                                                 index === 2 ? 'bg-amber-700/20 border border-amber-700/30' :
-                                                    'bg-slate-800/50 border border-[var(--border-color)]'
+                                                    'bg-[var(--glass-bg)] border border-[var(--border-color)]'
                                             }`}
                                     >
                                         {/* Rank */}
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${index === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]' :
-                                            index === 1 ? 'bg-slate-400 text-[var(--text-primary)]' :
+                                            index === 1 ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]' :
                                                 index === 2 ? 'bg-amber-700 text-[var(--text-primary)]' :
-                                                    'bg-slate-700 text-slate-400'
+                                                    'bg-[var(--border-color)] text-[var(--text-secondary)]'
                                             }`}>
                                             {participant.rank || index + 1}
                                         </div>
@@ -1842,7 +1842,7 @@ export default function GroupMode() {
                                                 {participant.name}
                                                 {participant.completed && <Check size={16} className="text-emerald-500" />}
                                             </div>
-                                            <div className="text-sm text-slate-400">
+                                            <div className="text-sm text-[var(--text-secondary)]">
                                                 Progress: {participant.progress || 0}/{selectedChallenge.target} ({participant.percentage || 0}%)
                                             </div>
                                         </div>
@@ -1887,7 +1887,7 @@ export default function GroupMode() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Main Video Area */}
                             <div className="lg:col-span-2">
-                                <div className="bg-slate-900/80 rounded-2xl p-5 mb-5 min-h-[400px] border border-cyan-500/20">
+                                <div className="bg-[var(--glass-bg)] rounded-2xl p-5 mb-5 min-h-[400px] border border-cyan-500/20">
                                     {/* Video Grid */}
                                     <VideoGrid
                                         localStream={localStream}
@@ -1935,7 +1935,7 @@ export default function GroupMode() {
                                         disabled={!isWebRTCInitialized}
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isScreenSharing
                                             ? 'bg-gradient-to-r from-cyan- to-purple-600'
-                                            : 'bg-slate-800/80 border-cyan-500/30'
+                                            : 'bg-[var(--glass-bg)] border-cyan-500/30'
                                             } text-[var(--text-primary)] disabled:opacity-50`}
                                     >
                                         <Monitor size={20} />
@@ -1946,7 +1946,7 @@ export default function GroupMode() {
                                         onClick={() => setShowWhiteboard(!showWhiteboard)}
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showWhiteboard
                                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
-                                            : 'bg-slate-800/80 border-cyan-500/30'
+                                            : 'bg-[var(--glass-bg)] border-cyan-500/30'
                                             } text-[var(--text-primary)]`}
                                     >
                                         <Edit size={20} />
@@ -1976,7 +1976,7 @@ export default function GroupMode() {
                                                 setIsGroupTimerRunning(false);
                                                 setGroupPomodoroTime(25 * 60);
                                             }}
-                                            className="px-5 py-2.5 bg-slate-800/80 border border-white/20 rounded-xl font-bold flex items-center gap-2 text-[var(--text-primary)]"
+                                            className="px-5 py-2.5 bg-[var(--glass-bg)] border border-white/20 rounded-xl font-bold flex items-center gap-2 text-[var(--text-primary)]"
                                         >
                                             <Square size={16} />
                                             Reset
@@ -2039,26 +2039,26 @@ export default function GroupMode() {
 
                             {/* Participants & Chat Sidebar */}
                             <div>
-                                <div className="bg-slate-800/80 rounded-2xl p-5 mb-5 border border-cyan-500/20">
+                                <div className="bg-[var(--glass-bg)] rounded-2xl p-5 mb-5 border border-cyan-500/20">
                                     <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2">
                                         <Users size={20} className="text-emerald-500" /> Participants ({liveParticipants.length})
                                     </h4>
                                     <div className="space-y-3">
                                         {liveParticipants.map(user => (
-                                            <div key={user.id} className="flex items-center gap-3 p-2.5 bg-slate-900/50 rounded-xl">
+                                            <div key={user.id} className="flex items-center gap-3 p-2.5 bg-[var(--glass-bg)] rounded-xl">
                                                 <div className="relative">
                                                     {user.avatar && user.avatar.startsWith('http') ? (
                                                         <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
                                                     ) : (
                                                         <div className="text-3xl">{user.avatar || '👤'}</div>
                                                     )}
-                                                    <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${user.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                    <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[var(--border-color)] ${user.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="text-sm text-[var(--text-primary)] font-semibold">
                                                         {user.name || user.userName || 'Participant'}
                                                     </div>
-                                                    <div className="text-xs text-slate-400">{user.studying || 'In room'}</div>
+                                                    <div className="text-xs text-[var(--text-secondary)]">{user.studying || 'In room'}</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -2066,19 +2066,19 @@ export default function GroupMode() {
                                 </div>
 
                                 {/* Quick Chat */}
-                                <div className="bg-slate-800/80 rounded-2xl p-5 border border-cyan-500/20">
+                                <div className="bg-[var(--glass-bg)] rounded-2xl p-5 border border-cyan-500/20">
                                     <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2">
                                         <MessageCircle size={20} className="text-cyan-500" /> Quick Chat
                                     </h4>
-                                    <div className="h-[200px] bg-slate-900/50 rounded-xl p-3 mb-3 overflow-y-auto">
+                                    <div className="h-[200px] bg-[var(--glass-bg)] rounded-xl p-3 mb-3 overflow-y-auto">
                                         {chatMessages.length === 0 ? (
-                                            <div className="text-sm text-slate-400 text-center">
+                                            <div className="text-sm text-[var(--text-secondary)] text-center">
                                                 Chat in real-time with participants...
                                             </div>
                                         ) : (
                                             chatMessages.map(msg => (
                                                 <div key={msg.id} className="mb-3">
-                                                    <div className="text-xs text-slate-400 mb-1">
+                                                    <div className="text-xs text-[var(--text-secondary)] mb-1">
                                                         {msg.user} • {msg.time}
                                                     </div>
                                                     <div className="text-sm text-[var(--text-primary)]">{msg.message}</div>
@@ -2093,7 +2093,7 @@ export default function GroupMode() {
                                             onChange={(e) => setCurrentMessage(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                                             placeholder="Type a message..."
-                                            className="flex-1 p-2.5 bg-slate-900/50 border border-cyan-500/20 rounded-lg text-[var(--text-primary)] text-sm focus:outline-none focus:border-cyan-500"
+                                            className="flex-1 p-2.5 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-lg text-[var(--text-primary)] text-sm focus:outline-none focus:border-cyan-500"
                                         />
                                         <button
                                             onClick={sendMessage}
@@ -2121,7 +2121,7 @@ export default function GroupMode() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="sticky top-0 bg-slate-900/95 backdrop-blur-xl border-b border-cyan-500/20 p-6 z-10">
+                        <div className="sticky top-0 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-cyan-500/20 p-6 z-10">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-4">
                                     <div className="text-6xl">
@@ -2134,7 +2134,7 @@ export default function GroupMode() {
                                     <div>
                                         <h2 className="text-3xl font-black text-[var(--text-primary)] mb-1">{groupDetailData.name}</h2>
                                         <div className="flex items-center gap-4 text-sm">
-                                            <span className="text-slate-400 flex items-center gap-1.5">
+                                            <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
                                                 <Users size={16} />
                                                 {groupDetailData.members?.length || groupDetailData.members || 0} members
                                             </span>
@@ -2160,7 +2160,7 @@ export default function GroupMode() {
                             <div className="flex items-center gap-3 p-4 bg-cyan-/10 rounded-xl border border-cyan-500/20">
                                 <Hash size={20} className="text-cyan-" />
                                 <div className="flex-1">
-                                    <div className="text-xs text-slate-400 mb-1">Invite Code</div>
+                                    <div className="text-xs text-[var(--text-secondary)] mb-1">Invite Code</div>
                                     <div className="text-lg font-mono font-bold text-[var(--text-primary)] tracking-wider">
                                         {groupDetailData.inviteCode}
                                     </div>
@@ -2194,7 +2194,7 @@ export default function GroupMode() {
                                         onClick={() => setActiveGroupTab(tab)}
                                         className={`px-5 py-2.5 rounded-xl font-bold capitalize transition-all ${activeGroupTab === tab
                                             ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
-                                            : 'bg-slate-800/60 text-slate-400 hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
+                                            : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
                                             }`}
                                     >
                                         {tab === 'chat' && <MessageCircle size={18} className="inline mr-2" />}
@@ -2214,7 +2214,7 @@ export default function GroupMode() {
                                         }}
                                         className={`px-5 py-2.5 rounded-xl font-bold capitalize transition-all ${activeGroupTab === 'requests'
                                             ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
-                                            : 'bg-slate-800/60 text-slate-400 hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
+                                            : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
                                             }`}
                                     >
                                         <Bell size={18} className="inline mr-2" />
@@ -2229,13 +2229,13 @@ export default function GroupMode() {
                             {/* Chat Tab */}
                             {activeGroupTab === 'chat' && (
                                 <div className="space-y-4">
-                                    <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20 min-h-[400px] max-h-[500px] overflow-y-auto">
+                                    <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20 min-h-[400px] max-h-[500px] overflow-y-auto">
                                         {loadingGroupDetail ? (
                                             <div className="flex items-center justify-center h-full">
                                                 <Loader2 className="animate-spin text-cyan-" size={32} />
                                             </div>
                                         ) : groupMessages.length === 0 ? (
-                                            <div className="text-center text-slate-400 py-20">
+                                            <div className="text-center text-[var(--text-secondary)] py-20">
                                                 <MessageCircle size={48} className="mx-auto mb-4 opacity-50" />
                                                 <p>No messages yet. Start the conversation!</p>
                                             </div>
@@ -2258,12 +2258,12 @@ export default function GroupMode() {
                                                                 <span className={`text-sm font-bold ${msg.isMe ? 'text-cyan-' : 'text-[var(--text-primary)]'}`}>
                                                                     {msg.user}
                                                                 </span>
-                                                                <span className="text-xs text-slate-500">{msg.time}</span>
+                                                                <span className="text-xs text-[var(--text-muted)]">{msg.time}</span>
                                                             </div>
                                                             <div
                                                                 className={`inline-block px-4 py-2.5 rounded-2xl ${msg.isMe
                                                                     ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
-                                                                    : 'bg-slate-700/80 text-[var(--text-primary)]'
+                                                                    : 'bg-[var(--border-color)]/80 text-[var(--text-primary)]'
                                                                     }`}
                                                             >
                                                                 {msg.message}
@@ -2283,7 +2283,7 @@ export default function GroupMode() {
                                             onChange={(e) => setGroupMessageInput(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && sendGroupMessage()}
                                             placeholder="Type your message..."
-                                            className="flex-1 px-5 py-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
+                                            className="flex-1 px-5 py-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
                                         />
                                         <button
                                             onClick={sendGroupMessage}
@@ -2314,7 +2314,7 @@ export default function GroupMode() {
                                             return (
                                                 <div
                                                     key={memberId}
-                                                    className="bg-slate-800/60 rounded-2xl p-5 border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
+                                                    className="bg-[var(--glass-bg)] rounded-2xl p-5 border border-cyan-500/20 hover:border-cyan-500/40 transition-all"
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div className="text-4xl">
@@ -2341,15 +2341,15 @@ export default function GroupMode() {
                                                                     ? 'bg-amber-500/20 text-amber-400'
                                                                     : member.role === 'moderator'
                                                                         ? 'bg-cyan-500/20 text-cyan-400'
-                                                                        : 'bg-slate-700/60 text-slate-400'
+                                                                        : 'bg-[var(--border-color)]/60 text-[var(--text-secondary)]'
                                                                     }`}>
                                                                     {member.role || 'member'}
                                                                 </span>
-                                                                <span className="text-slate-400 flex items-center gap-1">
+                                                                <span className="text-[var(--text-secondary)] flex items-center gap-1">
                                                                     <Star size={14} className="text-cyan-" />
                                                                     {member.xpContributed || 0} XP
                                                                 </span>
-                                                                <span className="text-slate-400 flex items-center gap-1">
+                                                                <span className="text-[var(--text-secondary)] flex items-center gap-1">
                                                                     <Flame size={14} className="text-amber-400" />
                                                                     {member.streak || 0}
                                                                 </span>
@@ -2361,13 +2361,13 @@ export default function GroupMode() {
                                                             <div className="relative">
                                                                 <button
                                                                     onClick={() => setShowMemberActions(showMemberActions === memberId ? null : memberId)}
-                                                                    className="p-2 bg-slate-700/60 rounded-lg hover:bg-slate-700 transition-all"
+                                                                    className="p-2 bg-[var(--border-color)]/60 rounded-lg hover:bg-[var(--border-color)] transition-all"
                                                                 >
-                                                                    <Settings size={18} className="text-slate-400" />
+                                                                    <Settings size={18} className="text-[var(--text-secondary)]" />
                                                                 </button>
 
                                                                 {showMemberActions === memberId && (
-                                                                    <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-cyan-500/30 rounded-xl overflow-hidden shadow-2xl z-20 min-w-[180px]">
+                                                                    <div className="absolute right-0 top-full mt-2 bg-[var(--bg-secondary)] border border-cyan-500/30 rounded-xl overflow-hidden shadow-2xl z-20 min-w-[180px]">
                                                                         <button
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'admin')}
                                                                             className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
@@ -2386,7 +2386,7 @@ export default function GroupMode() {
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'member')}
                                                                             className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
                                                                         >
-                                                                            <Users size={16} className="text-slate-400" />
+                                                                            <Users size={16} className="text-[var(--text-secondary)]" />
                                                                             Make Member
                                                                         </button>
                                                                         <div className="border-t border-[var(--border-color)]" />
@@ -2418,7 +2418,7 @@ export default function GroupMode() {
                                             <Video size={40} className="text-[var(--text-primary)]" />
                                         </div>
                                         <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2">Group Study Room</h3>
-                                        <p className="text-slate-400 mb-6 max-w-lg mx-auto">
+                                        <p className="text-[var(--text-secondary)] mb-6 max-w-lg mx-auto">
                                             Start a live video study session with your group members.
                                             Share screens, use the whiteboard, and stay focused together with the group pomodoro timer!
                                         </p>
@@ -2434,33 +2434,33 @@ export default function GroupMode() {
 
                                     {/* Features Grid */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="bg-slate-800/60 rounded-xl p-5 border border-cyan-500/20">
+                                        <div className="bg-[var(--glass-bg)] rounded-xl p-5 border border-cyan-500/20">
                                             <div className="w-12 h-12 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-3">
                                                 <Camera size={24} className="text-emerald-400" />
                                             </div>
                                             <h4 className="font-bold text-[var(--text-primary)] mb-1">Video Calls</h4>
-                                            <p className="text-sm text-slate-400">See your study partners and stay connected face-to-face.</p>
+                                            <p className="text-sm text-[var(--text-secondary)]">See your study partners and stay connected face-to-face.</p>
                                         </div>
 
-                                        <div className="bg-slate-800/60 rounded-xl p-5 border border-cyan-500/20">
+                                        <div className="bg-[var(--glass-bg)] rounded-xl p-5 border border-cyan-500/20">
                                             <div className="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-3">
                                                 <Monitor size={24} className="text-cyan-400" />
                                             </div>
                                             <h4 className="font-bold text-[var(--text-primary)] mb-1">Screen Sharing</h4>
-                                            <p className="text-sm text-slate-400">Share your screen to explain concepts or solve problems together.</p>
+                                            <p className="text-sm text-[var(--text-secondary)]">Share your screen to explain concepts or solve problems together.</p>
                                         </div>
 
-                                        <div className="bg-slate-800/60 rounded-xl p-5 border border-cyan-500/20">
+                                        <div className="bg-[var(--glass-bg)] rounded-xl p-5 border border-cyan-500/20">
                                             <div className="w-12 h-12 rounded-lg bg-amber-500/20 flex items-center justify-center mb-3">
                                                 <Clock size={24} className="text-amber-400" />
                                             </div>
                                             <h4 className="font-bold text-[var(--text-primary)] mb-1">Group Focus Timer</h4>
-                                            <p className="text-sm text-slate-400">Synchronized pomodoro timer to keep everyone focused.</p>
+                                            <p className="text-sm text-[var(--text-secondary)]">Synchronized pomodoro timer to keep everyone focused.</p>
                                         </div>
                                     </div>
 
                                     {/* Active Members Section */}
-                                    <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
+                                    <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20">
                                         <div className="flex justify-between items-center mb-4">
                                             <h4 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
                                                 <Users size={20} className="text-cyan-" />
@@ -2476,7 +2476,7 @@ export default function GroupMode() {
                                                 return (
                                                     <div
                                                         key={memberUser._id || idx}
-                                                        className="flex items-center gap-2 bg-slate-700/60 px-3 py-2 rounded-lg"
+                                                        className="flex items-center gap-2 bg-[var(--border-color)]/60 px-3 py-2 rounded-lg"
                                                     >
                                                         <div className="text-xl">
                                                             {(memberUser.avatar && (memberUser.avatar.startsWith('http') || memberUser.avatar.startsWith('data:'))) ? (
@@ -2498,12 +2498,12 @@ export default function GroupMode() {
                             {/* Settings Tab */}
                             {activeGroupTab === 'settings' && (
                                 <div className="space-y-6">
-                                    <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
+                                    <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20">
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">Group Information</h3>
 
                                         <div className="space-y-4">
                                             <div>
-                                                <label className="text-sm text-slate-400 mb-2 block">Group Goal</label>
+                                                <label className="text-sm text-[var(--text-secondary)] mb-2 block">Group Goal</label>
                                                 <div className="p-4 bg-cyan-/10 rounded-xl border border-cyan-500/20">
                                                     <p className="text-[var(--text-primary)]">{groupDetailData.goal}</p>
                                                 </div>
@@ -2511,14 +2511,14 @@ export default function GroupMode() {
 
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="text-sm text-slate-400 mb-2 block">Progress</label>
-                                                    <div className="p-4 bg-slate-700/60 rounded-xl">
+                                                    <label className="text-sm text-[var(--text-secondary)] mb-2 block">Progress</label>
+                                                    <div className="p-4 bg-[var(--border-color)]/60 rounded-xl">
                                                         <div className="text-2xl font-black text-[var(--text-primary)]">{groupDetailData.progress || 0}%</div>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="text-sm text-slate-400 mb-2 block">Group Streak</label>
-                                                    <div className="p-4 bg-slate-700/60 rounded-xl flex items-center gap-2">
+                                                    <label className="text-sm text-[var(--text-secondary)] mb-2 block">Group Streak</label>
+                                                    <div className="p-4 bg-[var(--border-color)]/60 rounded-xl flex items-center gap-2">
                                                         <Flame size={24} className="text-amber-500" />
                                                         <div className="text-2xl font-black text-[var(--text-primary)]">{groupDetailData.streak || 0} days</div>
                                                     </div>
@@ -2527,19 +2527,19 @@ export default function GroupMode() {
 
                                             <div className="grid grid-cols-3 gap-4">
                                                 <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-center">
-                                                    <div className="text-xs text-slate-400 mb-1">Total XP</div>
+                                                    <div className="text-xs text-[var(--text-secondary)] mb-1">Total XP</div>
                                                     <div className="text-2xl font-black text-emerald-500">
                                                         {groupDetailData.stats?.totalXp || groupDetailData.totalPoints || 0}
                                                     </div>
                                                 </div>
                                                 <div className="p-4 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-center">
-                                                    <div className="text-xs text-slate-400 mb-1">Sessions</div>
+                                                    <div className="text-xs text-[var(--text-secondary)] mb-1">Sessions</div>
                                                     <div className="text-2xl font-black text-cyan-500">
                                                         {groupDetailData.stats?.sessionsCompleted || 0}
                                                     </div>
                                                 </div>
                                                 <div className="p-4 bg-pink-500/10 rounded-xl border border-pink-500/20 text-center">
-                                                    <div className="text-xs text-slate-400 mb-1">Resources</div>
+                                                    <div className="text-xs text-[var(--text-secondary)] mb-1">Resources</div>
                                                     <div className="text-2xl font-black text-pink-500">
                                                         {groupDetailData.stats?.resourcesShared || 0}
                                                     </div>
@@ -2549,7 +2549,7 @@ export default function GroupMode() {
                                     </div>
 
                                     {/* Admin Settings */}
-                                    <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
+                                    <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20">
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                             <Settings size={20} className="text-cyan-" />
                                             Group Settings (Admin Only)
@@ -2557,33 +2557,33 @@ export default function GroupMode() {
 
                                         <div className="space-y-4">
                                             <div>
-                                                <label className="text-sm text-slate-400 mb-2 block">Group Name</label>
+                                                <label className="text-sm text-[var(--text-secondary)] mb-2 block">Group Name</label>
                                                 <input
                                                     type="text"
                                                     defaultValue={groupDetailData.name}
                                                     onChange={(e) => setEditGroupData(prev => ({ ...prev, name: e.target.value }))}
-                                                    className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
+                                                    className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
                                                     placeholder="Group name"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="text-sm text-slate-400 mb-2 block">Goal/Description</label>
+                                                <label className="text-sm text-[var(--text-secondary)] mb-2 block">Goal/Description</label>
                                                 <textarea
                                                     defaultValue={groupDetailData.goal}
                                                     onChange={(e) => setEditGroupData(prev => ({ ...prev, goal: e.target.value }))}
-                                                    className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 min-h-[100px]"
+                                                    className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 min-h-[100px]"
                                                     placeholder="What do you want to achieve?"
                                                 />
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="text-sm text-slate-400 mb-2 block">Category</label>
+                                                    <label className="text-sm text-[var(--text-secondary)] mb-2 block">Category</label>
                                                     <select
                                                         defaultValue={groupDetailData.category}
                                                         onChange={(e) => setEditGroupData(prev => ({ ...prev, category: e.target.value }))}
-                                                        className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
+                                                        className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
                                                     >
                                                         {['General', 'DSA', 'Web Dev', 'AI/ML', 'System Design', 'Mobile Dev', 'DevOps'].map(c => (
                                                             <option key={c} value={c}>{c}</option>
@@ -2591,11 +2591,11 @@ export default function GroupMode() {
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className="text-sm text-slate-400 mb-2 block">Privacy</label>
+                                                    <label className="text-sm text-[var(--text-secondary)] mb-2 block">Privacy</label>
                                                     <select
                                                         defaultValue={groupDetailData.privacy || 'public'}
                                                         onChange={(e) => setEditGroupData(prev => ({ ...prev, privacy: e.target.value }))}
-                                                        className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
+                                                        className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
                                                     >
                                                         <option value="public">Public</option>
                                                         <option value="private">Private</option>
@@ -2635,14 +2635,14 @@ export default function GroupMode() {
                             {/* Requests Tab */}
                             {activeGroupTab === 'requests' && (
                                 <div className="space-y-6">
-                                    <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
+                                    <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20">
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">Join Requests</h3>
                                         {joinRequests.length === 0 ? (
-                                            <p className="text-slate-400">No pending requests.</p>
+                                            <p className="text-[var(--text-secondary)]">No pending requests.</p>
                                         ) : (
                                             <div className="space-y-3">
                                                 {joinRequests.map(req => (
-                                                    <div key={req._id || req.user._id} className="flex items-center justify-between bg-slate-700/50 p-4 rounded-xl">
+                                                    <div key={req._id || req.user._id} className="flex items-center justify-between bg-[var(--border-color)]/50 p-4 rounded-xl">
                                                         <div className="flex items-center gap-3">
                                                             <div className="text-2xl">
                                                                 {(req.user.avatar && (req.user.avatar.startsWith('http') || req.user.avatar.startsWith('data:'))) ? (
@@ -2653,7 +2653,7 @@ export default function GroupMode() {
                                                             </div>
                                                             <div>
                                                                 <div className="font-bold text-[var(--text-primary)]">{req.user.name}</div>
-                                                                <div className="text-xs text-slate-400">Requested: {new Date(req.requestedAt).toLocaleDateString()}</div>
+                                                                <div className="text-xs text-[var(--text-secondary)]">Requested: {new Date(req.requestedAt).toLocaleDateString()}</div>
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-2">
@@ -2699,7 +2699,7 @@ export default function GroupMode() {
                 </div>
             )}
 
-            <nav className="bg-slate-900/80 backdrop-blur-xl border-b border-cyan-500/10 sticky top-0 z-50 px-8 py-5">
+            <nav className="bg-[var(--glass-bg)] backdrop-blur-xl border-b border-cyan-500/10 sticky top-0 z-50 px-8 py-5">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <button
                         onClick={closeGroupDetail}
@@ -2743,7 +2743,7 @@ export default function GroupMode() {
                                 <h1 className="text-4xl font-black text-[var(--text-primary)] mb-3 tracking-tight">
                                     Group Study Hub
                                 </h1>
-                                <p className="text-lg text-slate-400">
+                                <p className="text-lg text-[var(--text-secondary)]">
                                     Learn together, grow faster with your study groups
                                 </p>
                             </div>
@@ -2761,13 +2761,13 @@ export default function GroupMode() {
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-cyan- to-purple-600 p-3.5 rounded-xl shadow-lg">
                                 <Users size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
-                                <div className="text-xs text-slate-400 font-semibold uppercase">Active Groups</div>
+                                <div className="text-xs text-[var(--text-secondary)] font-semibold uppercase">Active Groups</div>
                                 <div className="text-3xl font-black bg-gradient-to-r from-cyan- to-purple-600 bg-clip-text text-transparent">
                                     {myGroups.length}
                                 </div>
@@ -2775,13 +2775,13 @@ export default function GroupMode() {
                         </div>
                     </div>
 
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-emerald-500 to-green-600 p-3.5 rounded-xl shadow-lg">
                                 <Video size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
-                                <div className="text-xs text-slate-400 font-semibold uppercase">Live Rooms</div>
+                                <div className="text-xs text-[var(--text-secondary)] font-semibold uppercase">Live Rooms</div>
                                 <div className="text-3xl font-black bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent">
                                     {liveRooms.length}
                                 </div>
@@ -2789,13 +2789,13 @@ export default function GroupMode() {
                         </div>
                     </div>
 
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-3.5 rounded-xl shadow-lg">
                                 <Target size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
-                                <div className="text-xs text-slate-400 font-semibold uppercase">Challenges</div>
+                                <div className="text-xs text-[var(--text-secondary)] font-semibold uppercase">Challenges</div>
                                 <div className="text-3xl font-black bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
                                     {groupChallenges.length}
                                 </div>
@@ -2803,13 +2803,13 @@ export default function GroupMode() {
                         </div>
                     </div>
 
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-3.5 rounded-xl shadow-lg">
                                 <Radio size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
-                                <div className="text-xs text-slate-400 font-semibold uppercase">Live Now</div>
+                                <div className="text-xs text-[var(--text-secondary)] font-semibold uppercase">Live Now</div>
                                 <div className="text-3xl font-black bg-gradient-to-r from-pink-500 to-rose-600 bg-clip-text text-transparent">
                                     {liveParticipants.length}
                                 </div>
@@ -2826,7 +2826,7 @@ export default function GroupMode() {
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center gap-2 transition-all ${activeTab === tab.id
                                 ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-xl shadow-violet-500/30'
-                                : 'bg-slate-800/60 text-[var(--text-primary)] hover:bg-cyan-/20 hover:scale-105'
+                                : 'bg-[var(--glass-bg)] text-[var(--text-primary)] hover:bg-cyan-/20 hover:scale-105'
                                 }`}
                         >
                             <tab.icon size={18} />
@@ -2840,13 +2840,13 @@ export default function GroupMode() {
                     <div className="animate-fadeIn">
                         <div className="mb-8">
                             <div className="relative max-w-xl">
-                                <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search groups..."
-                                    className="w-full py-3.5 pl-12 pr-4 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
+                                    className="w-full py-3.5 pl-12 pr-4 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
                                 />
                             </div>
                         </div>
@@ -2857,7 +2857,7 @@ export default function GroupMode() {
                                 return (
                                     <div
                                         key={group.id}
-                                        className={`bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border ${colors.border} hover:-translate-y-3 hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden group`}
+                                        className={`bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-7 border ${colors.border} hover:-translate-y-3 hover:scale-[1.02] transition-all duration-300 cursor-pointer relative overflow-hidden group`}
                                         onClick={() => openGroupDetail(group)}
                                     >
                                         <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${colors.gradient}`} />
@@ -2871,7 +2871,7 @@ export default function GroupMode() {
                                                 )}
                                             </div>
                                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{group.name}</h3>
-                                            <div className="flex items-center justify-center gap-4 text-sm text-slate-400">
+                                            <div className="flex items-center justify-center gap-4 text-sm text-[var(--text-secondary)]">
                                                 <span className="flex items-center gap-1.5">
                                                     <Users size={16} />
                                                     {Array.isArray(group.members) ? group.members.length : group.members} members
@@ -2885,7 +2885,7 @@ export default function GroupMode() {
 
                                         <div className="mb-5">
                                             <div className="flex justify-between mb-2">
-                                                <span className="text-sm text-slate-400 font-semibold">Group Progress</span>
+                                                <span className="text-sm text-[var(--text-secondary)] font-semibold">Group Progress</span>
                                                 <span className="text-sm font-bold text-[var(--text-primary)]">{group.progress}%</span>
                                             </div>
                                             <div className="w-full h-2 bg-cyan-/20 rounded-full overflow-hidden">
@@ -2905,12 +2905,12 @@ export default function GroupMode() {
                                             <div className="text-center p-3 bg-amber-500/10 rounded-xl">
                                                 <Flame size={20} className="text-amber-500 mx-auto mb-1" />
                                                 <div className="text-xl font-black text-amber-500">{group.streak}</div>
-                                                <div className="text-xs text-slate-400">Day Streak</div>
+                                                <div className="text-xs text-[var(--text-secondary)]">Day Streak</div>
                                             </div>
                                             <div className="text-center p-3 bg-cyan-/10 rounded-xl">
                                                 <Star size={20} className="text-cyan- mx-auto mb-1" />
                                                 <div className="text-xl font-black text-cyan-">{group.totalPoints}</div>
-                                                <div className="text-xs text-slate-400">Total XP</div>
+                                                <div className="text-xs text-[var(--text-secondary)]">Total XP</div>
                                             </div>
                                         </div>
 
@@ -2934,17 +2934,17 @@ export default function GroupMode() {
                     <div className="animate-fadeIn">
                         <div className="mb-8 flex gap-4 flex-wrap items-center">
                             <div className="relative flex-1 min-w-[300px]">
-                                <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
                                 <input
                                     type="text"
                                     placeholder="Search live rooms..."
-                                    className="w-full py-3.5 pl-12 pr-4 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
+                                    className="w-full py-3.5 pl-12 pr-4 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
                                 />
                             </div>
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="px-5 py-3.5 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] cursor-pointer focus:outline-none"
+                                className="px-5 py-3.5 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] cursor-pointer focus:outline-none"
                             >
                                 <option value="all">All Categories</option>
                                 <option value="DSA">DSA</option>
@@ -2959,7 +2959,7 @@ export default function GroupMode() {
                                 <div
                                     key={room.id}
                                     onClick={() => handleJoinRoom(room.id)}
-                                    className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-[var(--border-color)] hover:-translate-y-2 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                                    className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-7 border border-[var(--border-color)] hover:-translate-y-2 transition-all duration-300 cursor-pointer relative overflow-hidden"
                                 >
                                     <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 rounded-full text-xs font-bold text-red-500">
                                         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -2975,7 +2975,7 @@ export default function GroupMode() {
                                             )}
                                         </div>
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{room.name}</h3>
-                                        <div className="text-sm text-slate-400 mb-1">Host: {room.host}</div>
+                                        <div className="text-sm text-[var(--text-secondary)] mb-1">Host: {room.host}</div>
                                         <div className="text-base text-cyan-">{room.topic}</div>
                                     </div>
 
@@ -2986,11 +2986,11 @@ export default function GroupMode() {
                                     </div>
 
                                     <div className="flex justify-between mb-4 text-sm">
-                                        <span className="text-slate-400 flex items-center gap-1.5">
+                                        <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
                                             <Users size={16} />
                                             {Array.isArray(room.participants) ? room.participants.length : room.participants} participants
                                         </span>
-                                        <span className="text-slate-400 flex items-center gap-1.5">
+                                        <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
                                             <Clock size={16} />
                                             {room.duration}
                                         </span>
@@ -3019,7 +3019,7 @@ export default function GroupMode() {
                                     <Target className="text-amber-500" size={28} />
                                     Challenges Hub
                                 </h2>
-                                <p className="text-slate-400">Create, join, and complete challenges to earn XP!</p>
+                                <p className="text-[var(--text-secondary)]">Create, join, and complete challenges to earn XP!</p>
                             </div>
                             <button
                                 onClick={() => setShowCreateChallengeModal(true)}
@@ -3036,7 +3036,7 @@ export default function GroupMode() {
                                 onClick={() => setChallengeTab('public')}
                                 className={`px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${challengeTab === 'public'
                                     ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
-                                    : 'bg-slate-800/60 text-slate-300 hover:bg-cyan-/20'
+                                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20'
                                     }`}
                             >
                                 <Globe size={18} />
@@ -3046,7 +3046,7 @@ export default function GroupMode() {
                                 onClick={() => setChallengeTab('my')}
                                 className={`px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${challengeTab === 'my'
                                     ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
-                                    : 'bg-slate-800/60 text-slate-300 hover:bg-cyan-/20'
+                                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20'
                                     }`}
                             >
                                 <Lock size={18} />
@@ -3062,7 +3062,7 @@ export default function GroupMode() {
                                     onClick={() => setChallengeFilterCategory(cat)}
                                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${challengeFilterCategory === cat
                                         ? 'bg-amber-500 text-[var(--text-primary)]'
-                                        : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700'
+                                        : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--border-color)]'
                                         }`}
                                 >
                                     {cat === 'all' ? 'All' : cat}
@@ -3081,10 +3081,10 @@ export default function GroupMode() {
                         {challengeTab === 'public' && !loadingChallenges && (
                             <div>
                                 {publicChallenges.length === 0 ? (
-                                    <div className="text-center py-20 bg-slate-800/40 rounded-2xl border border-cyan-500/20">
-                                        <Globe size={60} className="mx-auto mb-4 text-slate-600" />
+                                    <div className="text-center py-20 bg-[var(--glass-bg)] rounded-2xl border border-cyan-500/20">
+                                        <Globe size={60} className="mx-auto mb-4 text-[var(--text-primary)]" />
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Public Challenges Yet</h3>
-                                        <p className="text-slate-400 mb-6">Be the first to create a public challenge!</p>
+                                        <p className="text-[var(--text-secondary)] mb-6">Be the first to create a public challenge!</p>
                                         <button
                                             onClick={() => setShowCreateChallengeModal(true)}
                                             className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-[var(--text-primary)] font-bold hover:scale-105 transition-transform"
@@ -3119,7 +3119,7 @@ export default function GroupMode() {
                                                         <div className="mb-4">
                                                             <div className="text-4xl mb-3">{challenge.icon || '🎯'}</div>
                                                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 pr-16">{challenge.title}</h3>
-                                                            <p className="text-sm text-slate-400 line-clamp-2">{challenge.description}</p>
+                                                            <p className="text-sm text-[var(--text-secondary)] line-clamp-2">{challenge.description}</p>
                                                         </div>
 
                                                         {/* Category & Creator */}
@@ -3127,7 +3127,7 @@ export default function GroupMode() {
                                                             <span className="px-3 py-1.5 bg-cyan-/20 rounded-lg text-xs font-semibold text-cyan-">
                                                                 {challenge.category || 'General'}
                                                             </span>
-                                                            <span className="px-3 py-1.5 bg-slate-700/50 rounded-lg text-xs text-slate-300">
+                                                            <span className="px-3 py-1.5 bg-[var(--border-color)]/50 rounded-lg text-xs text-[var(--text-secondary)]">
                                                                 by {challenge.creator?.name || 'Unknown'}
                                                             </span>
                                                         </div>
@@ -3135,7 +3135,7 @@ export default function GroupMode() {
                                                         {/* Progress Bar */}
                                                         <div className="mb-4">
                                                             <div className="flex justify-between mb-1.5 text-sm">
-                                                                <span className="text-slate-400">Target: {challenge.target} {challenge.unit}</span>
+                                                                <span className="text-[var(--text-secondary)]">Target: {challenge.target} {challenge.unit}</span>
                                                                 <span className="text-amber-400 font-bold flex items-center gap-1">
                                                                     <Zap size={14} />
                                                                     {challenge.reward?.xp || 100} XP
@@ -3147,17 +3147,17 @@ export default function GroupMode() {
                                                         <div className="grid grid-cols-3 gap-3 mb-4 py-3 border-t border-b border-[var(--border-color)]">
                                                             <div className="text-center">
                                                                 <div className="text-lg font-black text-[var(--text-primary)]">{participantCount}</div>
-                                                                <div className="text-xs text-slate-400">Joined</div>
+                                                                <div className="text-xs text-[var(--text-secondary)]">Joined</div>
                                                             </div>
                                                             <div className="text-center border-l border-r border-[var(--border-color)]">
                                                                 <div className={`text-lg font-black ${daysLeft <= 3 ? 'text-red-400' : daysLeft <= 7 ? 'text-amber-400' : 'text-emerald-400'}`}>
                                                                     {daysLeft > 0 ? daysLeft : 0}
                                                                 </div>
-                                                                <div className="text-xs text-slate-400">Days Left</div>
+                                                                <div className="text-xs text-[var(--text-secondary)]">Days Left</div>
                                                             </div>
                                                             <div className="text-center">
                                                                 <div className="text-lg font-black text-cyan-">{challenge.totalViews || 0}</div>
-                                                                <div className="text-xs text-slate-400">Views</div>
+                                                                <div className="text-xs text-[var(--text-secondary)]">Views</div>
                                                             </div>
                                                         </div>
 
@@ -3182,7 +3182,7 @@ export default function GroupMode() {
                                                             )}
                                                             <button
                                                                 onClick={() => handleViewLeaderboard(challenge)}
-                                                                className="p-3 bg-slate-700/50 rounded-xl text-slate-300 hover:bg-cyan-/30 hover:text-[var(--text-primary)] transition-all"
+                                                                className="p-3 bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:bg-cyan-/30 hover:text-[var(--text-primary)] transition-all"
                                                                 title="View Leaderboard"
                                                             >
                                                                 <Medal size={18} />
@@ -3200,10 +3200,10 @@ export default function GroupMode() {
                         {challengeTab === 'my' && !loadingChallenges && (
                             <div>
                                 {myChallenges.length === 0 ? (
-                                    <div className="text-center py-20 bg-slate-800/40 rounded-2xl border border-cyan-500/20">
-                                        <Target size={60} className="mx-auto mb-4 text-slate-600" />
+                                    <div className="text-center py-20 bg-[var(--glass-bg)] rounded-2xl border border-cyan-500/20">
+                                        <Target size={60} className="mx-auto mb-4 text-[var(--text-primary)]" />
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Challenges Created Yet</h3>
-                                        <p className="text-slate-400 mb-6">Create your first challenge and invite others to join!</p>
+                                        <p className="text-[var(--text-secondary)] mb-6">Create your first challenge and invite others to join!</p>
                                         <button
                                             onClick={() => setShowCreateChallengeModal(true)}
                                             className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-[var(--text-primary)] font-bold hover:scale-105 transition-transform"
@@ -3236,24 +3236,24 @@ export default function GroupMode() {
                                                     <div className="mb-4">
                                                         <div className="text-4xl mb-3">{challenge.icon || '🎯'}</div>
                                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 pr-16">{challenge.title}</h3>
-                                                        <p className="text-sm text-slate-400 line-clamp-2">{challenge.description}</p>
+                                                        <p className="text-sm text-[var(--text-secondary)] line-clamp-2">{challenge.description}</p>
                                                     </div>
 
                                                     {/* Stats */}
                                                     <div className="grid grid-cols-3 gap-3 mb-4 py-3 border-t border-b border-[var(--border-color)]">
                                                         <div className="text-center">
                                                             <div className="text-lg font-black text-[var(--text-primary)]">{participantCount}</div>
-                                                            <div className="text-xs text-slate-400">Participants</div>
+                                                            <div className="text-xs text-[var(--text-secondary)]">Participants</div>
                                                         </div>
                                                         <div className="text-center border-l border-r border-[var(--border-color)]">
                                                             <div className={`text-lg font-black ${daysLeft <= 3 ? 'text-red-400' : 'text-emerald-400'}`}>
                                                                 {daysLeft > 0 ? daysLeft : 0}
                                                             </div>
-                                                            <div className="text-xs text-slate-400">Days Left</div>
+                                                            <div className="text-xs text-[var(--text-secondary)]">Days Left</div>
                                                         </div>
                                                         <div className="text-center">
                                                             <div className="text-lg font-black text-amber-400">{challenge.reward?.xp || 100}</div>
-                                                            <div className="text-xs text-slate-400">XP Reward</div>
+                                                            <div className="text-xs text-[var(--text-secondary)]">XP Reward</div>
                                                         </div>
                                                     </div>
 
@@ -3283,21 +3283,21 @@ export default function GroupMode() {
                     <div className="animate-fadeIn">
                         <div className="mb-8">
                             <h2 className="text-2xl font-black text-[var(--text-primary)] mb-3">Group Leaderboard</h2>
-                            <p className="text-slate-400">Top performers in your study groups</p>
+                            <p className="text-[var(--text-secondary)]">Top performers in your study groups</p>
                         </div>
 
                         <div className="max-w-2xl space-y-4">
                             {leaderboard.map((member) => (
                                 <div
                                     key={member.rank}
-                                    className={`bg-slate-800/60 backdrop-blur-xl rounded-2xl p-5 border flex items-center gap-4 hover:-translate-y-1 transition-all ${member.rank === 1 ? 'border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent' :
-                                        member.rank === 2 ? 'border-slate-400/30' :
+                                    className={`bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-5 border flex items-center gap-4 hover:-translate-y-1 transition-all ${member.rank === 1 ? 'border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent' :
+                                        member.rank === 2 ? 'border-[var(--border-color)]' :
                                             member.rank === 3 ? 'border-amber-700/30' : 'border-[var(--border-color)]'
                                         }`}
                                 >
                                     <div className={`w-10 h-10 flex items-center justify-center rounded-full font-black text-lg ${member.rank === 1 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]' :
-                                        member.rank === 2 ? 'bg-slate-400 text-[var(--text-primary)]' :
-                                            member.rank === 3 ? 'bg-amber-700 text-[var(--text-primary)]' : 'bg-slate-700 text-slate-400'
+                                        member.rank === 2 ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]' :
+                                            member.rank === 3 ? 'bg-amber-700 text-[var(--text-primary)]' : 'bg-[var(--border-color)] text-[var(--text-secondary)]'
                                         }`}>
                                         {member.rank}
                                     </div>
@@ -3313,7 +3313,7 @@ export default function GroupMode() {
                                             {member.name}
                                             <span className="text-xl">{member.badge}</span>
                                         </div>
-                                        <div className="text-sm text-slate-400 flex items-center gap-2">
+                                        <div className="text-sm text-[var(--text-secondary)] flex items-center gap-2">
                                             <Flame size={14} className="text-amber-500" />
                                             {member.streak} day streak
                                         </div>
@@ -3322,7 +3322,7 @@ export default function GroupMode() {
                                         <div className="text-2xl font-black bg-gradient-to-r from-cyan- to-pink-500 bg-clip-text text-transparent">
                                             {member.points.toLocaleString()}
                                         </div>
-                                        <div className="text-xs text-slate-400">points</div>
+                                        <div className="text-xs text-[var(--text-secondary)]">points</div>
                                     </div>
                                 </div>
                             ))}

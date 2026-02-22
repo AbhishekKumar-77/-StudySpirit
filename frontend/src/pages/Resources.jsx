@@ -42,7 +42,7 @@ const RenderedMarkdown = ({ content }) => {
                     elements.push(
                         <ol key={`ol-${elements.length}`} className="my-4 ml-6 space-y-2 list-decimal">
                             {listItems.map((item, idx) => (
-                                <li key={idx} className="text-slate-300 leading-relaxed pl-2">
+                                <li key={idx} className="text-[var(--text-secondary)] leading-relaxed pl-2">
                                     <span dangerouslySetInnerHTML={{ __html: formatInline(item) }} />
                                 </li>
                             ))}
@@ -52,7 +52,7 @@ const RenderedMarkdown = ({ content }) => {
                     elements.push(
                         <ul key={`ul-${elements.length}`} className="my-4 ml-6 space-y-2 list-disc">
                             {listItems.map((item, idx) => (
-                                <li key={idx} className="text-slate-300 leading-relaxed pl-2">
+                                <li key={idx} className="text-[var(--text-secondary)] leading-relaxed pl-2">
                                     <span dangerouslySetInnerHTML={{ __html: formatInline(item) }} />
                                 </li>
                             ))}
@@ -89,11 +89,11 @@ const RenderedMarkdown = ({ content }) => {
                     flushList();
                     elements.push(
                         <div key={`code-${elements.length}`} className="my-5 rounded-xl overflow-hidden border border-indigo-500/20">
-                            <div className="bg-slate-800 px-4 py-2 flex items-center justify-between border-b border-[var(--border-color)]">
-                                <span className="text-xs text-slate-400 font-mono uppercase">{codeBlock || 'code'}</span>
-                                <button onClick={() => navigator.clipboard.writeText(codeLines.join('\n'))} className="text-xs text-slate-500 hover:text-[var(--text-primary)] transition-colors">Copy</button>
+                            <div className="bg-[var(--bg-secondary)] px-4 py-2 flex items-center justify-between border-b border-[var(--border-color)]">
+                                <span className="text-xs text-[var(--text-secondary)] font-mono uppercase">{codeBlock || 'code'}</span>
+                                <button onClick={() => navigator.clipboard.writeText(codeLines.join('\n'))} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">Copy</button>
                             </div>
-                            <pre className="bg-slate-950/80 p-4 overflow-x-auto text-sm font-mono leading-relaxed text-emerald-300">
+                            <pre className="bg-[var(--bg-secondary)]/80 p-4 overflow-x-auto text-sm font-mono leading-relaxed text-emerald-300">
                                 {codeLines.join('\n')}
                             </pre>
                         </div>
@@ -161,7 +161,7 @@ const RenderedMarkdown = ({ content }) => {
             // Horizontal rule
             if (line.trim() === '---' || line.trim() === '***' || line.trim() === '___') {
                 flushList();
-                elements.push(<hr key={`hr-${elements.length}`} className="my-6 border-slate-700" />);
+                elements.push(<hr key={`hr-${elements.length}`} className="my-6 border-[var(--border-color)]" />);
                 i++;
                 continue;
             }
@@ -170,7 +170,7 @@ const RenderedMarkdown = ({ content }) => {
             if (line.startsWith('> ')) {
                 flushList();
                 elements.push(
-                    <blockquote key={`bq-${elements.length}`} className="my-4 border-l-4 border-indigo-500 pl-4 py-3 bg-indigo-500/5 rounded-r-lg italic text-slate-300">
+                    <blockquote key={`bq-${elements.length}`} className="my-4 border-l-4 border-indigo-500 pl-4 py-3 bg-indigo-500/5 rounded-r-lg italic text-[var(--text-secondary)]">
                         <span dangerouslySetInnerHTML={{ __html: formatInline(line.replace('> ', '')) }} />
                     </blockquote>
                 );
@@ -201,7 +201,7 @@ const RenderedMarkdown = ({ content }) => {
             // Regular paragraph
             flushList();
             elements.push(
-                <p key={`p-${elements.length}`} className="text-slate-300 leading-relaxed my-3 text-[15px]">
+                <p key={`p-${elements.length}`} className="text-[var(--text-secondary)] leading-relaxed my-3 text-[15px]">
                     <span dangerouslySetInnerHTML={{ __html: formatInline(line) }} />
                 </p>
             );
@@ -365,7 +365,7 @@ export default function Resources() {
             <div className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-indigo-500/10 px-8 py-5">
+            <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-indigo-500/10 px-8 py-5">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between">
                     <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-indigo-400 hover:text-[var(--text-primary)] transition-colors">
                         <ArrowLeft size={20} /> Back to Dashboard
@@ -383,7 +383,7 @@ export default function Resources() {
                 <div className="bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 backdrop-blur-xl rounded-3xl p-10 mb-8 border border-indigo-500/20 shadow-2xl relative overflow-hidden">
                     <div className="relative z-10">
                         <h1 className="text-4xl font-black text-[var(--text-primary)] mb-2">Centralized Knowledge Base</h1>
-                        <p className="text-slate-400 text-lg">Manage your notes, generate study materials, and simplify concepts with AI.</p>
+                        <p className="text-[var(--text-secondary)] text-lg">Manage your notes, generate study materials, and simplify concepts with AI.</p>
                     </div>
                 </div>
 
@@ -402,7 +402,7 @@ export default function Resources() {
                                 flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all
                                 ${activeTab === tab.id
                                     ? "bg-gradient-to-br from-indigo-500 to-cyan-600 text-[var(--text-primary)] shadow-lg shadow-indigo-500/25"
-                                    : "bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-[var(--text-primary)]"}
+                                    : "bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"}
                             `}
                         >
                             <tab.icon size={18} /> {tab.label}
@@ -415,19 +415,19 @@ export default function Resources() {
 
                     {/* VIDEO SEARCH TAB (WAS LIBRARY) */}
                     {activeTab === 'library' && (
-                        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-6 animate-fade-in">
+                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-6 animate-fade-in">
                             <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3">
                                 <Video className="text-red-500" /> YouTube Video Search
                             </h2>
 
                             {/* Search Bar */}
                             <div className="flex gap-4 mb-8">
-                                <div className="flex-1 bg-slate-900/50 border border-[var(--border-color)] rounded-xl px-4 py-4 flex items-center gap-3 focus-within:border-red-500/50 transition-colors">
-                                    <Search size={20} className="text-slate-500" />
+                                <div className="flex-1 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl px-4 py-4 flex items-center gap-3 focus-within:border-red-500/50 transition-colors">
+                                    <Search size={20} className="text-[var(--text-muted)]" />
                                     <input
                                         type="text"
                                         placeholder="Search topics (e.g. React Hooks, Python Basics)..."
-                                        className="bg-transparent outline-none text-[var(--text-primary)] w-full placeholder:text-slate-600"
+                                        className="bg-transparent outline-none text-[var(--text-primary)] w-full placeholder:text-[var(--text-primary)]"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -452,7 +452,7 @@ export default function Resources() {
                                             href={video.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="bg-slate-900/60 rounded-xl overflow-hidden border border-[var(--border-color)] hover:border-red-500/40 hover:scale-105 transition-all group flex flex-col"
+                                            className="bg-[var(--glass-bg)] rounded-xl overflow-hidden border border-[var(--border-color)] hover:border-red-500/40 hover:scale-105 transition-all group flex flex-col"
                                         >
                                             <div className="relative aspect-video">
                                                 <img src={video.bestThumbnail?.url || video.thumbnails?.[0]?.url} alt={video.title} className="w-full h-full object-cover" />
@@ -463,7 +463,7 @@ export default function Resources() {
                                             </div>
                                             <div className="p-4 flex-1 flex flex-col">
                                                 <h3 className="text-[var(--text-primary)] font-bold text-sm line-clamp-2 mb-2 group-hover:text-red-400 transition-colors" title={video.title}>{video.title}</h3>
-                                                <div className="mt-auto flex justify-between items-center text-xs text-slate-500">
+                                                <div className="mt-auto flex justify-between items-center text-xs text-[var(--text-muted)]">
                                                     <span className="flex items-center gap-1 truncate max-w-[100px]"><Users size={12} /> {video.author?.name}</span>
                                                     <span>{typeof video.views === 'number' ? video.views.toLocaleString() : video.views} views</span>
                                                 </div>
@@ -472,9 +472,9 @@ export default function Resources() {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-20 bg-slate-900/20 rounded-xl border border-dashed border-[var(--border-color)]">
-                                    <Video size={64} className="text-slate-700 mx-auto mb-4" />
-                                    <p className="text-slate-500 text-lg">Search for any topic to find study videos used for research and learning.</p>
+                                <div className="text-center py-20 bg-[var(--glass-bg)] rounded-xl border border-dashed border-[var(--border-color)]">
+                                    <Video size={64} className="text-[var(--text-primary)] mx-auto mb-4" />
+                                    <p className="text-[var(--text-muted)] text-lg">Search for any topic to find study videos used for research and learning.</p>
                                 </div>
                             )}
                         </div>
@@ -483,7 +483,7 @@ export default function Resources() {
                     {/* AI NOTES GEN TAB */}
                     {activeTab === 'notes' && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
-                            <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-6">
+                            <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-6">
                                 <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                     <Edit3 className="text-cyan-400" /> Input Content
                                 </h3>
@@ -492,13 +492,13 @@ export default function Resources() {
                                         value={aiTopic}
                                         onChange={(e) => setAiTopic(e.target.value)}
                                         placeholder="Topic Name (e.g. Photosynthesis)"
-                                        className="w-full bg-slate-900/60 border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-cyan-500 outline-none"
+                                        className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-cyan-500 outline-none"
                                     />
                                     <textarea
                                         value={aiContent}
                                         onChange={(e) => setAiContent(e.target.value)}
                                         placeholder="Paste text, article content, or rough notes here..."
-                                        className="w-full h-[300px] bg-slate-900/60 border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-cyan-500 outline-none resize-none"
+                                        className="w-full h-[300px] bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-cyan-500 outline-none resize-none"
                                     />
                                     <button
                                         onClick={() => handleGenerate('notes')}
@@ -510,7 +510,7 @@ export default function Resources() {
                                     </button>
                                 </div>
                             </div>
-                            <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-6 relative">
+                            <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-6 relative">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                                         <FileText className="text-indigo-400" /> Generated Notes
@@ -519,7 +519,7 @@ export default function Resources() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={handleCopyNotes}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700/50 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 hover:text-[var(--text-primary)] transition-all border border-[var(--border-color)]"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--border-color)]/50 hover:bg-[var(--border-color)] rounded-lg text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border-color)]"
                                             >
                                                 {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                                                 {copied ? 'Copied!' : 'Copy'}
@@ -533,11 +533,11 @@ export default function Resources() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="bg-slate-900/80 rounded-xl h-[450px] overflow-y-auto p-6 border border-[var(--border-color)] leading-relaxed text-slate-300 scroll-smooth" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4f46e5 transparent' }}>
+                                <div className="bg-[var(--glass-bg)] rounded-xl h-[450px] overflow-y-auto p-6 border border-[var(--border-color)] leading-relaxed text-[var(--text-secondary)] scroll-smooth" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4f46e5 transparent' }}>
                                     {generatedResult ? (
                                         <RenderedMarkdown content={generatedResult} />
                                     ) : (
-                                        <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
+                                        <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] opacity-50">
                                             <Sparkles size={48} className="mb-4" />
                                             <p>Notes will appear here...</p>
                                         </div>
@@ -553,7 +553,7 @@ export default function Resources() {
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                                     <Zap size={28} className="text-amber-500" /> Your Flashcard Decks
-                                    <span className="text-sm text-slate-500 font-normal ml-2">({decks.length} decks)</span>
+                                    <span className="text-sm text-[var(--text-muted)] font-normal ml-2">({decks.length} decks)</span>
                                 </h2>
                                 <button
                                     onClick={() => setShowCreateDeck(true)}
@@ -565,24 +565,24 @@ export default function Resources() {
 
                             {/* Study Mode */}
                             {studyingDeck !== null && decks[studyingDeck] && (
-                                <div className="fixed inset-0 z-[200] bg-slate-950/98 flex flex-col items-center justify-center p-6">
+                                <div className="fixed inset-0 z-[200] bg-[var(--bg-secondary)]/98 flex flex-col items-center justify-center p-6">
                                     <div className="w-full max-w-3xl">
                                         {/* Study Header */}
                                         <div className="flex justify-between items-center mb-8">
                                             <div>
                                                 <h2 className="text-2xl font-black text-[var(--text-primary)]">{decks[studyingDeck].name}</h2>
-                                                <p className="text-slate-400 text-sm mt-1">Card {studyCardIndex + 1} of {decks[studyingDeck].cards.length}</p>
+                                                <p className="text-[var(--text-secondary)] text-sm mt-1">Card {studyCardIndex + 1} of {decks[studyingDeck].cards.length}</p>
                                             </div>
                                             <button
                                                 onClick={() => { setStudyingDeck(null); setStudyCardIndex(0); setFlashcardFlipped(null); }}
-                                                className="p-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors text-slate-400 hover:text-[var(--text-primary)]"
+                                                className="p-3 bg-[var(--bg-secondary)] rounded-xl hover:bg-[var(--border-color)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                             >
                                                 <X size={24} />
                                             </button>
                                         </div>
 
                                         {/* Progress Bar */}
-                                        <div className="w-full h-2 bg-slate-800 rounded-full mb-10 overflow-hidden">
+                                        <div className="w-full h-2 bg-[var(--bg-secondary)] rounded-full mb-10 overflow-hidden">
                                             <div
                                                 className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full transition-all duration-500"
                                                 style={{ width: `${((studyCardIndex + 1) / decks[studyingDeck].cards.length) * 100}%` }}
@@ -602,7 +602,7 @@ export default function Resources() {
                                                 <div className="absolute w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-8 flex flex-col items-center justify-center text-center backface-hidden shadow-2xl shadow-indigo-500/10 group-hover:border-indigo-500/60 transition-colors">
                                                     <div className="absolute top-5 left-5 px-3 py-1 bg-indigo-500/20 rounded-lg text-indigo-400 text-xs font-bold uppercase tracking-wider">Question</div>
                                                     <h3 className="text-2xl font-bold text-[var(--text-primary)] leading-relaxed px-4">{decks[studyingDeck].cards[studyCardIndex]?.front}</h3>
-                                                    <p className="absolute bottom-5 text-xs text-slate-500 flex items-center gap-1">Click to reveal answer</p>
+                                                    <p className="absolute bottom-5 text-xs text-[var(--text-muted)] flex items-center gap-1">Click to reveal answer</p>
                                                 </div>
                                                 {/* Back */}
                                                 <div className="absolute w-full h-full bg-gradient-to-br from-indigo-900/60 to-cyan-900/60 backdrop-blur-xl border border-cyan-500/40 rounded-3xl p-8 flex flex-col items-center justify-center text-center backface-hidden rotate-y-180 shadow-2xl shadow-cyan-500/10">
@@ -617,11 +617,11 @@ export default function Resources() {
                                             <button
                                                 onClick={() => { setStudyCardIndex(Math.max(0, studyCardIndex - 1)); setFlashcardFlipped(null); }}
                                                 disabled={studyCardIndex === 0}
-                                                className="px-6 py-3 bg-slate-800 text-[var(--text-primary)] font-semibold rounded-xl hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                                className="px-6 py-3 bg-[var(--bg-secondary)] text-[var(--text-primary)] font-semibold rounded-xl hover:bg-[var(--border-color)] disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                                             >
                                                 <ArrowLeft size={18} /> Previous
                                             </button>
-                                            <span className="px-6 py-3 bg-slate-900/50 text-slate-400 font-bold rounded-xl border border-[var(--border-color)]">
+                                            <span className="px-6 py-3 bg-[var(--glass-bg)] text-[var(--text-secondary)] font-bold rounded-xl border border-[var(--border-color)]">
                                                 {studyCardIndex + 1} / {decks[studyingDeck].cards.length}
                                             </span>
                                             <button
@@ -646,10 +646,10 @@ export default function Resources() {
 
                             {/* Deck Grid */}
                             {decks.length === 0 ? (
-                                <div className="text-center py-20 bg-slate-900/30 rounded-2xl border border-dashed border-slate-700">
-                                    <Zap size={64} className="text-slate-700 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold text-slate-500 mb-2">No Flashcard Decks Yet</h3>
-                                    <p className="text-slate-600 mb-6">Create your first deck with AI or add cards manually.</p>
+                                <div className="text-center py-20 bg-[var(--glass-bg)] rounded-2xl border border-dashed border-[var(--border-color)]">
+                                    <Zap size={64} className="text-[var(--text-primary)] mx-auto mb-4" />
+                                    <h3 className="text-xl font-bold text-[var(--text-muted)] mb-2">No Flashcard Decks Yet</h3>
+                                    <p className="text-[var(--text-primary)] mb-6">Create your first deck with AI or add cards manually.</p>
                                     <button
                                         onClick={() => setShowCreateDeck(true)}
                                         className="px-6 py-3 bg-indigo-600 rounded-xl text-[var(--text-primary)] font-bold hover:bg-indigo-700 transition-all"
@@ -666,7 +666,7 @@ export default function Resources() {
                                                 <div className="flex justify-between items-start">
                                                     <div>
                                                         <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-indigo-300 transition-colors">{deck.name}</h3>
-                                                        <p className="text-sm text-slate-500 mt-1">{deck.cards.length} cards</p>
+                                                        <p className="text-sm text-[var(--text-muted)] mt-1">{deck.cards.length} cards</p>
                                                     </div>
                                                     <button
                                                         onClick={() => {
@@ -674,7 +674,7 @@ export default function Resources() {
                                                                 setDecks(decks.filter((_, i) => i !== deckIdx));
                                                             }
                                                         }}
-                                                        className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                        className="p-2 text-[var(--text-primary)] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
@@ -684,13 +684,13 @@ export default function Resources() {
                                             {/* Preview Cards */}
                                             <div className="p-4 space-y-2 max-h-[200px] overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#334155 transparent' }}>
                                                 {deck.cards.slice(0, 4).map((card, cardIdx) => (
-                                                    <div key={card.id} className="flex items-start gap-3 p-3 bg-slate-900/50 rounded-xl border border-[var(--border-color)] text-sm">
+                                                    <div key={card.id} className="flex items-start gap-3 p-3 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)] text-sm">
                                                         <span className="text-indigo-400 font-bold shrink-0 mt-0.5">Q{cardIdx + 1}</span>
-                                                        <p className="text-slate-300 line-clamp-2">{card.front}</p>
+                                                        <p className="text-[var(--text-secondary)] line-clamp-2">{card.front}</p>
                                                     </div>
                                                 ))}
                                                 {deck.cards.length > 4 && (
-                                                    <p className="text-xs text-slate-600 text-center py-1">+{deck.cards.length - 4} more cards</p>
+                                                    <p className="text-xs text-[var(--text-primary)] text-center py-1">+{deck.cards.length - 4} more cards</p>
                                                 )}
                                             </div>
 
@@ -709,7 +709,7 @@ export default function Resources() {
                                                         setDeckName(deck.name);
                                                         setDeckCards([...deck.cards]);
                                                     }}
-                                                    className="px-4 py-2.5 bg-slate-700/50 rounded-xl text-slate-300 font-bold text-sm hover:bg-slate-700 transition-all flex items-center gap-1"
+                                                    className="px-4 py-2.5 bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] font-bold text-sm hover:bg-[var(--border-color)] transition-all flex items-center gap-1"
                                                 >
                                                     <Edit3 size={16} /> Edit
                                                 </button>
@@ -728,7 +728,7 @@ export default function Resources() {
                                                 <Zap size={28} className="text-amber-500" />
                                                 {editingDeckIdx !== null ? 'Edit Deck' : 'Create New Deck'}
                                             </h2>
-                                            <button onClick={() => { setShowCreateDeck(false); setEditingDeckIdx(null); setDeckName(''); setDeckCards([]); setNewCardFront(''); setNewCardBack(''); }} className="p-2 text-slate-500 hover:text-[var(--text-primary)] transition-colors">
+                                            <button onClick={() => { setShowCreateDeck(false); setEditingDeckIdx(null); setDeckName(''); setDeckCards([]); setNewCardFront(''); setNewCardBack(''); }} className="p-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
                                                 <X size={24} />
                                             </button>
                                         </div>
@@ -738,20 +738,20 @@ export default function Resources() {
                                             value={deckName}
                                             onChange={e => setDeckName(e.target.value)}
                                             placeholder="Deck Name (e.g. React Fundamentals)"
-                                            className="w-full bg-slate-800/60 border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] text-lg font-semibold mb-6 focus:border-indigo-500 outline-none transition-all"
+                                            className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] text-lg font-semibold mb-6 focus:border-indigo-500 outline-none transition-all"
                                         />
 
                                         {/* Mode Toggle */}
                                         <div className="flex gap-2 mb-6">
                                             <button
                                                 onClick={() => setCreateMode('ai')}
-                                                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${createMode === 'ai' ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-[var(--text-primary)] shadow-lg' : 'bg-slate-800/50 text-slate-400 hover:text-[var(--text-primary)]'}`}
+                                                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${createMode === 'ai' ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-[var(--text-primary)] shadow-lg' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                                             >
                                                 <Sparkles size={16} /> AI Generate
                                             </button>
                                             <button
                                                 onClick={() => setCreateMode('manual')}
-                                                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${createMode === 'manual' ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-[var(--text-primary)] shadow-lg' : 'bg-slate-800/50 text-slate-400 hover:text-[var(--text-primary)]'}`}
+                                                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${createMode === 'manual' ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-[var(--text-primary)] shadow-lg' : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                                             >
                                                 <Edit3 size={16} /> Manual
                                             </button>
@@ -759,7 +759,7 @@ export default function Resources() {
 
                                         {/* AI Mode */}
                                         {createMode === 'ai' && (
-                                            <div className="bg-slate-800/40 rounded-2xl p-5 mb-6 border border-indigo-500/10">
+                                            <div className="bg-[var(--glass-bg)] rounded-2xl p-5 mb-6 border border-indigo-500/10">
                                                 <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2 text-sm">
                                                     <Brain size={18} className="text-indigo-400" /> Generate with AI
                                                 </h4>
@@ -767,13 +767,13 @@ export default function Resources() {
                                                     value={flashcardTopic}
                                                     onChange={e => setFlashcardTopic(e.target.value)}
                                                     placeholder="Topic (e.g. JavaScript Promises, Cell Biology)"
-                                                    className="w-full bg-slate-900/60 border border-[var(--border-color)] rounded-xl p-3.5 text-[var(--text-primary)] mb-3 focus:border-indigo-500 outline-none transition-all"
+                                                    className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-3.5 text-[var(--text-primary)] mb-3 focus:border-indigo-500 outline-none transition-all"
                                                 />
                                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                                     <select
                                                         value={flashcardDifficulty}
                                                         onChange={e => setFlashcardDifficulty(e.target.value)}
-                                                        className="bg-slate-900/60 border border-[var(--border-color)] rounded-xl p-3 text-[var(--text-primary)] focus:border-indigo-500 outline-none"
+                                                        className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-3 text-[var(--text-primary)] focus:border-indigo-500 outline-none"
                                                     >
                                                         <option value="easy">Easy</option>
                                                         <option value="medium">Medium</option>
@@ -786,7 +786,7 @@ export default function Resources() {
                                                         value={flashcardCount}
                                                         onChange={e => setFlashcardCount(parseInt(e.target.value) || 8)}
                                                         placeholder="Number of cards"
-                                                        className="bg-slate-900/60 border border-[var(--border-color)] rounded-xl p-3 text-[var(--text-primary)] focus:border-indigo-500 outline-none text-center"
+                                                        className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-3 text-[var(--text-primary)] focus:border-indigo-500 outline-none text-center"
                                                     />
                                                 </div>
                                                 <button
@@ -805,7 +805,7 @@ export default function Resources() {
 
                                         {/* Manual Mode */}
                                         {createMode === 'manual' && (
-                                            <div className="bg-slate-800/40 rounded-2xl p-5 mb-6 border border-[var(--border-color)]">
+                                            <div className="bg-[var(--glass-bg)] rounded-2xl p-5 mb-6 border border-[var(--border-color)]">
                                                 <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2 text-sm">
                                                     <Edit3 size={18} className="text-cyan-400" /> Add Card Manually
                                                 </h4>
@@ -813,13 +813,13 @@ export default function Resources() {
                                                     value={newCardFront}
                                                     onChange={e => setNewCardFront(e.target.value)}
                                                     placeholder="Question (Front side)"
-                                                    className="w-full bg-slate-900/60 border border-[var(--border-color)] rounded-xl p-3.5 text-[var(--text-primary)] mb-3 focus:border-cyan-500 outline-none transition-all"
+                                                    className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-3.5 text-[var(--text-primary)] mb-3 focus:border-cyan-500 outline-none transition-all"
                                                 />
                                                 <textarea
                                                     value={newCardBack}
                                                     onChange={e => setNewCardBack(e.target.value)}
                                                     placeholder="Answer (Back side)"
-                                                    className="w-full bg-slate-900/60 border border-[var(--border-color)] rounded-xl p-3.5 text-[var(--text-primary)] mb-3 focus:border-cyan-500 outline-none transition-all resize-none h-24"
+                                                    className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-3.5 text-[var(--text-primary)] mb-3 focus:border-cyan-500 outline-none transition-all resize-none h-24"
                                                 />
                                                 <button
                                                     onClick={() => {
@@ -846,15 +846,15 @@ export default function Resources() {
                                                 </h4>
                                                 <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4f46e5 transparent' }}>
                                                     {deckCards.map((card, idx) => (
-                                                        <div key={card.id} className="flex items-start gap-3 bg-slate-800/60 rounded-xl p-3.5 border border-[var(--border-color)] group">
+                                                        <div key={card.id} className="flex items-start gap-3 bg-[var(--glass-bg)] rounded-xl p-3.5 border border-[var(--border-color)] group">
                                                             <span className="text-indigo-400 font-bold text-sm shrink-0 mt-0.5">{idx + 1}.</span>
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-[var(--text-primary)] text-sm font-medium truncate">{card.front}</p>
-                                                                <p className="text-slate-500 text-xs truncate mt-1">{card.back}</p>
+                                                                <p className="text-[var(--text-muted)] text-xs truncate mt-1">{card.back}</p>
                                                             </div>
                                                             <button
                                                                 onClick={() => setDeckCards(deckCards.filter((_, i) => i !== idx))}
-                                                                className="p-1.5 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 shrink-0"
+                                                                className="p-1.5 text-[var(--text-primary)] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 shrink-0"
                                                             >
                                                                 <Trash2 size={14} />
                                                             </button>
@@ -905,11 +905,11 @@ export default function Resources() {
 
                     {/* EXPLAINER TAB */}
                     {activeTab === 'explainer' && (
-                        <div className="max-w-3xl mx-auto bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-8 animate-fade-in">
+                        <div className="max-w-3xl mx-auto bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-8 animate-fade-in">
                             <div className="text-center mb-8">
                                 <Brain size={48} className="text-pink-500 mx-auto mb-4" />
                                 <h2 className="text-3xl font-black text-[var(--text-primary)] mb-2">Concept Simplifier</h2>
-                                <p className="text-slate-400">Stuck on a complex topic? Let AI explain it like you're 5.</p>
+                                <p className="text-[var(--text-secondary)]">Stuck on a complex topic? Let AI explain it like you're 5.</p>
                             </div>
 
                             <div className="flex gap-4 mb-8">
@@ -917,7 +917,7 @@ export default function Resources() {
                                     value={aiTopic}
                                     onChange={(e) => setAiTopic(e.target.value)}
                                     placeholder="Enter complex concept (e.g. Quantum Entanglement)"
-                                    className="flex-1 bg-slate-900/80 border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-pink-500 outline-none"
+                                    className="flex-1 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-pink-500 outline-none"
                                 />
                                 <button
                                     onClick={() => handleGenerate('explain')}
@@ -929,7 +929,7 @@ export default function Resources() {
                             </div>
 
                             {generatedResult && activeTab === 'explainer' && (
-                                <div className="bg-slate-900/60 rounded-xl p-6 border border-pink-500/30">
+                                <div className="bg-[var(--glass-bg)] rounded-xl p-6 border border-pink-500/30">
                                     <div className="flex items-center gap-2 mb-4 text-pink-400 font-bold">
                                         <Sparkles size={20} /> Explanation
                                     </div>

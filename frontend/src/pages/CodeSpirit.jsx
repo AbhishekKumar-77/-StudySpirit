@@ -55,9 +55,9 @@ export default function CodeSpirit() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-[var(--text-primary)] font-sans">
             {/* Minimal Navbar */}
-            <nav className="border-b border-[var(--border-color)] bg-slate-900/50 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+            <nav className="border-b border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate("/dashboard")} className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-[var(--text-primary)] transition">
+                    <button onClick={() => navigate("/dashboard")} className="p-2 hover:bg-white/10 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
                         <ArrowLeft size={20} />
                     </button>
                     <div className="text-xl font-bold flex items-center gap-2">
@@ -76,15 +76,15 @@ export default function CodeSpirit() {
                 <h1 className="text-4xl font-black mb-4 bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
                     Generate Coding Challenges
                 </h1>
-                <p className="text-slate-400 text-lg mb-10 max-w-lg">
+                <p className="text-[var(--text-secondary)] text-lg mb-10 max-w-lg">
                     Choose a topic, difficulty, and how many questions you want. Solve them one by one in the Code Editor.
                 </p>
 
-                <div className="w-full bg-slate-900/50 border border-[var(--border-color)] p-8 rounded-3xl backdrop-blur-sm shadow-2xl">
+                <div className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] p-8 rounded-3xl backdrop-blur-sm shadow-2xl">
                     <div className="flex flex-col gap-5">
                         {/* Topic Input */}
                         <div className="text-left">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Topic / Concept</label>
+                            <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2 block">Topic / Concept</label>
                             <input
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
@@ -95,7 +95,7 @@ export default function CodeSpirit() {
 
                         {/* Difficulty Level */}
                         <div className="text-left">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Difficulty Level</label>
+                            <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2 block">Difficulty Level</label>
                             <div className="grid grid-cols-3 gap-3">
                                 {['easy', 'medium', 'hard'].map(lvl => (
                                     <button
@@ -103,7 +103,7 @@ export default function CodeSpirit() {
                                         onClick={() => setDifficulty(lvl)}
                                         className={`py-3 rounded-xl border font-bold capitalize transition-all ${difficulty === lvl
                                             ? 'bg-cyan- border-cyan-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/25'
-                                            : 'bg-[var(--bg-secondary)]lack/20 border-[var(--border-color)] text-slate-400 hover:bg-white/5'
+                                            : 'bg-[var(--bg-secondary)]lack/20 border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-white/5'
                                             }`}
                                     >
                                         {lvl}
@@ -114,7 +114,7 @@ export default function CodeSpirit() {
 
                         {/* Question Count */}
                         <div className="text-left">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block flex items-center gap-2">
+                            <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2 block flex items-center gap-2">
                                 <Hash size={14} /> Number of Questions
                             </label>
                             <div className="flex flex-wrap gap-2">
@@ -124,14 +124,14 @@ export default function CodeSpirit() {
                                         onClick={() => setQuestionCount(num)}
                                         className={`w-14 h-12 rounded-xl border font-bold text-lg transition-all ${questionCount === num
                                             ? 'bg-emerald-500 border-emerald-500 text-[var(--text-primary)] shadow-lg shadow-emerald-500/25'
-                                            : 'bg-[var(--bg-secondary)]lack/20 border-[var(--border-color)] text-slate-400 hover:bg-white/5'
+                                            : 'bg-[var(--bg-secondary)]lack/20 border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-white/5'
                                             }`}
                                     >
                                         {num}
                                     </button>
                                 ))}
                             </div>
-                            <p className="text-xs text-slate-600 mt-2">Select how many coding questions to generate</p>
+                            <p className="text-xs text-[var(--text-primary)] mt-2">Select how many coding questions to generate</p>
                         </div>
 
                         {/* Generate Button */}

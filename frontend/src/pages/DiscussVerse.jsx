@@ -322,7 +322,7 @@ export default function DiscussVerse() {
         switch (status) {
             case 'online': return 'bg-emerald-500';
             case 'away': return 'bg-amber-500';
-            default: return 'bg-slate-500';
+            default: return 'bg-[var(--bg-secondary)]';
         }
     };
 
@@ -651,7 +651,7 @@ export default function DiscussVerse() {
                 <div className="text-center">
                     <div className="text-6xl mb-4 animate-bounce">💬</div>
                     <div className="text-xl font-bold text-[var(--text-primary)]">Loading DiscussVerse...</div>
-                    <div className="text-slate-400 text-sm mt-2">Preparing your community hub</div>
+                    <div className="text-[var(--text-secondary)] text-sm mt-2">Preparing your community hub</div>
                 </div>
             </div>
         );
@@ -660,7 +660,7 @@ export default function DiscussVerse() {
     return (
         <div className="h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col overflow-hidden font-[Inter,system-ui,sans-serif]">
             {/* Top Navbar - Enhanced */}
-            <nav className="h-16 bg-slate-900/90 backdrop-blur-2xl border-b border-cyan-500/20 px-6 flex items-center justify-between shrink-0 shadow-xl shadow-violet-500/5">
+            <nav className="h-16 bg-[var(--glass-bg)] backdrop-blur-2xl border-b border-cyan-500/20 px-6 flex items-center justify-between shrink-0 shadow-xl shadow-violet-500/5">
                 <div className="flex items-center gap-5">
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -675,20 +675,20 @@ export default function DiscussVerse() {
                         </div>
                         <div>
                             <span className="text-xl font-extrabold bg-gradient-to-r from-white via-violet-200 to-pink-200 bg-clip-text text-transparent">DiscussVerse</span>
-                            <div className="text-xs text-slate-500 font-medium">Student Community Hub</div>
+                            <div className="text-xs text-[var(--text-muted)] font-medium">Student Community Hub</div>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex-1 max-w-xl mx-10">
                     <div className="relative group">
-                        <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan- transition-colors" />
+                        <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-cyan- transition-colors" />
                         <input
                             type="text"
                             placeholder="Search discussions, members, channels..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-5 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-base placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-slate-800 transition-all duration-300"
+                            className="w-full pl-12 pr-5 py-3 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-base placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-[var(--bg-secondary)] transition-all duration-300"
                         />
                     </div>
                 </div>
@@ -696,9 +696,9 @@ export default function DiscussVerse() {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={handleNotifications}
-                        className="relative p-2.5 hover:bg-slate-800/80 rounded-xl transition-all duration-300 group"
+                        className="relative p-2.5 hover:bg-[var(--glass-bg)] rounded-xl transition-all duration-300 group"
                     >
-                        <Bell size={22} className="text-slate-400 group-hover:text-cyan- transition-colors" />
+                        <Bell size={22} className="text-[var(--text-secondary)] group-hover:text-cyan- transition-colors" />
                         {totalUnread > 0 && (
                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-xs font-bold flex items-center justify-center animate-pulse shadow-lg shadow-red-500/50">
                                 {totalUnread}
@@ -718,10 +718,10 @@ export default function DiscussVerse() {
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Left Sidebar - Channels - Enhanced */}
-                <div className="w-72 bg-slate-900/70 border-r border-slate-700/50 flex flex-col shrink-0 backdrop-blur-xl">
+                <div className="w-72 bg-[var(--glass-bg)] border-r border-[var(--border-color)] flex flex-col shrink-0 backdrop-blur-xl">
                     {/* View Switcher - Enhanced */}
-                    <div className="p-4 border-b border-slate-700/50">
-                        <div className="flex gap-1.5 p-1.5 bg-slate-800/80 rounded-xl">
+                    <div className="p-4 border-b border-[var(--border-color)]">
+                        <div className="flex gap-1.5 p-1.5 bg-[var(--glass-bg)] rounded-xl">
                             {[
                                 { id: 'channels', icon: Hash, label: 'Channels' },
                                 { id: 'dms', icon: MessageSquare, label: 'DMs' },
@@ -732,7 +732,7 @@ export default function DiscussVerse() {
                                     onClick={() => setActiveView(view.id)}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${activeView === view.id
                                         ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
-                                        : 'text-slate-400 hover:text-[var(--text-primary)] hover:bg-slate-700/50'
+                                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]/50'
                                         }`}
                                 >
                                     <view.icon size={16} />
@@ -745,7 +745,7 @@ export default function DiscussVerse() {
                     {/* Channels List */}
                     {activeView === 'channels' && (
                         <div className="flex-1 overflow-y-auto p-3">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 flex items-center gap-2">
+                            <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest px-3 mb-3 flex items-center gap-2">
                                 <Zap size={12} className="text-cyan-" />
                                 Study Channels
                             </div>
@@ -755,11 +755,11 @@ export default function DiscussVerse() {
                                     onClick={() => { setActiveChannel(channel.id); setActiveDM(null); }}
                                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1.5 transition-all duration-300 group ${activeChannel === channel.id
                                         ? 'bg-gradient-to-r from-cyan-/25 to-pink-500/15 text-[var(--text-primary)] border border-cyan-500/30 shadow-lg shadow-violet-500/10'
-                                        : 'text-slate-400 hover:bg-slate-800/70 hover:text-[var(--text-primary)] hover:border-slate-700/50 border border-transparent'
+                                        : 'text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] hover:border-[var(--border-color)] border border-transparent'
                                         }`}
                                 >
-                                    <div className={`p-2 rounded-lg ${activeChannel === channel.id ? 'bg-cyan-/30' : 'bg-slate-700/50 group-hover:bg-slate-600/50'} transition-all`}>
-                                        <channel.icon size={18} className={activeChannel === channel.id ? 'text-violet-300' : 'text-slate-400 group-hover:text-slate-300'} />
+                                    <div className={`p-2 rounded-lg ${activeChannel === channel.id ? 'bg-cyan-/30' : 'bg-[var(--border-color)]/50 group-hover:bg-[var(--bg-secondary)]/50'} transition-all`}>
+                                        <channel.icon size={18} className={activeChannel === channel.id ? 'text-violet-300' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-secondary)]'} />
                                     </div>
                                     <span className="flex-1 text-left text-sm font-medium truncate">{channel.name}</span>
                                     {getChannelPostCount(channel.id) > 0 && (
@@ -770,14 +770,14 @@ export default function DiscussVerse() {
                                 </button>
                             ))}
 
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mt-6 mb-3 flex items-center gap-2">
+                            <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest px-3 mt-6 mb-3 flex items-center gap-2">
                                 <Users size={12} className="text-emerald-400" />
                                 Study Groups
                             </div>
                             {studyGroups.slice(0, 3).map(group => (
                                 <button
                                     key={group.id}
-                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1.5 text-slate-400 hover:bg-slate-800/70 hover:text-[var(--text-primary)] transition-all duration-300 border border-transparent hover:border-slate-700/50 group"
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1.5 text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] transition-all duration-300 border border-transparent hover:border-[var(--border-color)] group"
                                 >
                                     <div className="p-2 rounded-lg bg-emerald-500/20 group-hover:bg-emerald-500/30 transition-all">
                                         <Users size={18} className="text-emerald-400" />
@@ -795,7 +795,7 @@ export default function DiscussVerse() {
                     {/* DMs List - Enhanced */}
                     {activeView === 'dms' && (
                         <div className="flex-1 overflow-y-auto p-3">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 flex items-center gap-2">
+                            <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest px-3 mb-3 flex items-center gap-2">
                                 <MessageSquare size={12} className="text-pink-400" />
                                 Direct Messages
                             </div>
@@ -808,19 +808,19 @@ export default function DiscussVerse() {
                                         onClick={() => handleStartDM({ ...dm.user, id: dm.id })}
                                         className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-xl mb-1.5 transition-all duration-300 ${activeDM?.id === dm.id
                                             ? 'bg-gradient-to-r from-cyan-/20 to-pink-500/10 border border-cyan-500/20 shadow-lg shadow-violet-500/10'
-                                            : 'hover:bg-slate-800/60 border border-transparent'
+                                            : 'hover:bg-[var(--glass-bg)] border border-transparent'
                                             }`}
                                     >
                                         <div className="relative group-hover:scale-105 transition-transform">
                                             {renderAvatar(dm.user?.avatar, "w-10 h-10", "text-3xl")}
-                                            <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-[3px] border-slate-900 ${getStatusColor(getRealtimeStatus(dm.id, dm.user?.status))} shadow-sm`} />
+                                            <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-[3px] border-[var(--border-color)] ${getStatusColor(getRealtimeStatus(dm.id, dm.user?.status))} shadow-sm`} />
                                         </div>
                                         <div className="flex-1 min-w-0 text-left">
                                             <div className="flex items-center justify-between">
-                                                <div className={`text-sm font-semibold truncate ${activeDM?.id === dm.id ? 'text-[var(--text-primary)]' : 'text-slate-200'}`}>{dm.user?.name || 'Unknown'}</div>
-                                                <div className="text-[10px] text-slate-500 font-medium">{dm.timestamp}</div>
+                                                <div className={`text-sm font-semibold truncate ${activeDM?.id === dm.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}`}>{dm.user?.name || 'Unknown'}</div>
+                                                <div className="text-[10px] text-[var(--text-muted)] font-medium">{dm.timestamp}</div>
                                             </div>
-                                            <div className={`text-xs truncate mt-0.5 ${dm.unread > 0 ? 'text-slate-300 font-medium' : 'text-slate-500'}`}>{dm.lastMessage}</div>
+                                            <div className={`text-xs truncate mt-0.5 ${dm.unread > 0 ? 'text-[var(--text-secondary)] font-medium' : 'text-[var(--text-muted)]'}`}>{dm.lastMessage}</div>
                                         </div>
                                         {dm.unread > 0 && (
                                             <span className="min-w-[20px] h-5 bg-gradient-to-br from-red-500 to-pink-500 rounded-full text-[10px] font-bold flex items-center justify-center text-[var(--text-primary)] shadow-md shadow-red-500/30">
@@ -832,9 +832,9 @@ export default function DiscussVerse() {
 
                             <button
                                 onClick={() => setShowConnectModal(true)}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 mt-4 rounded-xl border border-dashed border-slate-700/70 text-slate-400 hover:border-cyan-500 hover:text-violet-300 hover:bg-cyan-/5 transition-all duration-300 group"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 mt-4 rounded-xl border border-dashed border-[var(--border-color)] text-[var(--text-secondary)] hover:border-cyan-500 hover:text-violet-300 hover:bg-cyan-/5 transition-all duration-300 group"
                             >
-                                <div className="p-1 bg-slate-800 rounded-full group-hover:bg-cyan-/20 transition-colors">
+                                <div className="p-1 bg-[var(--bg-secondary)] rounded-full group-hover:bg-cyan-/20 transition-colors">
                                     <UserPlus size={16} />
                                 </div>
                                 <span className="text-sm font-medium">Find Connections</span>
@@ -845,7 +845,7 @@ export default function DiscussVerse() {
                     {/* Explore - Enhanced */}
                     {activeView === 'explore' && (
                         <div className="flex-1 overflow-y-auto p-3">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 flex items-center gap-2">
+                            <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest px-3 mb-3 flex items-center gap-2">
                                 <TrendingUp size={12} className="text-amber-400" />
                                 Trending Topics
                             </div>
@@ -853,22 +853,22 @@ export default function DiscussVerse() {
                                 <button
                                     key={idx}
                                     onClick={() => handleTrendingTopicClick(topic.tag)}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1.5 text-slate-400 hover:bg-slate-800/80 hover:text-[var(--text-primary)] transition-all duration-300 border border-transparent hover:border-slate-700/50 group"
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1.5 text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] transition-all duration-300 border border-transparent hover:border-[var(--border-color)] group"
                                 >
                                     <div className="p-2 rounded-lg bg-pink-500/10 group-hover:bg-pink-500/20 transition-all">
                                         <Hash size={16} className="text-pink-400" />
                                     </div>
                                     <span className="flex-1 text-left text-sm font-medium">#{topic.tag}</span>
-                                    <span className="px-2 py-0.5 bg-slate-800 rounded-md text-[10px] font-bold text-slate-500 group-hover:text-slate-300 group-hover:bg-slate-700 transition-all">{topic.posts} posts</span>
+                                    <span className="px-2 py-0.5 bg-[var(--bg-secondary)] rounded-md text-[10px] font-bold text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] group-hover:bg-[var(--border-color)] transition-all">{topic.posts} posts</span>
                                 </button>
                             ))}
 
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mt-6 mb-3 flex items-center gap-2">
+                            <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest px-3 mt-6 mb-3 flex items-center gap-2">
                                 <Zap size={12} className="text-cyan-" />
                                 Featured Groups
                             </div>
                             {studyGroups.map(group => (
-                                <div key={group.id} className="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl mb-3 border border-slate-700/30 hover:border-cyan-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
+                                <div key={group.id} className="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl mb-3 border border-[var(--border-color)] hover:border-cyan-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="font-semibold text-sm group-hover:text-violet-300 transition-colors">{group.name}</span>
                                         <div className="flex items-center gap-1 bg-emerald-500/10 px-1.5 py-0.5 rounded text-xs text-emerald-400 font-medium border border-emerald-500/20">
@@ -876,10 +876,10 @@ export default function DiscussVerse() {
                                             {group.members}
                                         </div>
                                     </div>
-                                    <p className="text-xs text-slate-400 mb-3 leading-relaxed">{group.topic}</p>
+                                    <p className="text-xs text-[var(--text-secondary)] mb-3 leading-relaxed">{group.topic}</p>
                                     <button
                                         onClick={() => handleJoinGroup(group.id)}
-                                        className="w-full py-2 bg-slate-700/50 hover:bg-cyan-/20 text-slate-300 hover:text-violet-300 text-xs font-semibold rounded-lg transition-all border border-slate-600/30 hover:border-cyan-500/30"
+                                        className="w-full py-2 bg-[var(--border-color)]/50 hover:bg-cyan-/20 text-[var(--text-secondary)] hover:text-violet-300 text-xs font-semibold rounded-lg transition-all border border-[var(--border-color)] hover:border-cyan-500/30"
                                     >
                                         Join Group
                                     </button>
@@ -889,17 +889,17 @@ export default function DiscussVerse() {
                     )}
 
                     {/* User Profile Section - Enhanced */}
-                    <div className="p-4 border-t border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+                    <div className="p-4 border-t border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-md">
                         <div
                             onClick={handleProfileClick}
-                            className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-slate-800/50 transition-all cursor-pointer group"
+                            className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-[var(--glass-bg)] transition-all cursor-pointer group"
                         >
                             <div className="relative">
                                 <span className="text-3xl filter drop-shadow-lg group-hover:scale-110 transition-transform block">👤</span>
-                                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[3px] border-slate-900 shadow-sm" />
+                                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[3px] border-[var(--border-color)] shadow-sm" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="text-sm font-bold text-slate-200 group-hover:text-[var(--text-primary)] truncate">You</div>
+                                <div className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--text-primary)] truncate">You</div>
                                 <div className="text-xs text-emerald-400 font-medium flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                     Online
@@ -910,7 +910,7 @@ export default function DiscussVerse() {
                                     e.stopPropagation();
                                     handleSettings();
                                 }}
-                                className="p-2 hover:bg-slate-700 rounded-lg transition-all text-slate-400 hover:text-[var(--text-primary)]"
+                                className="p-2 hover:bg-[var(--border-color)] rounded-lg transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                             >
                                 <Settings size={18} />
                             </button>
@@ -919,24 +919,24 @@ export default function DiscussVerse() {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="flex-1 flex flex-col min-w-0 bg-slate-950 relative z-0">
+                <div className="flex-1 flex flex-col min-w-0 bg-[var(--bg-secondary)] relative z-0">
                     {/* Background Pattern */}
                     <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-violet-900/40 via-slate-950 to-slate-950" />
 
                     {/* Channel/DM Header - Enhanced */}
-                    <div className="h-16 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/80 px-6 flex items-center justify-between shrink-0 shadow-sm z-10 transition-all duration-300">
+                    <div className="h-16 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-[var(--border-color)] px-6 flex items-center justify-between shrink-0 shadow-sm z-10 transition-all duration-300">
                         {activeDM ? (
                             <div className="flex items-center gap-4">
                                 <div className="relative cursor-pointer transition-transform hover:scale-105">
                                     {renderAvatar(activeDM.user.avatar, "w-12 h-12", "text-4xl")}
-                                    <span className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-[3px] border-slate-900 ${getStatusColor(getRealtimeStatus(activeDM.id, activeDM.user.status))} shadow-md`} />
+                                    <span className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-[3px] border-[var(--border-color)] ${getStatusColor(getRealtimeStatus(activeDM.id, activeDM.user.status))} shadow-md`} />
                                 </div>
                                 <div>
-                                    <div className="font-bold text-lg text-slate-100 flex items-center gap-2">
+                                    <div className="font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
                                         {activeDM.user.name}
                                         {activeDM.user.reputation > 2000 && <Crown size={14} className="text-amber-400 fill-amber-400 animate-pulse" />}
                                     </div>
-                                    <div className="text-xs text-slate-400 font-medium capitalize flex items-center gap-1.5">
+                                    <div className="text-xs text-[var(--text-secondary)] font-medium capitalize flex items-center gap-1.5">
                                         <span className={`w-1.5 h-1.5 rounded-full ${getStatusColor(getRealtimeStatus(activeDM.id, activeDM.user.status))}`} />
                                         {getRealtimeStatus(activeDM.id, activeDM.user.status)}
                                     </div>
@@ -944,23 +944,23 @@ export default function DiscussVerse() {
                             </div>
                         ) : currentChannel ? (
                             <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-slate-800/80 rounded-xl shadow-lg shadow-violet-500/5 group">
-                                    <currentChannel.icon size={24} className="text-slate-400 group-hover:text-cyan- transition-colors" />
+                                <div className="p-2.5 bg-[var(--glass-bg)] rounded-xl shadow-lg shadow-violet-500/5 group">
+                                    <currentChannel.icon size={24} className="text-[var(--text-secondary)] group-hover:text-cyan- transition-colors" />
                                 </div>
                                 <div>
-                                    <div className="font-bold text-lg text-slate-100 flex items-center gap-2">
+                                    <div className="font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
                                         {currentChannel.name}
                                         {currentChannel.id === 'placement' && <Award size={16} className="text-amber-400" />}
                                     </div>
-                                    <div className="text-xs text-slate-400 font-medium flex items-center gap-2">
+                                    <div className="text-xs text-[var(--text-secondary)] font-medium flex items-center gap-2">
                                         <span>{currentChannel.description}</span>
-                                        <span className="w-1 h-1 rounded-full bg-slate-600" />
+                                        <span className="w-1 h-1 rounded-full bg-[var(--bg-secondary)]" />
                                         <span className="flex items-center gap-1 text-emerald-400 font-semibold">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                             {onlineUserIds.size} online
                                         </span>
                                         {channelStats[currentChannel.id]?.count > 0 && (
-                                            <span className="text-slate-500">{channelStats[currentChannel.id].count} posts</span>
+                                            <span className="text-[var(--text-muted)]">{channelStats[currentChannel.id].count} posts</span>
                                         )}
                                     </div>
                                 </div>
@@ -998,11 +998,11 @@ export default function DiscussVerse() {
                                                 <div className={`max-w-[70%] ${msg.isMine ? 'order-2' : ''}`}>
                                                     <div className={`px-5 py-3.5 rounded-2xl shadow-md transition-all duration-300 ${msg.isMine
                                                         ? 'bg-gradient-to-br from-cyan- to-pink-600 rounded-br-none text-[var(--text-primary)] shadow-violet-500/10'
-                                                        : 'bg-slate-800 text-slate-100 rounded-bl-none shadow-black/20 border border-slate-700/50'
+                                                        : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-bl-none shadow-black/20 border border-[var(--border-color)]'
                                                         }`}>
                                                         <p className="text-[15px] leading-relaxed tracking-wide">{msg.content}</p>
                                                     </div>
-                                                    <div className={`text-[10px] text-slate-500 font-medium mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity ${msg.isMine ? 'text-right pr-1' : 'pl-1'}`}>
+                                                    <div className={`text-[10px] text-[var(--text-muted)] font-medium mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity ${msg.isMine ? 'text-right pr-1' : 'pl-1'}`}>
                                                         {msg.timestamp || new Date(msg.createdAt).toLocaleTimeString()}
                                                     </div>
                                                 </div>
@@ -1023,11 +1023,11 @@ export default function DiscussVerse() {
                                     </div>
 
                                     {/* Message Input - Enhanced */}
-                                    <div className="p-5 border-t border-slate-800/80 bg-slate-900/40 backdrop-blur-md">
-                                        <div className="flex items-end gap-3 bg-slate-800/80 rounded-2xl p-2 border border-slate-700/50 shadow-inner focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-violet-500/10 transition-all duration-300">
+                                    <div className="p-5 border-t border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-md">
+                                        <div className="flex items-end gap-3 bg-[var(--glass-bg)] rounded-2xl p-2 border border-[var(--border-color)] shadow-inner focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-violet-500/10 transition-all duration-300">
                                             <button
                                                 onClick={handleAttachment}
-                                                className="p-2.5 hover:bg-slate-700 rounded-xl transition-all text-slate-400 hover:text-cyan-"
+                                                className="p-2.5 hover:bg-[var(--border-color)] rounded-xl transition-all text-[var(--text-secondary)] hover:text-cyan-"
                                             >
                                                 <Paperclip size={20} />
                                             </button>
@@ -1041,11 +1041,11 @@ export default function DiscussVerse() {
                                                         handleSendMessage();
                                                     }
                                                 }}
-                                                className="flex-1 bg-transparent text-sm min-h-[44px] max-h-[120px] py-3 focus:outline-none resize-none placeholder:text-slate-500"
+                                                className="flex-1 bg-transparent text-sm min-h-[44px] max-h-[120px] py-3 focus:outline-none resize-none placeholder:text-[var(--text-muted)]"
                                                 rows={1}
                                             />
                                             <div className="flex items-center gap-1 pb-1">
-                                                <button className="p-2 hover:bg-slate-700 rounded-xl transition-all text-slate-400 hover:text-amber-400">
+                                                <button className="p-2 hover:bg-[var(--border-color)] rounded-xl transition-all text-[var(--text-secondary)] hover:text-amber-400">
                                                     <Smile size={20} />
                                                 </button>
                                                 <button
@@ -1053,7 +1053,7 @@ export default function DiscussVerse() {
                                                     disabled={!messageInput.trim()}
                                                     className={`p-2.5 rounded-xl transition-all duration-300 ${messageInput.trim()
                                                         ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5'
-                                                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                                                        : 'bg-[var(--border-color)] text-[var(--text-muted)] cursor-not-allowed'
                                                         }`}
                                                 >
                                                     <Send size={18} />
@@ -1067,7 +1067,7 @@ export default function DiscussVerse() {
                                 <div className="p-8 space-y-6 max-w-5xl mx-auto">
                                     {/* New Post Form Modal - Handled by state, but styling in modal section */}
                                     {showNewPost && (
-                                        <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/30 animate-fade-in shadow-2xl shadow-black/50 mb-8 relative overflow-hidden group">
+                                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/30 animate-fade-in shadow-2xl shadow-black/50 mb-8 relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-gradient-to-br from-cyan-/5 to-pink-500/5 pointer-events-none" />
                                             <div className="flex items-center justify-between mb-6 relative z-10">
                                                 <h3 className="font-bold text-xl flex items-center gap-2 text-[var(--text-primary)]">
@@ -1076,7 +1076,7 @@ export default function DiscussVerse() {
                                                     </div>
                                                     Create New Post
                                                 </h3>
-                                                <button onClick={() => setShowNewPost(false)} className="p-2 hover:bg-slate-700 rounded-xl transition-colors text-slate-400 hover:text-[var(--text-primary)]">
+                                                <button onClick={() => setShowNewPost(false)} className="p-2 hover:bg-[var(--border-color)] rounded-xl transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                                                     <X size={20} />
                                                 </button>
                                             </div>
@@ -1085,18 +1085,18 @@ export default function DiscussVerse() {
                                                 placeholder="What's on your mind? (Title)"
                                                 value={newPostTitle}
                                                 onChange={(e) => setNewPostTitle(e.target.value)}
-                                                className="w-full px-5 py-4 bg-slate-900/60 border border-slate-700/80 rounded-xl mb-4 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-violet-500/50 text-lg font-medium placeholder:text-slate-600 transition-all shadow-inner"
+                                                className="w-full px-5 py-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl mb-4 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-violet-500/50 text-lg font-medium placeholder:text-[var(--text-primary)] transition-all shadow-inner"
                                             />
                                             <textarea
                                                 placeholder="Share your question, problem, or thoughts in detail..."
                                                 value={newPostContent}
                                                 onChange={(e) => setNewPostContent(e.target.value)}
-                                                className="w-full px-5 py-4 bg-slate-900/60 border border-slate-700/80 rounded-xl mb-6 min-h-[160px] resize-none focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-violet-500/50 text-base placeholder:text-slate-600 transition-all shadow-inner"
+                                                className="w-full px-5 py-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl mb-6 min-h-[160px] resize-none focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-violet-500/50 text-base placeholder:text-[var(--text-primary)] transition-all shadow-inner"
                                             />
                                             <div className="flex justify-end gap-3 relative z-10">
                                                 <button
                                                     onClick={() => setShowNewPost(false)}
-                                                    className="px-6 py-2.5 text-slate-400 hover:text-[var(--text-primary)] hover:bg-slate-700/50 rounded-xl transition-all font-medium"
+                                                    className="px-6 py-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]/50 rounded-xl transition-all font-medium"
                                                 >
                                                     Cancel
                                                 </button>
@@ -1113,12 +1113,12 @@ export default function DiscussVerse() {
 
                                     {/* Posts Feed */}
                                     {currentPosts.length === 0 ? (
-                                        <div className="text-center py-24 bg-slate-800/30 rounded-3xl border border-dashed border-slate-700 flex flex-col items-center justify-center">
-                                            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                                                <MessageCircle size={40} className="text-slate-600" />
+                                        <div className="text-center py-24 bg-[var(--glass-bg)] rounded-3xl border border-dashed border-[var(--border-color)] flex flex-col items-center justify-center">
+                                            <div className="w-20 h-20 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mb-6 shadow-inner">
+                                                <MessageCircle size={40} className="text-[var(--text-primary)]" />
                                             </div>
-                                            <h3 className="text-2xl font-bold mb-3 text-slate-300">No posts yet</h3>
-                                            <p className="text-slate-500 mb-8 max-w-sm leading-relaxed">This channel is waiting for its first spark. Be the pioneer and start a discussion!</p>
+                                            <h3 className="text-2xl font-bold mb-3 text-[var(--text-secondary)]">No posts yet</h3>
+                                            <p className="text-[var(--text-muted)] mb-8 max-w-sm leading-relaxed">This channel is waiting for its first spark. Be the pioneer and start a discussion!</p>
                                             <button
                                                 onClick={() => setShowNewPost(true)}
                                                 className="px-8 py-3 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/20 hover:-translate-y-0.5 transition-all"
@@ -1130,7 +1130,7 @@ export default function DiscussVerse() {
                                         currentPosts.filter(post => post.author).map(post => (
                                             <div
                                                 key={post._id || post.id}
-                                                className="bg-slate-800/40 backdrop-blur-sm rounded-2xl p-6 border border-[var(--border-color)] hover:border-cyan-500/30 hover:bg-slate-800/60 transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-black/20"
+                                                className="bg-[var(--glass-bg)] backdrop-blur-sm rounded-2xl p-6 border border-[var(--border-color)] hover:border-cyan-500/30 hover:bg-[var(--glass-bg)] transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-black/20"
                                             >
                                                 {/* Post Header */}
                                                 <div className="flex items-start justify-between mb-5">
@@ -1140,22 +1140,22 @@ export default function DiscussVerse() {
                                                             onClick={() => setShowUserProfile(post.author)}
                                                         >
                                                             {renderAvatar(post.author?.avatar, "w-12 h-12", "text-4xl")}
-                                                            <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-[3px] border-slate-800 ${getStatusColor(post.author?.status)}`} />
+                                                            <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-[3px] border-[var(--border-color)] ${getStatusColor(post.author?.status)}`} />
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2.5">
-                                                                <span className="font-bold text-slate-200 hover:text-cyan- cursor-pointer transition-colors text-base" onClick={() => setShowUserProfile(post.author)}>
+                                                                <span className="font-bold text-[var(--text-primary)] hover:text-cyan- cursor-pointer transition-colors text-base" onClick={() => setShowUserProfile(post.author)}>
                                                                     {post.author?.name || 'Anonymous'}
                                                                 </span>
                                                                 {(post.author?.reputation || 0) > 2000 && (
                                                                     <Crown size={14} className="text-amber-400 fill-amber-400" />
                                                                 )}
-                                                                <span className="px-2 py-0.5 bg-slate-700/50 rounded text-[10px] font-bold text-slate-400 flex items-center gap-1 border border-slate-600/30">
+                                                                <span className="px-2 py-0.5 bg-[var(--border-color)]/50 rounded text-[10px] font-bold text-[var(--text-secondary)] flex items-center gap-1 border border-[var(--border-color)]">
                                                                     <Star size={10} className="text-amber-400 fill-amber-400" />
                                                                     {post.author?.reputation || 0}
                                                                 </span>
                                                             </div>
-                                                            <div className="text-xs text-slate-500 font-medium mt-0.5">{post.timestamp}</div>
+                                                            <div className="text-xs text-[var(--text-muted)] font-medium mt-0.5">{post.timestamp}</div>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -1177,11 +1177,11 @@ export default function DiscussVerse() {
                                                 {/* Post Content */}
                                                 <h3
                                                     onClick={() => handleOpenPost(post)}
-                                                    className="text-xl font-bold mb-3 text-slate-100 group-hover:text-violet-300 cursor-pointer transition-colors leading-tight"
+                                                    className="text-xl font-bold mb-3 text-[var(--text-primary)] group-hover:text-violet-300 cursor-pointer transition-colors leading-tight"
                                                 >
                                                     {post.title}
                                                 </h3>
-                                                <p className="text-slate-400 mb-6 leading-relaxed text-[15px] font-normal">
+                                                <p className="text-[var(--text-secondary)] mb-6 leading-relaxed text-[15px] font-normal">
                                                     {post.content}
                                                 </p>
 
@@ -1190,7 +1190,7 @@ export default function DiscussVerse() {
                                                     {post.tags.map((tag, idx) => (
                                                         <span
                                                             key={idx}
-                                                            className="flex items-center gap-1 px-3 py-1.5 bg-slate-700/40 text-slate-400 text-xs font-medium rounded-lg cursor-pointer hover:bg-cyan-/20 hover:text-violet-300 hover:border-cyan-500/30 border border-transparent transition-all"
+                                                            className="flex items-center gap-1 px-3 py-1.5 bg-[var(--border-color)]/40 text-[var(--text-secondary)] text-xs font-medium rounded-lg cursor-pointer hover:bg-cyan-/20 hover:text-violet-300 hover:border-cyan-500/30 border border-transparent transition-all"
                                                         >
                                                             <Hash size={12} className="opacity-50" />
                                                             {tag}
@@ -1199,25 +1199,25 @@ export default function DiscussVerse() {
                                                 </div>
 
                                                 {/* Post Actions */}
-                                                <div className="flex items-center justify-between pt-5 border-t border-slate-700/40">
+                                                <div className="flex items-center justify-between pt-5 border-t border-[var(--border-color)]">
                                                     <div className="flex items-center gap-5">
                                                         <button
                                                             onClick={() => handleUpvote(post._id || post.id)}
-                                                            className={`flex items-center gap-2 transition-all group/btn ${post.isUpvoted ? 'text-cyan-' : 'text-slate-400 hover:text-cyan-'}`}
+                                                            className={`flex items-center gap-2 transition-all group/btn ${post.isUpvoted ? 'text-cyan-' : 'text-[var(--text-secondary)] hover:text-cyan-'}`}
                                                         >
                                                             <div className="p-1.5 rounded-lg group-hover/btn:bg-cyan-/10 transition-colors">
                                                                 <ThumbsUp size={18} />
                                                             </div>
                                                             <span className="text-sm font-semibold">{post.upvotes}</span>
                                                         </button>
-                                                        <button className="flex items-center gap-2 text-slate-400 hover:text-pink-400 transition-all group/btn">
+                                                        <button className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-pink-400 transition-all group/btn">
                                                             <div className="p-1.5 rounded-lg group-hover/btn:bg-pink-500/10 transition-colors">
                                                                 <ThumbsDown size={18} />
                                                             </div>
                                                         </button>
                                                         <button
                                                             onClick={() => handleOpenPost(post)}
-                                                            className="flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-all group/btn"
+                                                            className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-cyan-400 transition-all group/btn"
                                                         >
                                                             <div className="p-1.5 rounded-lg group-hover/btn:bg-cyan-500/10 transition-colors">
                                                                 <MessageSquare size={18} />
@@ -1228,19 +1228,19 @@ export default function DiscussVerse() {
                                                     <div className="flex items-center gap-2">
                                                         <button
                                                             onClick={() => handleBookmark(post._id || post.id)}
-                                                            className="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 hover:text-amber-400 transition-all"
+                                                            className="p-2 hover:bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:text-amber-400 transition-all"
                                                             title="Bookmark"
                                                         >
                                                             <Bookmark size={18} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleShare(post)}
-                                                            className="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 hover:text-cyan- transition-all"
+                                                            className="p-2 hover:bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:text-cyan- transition-all"
                                                             title="Share"
                                                         >
                                                             <Share2 size={18} />
                                                         </button>
-                                                        <button className="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 hover:text-[var(--text-primary)] transition-all">
+                                                        <button className="p-2 hover:bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
                                                             <MoreVertical size={18} />
                                                         </button>
                                                     </div>
@@ -1254,7 +1254,7 @@ export default function DiscussVerse() {
 
                         {/* Right Sidebar - Members - Enhanced */}
                         {!activeDM && (
-                            <div className="w-72 border-l border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shrink-0 overflow-y-auto hidden lg:block">
+                            <div className="w-72 border-l border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-xl shrink-0 overflow-y-auto hidden lg:block">
                                 <div className="p-5">
                                     {/* Channel Stats - Enhanced */}
                                     <div className="p-5 bg-gradient-to-br from-cyan-/10 via-slate-800/50 to-pink-600/10 rounded-2xl border border-cyan-500/20 mb-6 shadow-lg shadow-violet-500/5 relative overflow-hidden group">
@@ -1263,15 +1263,15 @@ export default function DiscussVerse() {
                                             <div className="p-1.5 bg-cyan-/20 rounded-lg">
                                                 <Users size={16} className="text-cyan-" />
                                             </div>
-                                            <span className="font-bold text-sm text-slate-200">Channel Activity</span>
+                                            <span className="font-bold text-sm text-[var(--text-primary)]">Channel Activity</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 relative z-10">
-                                            <div className="text-center p-2 bg-slate-900/40 rounded-xl border border-slate-700/30">
+                                            <div className="text-center p-2 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)]">
                                                 {/* Total users on platform = all users fetched (excluding self) */}
                                                 <div className="text-xl font-bold text-[var(--text-primary)] mb-0.5">{directMessages.length}</div>
-                                                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Members</div>
+                                                <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Members</div>
                                             </div>
-                                            <div className="text-center p-2 bg-slate-900/40 rounded-xl border border-slate-700/30">
+                                            <div className="text-center p-2 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)]">
                                                 {/* Real-time online count from socket */}
                                                 <div className="text-xl font-bold text-emerald-400 mb-0.5">{onlineMembers.filter(m => m.status === 'online').length}</div>
                                                 <div className="text-[10px] uppercase font-bold text-emerald-500/70 tracking-wider">Online</div>
@@ -1291,25 +1291,25 @@ export default function DiscussVerse() {
                                             <div
                                                 key={member.id}
                                                 onClick={() => setShowUserProfile(member)}
-                                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-800/80 cursor-pointer transition-all group border border-transparent hover:border-slate-700/50"
+                                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--glass-bg)] cursor-pointer transition-all group border border-transparent hover:border-[var(--border-color)]"
                                             >
                                                 <div className="relative transition-transform group-hover:scale-105">
                                                     {renderAvatar(member.avatar, "w-10 h-10", "text-3xl")}
-                                                    <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-[2.5px] border-slate-900 ${getStatusColor(member.status)} shadow-sm`} />
+                                                    <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-[2.5px] border-[var(--border-color)] ${getStatusColor(member.status)} shadow-sm`} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-semibold text-slate-300 group-hover:text-[var(--text-primary)] truncate flex items-center gap-1.5">
+                                                    <div className="text-sm font-semibold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] truncate flex items-center gap-1.5">
                                                         {member.name}
                                                         {member.reputation > 2000 && <Crown size={12} className="text-amber-400 fill-amber-400" />}
                                                     </div>
-                                                    <div className="text-xs text-slate-500 group-hover:text-slate-400 truncate">{member.role}</div>
+                                                    <div className="text-xs text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] truncate">{member.role}</div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
 
                                     {/* Offline Members - Enhanced */}
-                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">
+                                    <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-3 px-1">
                                         Offline — {onlineMembers.filter(m => m.status !== 'online').length}
                                     </div>
                                     <div className="space-y-1">
@@ -1317,15 +1317,15 @@ export default function DiscussVerse() {
                                             <div
                                                 key={member.id}
                                                 onClick={() => setShowUserProfile(member)}
-                                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-800/60 cursor-pointer transition-all group opacity-60 hover:opacity-100 border border-transparent hover:border-slate-700/50"
+                                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[var(--glass-bg)] cursor-pointer transition-all group opacity-60 hover:opacity-100 border border-transparent hover:border-[var(--border-color)]"
                                             >
                                                 <div className="relative grayscale group-hover:grayscale-0 transition-all">
                                                     {renderAvatar(member.avatar, "w-10 h-10", "text-3xl")}
-                                                    <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-[2.5px] border-slate-900 ${getStatusColor(member.status)}`} />
+                                                    <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-[2.5px] border-[var(--border-color)] ${getStatusColor(member.status)}`} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-semibold text-slate-400 group-hover:text-slate-200 truncate">{member.name}</div>
-                                                    <div className="text-xs text-slate-600 group-hover:text-slate-500 truncate">{member.role}</div>
+                                                    <div className="text-sm font-semibold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] truncate">{member.name}</div>
+                                                    <div className="text-xs text-[var(--text-primary)] group-hover:text-[var(--text-muted)] truncate">{member.role}</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -1361,9 +1361,9 @@ export default function DiscussVerse() {
                     };
 
                     return (
-                        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setShowUserProfile(null)}>
+                        <div className="fixed inset-0 bg-[var(--bg-secondary)]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setShowUserProfile(null)}>
                             <div
-                                className="bg-slate-900/90 backdrop-blur-xl rounded-3xl w-full max-w-md overflow-hidden animate-fade-in border border-slate-700/50 shadow-2xl shadow-black/50"
+                                className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl w-full max-w-md overflow-hidden animate-fade-in border border-[var(--border-color)] shadow-2xl shadow-black/50"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Profile Header */}
@@ -1381,13 +1381,13 @@ export default function DiscussVerse() {
                                     {/* Avatar */}
                                     <div className="relative -mt-14 mb-4 flex justify-between items-end px-2">
                                         <div className="relative group cursor-pointer">
-                                            <div className="w-28 h-28 bg-slate-800 rounded-3xl flex items-center justify-center text-6xl border-[6px] border-slate-900 shadow-xl overflow-hidden">
+                                            <div className="w-28 h-28 bg-[var(--bg-secondary)] rounded-3xl flex items-center justify-center text-6xl border-[6px] border-[var(--border-color)] shadow-xl overflow-hidden">
                                                 {renderAvatar(profileData.avatar, "w-full h-full", "text-6xl")}
                                             </div>
-                                            <span className={`absolute bottom-2 -right-1 w-6 h-6 rounded-full border-[4px] border-slate-900 ${getStatusColor(profileData.status)}`} />
+                                            <span className={`absolute bottom-2 -right-1 w-6 h-6 rounded-full border-[4px] border-[var(--border-color)] ${getStatusColor(profileData.status)}`} />
                                         </div>
                                         <div className="mb-2 flex gap-2">
-                                            <button className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-[var(--text-primary)] rounded-xl border border-slate-700/50 transition-all shadow-lg shadow-black/20">
+                                            <button className="p-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl border border-[var(--border-color)] transition-all shadow-lg shadow-black/20">
                                                 <MoreVertical size={20} />
                                             </button>
                                         </div>
@@ -1400,8 +1400,8 @@ export default function DiscussVerse() {
                                             {profileData.reputation > 2000 && <Crown size={20} className="text-amber-400 fill-amber-400" />}
                                         </h3>
                                         <div className="flex items-center gap-3 text-sm">
-                                            <span className="text-slate-400 font-medium">{profileData.role || 'Student'}</span>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                                            <span className="text-[var(--text-secondary)] font-medium">{profileData.role || 'Student'}</span>
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-secondary)]" />
                                             <span className="text-cyan- font-medium flex items-center gap-1">
                                                 <Award size={14} />
                                                 Level {Math.floor(profileData.reputation / 100) + 1}
@@ -1410,18 +1410,18 @@ export default function DiscussVerse() {
                                     </div>
 
                                     {/* Stats */}
-                                    <div className="grid grid-cols-3 gap-4 p-5 bg-slate-800/40 rounded-2xl mb-6 border border-slate-700/30">
+                                    <div className="grid grid-cols-3 gap-4 p-5 bg-[var(--glass-bg)] rounded-2xl mb-6 border border-[var(--border-color)]">
                                         <div className="text-center group cursor-pointer">
                                             <div className="text-xl font-bold text-amber-400 group-hover:scale-110 transition-transform">{profileData.reputation}</div>
-                                            <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mt-1">Reputation</div>
+                                            <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-muted)] mt-1">Reputation</div>
                                         </div>
                                         <div className="text-center group cursor-pointer">
                                             <div className="text-xl font-bold text-cyan- group-hover:scale-110 transition-transform">{profileData.posts}</div>
-                                            <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mt-1">Posts</div>
+                                            <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-muted)] mt-1">Posts</div>
                                         </div>
                                         <div className="text-center group cursor-pointer">
                                             <div className="text-xl font-bold text-emerald-400 group-hover:scale-110 transition-transform">{profileData.connections}</div>
-                                            <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mt-1">Connections</div>
+                                            <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-muted)] mt-1">Connections</div>
                                         </div>
                                     </div>
 
@@ -1440,7 +1440,7 @@ export default function DiscussVerse() {
                                             </button>
                                             <button
                                                 onClick={() => handleStartDM(profileData)}
-                                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-slate-800/80 hover:bg-slate-700 rounded-xl font-bold text-slate-200 border border-slate-700 hover:border-slate-600 transition-all duration-300"
+                                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[var(--glass-bg)] hover:bg-[var(--border-color)] rounded-xl font-bold text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all duration-300"
                                             >
                                                 <MessageSquare size={20} />
                                                 Message
@@ -1458,35 +1458,35 @@ export default function DiscussVerse() {
             {/* Connect Modal - Enhanced */}
             {
                 showConnectModal && (
-                    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setShowConnectModal(false)}>
+                    <div className="fixed inset-0 bg-[var(--bg-secondary)]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setShowConnectModal(false)}>
                         <div
-                            className="bg-slate-900/95 backdrop-blur-xl rounded-3xl w-full max-w-lg overflow-hidden animate-fade-in border border-slate-700/50 shadow-2xl shadow-black/50"
+                            className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl w-full max-w-lg overflow-hidden animate-fade-in border border-[var(--border-color)] shadow-2xl shadow-black/50"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="p-6 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/50">
+                            <div className="p-6 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--glass-bg)]">
                                 <div>
                                     <h3 className="text-xl font-bold text-[var(--text-primary)]">Find Connections</h3>
-                                    <p className="text-sm text-slate-400 mt-0.5">Discover students with similar interests</p>
+                                    <p className="text-sm text-[var(--text-secondary)] mt-0.5">Discover students with similar interests</p>
                                 </div>
-                                <button onClick={() => setShowConnectModal(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-[var(--text-primary)] transition-all border border-transparent hover:border-slate-700">
+                                <button onClick={() => setShowConnectModal(false)} className="p-2 hover:bg-[var(--bg-secondary)] rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-transparent hover:border-[var(--border-color)]">
                                     <X size={20} />
                                 </button>
                             </div>
 
                             <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4 flex items-center gap-2">
                                     <Sparkles size={12} className="text-cyan-" />
                                     Recommended for you
                                 </div>
                                 {suggestedConnections.map(user => (
-                                    <div key={user.id} className="flex items-start gap-4 p-4 bg-slate-800/40 hover:bg-slate-800/80 border border-slate-800/50 hover:border-cyan-500/30 rounded-2xl mb-3 transition-all duration-300 group">
+                                    <div key={user.id} className="flex items-start gap-4 p-4 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-cyan-500/30 rounded-2xl mb-3 transition-all duration-300 group">
                                         <div className="group-hover:scale-110 transition-transform duration-300">
                                             {renderAvatar(user.avatar, "w-12 h-12", "text-4xl")}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between gap-2 mb-1">
-                                                <div className="font-bold text-slate-100 truncate">{user.name}</div>
-                                                <span className="text-[10px] font-bold text-slate-500 bg-slate-900/50 px-2 py-0.5 rounded border border-slate-700/50 uppercase tracking-wide">
+                                                <div className="font-bold text-[var(--text-primary)] truncate">{user.name}</div>
+                                                <span className="text-[10px] font-bold text-[var(--text-muted)] bg-[var(--glass-bg)] px-2 py-0.5 rounded border border-[var(--border-color)] uppercase tracking-wide">
                                                     {user.role}
                                                 </span>
                                             </div>
@@ -1499,9 +1499,9 @@ export default function DiscussVerse() {
                                             </div>
                                             <button
                                                 onClick={() => handleSendConnectionRequest(user)}
-                                                className="w-full py-2 bg-slate-900 hover:bg-cyan- text-slate-300 hover:text-[var(--text-primary)] rounded-xl text-sm font-semibold transition-all border border-slate-700 hover:border-cyan-500/50 flex items-center justify-center gap-2 group/btn"
+                                                className="w-full py-2 bg-[var(--bg-secondary)] hover:bg-cyan- text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl text-sm font-semibold transition-all border border-[var(--border-color)] hover:border-cyan-500/50 flex items-center justify-center gap-2 group/btn"
                                             >
-                                                <UserPlus size={16} className="text-slate-500 group-hover/btn:text-[var(--text-primary)] transition-colors" />
+                                                <UserPlus size={16} className="text-[var(--text-muted)] group-hover/btn:text-[var(--text-primary)] transition-colors" />
                                                 Connect
                                             </button>
                                         </div>
@@ -1516,38 +1516,38 @@ export default function DiscussVerse() {
             {/* Post Details Modal */}
             {
                 activePost && (
-                    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setActivePost(null)}>
+                    <div className="fixed inset-0 bg-[var(--bg-secondary)]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setActivePost(null)}>
                         <div
-                            className="bg-slate-900 w-full max-w-2xl h-[80vh] rounded-3xl overflow-hidden flex flex-col border border-slate-700/50 shadow-2xl animate-fade-in"
+                            className="bg-[var(--bg-secondary)] w-full max-w-2xl h-[80vh] rounded-3xl overflow-hidden flex flex-col border border-[var(--border-color)] shadow-2xl animate-fade-in"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Header */}
-                            <div className="flex items-center justify-between p-6 border-b border-slate-800/80 bg-slate-900/50">
+                            <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)] bg-[var(--glass-bg)]">
                                 <div className="flex items-center gap-3">
                                     {renderAvatar(activePost.author?.avatar, "w-10 h-10", "text-2xl")}
                                     <div>
-                                        <div className="font-bold text-slate-100">{activePost.author?.name || 'Anonymous'}</div>
-                                        <div className="text-xs text-slate-500">{activePost.timestamp}</div>
+                                        <div className="font-bold text-[var(--text-primary)]">{activePost.author?.name || 'Anonymous'}</div>
+                                        <div className="text-xs text-[var(--text-muted)]">{activePost.timestamp}</div>
                                     </div>
                                 </div>
-                                <button onClick={() => setActivePost(null)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-[var(--text-primary)] transition-colors">
+                                <button onClick={() => setActivePost(null)} className="p-2 hover:bg-[var(--bg-secondary)] rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                                     <X size={20} />
                                 </button>
                             </div>
 
                             {/* Scrollable Content */}
-                            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-900/30">
+                            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[var(--glass-bg)]">
                                 <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">{activePost.title}</h2>
-                                <p className="text-slate-300 mb-6 leading-relaxed whitespace-pre-wrap">{activePost.content}</p>
+                                <p className="text-[var(--text-secondary)] mb-6 leading-relaxed whitespace-pre-wrap">{activePost.content}</p>
 
-                                <div className="flex items-center gap-6 py-3 border-y border-slate-800/50 mb-6">
+                                <div className="flex items-center gap-6 py-3 border-y border-[var(--border-color)] mb-6">
                                     <button
                                         onClick={() => handleUpvote(activePost._id || activePost.id)}
-                                        className={`flex items-center gap-2 ${activePost.isUpvoted ? 'text-cyan-' : 'text-slate-400 hover:text-cyan-'} font-medium transition-colors`}
+                                        className={`flex items-center gap-2 ${activePost.isUpvoted ? 'text-cyan-' : 'text-[var(--text-secondary)] hover:text-cyan-'} font-medium transition-colors`}
                                     >
                                         <ThumbsUp size={18} /> {activePost.upvotes || 0}
                                     </button>
-                                    <div className="flex items-center gap-2 text-slate-400">
+                                    <div className="flex items-center gap-2 text-[var(--text-secondary)]">
                                         <MessageSquare size={18} /> {comments.length} replies
                                     </div>
                                 </div>
@@ -1555,18 +1555,18 @@ export default function DiscussVerse() {
                                 {/* Comments Section */}
                                 <div className="space-y-4">
                                     {comments.length === 0 ? (
-                                        <div className="text-center text-slate-500 py-8">No replies yet. Be the first!</div>
+                                        <div className="text-center text-[var(--text-muted)] py-8">No replies yet. Be the first!</div>
                                     ) : (
                                         comments.map((comment, idx) => (
-                                            <div key={idx} className="bg-slate-800/40 p-4 rounded-xl border border-slate-700/30">
+                                            <div key={idx} className="bg-[var(--glass-bg)] p-4 rounded-xl border border-[var(--border-color)]">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <div className="flex items-center gap-2">
                                                         {renderAvatar(comment.author?.avatar, "w-8 h-8", "text-lg")}
-                                                        <span className="font-semibold text-sm text-slate-200">{comment.author?.name || 'Anonymous'}</span>
+                                                        <span className="font-semibold text-sm text-[var(--text-primary)]">{comment.author?.name || 'Anonymous'}</span>
                                                     </div>
-                                                    <span className="text-xs text-slate-500">{comment.timestamp}</span>
+                                                    <span className="text-xs text-[var(--text-muted)]">{comment.timestamp}</span>
                                                 </div>
-                                                <p className="text-slate-300 text-sm leading-relaxed">{comment.content}</p>
+                                                <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{comment.content}</p>
                                             </div>
                                         ))
                                     )}
@@ -1574,14 +1574,14 @@ export default function DiscussVerse() {
                             </div>
 
                             {/* Comment Input */}
-                            <div className="p-4 bg-slate-900 border-t border-slate-800/80">
+                            <div className="p-4 bg-[var(--bg-secondary)] border-t border-[var(--border-color)]">
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
                                         placeholder="Write a reply..."
                                         value={newComment}
                                         onChange={e => setNewComment(e.target.value)}
-                                        className="flex-1 bg-slate-800 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-200 focus:ring-2 focus:ring-violet-500/50 focus:border-transparent outline-none transition-all placeholder:text-slate-600"
+                                        className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:ring-2 focus:ring-violet-500/50 focus:border-transparent outline-none transition-all placeholder:text-[var(--text-primary)]"
                                         onKeyPress={e => e.key === 'Enter' && handlePostComment()}
                                     />
                                     <button
@@ -1602,33 +1602,33 @@ export default function DiscussVerse() {
             {showNotifications && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
-                    <div className="fixed top-20 right-6 w-96 bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl z-50 animate-fade-in">
-                        <div className="p-4 border-b border-slate-800/80">
+                    <div className="fixed top-20 right-6 w-96 bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--border-color)] shadow-2xl z-50 animate-fade-in">
+                        <div className="p-4 border-b border-[var(--border-color)]">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                     <Bell size={20} className="text-cyan-" />
                                     Notifications
                                 </h3>
-                                <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-[var(--text-primary)] transition-colors">
+                                <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-[var(--bg-secondary)] rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                                     <X size={18} />
                                 </button>
                             </div>
                         </div>
                         <div className="max-h-96 overflow-y-auto p-4 space-y-3">
                             {notifications.length === 0 && connectionRequests.length === 0 ? (
-                                <div className="text-center text-slate-500 py-8">
+                                <div className="text-center text-[var(--text-muted)] py-8">
                                     <Bell size={48} className="mx-auto mb-3 opacity-20" />
                                     <p className="text-sm">No new notifications</p>
                                 </div>
                             ) : (
                                 <>
                                     {connectionRequests.map(req => (
-                                        <div key={req.id} className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/30">
+                                        <div key={req.id} className="p-4 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)]">
                                             <div className="flex items-center gap-3 mb-3">
                                                 {renderAvatar(req.avatar, "w-10 h-10", "text-2xl")}
                                                 <div className="flex-1">
                                                     <div className="text-sm font-semibold text-[var(--text-primary)]">{req.name}</div>
-                                                    <div className="text-xs text-slate-400">wants to connect</div>
+                                                    <div className="text-xs text-[var(--text-secondary)]">wants to connect</div>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
@@ -1640,7 +1640,7 @@ export default function DiscussVerse() {
                                                 </button>
                                                 <button
                                                     onClick={() => handleRejectConnection(req.id)}
-                                                    className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-semibold rounded-lg transition-all"
+                                                    className="flex-1 py-2 bg-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-xs font-semibold rounded-lg transition-all"
                                                 >
                                                     Decline
                                                 </button>
@@ -1648,9 +1648,9 @@ export default function DiscussVerse() {
                                         </div>
                                     ))}
                                     {notifications.map(notif => (
-                                        <div key={notif.id} className="p-3 bg-slate-800/30 rounded-xl">
-                                            <p className="text-sm text-slate-300">{notif.message}</p>
-                                            <p className="text-xs text-slate-500 mt-1">{notif.timestamp}</p>
+                                        <div key={notif.id} className="p-3 bg-[var(--glass-bg)] rounded-xl">
+                                            <p className="text-sm text-[var(--text-secondary)]">{notif.message}</p>
+                                            <p className="text-xs text-[var(--text-muted)] mt-1">{notif.timestamp}</p>
                                         </div>
                                     ))}
                                 </>
@@ -1662,31 +1662,31 @@ export default function DiscussVerse() {
 
             {/* Settings Panel */}
             {showSettings && (
-                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowSettings(false)}>
-                    <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-slate-700/50 shadow-2xl animate-fade-in" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-[var(--bg-secondary)]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowSettings(false)}>
+                    <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-[var(--border-color)] shadow-2xl animate-fade-in" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                                 <Settings size={24} className="text-cyan-" />
                                 Settings
                             </h3>
-                            <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-[var(--text-primary)] transition-colors">
+                            <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-[var(--bg-secondary)] rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
                         <div className="space-y-4">
-                            <div className="p-4 bg-slate-800/50 rounded-xl">
+                            <div className="p-4 bg-[var(--glass-bg)] rounded-xl">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-semibold text-slate-200">Notifications</span>
-                                    <input type="checkbox" className="w-5 h-5 rounded bg-slate-700 border-slate-600" defaultChecked />
+                                    <span className="text-sm font-semibold text-[var(--text-primary)]">Notifications</span>
+                                    <input type="checkbox" className="w-5 h-5 rounded bg-[var(--border-color)] border-[var(--border-color)]" defaultChecked />
                                 </div>
-                                <p className="text-xs text-slate-500">Receive updates about new posts and replies</p>
+                                <p className="text-xs text-[var(--text-muted)]">Receive updates about new posts and replies</p>
                             </div>
-                            <div className="p-4 bg-slate-800/50 rounded-xl">
+                            <div className="p-4 bg-[var(--glass-bg)] rounded-xl">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-semibold text-slate-200">Dark Mode</span>
-                                    <input type="checkbox" className="w-5 h-5 rounded bg-slate-700 border-slate-600" defaultChecked />
+                                    <span className="text-sm font-semibold text-[var(--text-primary)]">Dark Mode</span>
+                                    <input type="checkbox" className="w-5 h-5 rounded bg-[var(--border-color)] border-[var(--border-color)]" defaultChecked />
                                 </div>
-                                <p className="text-xs text-slate-500">Use dark theme across the application</p>
+                                <p className="text-xs text-[var(--text-muted)]">Use dark theme across the application</p>
                             </div>
                             <button className="w-full py-3 bg-gradient-to-r from-cyan- to-pink-600 hover:shadow-lg hover:shadow-violet-500/25 text-[var(--text-primary)] font-bold rounded-xl transition-all">
                                 Save Changes
@@ -1700,30 +1700,30 @@ export default function DiscussVerse() {
             {showProfileMenu && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)}></div>
-                    <div className="fixed bottom-20 left-6 w-64 bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl z-50 animate-fade-in">
+                    <div className="fixed bottom-20 left-6 w-64 bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--border-color)] shadow-2xl z-50 animate-fade-in">
                         <div className="p-4 space-y-2">
                             <button
                                 onClick={() => {
                                     setShowProfileMenu(false);
                                     setShowUserProfile({ isMe: true });
                                 }}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-[var(--text-primary)] transition-all"
+                                className="w-full flex items-center gap-3 p-3 hover:bg-[var(--glass-bg)] rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
                             >
                                 <User size={18} />
                                 <span className="text-sm font-medium">View Profile</span>
                             </button>
-                            <button className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-[var(--text-primary)] transition-all">
+                            <button className="w-full flex items-center gap-3 p-3 hover:bg-[var(--glass-bg)] rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
                                 <Bookmark size={18} />
                                 <span className="text-sm font-medium">Saved Posts</span>
                             </button>
                             <button
                                 onClick={handleSettings}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-[var(--text-primary)] transition-all"
+                                className="w-full flex items-center gap-3 p-3 hover:bg-[var(--glass-bg)] rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
                             >
                                 <Settings size={18} />
                                 <span className="text-sm font-medium">Settings</span>
                             </button>
-                            <div className="border-t border-slate-800 my-2"></div>
+                            <div className="border-t border-[var(--border-color)] my-2"></div>
                             <button
                                 onClick={() => navigate('/dashboard')}
                                 className="w-full flex items-center gap-3 p-3 hover:bg-red-500/10 rounded-xl text-red-400 hover:text-red-300 transition-all"

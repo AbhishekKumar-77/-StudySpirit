@@ -577,14 +577,14 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
     return (
         <div
             ref={containerRef}
-            className={`bg-slate-900 flex flex-col ${(isBrowserFullscreen || isFullscreen)
+            className={`bg-[var(--bg-secondary)] flex flex-col ${(isBrowserFullscreen || isFullscreen)
                 ? 'fixed inset-0 z-[99999]'
                 : 'relative w-full h-[600px] rounded-2xl overflow-hidden'
                 }`}
             style={(isBrowserFullscreen || isFullscreen) ? { width: '100vw', height: '100vh' } : {}}
         >
             {/* Main Toolbar */}
-            <div className="flex items-center justify-between gap-2 p-3 bg-slate-800/95 backdrop-blur-sm border-b border-slate-700 flex-shrink-0">
+            <div className="flex items-center justify-between gap-2 p-3 bg-[var(--glass-bg)] backdrop-blur-sm border-b border-[var(--border-color)] flex-shrink-0">
                 {/* Drawing Tools */}
                 <div className="flex items-center gap-1">
                     {tools.map(t => (
@@ -596,12 +596,12 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                             }}
                             className={`p-2.5 rounded-lg transition-all relative group ${tool === t.id
                                 ? 'bg-gradient-to-r from-cyan- to-purple-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
-                                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-[var(--text-primary)]'
+                                : 'bg-[var(--border-color)]/50 text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]'
                                 }`}
                             title={t.label}
                         >
                             <t.icon size={18} />
-                            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-[var(--bg-secondary)] text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                                 {t.label}
                             </span>
                         </button>
@@ -609,15 +609,15 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                 </div>
 
                 {/* Brush/Font Size */}
-                <div className="flex items-center gap-2 px-3 border-l border-r border-slate-700">
+                <div className="flex items-center gap-2 px-3 border-l border-r border-[var(--border-color)]">
                     {tool === 'text' ? (
                         <>
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-slate-400 font-bold">SIZE</span>
+                                <span className="text-xs text-[var(--text-secondary)] font-bold">SIZE</span>
                                 <select
                                     value={fontSize}
                                     onChange={(e) => setFontSize(Number(e.target.value))}
-                                    className="bg-slate-700 text-[var(--text-primary)] px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
+                                    className="bg-[var(--border-color)] text-[var(--text-primary)] px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
                                 >
                                     {fontSizes.map(size => (
                                         <option key={size} value={size}>{size}px</option>
@@ -626,11 +626,11 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-slate-400 font-bold">FONT</span>
+                                <span className="text-xs text-[var(--text-secondary)] font-bold">FONT</span>
                                 <select
                                     value={fontFamily}
                                     onChange={(e) => setFontFamily(e.target.value)}
-                                    className="bg-slate-700 text-[var(--text-primary)] px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
+                                    className="bg-[var(--border-color)] text-[var(--text-primary)] px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
                                     style={{ fontFamily: fontFamily }}
                                 >
                                     {fontFamilies.map(font => (
@@ -643,7 +643,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                         </>
                     ) : (
                         <>
-                            <span className="text-xs text-slate-400 font-bold">SIZE</span>
+                            <span className="text-xs text-[var(--text-secondary)] font-bold">SIZE</span>
                             <div className="flex items-center gap-1">
                                 {brushSizes.slice(0, 6).map(size => (
                                     <button
@@ -667,8 +667,8 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                 </div>
 
                 {/* Colors */}
-                <div className="flex items-center gap-1.5 px-3 border-r border-slate-700">
-                    <span className="text-xs text-slate-400 font-bold mr-1">COLOR</span>
+                <div className="flex items-center gap-1.5 px-3 border-r border-[var(--border-color)]">
+                    <span className="text-xs text-[var(--text-secondary)] font-bold mr-1">COLOR</span>
                     <div className="flex flex-wrap gap-1 max-w-[180px]">
                         {colors.slice(0, 10).map(c => (
                             <button
@@ -676,7 +676,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                                 onClick={() => setColor(c)}
                                 className={`w-6 h-6 rounded-full transition-all border-2 ${color === c
                                     ? 'border-white scale-125 ring-2 ring-violet-500'
-                                    : 'border-slate-600 hover:scale-110 hover:border-white'
+                                    : 'border-[var(--border-color)] hover:scale-110 hover:border-white'
                                     }`}
                                 style={{ backgroundColor: c }}
                                 title={c}
@@ -690,7 +690,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <button
                         onClick={handleUndo}
                         disabled={historyIndex <= 0}
-                        className="p-2.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-2.5 rounded-lg bg-[var(--border-color)]/50 text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         title="Undo"
                     >
                         <Undo size={18} />
@@ -698,7 +698,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <button
                         onClick={handleRedo}
                         disabled={historyIndex >= history.length - 1}
-                        className="p-2.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-2.5 rounded-lg bg-[var(--border-color)]/50 text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         title="Redo"
                     >
                         <Redo size={18} />
@@ -717,7 +717,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     >
                         <Download size={18} />
                     </button>
-                    <div className="w-px h-6 bg-slate-700 mx-1" />
+                    <div className="w-px h-6 bg-[var(--border-color)] mx-1" />
                     <button
                         onClick={toggleBrowserFullscreen}
                         className="p-2.5 rounded-lg bg-gradient-to-r from-cyan-/30 to-purple-500/30 text-violet-300 hover:from-cyan-/50 hover:to-purple-500/50 transition-all flex items-center gap-2"
@@ -794,9 +794,9 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     >
                         {textObj.text}
                         {selectedTextId === textObj.id && (
-                            <div className="absolute -top-8 left-0 flex items-center gap-1 bg-slate-800 rounded-lg px-2 py-1 shadow-lg">
+                            <div className="absolute -top-8 left-0 flex items-center gap-1 bg-[var(--bg-secondary)] rounded-lg px-2 py-1 shadow-lg">
                                 <Move size={14} className="text-cyan-" />
-                                <span className="text-xs text-slate-300">Drag to move</span>
+                                <span className="text-xs text-[var(--text-secondary)]">Drag to move</span>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -815,7 +815,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
             {/* Text Input Modal */}
             {showTextInput && textPosition && (
                 <div
-                    className="absolute bg-slate-800 border border-cyan-500/50 rounded-xl p-4 shadow-2xl shadow-violet-500/20 z-50"
+                    className="absolute bg-[var(--bg-secondary)] border border-cyan-500/50 rounded-xl p-4 shadow-2xl shadow-violet-500/20 z-50"
                     style={{
                         left: Math.min(textPosition.x, (containerRef.current?.clientWidth || 500) - 350),
                         top: Math.min(textPosition.y + 70, (containerRef.current?.clientHeight || 500) - 250),
@@ -831,7 +831,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                             <select
                                 value={fontSize}
                                 onChange={(e) => setFontSize(Number(e.target.value))}
-                                className="bg-slate-700 text-[var(--text-primary)] px-2 py-1 rounded text-sm focus:outline-none"
+                                className="bg-[var(--border-color)] text-[var(--text-primary)] px-2 py-1 rounded text-sm focus:outline-none"
                             >
                                 {fontSizes.map(size => (
                                     <option key={size} value={size}>{size}px</option>
@@ -840,7 +840,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                             <select
                                 value={fontFamily}
                                 onChange={(e) => setFontFamily(e.target.value)}
-                                className="bg-slate-700 text-[var(--text-primary)] px-2 py-1 rounded text-sm focus:outline-none"
+                                className="bg-[var(--border-color)] text-[var(--text-primary)] px-2 py-1 rounded text-sm focus:outline-none"
                             >
                                 {fontFamilies.map(font => (
                                     <option key={font.name} value={font.name}>{font.label}</option>
@@ -855,12 +855,12 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                         placeholder="Type your text here..."
                         autoFocus
                         rows={3}
-                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 resize-none"
+                        className="w-full px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 resize-none"
                         style={{ color, fontSize: `${Math.min(fontSize * 0.7, 24)}px`, fontFamily }}
                     />
 
                     <div className="flex items-center gap-2 mt-3 mb-3">
-                        <span className="text-xs text-slate-400">Color:</span>
+                        <span className="text-xs text-[var(--text-secondary)]">Color:</span>
                         <div className="flex gap-1 flex-wrap">
                             {colors.slice(0, 10).map(c => (
                                 <button
@@ -888,7 +888,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                                 setTextInput('');
                                 setTextPosition(null);
                             }}
-                            className="px-4 py-2.5 bg-slate-700 text-[var(--text-primary)] rounded-lg font-bold hover:bg-slate-600 transition-all"
+                            className="px-4 py-2.5 bg-[var(--border-color)] text-[var(--text-primary)] rounded-lg font-bold hover:bg-[var(--bg-secondary)] transition-all"
                         >
                             Cancel
                         </button>
@@ -897,9 +897,9 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
             )}
 
             {/* Status Bar */}
-            <div className="px-4 py-2 bg-slate-800/90 backdrop-blur-sm border-t border-slate-700 flex items-center justify-between flex-shrink-0">
+            <div className="px-4 py-2 bg-[var(--glass-bg)] backdrop-blur-sm border-t border-[var(--border-color)] flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-4">
-                    <span className="text-sm text-slate-300">
+                    <span className="text-sm text-[var(--text-secondary)]">
                         <span className="text-cyan- font-bold">{tools.find(t => t.id === tool)?.label}</span>
                     </span>
                     {selectedTextId && (
@@ -909,7 +909,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                         </span>
                     )}
                 </div>
-                <div className="flex items-center gap-3 text-xs text-slate-500">
+                <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
                     {isBrowserFullscreen && <span className="text-cyan-">Press Esc to exit fullscreen</span>}
                     <span>•</span>
                     <span>Select tool to move text</span>

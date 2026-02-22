@@ -236,7 +236,7 @@ export default function Certification() {
             />
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[#0f172a]/70 backdrop-blur-[30px] border-b border-amber-500/20 shadow-[0_10px_40px_rgba(251,191,36,0.15)]">
+            <nav className="sticky top-0 z-50 bg-[var(--bg-primary)]/70 backdrop-blur-[30px] border-b border-amber-500/20 shadow-[0_10px_40px_rgba(251,191,36,0.15)]">
                 <div className="max-w-[1400px] mx-auto px-8 py-5 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
@@ -259,10 +259,10 @@ export default function Certification() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 bg-[#18181b]/80 px-5 py-2 rounded-2xl border border-amber-500/20">
+                        <div className="flex items-center gap-3 bg-[var(--bg-primary)]/80 px-5 py-2 rounded-2xl border border-amber-500/20">
                             <GraduationCap className="w-5 h-5 text-amber-400" />
                             <span className="text-[var(--text-primary)] font-bold">{certificates.length}</span>
-                            <span className="text-slate-400 text-sm">Certificates</span>
+                            <span className="text-[var(--text-secondary)] text-sm">Certificates</span>
                         </div>
                     </div>
                 </div>
@@ -280,7 +280,7 @@ export default function Certification() {
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === tab.id
                                 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)] shadow-[0_10px_40px_rgba(251,191,36,0.4)]'
-                                : 'bg-[#18181b]/80 text-slate-400 hover:text-[var(--text-primary)] hover:bg-[#2a2a40]'
+                                : 'bg-[var(--bg-primary)]/80 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
                                 }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -295,22 +295,22 @@ export default function Certification() {
                         {/* Search and Filter Bar */}
                         <div className="flex flex-wrap gap-4 mb-8">
                             <div className="flex-1 min-w-[300px] relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-secondary)]" />
                                 <input
                                     type="text"
                                     placeholder="Search certificates..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[var(--bg-primary)]/80 border border-[var(--border-color)] text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <Filter className="w-5 h-5 text-slate-400" />
+                                <Filter className="w-5 h-5 text-[var(--text-secondary)]" />
                                 <select
                                     value={selectedCategory}
                                     onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="px-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
+                                    className="px-4 py-4 rounded-xl bg-[var(--bg-primary)]/80 border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
                                 >
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -333,7 +333,7 @@ export default function Certification() {
                                 {filteredCertificates.map((cert, idx) => (
                                     <div
                                         key={cert.id}
-                                        className="group bg-gradient-to-br from-[#141428]/90 to-[#1e0f32]/70 rounded-2xl border border-amber-500/20 overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:border-amber-500/50 hover:shadow-[0_20px_50px_rgba(251,191,36,0.2)]"
+                                        className="group bg-gradient-to-br /90 /70 rounded-2xl border border-amber-500/20 overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:border-amber-500/50 hover:shadow-[0_20px_50px_rgba(251,191,36,0.2)]"
                                         style={{ animationDelay: `${idx * 0.1}s` }}
                                     >
                                         {/* Certificate Preview */}
@@ -353,12 +353,12 @@ export default function Certification() {
                                             <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 line-clamp-2">{cert.name}</h3>
 
                                             <div className="space-y-2 mb-4">
-                                                <div className="flex items-center gap-2 text-sm text-slate-400">
+                                                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                                                     <Calendar className="w-4 h-4" />
                                                     <span>Issued: {cert.issueDate || 'N/A'}</span>
                                                 </div>
                                                 {cert.credentialId && (
-                                                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                                                    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                                                         <Link2 className="w-4 h-4" />
                                                         <span className="font-mono text-xs">{cert.credentialId}</span>
                                                     </div>
@@ -390,9 +390,9 @@ export default function Certification() {
                             </div>
                         ) : (
                             <div className="text-center py-20">
-                                <Award className="w-20 h-20 text-slate-600 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold text-slate-400 mb-2">No certificates yet</h3>
-                                <p className="text-slate-500 mb-6">Start by adding your first certificate!</p>
+                                <Award className="w-20 h-20 text-[var(--text-primary)] mx-auto mb-4" />
+                                <h3 className="text-xl font-bold text-[var(--text-secondary)] mb-2">No certificates yet</h3>
+                                <p className="text-[var(--text-muted)] mb-6">Start by adding your first certificate!</p>
                                 <button
                                     onClick={() => setShowUploadModal(true)}
                                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)] font-bold hover:shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all"
@@ -410,7 +410,7 @@ export default function Certification() {
                     <div>
                         <div className="mb-8">
                             <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">🎓 Popular Certification Platforms</h2>
-                            <p className="text-slate-400">Complete courses and earn verified certificates from these trusted platforms</p>
+                            <p className="text-[var(--text-secondary)]">Complete courses and earn verified certificates from these trusted platforms</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -420,7 +420,7 @@ export default function Certification() {
                                     href={platform.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group bg-gradient-to-br from-[#141428]/90 to-[#1e0f32]/70 rounded-2xl p-6 border border-slate-700/50 transition-all duration-500 hover:-translate-y-3 hover:border-amber-500/50 hover:shadow-[0_30px_60px_rgba(251,191,36,0.2)] block"
+                                    className="group bg-gradient-to-br /90 /70 rounded-2xl p-6 border border-[var(--border-color)] transition-all duration-500 hover:-translate-y-3 hover:border-amber-500/50 hover:shadow-[0_30px_60px_rgba(251,191,36,0.2)] block"
                                     style={{ animationDelay: `${idx * 0.05}s` }}
                                 >
                                     {/* Platform Header */}
@@ -440,20 +440,20 @@ export default function Certification() {
                                     </div>
 
                                     {/* Description */}
-                                    <p className="text-sm text-slate-400 mb-4 line-clamp-2">{platform.description}</p>
+                                    <p className="text-sm text-[var(--text-secondary)] mb-4 line-clamp-2">{platform.description}</p>
 
                                     {/* Categories */}
                                     <div className="flex flex-wrap gap-2">
                                         {platform.categories.slice(0, 3).map((cat, i) => (
                                             <span
                                                 key={i}
-                                                className="px-2 py-1 rounded-full bg-slate-800 text-slate-400 text-xs"
+                                                className="px-2 py-1 rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-xs"
                                             >
                                                 {cat}
                                             </span>
                                         ))}
                                         {platform.categories.length > 3 && (
-                                            <span className="px-2 py-1 rounded-full bg-slate-800 text-slate-400 text-xs">
+                                            <span className="px-2 py-1 rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-xs">
                                                 +{platform.categories.length - 3}
                                             </span>
                                         )}
@@ -472,14 +472,14 @@ export default function Certification() {
                     onClick={() => setShowUploadModal(false)}
                 >
                     <div
-                        className="bg-gradient-to-br from-[#18181b] to-[#09090b] rounded-3xl p-8 max-w-lg w-full border border-amber-500/30 shadow-[0_30px_100px_rgba(251,191,36,0.3)] max-h-[90vh] overflow-y-auto"
+                        className="bg-gradient-to-br   rounded-3xl p-8 max-w-lg w-full border border-amber-500/30 shadow-[0_30px_100px_rgba(251,191,36,0.3)] max-h-[90vh] overflow-y-auto"
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-[var(--text-primary)]">Add Certificate</h2>
                             <button
                                 onClick={() => setShowUploadModal(false)}
-                                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-[var(--text-primary)] transition-all"
+                                className="p-2 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -488,7 +488,7 @@ export default function Certification() {
                         <form onSubmit={handleUpload} className="space-y-5">
                             {/* Certificate Name */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">
                                     Certificate Name *
                                 </label>
                                 <input
@@ -496,14 +496,14 @@ export default function Certification() {
                                     value={uploadForm.name}
                                     onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })}
                                     placeholder="e.g., Python for Data Science"
-                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                     required
                                 />
                             </div>
 
                             {/* Platform */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">
                                     Platform *
                                 </label>
                                 <input
@@ -511,27 +511,27 @@ export default function Certification() {
                                     value={uploadForm.platform}
                                     onChange={(e) => setUploadForm({ ...uploadForm, platform: e.target.value })}
                                     placeholder="e.g., Coursera, Udemy, Google"
-                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                     required
                                 />
                             </div>
 
                             {/* Issue Date */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">
                                     Issue Date
                                 </label>
                                 <input
                                     type="date"
                                     value={uploadForm.issueDate}
                                     onChange={(e) => setUploadForm({ ...uploadForm, issueDate: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
                             {/* Credential ID */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">
                                     Credential ID
                                 </label>
                                 <input
@@ -539,13 +539,13 @@ export default function Certification() {
                                     value={uploadForm.credentialId}
                                     onChange={(e) => setUploadForm({ ...uploadForm, credentialId: e.target.value })}
                                     placeholder="e.g., ABC123XYZ"
-                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
                             {/* Credential URL */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">
                                     Verification URL
                                 </label>
                                 <input
@@ -553,19 +553,19 @@ export default function Certification() {
                                     value={uploadForm.credentialUrl}
                                     onChange={(e) => setUploadForm({ ...uploadForm, credentialUrl: e.target.value })}
                                     placeholder="https://..."
-                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
                             {/* Category */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">
                                     Category
                                 </label>
                                 <select
                                     value={uploadForm.category}
                                     onChange={(e) => setUploadForm({ ...uploadForm, category: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
                                 >
                                     {categories.filter(c => c.id !== 'all').map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -575,7 +575,7 @@ export default function Certification() {
 
                             {/* Certificate Image */}
                             <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                                <label className="block text-sm font-semibold text-[var(--text-secondary)] mb-2">
                                     Certificate Image (Optional)
                                 </label>
                                 <div className="relative">
@@ -588,7 +588,7 @@ export default function Certification() {
                                     />
                                     <label
                                         htmlFor="cert-image"
-                                        className="flex items-center justify-center gap-3 w-full px-4 py-8 rounded-xl bg-[var(--bg-primary)] border-2 border-dashed border-slate-700 text-slate-400 hover:border-amber-500/50 hover:text-amber-400 cursor-pointer transition-all"
+                                        className="flex items-center justify-center gap-3 w-full px-4 py-8 rounded-xl bg-[var(--bg-primary)] border-2 border-dashed border-[var(--border-color)] text-[var(--text-secondary)] hover:border-amber-500/50 hover:text-amber-400 cursor-pointer transition-all"
                                     >
                                         <Upload className="w-6 h-6" />
                                         <span>{uploadForm.image ? 'Image Selected' : 'Click to upload certificate image'}</span>

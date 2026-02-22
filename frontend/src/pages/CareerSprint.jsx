@@ -92,7 +92,7 @@ export default function CareerSprint() {
             <div className="absolute bottom-[5%] right-[5%] w-[500px] h-[500px] bg-teal-500/8 rounded-full blur-[120px] pointer-events-none" />
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-cyan-500/10 px-6 py-4">
+            <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-cyan-500/10 px-6 py-4">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between">
                     <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 px-4 py-2.5 rounded-xl text-cyan-300 font-semibold transition-all text-sm">
                         <ArrowLeft size={16} /> Back
@@ -103,7 +103,7 @@ export default function CareerSprint() {
                     <button
                         onClick={() => fetchData(true)}
                         disabled={loading}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${loading ? 'bg-slate-700 cursor-wait text-slate-400' : 'bg-slate-800 hover:bg-slate-700 border border-[var(--border-color)] text-[var(--text-primary)]'}`}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${loading ? 'bg-[var(--border-color)] cursor-wait text-[var(--text-secondary)]' : 'bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-primary)]'}`}
                     >
                         <RefreshCw size={15} className={loading ? 'animate-spin text-cyan-400' : 'text-cyan-400'} />
                         {loading ? 'Loading...' : 'Refresh'}
@@ -123,7 +123,7 @@ export default function CareerSprint() {
                         <div className="flex-1 min-w-0">
                             <div className="text-xs text-cyan-400 font-bold tracking-widest uppercase mb-1">Real Opportunities · Updated Live</div>
                             <h1 className="text-3xl font-black mb-1">CareerSprint Hub</h1>
-                            <p className="text-slate-400">Jobs, internships & hackathons from top Indian tech companies + global remote roles.</p>
+                            <p className="text-[var(--text-secondary)]">Jobs, internships & hackathons from top Indian tech companies + global remote roles.</p>
                         </div>
                         {/* Stats */}
                         <div className="flex gap-4 flex-wrap">
@@ -132,10 +132,10 @@ export default function CareerSprint() {
                                 { label: 'Jobs', value: listings.filter(l => l.type === 'job').length, icon: Briefcase, color: 'text-blue-400' },
                                 { label: 'Internships', value: listings.filter(l => l.type === 'internship').length, icon: BookOpen, color: 'text-purple-400' },
                             ].map(stat => (
-                                <div key={stat.label} className="bg-slate-800/60 rounded-2xl px-5 py-3 text-center border border-[var(--border-color)]">
+                                <div key={stat.label} className="bg-[var(--glass-bg)] rounded-2xl px-5 py-3 text-center border border-[var(--border-color)]">
                                     <stat.icon size={18} className={`${stat.color} mx-auto mb-1`} />
                                     <div className={`text-2xl font-black ${stat.color}`}>{stat.value}</div>
-                                    <div className="text-xs text-slate-500">{stat.label}</div>
+                                    <div className="text-xs text-[var(--text-muted)]">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -143,16 +143,16 @@ export default function CareerSprint() {
                     {/* Source badges */}
                     {sources.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[var(--border-color)]">
-                            <span className="text-xs text-slate-500 self-center">Sources:</span>
+                            <span className="text-xs text-[var(--text-muted)] self-center">Sources:</span>
                             {sources.map(s => (
-                                <span key={s} className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 border border-[var(--border-color)] text-slate-400">{s}</span>
+                                <span key={s} className="text-xs px-2.5 py-1 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)]">{s}</span>
                             ))}
                         </div>
                     )}
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6 items-center bg-slate-800/40 backdrop-blur-xl p-3 rounded-2xl border border-[var(--border-color)]">
+                <div className="flex flex-col md:flex-row gap-4 mb-6 items-center bg-[var(--glass-bg)] backdrop-blur-xl p-3 rounded-2xl border border-[var(--border-color)]">
                     <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 w-full md:w-auto flex-shrink-0">
                         {tabs.map(tab => (
                             <button
@@ -160,25 +160,25 @@ export default function CareerSprint() {
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition-all ${activeTab === tab.id
                                     ? 'bg-gradient-to-r from-cyan-500 to-teal-600 text-[var(--text-primary)] shadow-lg shadow-cyan-500/20'
-                                    : 'bg-slate-900/50 text-slate-400 hover:text-[var(--text-primary)] hover:bg-slate-900'
+                                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
                                     }`}
                             >
                                 <tab.icon size={14} />
                                 {tab.label}
-                                <span className={`text-xs px-1.5 py-0.5 rounded-md ${activeTab === tab.id ? 'bg-white/20' : 'bg-slate-700'}`}>
+                                <span className={`text-xs px-1.5 py-0.5 rounded-md ${activeTab === tab.id ? 'bg-white/20' : 'bg-[var(--border-color)]'}`}>
                                     {tab.count}
                                 </span>
                             </button>
                         ))}
                     </div>
                     <div className="relative w-full">
-                        <Search className="absolute left-4 top-3 text-slate-500" size={16} />
+                        <Search className="absolute left-4 top-3 text-[var(--text-muted)]" size={16} />
                         <input
                             type="text"
                             placeholder="Search by title, company, skills..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-[var(--border-color)] text-[var(--text-primary)] focus:border-cyan-500/50 focus:outline-none transition-all placeholder:text-slate-600 text-sm"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-cyan-500/50 focus:outline-none transition-all placeholder:text-[var(--text-primary)] text-sm"
                         />
                     </div>
                 </div>
@@ -187,17 +187,17 @@ export default function CareerSprint() {
                 {loading && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-slate-800/40 rounded-2xl p-6 border border-[var(--border-color)] animate-pulse">
+                            <div key={i} className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-[var(--border-color)] animate-pulse">
                                 <div className="flex gap-3 mb-4">
-                                    <div className="w-12 h-12 rounded-xl bg-slate-700" />
+                                    <div className="w-12 h-12 rounded-xl bg-[var(--border-color)]" />
                                     <div className="flex-1">
-                                        <div className="h-4 bg-slate-700 rounded mb-2 w-3/4" />
-                                        <div className="h-3 bg-slate-700 rounded w-1/2" />
+                                        <div className="h-4 bg-[var(--border-color)] rounded mb-2 w-3/4" />
+                                        <div className="h-3 bg-[var(--border-color)] rounded w-1/2" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="h-3 bg-slate-700 rounded w-full" />
-                                    <div className="h-3 bg-slate-700 rounded w-4/5" />
+                                    <div className="h-3 bg-[var(--border-color)] rounded w-full" />
+                                    <div className="h-3 bg-[var(--border-color)] rounded w-4/5" />
                                 </div>
                             </div>
                         ))}
@@ -208,7 +208,7 @@ export default function CareerSprint() {
                 {!loading && error && (
                     <div className="text-center py-16">
                         <div className="text-4xl mb-4">⚠️</div>
-                        <p className="text-slate-400 mb-4">{error}</p>
+                        <p className="text-[var(--text-secondary)] mb-4">{error}</p>
                         <button onClick={() => fetchData()} className="px-6 py-2.5 bg-cyan-500/20 text-cyan-400 rounded-xl hover:bg-cyan-500/30 transition-all font-semibold">
                             Try Again
                         </button>
@@ -226,7 +226,7 @@ export default function CareerSprint() {
                             return (
                                 <div
                                     key={item.id}
-                                    className="group relative bg-slate-800/50 backdrop-blur-xl rounded-2xl p-5 border border-[var(--border-color)] hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/5 flex flex-col"
+                                    className="group relative bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-5 border border-[var(--border-color)] hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/5 flex flex-col"
                                 >
                                     {/* Top gradient line on hover */}
                                     <div className={`absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r ${typeConf.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
@@ -235,7 +235,7 @@ export default function CareerSprint() {
                                     <div className="flex items-start justify-between gap-3 mb-4">
                                         <div className="flex items-center gap-3 min-w-0">
                                             {/* Company Logo */}
-                                            <div className="w-12 h-12 rounded-xl bg-slate-700/80 border border-[var(--border-color)] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            <div className="w-12 h-12 rounded-xl bg-[var(--border-color)]/80 border border-[var(--border-color)] flex items-center justify-center overflow-hidden flex-shrink-0">
                                                 <img
                                                     src={item.logo}
                                                     alt={item.company}
@@ -245,13 +245,13 @@ export default function CareerSprint() {
                                                         e.target.nextSibling.style.display = 'flex';
                                                     }}
                                                 />
-                                                <div className="hidden w-full h-full items-center justify-center text-lg font-black text-slate-400">
+                                                <div className="hidden w-full h-full items-center justify-center text-lg font-black text-[var(--text-secondary)]">
                                                     {(item.company || '?')[0].toUpperCase()}
                                                 </div>
                                             </div>
                                             <div className="min-w-0">
                                                 <h3 className="font-bold text-base leading-tight group-hover:text-cyan-400 transition-colors truncate">{item.title}</h3>
-                                                <p className="text-sm text-slate-400 flex items-center gap-1 truncate">
+                                                <p className="text-sm text-[var(--text-secondary)] flex items-center gap-1 truncate">
                                                     <Building2 size={12} className="flex-shrink-0" /> {item.company}
                                                 </p>
                                             </div>
@@ -259,9 +259,9 @@ export default function CareerSprint() {
                                         {/* Bookmark */}
                                         <button
                                             onClick={() => toggleBookmark(item.id)}
-                                            className="flex-shrink-0 p-1.5 rounded-lg hover:bg-slate-700 transition-all"
+                                            className="flex-shrink-0 p-1.5 rounded-lg hover:bg-[var(--border-color)] transition-all"
                                         >
-                                            <Star size={18} fill={isBookmarked ? 'currentColor' : 'none'} className={isBookmarked ? 'text-yellow-400' : 'text-slate-500'} />
+                                            <Star size={18} fill={isBookmarked ? 'currentColor' : 'none'} className={isBookmarked ? 'text-yellow-400' : 'text-[var(--text-muted)]'} />
                                         </button>
                                     </div>
 
@@ -273,7 +273,7 @@ export default function CareerSprint() {
                                     </div>
 
                                     {/* Details */}
-                                    <div className="space-y-1.5 mb-4 text-sm text-slate-400">
+                                    <div className="space-y-1.5 mb-4 text-sm text-[var(--text-secondary)]">
                                         {item.location && (
                                             <div className="flex items-center gap-2">
                                                 <MapPin size={13} className="text-cyan-500 flex-shrink-0" />
@@ -297,19 +297,19 @@ export default function CareerSprint() {
 
                                     {/* Description */}
                                     {item.description && (
-                                        <p className="text-xs text-slate-500 line-clamp-2 mb-4 leading-relaxed">{item.description}</p>
+                                        <p className="text-xs text-[var(--text-muted)] line-clamp-2 mb-4 leading-relaxed">{item.description}</p>
                                     )}
 
                                     {/* Tags */}
                                     {item.tags && item.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mb-4">
                                             {item.tags.slice(0, 4).map(tag => (
-                                                <span key={tag} className="text-xs px-2 py-0.5 rounded-lg bg-slate-900 border border-[var(--border-color)] text-slate-400">
+                                                <span key={tag} className="text-xs px-2 py-0.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)]">
                                                     {tag}
                                                 </span>
                                             ))}
                                             {item.tags.length > 4 && (
-                                                <span className="text-xs px-2 py-0.5 rounded-lg bg-slate-900 border border-[var(--border-color)] text-slate-500">
+                                                <span className="text-xs px-2 py-0.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)]">
                                                     +{item.tags.length - 4}
                                                 </span>
                                             )}
@@ -318,7 +318,7 @@ export default function CareerSprint() {
 
                                     {/* Footer */}
                                     <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--border-color)]">
-                                        <span className="text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded-lg">via {item.source}</span>
+                                        <span className="text-xs text-[var(--text-primary)] bg-[var(--glass-bg)] px-2 py-1 rounded-lg">via {item.source}</span>
                                         <button
                                             onClick={() => window.open(item.link, '_blank', 'noopener')}
                                             className={`flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl bg-gradient-to-r ${typeConf.color} text-[var(--text-primary)] hover:opacity-90 transition-all shadow-lg`}
@@ -330,9 +330,9 @@ export default function CareerSprint() {
                             );
                         }) : (
                             <div className="col-span-full py-20 text-center">
-                                <Search size={48} className="mx-auto mb-4 text-slate-700" />
-                                <p className="text-slate-400 text-lg mb-2">No results found</p>
-                                <p className="text-slate-600 text-sm mb-6">Try a different search or filter</p>
+                                <Search size={48} className="mx-auto mb-4 text-[var(--text-primary)]" />
+                                <p className="text-[var(--text-secondary)] text-lg mb-2">No results found</p>
+                                <p className="text-[var(--text-primary)] text-sm mb-6">Try a different search or filter</p>
                                 <button
                                     onClick={() => { setSearchQuery(''); setActiveTab('all'); }}
                                     className="px-6 py-2.5 bg-cyan-500/20 text-cyan-400 rounded-xl hover:bg-cyan-500/30 transition-all font-semibold"

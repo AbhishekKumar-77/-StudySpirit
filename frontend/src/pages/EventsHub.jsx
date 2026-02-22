@@ -70,7 +70,7 @@ export default function EventsHub() {
                 <div>
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-slate-400 hover:text-[var(--text-primary)] transition-colors mb-4 group"
+                        className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4 group"
                     >
                         <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                         Back to Dashboard
@@ -78,20 +78,20 @@ export default function EventsHub() {
                     <h1 className="text-4xl font-black bg-gradient-to-r from-orange-500 via-rose-500 to-purple-500 bg-clip-text text-transparent mb-2 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]">
                         global_events_hub
                     </h1>
-                    <p className="text-slate-400 text-lg">
+                    <p className="text-[var(--text-secondary)] text-lg">
                         Discover & track hackathons, contests, and tech talks worldwide. 🌍
                     </p>
                 </div>
 
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="relative flex-1 md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-secondary)]" />
                         <input
                             type="text"
                             placeholder="Search events..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#1e1e2d] border border-[var(--border-color)] rounded-xl py-3 pl-12 pr-4 text-[var(--text-primary)] focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/50 transition-all placeholder:text-slate-500"
+                            className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl py-3 pl-12 pr-4 text-[var(--text-primary)] focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/50 transition-all placeholder:text-[var(--text-muted)]"
                         />
                     </div>
                 </div>
@@ -106,7 +106,7 @@ export default function EventsHub() {
                             onClick={() => setFilter(cat)}
                             className={`px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 border ${filter === cat
                                     ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-[var(--text-primary)] border-transparent shadow-[0_0_20px_rgba(244,63,94,0.4)]'
-                                    : 'bg-[#1e1e2d] text-slate-400 border-[var(--border-color)] hover:border-white/20 hover:text-[var(--text-primary)]'
+                                    : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] border-[var(--border-color)] hover:border-white/20 hover:text-[var(--text-primary)]'
                                 }`}
                         >
                             {cat}
@@ -120,7 +120,7 @@ export default function EventsHub() {
                 {loading ? (
                     // Skeletons
                     [...Array(6)].map((_, i) => (
-                        <div key={i} className="bg-[#1e1e2d] h-[350px] rounded-2xl animate-pulse" />
+                        <div key={i} className="bg-[var(--bg-primary)] h-[350px] rounded-2xl animate-pulse" />
                     ))
                 ) : filteredEvents.length > 0 ? (
                     filteredEvents.map((event, idx) => (
@@ -133,7 +133,7 @@ export default function EventsHub() {
                         />
                     ))
                 ) : (
-                    <div className="col-span-full text-center py-20 text-slate-500">
+                    <div className="col-span-full text-center py-20 text-[var(--text-muted)]">
                         <Globe className="w-16 h-16 mx-auto mb-4 opacity-20" />
                         <p className="text-xl font-medium">No events found matching your criteria.</p>
                     </div>
@@ -158,12 +158,12 @@ function EventCard({ event, isMonitored, onMonitor, index }) {
 
     return (
         <div
-            className="group bg-[#161622] border border-[var(--border-color)] rounded-2xl overflow-hidden hover:border-[var(--border-color)] hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl flex flex-col h-full animate-fade-in-up"
+            className="group bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-2xl overflow-hidden hover:border-[var(--border-color)] hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl flex flex-col h-full animate-fade-in-up"
             style={{ animationDelay: `${index * 0.1}s` }}
         >
             {/* Image Banner */}
             <div className="relative h-48 overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-t from-[#161622] via-transparent to-transparent z-10`} />
+                <div className={`absolute inset-0 bg-gradient-to-t  via-transparent to-transparent z-10`} />
                 {event.imageUrl ? (
                     <img
                         src={event.imageUrl}
@@ -190,12 +190,12 @@ function EventCard({ event, isMonitored, onMonitor, index }) {
                     {event.title}
                 </h3>
 
-                <p className="text-slate-400 text-sm mb-6 line-clamp-2">
+                <p className="text-[var(--text-secondary)] text-sm mb-6 line-clamp-2">
                     {event.description}
                 </p>
 
                 <div className="mt-auto space-y-4">
-                    <div className="flex items-center gap-4 text-sm text-slate-300">
+                    <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
                         <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-rose-400" />
                             <span>{dateStr}</span>
@@ -207,7 +207,7 @@ function EventCard({ event, isMonitored, onMonitor, index }) {
                             onClick={onMonitor}
                             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold transition-all ${isMonitored
                                     ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                    : 'bg-[#1e1e2d] text-slate-300 hover:bg-[#252536] border border-[var(--border-color)]'
+                                    : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] border border-[var(--border-color)]'
                                 }`}
                         >
                             {isMonitored ? <><CheckCircle className="w-4 h-4" /> Monitoring</> : <><Bell className="w-4 h-4" /> Monitor</>}
@@ -217,7 +217,7 @@ function EventCard({ event, isMonitored, onMonitor, index }) {
                             href={event.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold bg-white text-black hover:bg-slate-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold bg-white text-black hover:bg-[var(--bg-secondary)] transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                         >
                             Participate <ExternalLink className="w-4 h-4" />
                         </a>
