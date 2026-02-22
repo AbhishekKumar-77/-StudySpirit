@@ -294,6 +294,7 @@ export default function AIInterview() {
 
     const startCamera = async () => {
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert('Camera not supported or requires HTTPS.'); setCameraEnabled(false); return; }
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
@@ -314,6 +315,7 @@ export default function AIInterview() {
 
     const startVolumeMeter = async () => {
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { console.warn('Audio not supported or requires HTTPS'); return; }
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
             analyserRef.current = audioContextRef.current.createAnalyser();
