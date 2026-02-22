@@ -4,22 +4,22 @@ import { useNavigate } from 'react-router-dom';
 const FeatureCard = ({ icon, title, desc, index, hoveredCard, setHoveredCard }) => {
     return (
         <div
-            className={`relative p-10 bg-white/40 backdrop-blur-3xl rounded-3xl border transition-all duration-500 cursor-pointer min-h-[400px] flex flex-col items-center justify-center text-center overflow-hidden
+            className={`relative p-10 bg-black/40 backdrop-blur-3xl rounded-3xl border transition-all duration-500 cursor-pointer min-h-[400px] flex flex-col items-center justify-center text-center overflow-hidden z-10
         ${hoveredCard === index
-                    ? 'scale-105 -translate-y-3 border-[#80A1BA] shadow-[0_30px_80px_rgba(128,161,186,0.5)]'
-                    : 'border-white/50'}`}
+                    ? 'scale-105 -translate-y-3 border-cyan-500/50 shadow-[0_30px_80px_rgba(6,182,212,0.3)]'
+                    : 'border-white/10'}`}
             onMouseEnter={() => setHoveredCard(index)}
             onMouseLeave={() => setHoveredCard(null)}
         >
-            <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#80A1BA] to-transparent transition-transform duration-500 transform ${hoveredCard === index ? 'scale-x-100' : 'scale-x-0'}`} />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
+            <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent transition-transform duration-500 transform ${hoveredCard === index ? 'scale-x-100' : 'scale-x-0'}`} />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
 
-            <div className="text-6xl mb-8 filter drop-shadow-[0_0_20px_rgba(145,196,195,0.8)] animate-bounce-slow">
+            <div className={`text-6xl mb-8 filter drop-shadow-[0_0_20px_rgba(6,182,212,0.8)] transition-all duration-500 ${hoveredCard === index ? 'animate-bounce-slow' : ''}`}>
                 {icon}
             </div>
 
-            <h3 className="text-2xl font-bold text-gray-800 mb-4 uppercase tracking-wider">{title}</h3>
-            <p className="text-gray-600 leading-relaxed">{desc}</p>
+            <h3 className="text-2xl font-bold text-white mb-4 uppercase tracking-wider">{title}</h3>
+            <p className="text-zinc-400 leading-relaxed">{desc}</p>
         </div>
     );
 };
@@ -44,7 +44,7 @@ export default function Landing() {
                 clearInterval(typingInterval);
                 setShowCursor(false);
             }
-        }, 30);
+        }, 40);
         return () => clearInterval(typingInterval);
     }, []);
 
@@ -68,182 +68,165 @@ export default function Landing() {
     };
 
     return (
-        <div className="relative min-h-screen bg-[#FFF7DD] text-gray-800 flex flex-col items-center justify-center overflow-hidden py-20 px-6 font-sans">
-            {/* Background Blobs */}
-            <div className="absolute -top-[15%] -left-[10%] w-[400px] h-[400px] md:w-[700px] md:h-[700px] rounded-full bg-[#80A1BA]/40 blur-[100px] animate-float-dynamic opacity-60 pointer-events-none" />
-            <div className="absolute -bottom-[20%] -right-[10%] w-[500px] h-[500px] md:w-[800px] md:h-[800px] rounded-full bg-[#91C4C3]/40 blur-[120px] animate-float-dynamic opacity-50 pointer-events-none rev" />
-            <div className="absolute top-1/3 right-[5%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-[#B4DEBD]/40 blur-[100px] animate-pulse-custom pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(128, 161, 186, 0.2) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        <div className="relative min-h-screen bg-[#09090b] text-white flex flex-col items-center justify-center overflow-hidden py-20 px-6 font-sans">
+            {/* Dark Mode Background Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:34px_34px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+
+            {/* Glowing Orbs */}
+            <div className="absolute top-[10%] left-[20%] w-[300px] h-[300px] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[20%] right-[10%] w-[400px] h-[400px] rounded-full bg-cyan-600/20 blur-[150px] pointer-events-none" />
+            <div className="absolute top-[40%] right-[30%] w-[250px] h-[250px] rounded-full bg-pink-600/10 blur-[100px] pointer-events-none" />
 
             {/* Navbar */}
-            <nav className="absolute top-0 left-0 w-full z-50 p-4 md:p-6 flex justify-between items-center max-w-[1400px] mx-auto right-0">
-                <div className="flex items-center gap-2 md:gap-3">
-                    <img src="/logo.png" alt="StudySpirit Logo" className="w-8 h-8 md:w-12 md:h-12 drop-shadow-[0_0_15px_rgba(128,161,186,0.5)]" />
-                    <div className="text-xl md:text-2xl font-black italic tracking-tighter bg-gradient-to-r from-[#80A1BA] to-[#91C4C3] bg-clip-text text-transparent">
-                        STUDYSPIRIT
+            <nav className="absolute top-0 w-full z-50 p-6 flex justify-between items-center max-w-7xl mx-auto">
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 p-[2px]">
+                        <div className="w-full h-full bg-black rounded-xl flex items-center justify-center">
+                            <img src="/logo.png" alt="Logo" className="w-8 h-8 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" onError={(e) => { e.target.style.display = 'none'; }} />
+                            {!document.querySelector('img[src="/logo.png"]')?.complete && (
+                                <span className="text-xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">S</span>
+                            )}
+                        </div>
+                    </div>
+                    <div className="text-2xl font-black tracking-tight text-white flex items-center">
+                        STUDY<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">SPIRIT</span>
                     </div>
                 </div>
                 <button
                     onClick={() => navigate('/login')}
-                    className="px-4 py-1.5 md:px-6 md:py-2 bg-[#80A1BA]/20 hover:bg-[#80A1BA]/30 border border-[#80A1BA]/20 rounded-full backdrop-blur-md transition-all font-bold text-xs md:text-sm tracking-wide text-gray-800"
+                    className="group relative px-6 py-2 bg-transparent overflow-hidden rounded-full border border-zinc-800 hover:border-cyan-500/50 transition-all font-semibold tracking-wide"
                 >
-                    LOGIN
+                    <div className="absolute inset-0 w-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                    <span className="relative z-10 text-zinc-300 group-hover:text-white transition-colors">LOGIN</span>
                 </button>
             </nav>
 
-            {/* Floating Particles */}
-            {[...Array(15)].map((_, i) => (
+            {/* Floating Particles that follow mouse playfully */}
+            {[...Array(20)].map((_, i) => (
                 <div
                     key={`p-${i}`}
-                    className="absolute rounded-full pointer-events-none blur-[1px]"
+                    className="absolute rounded-full pointer-events-none mix-blend-screen"
                     style={{
-                        width: `${Math.random() * 6 + 2}px`,
-                        height: `${Math.random() * 6 + 2}px`,
-                        background: ['#80A1BA', '#91C4C3', '#B4DEBD'][i % 3],
+                        width: `${Math.random() * 4 + 1}px`,
+                        height: `${Math.random() * 4 + 1}px`,
+                        background: ['#06b6d4', '#a855f7', '#ec4899', '#ffffff'][i % 4],
                         left: `${Math.random() * 100}%`,
                         top: `${Math.random() * 100}%`,
-                        transform: `translate(${(mousePosition.x - 50) * (i * 0.05)}px, ${(mousePosition.y - 50) * (i * 0.05)}px)`,
-                        transition: 'transform 0.5s cubic-bezier(0.1, 0, 0.2, 1)',
-                        boxShadow: `0 0 15px ${['#80A1BA', '#91C4C3', '#B4DEBD'][i % 3]}`,
-                        opacity: 0.6
+                        transform: `translate(${(mousePosition.x - 50) * (i * 0.08)}px, ${(mousePosition.y - 50) * (i * 0.08)}px)`,
+                        transition: 'transform 0.4s cubic-bezier(0.2, 0, 0, 1)',
+                        boxShadow: `0 0 10px ${['#06b6d4', '#a855f7', '#ec4899', '#ffffff'][i % 4]}`,
+                        opacity: Math.random() * 0.5 + 0.3
                     }}
                 />
             ))}
 
-            {/* Hero Content */}
-            <div className="relative z-10 max-w-7xl w-full flex flex-col items-center mt-10">
+            {/* Hero Section */}
+            <div className="relative z-10 max-w-7xl w-full flex flex-col items-center mt-24">
 
-                {/* TAGLINE WITH ICON - FROM USER CODE */}
-                <div className="flex items-center justify-center gap-2 md:gap-4 mb-6 md:mb-10 group cursor-default text-center px-2">
-                    <span className="text-xl md:text-3xl animate-spin-slow text-[#B4DEBD] hidden sm:inline-block">⚡</span>
-                    <div className="text-[10px] sm:text-xs md:text-base font-black tracking-[0.2em] md:tracking-[0.3em] text-[#80A1BA] uppercase drop-shadow-[0_0_10px_rgba(128,161,186,0.5)]">
-                        AI-POWERED LEARNING PLATFORM
-                    </div>
-                    <span className="text-xl md:text-3xl animate-spin-slow rev text-[#B4DEBD] hidden sm:inline-block">⚡</span>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md mb-8">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-xs font-bold tracking-[0.2em] text-cyan-300 uppercase">Next-Gen AI Platform</span>
                 </div>
 
-                <h1 className="text-5xl sm:text-7xl md:text-9xl font-black mb-4 md:mb-6 animate-title-3d italic tracking-tighter bg-gradient-to-br from-[#80A1BA] via-[#91C4C3] to-[#B4DEBD] bg-clip-text text-transparent text-center px-4">
-                    STUDYSPIRIT
+                <h1 className="text-6xl sm:text-8xl md:text-9xl font-black mb-6 text-center leading-none tracking-tighter">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">STUDY</span>
+                    <br className="md:hidden" />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-gradient-x">SPIRIT</span>
                 </h1>
 
-                <p className="text-base sm:text-lg md:text-2xl text-gray-600 max-w-2xl mb-8 md:mb-12 min-h-[60px] leading-relaxed text-center px-4 font-medium">
+                <p className="text-lg md:text-2xl text-zinc-400 max-w-3xl mb-12 min-h-[60px] leading-relaxed text-center font-light">
                     {typedText}
-                    {showCursor && <span className="animate-blink ml-1 border-r-2 border-[#80A1BA]">&nbsp;</span>}
+                    {showCursor && <span className="animate-blink ml-1 border-r-2 border-cyan-400">&nbsp;</span>}
                 </p>
 
-                <button
-                    onClick={handleButtonClick}
-                    className="group relative px-8 py-4 md:px-12 md:py-5 bg-gradient-to-r from-[#80A1BA] via-[#91C4C3] to-[#B4DEBD] rounded-full text-lg md:text-xl font-bold uppercase tracking-widest overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-[0_0_40px_rgba(145,196,195,0.7)] active:scale-95 text-white"
-                >
-                    {ripples.map(r => (
-                        <span key={r.id} className="absolute bg-white/40 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ripple"
-                            style={{ left: r.x, top: r.y }} />
-                    ))}
-                    <span className="relative z-10 flex items-center justify-center gap-2 md:gap-3 text-white">
-                        Get Started
-                        <svg className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </span>
-                </button>
+                <div className="flex flex-col sm:flex-row gap-6">
+                    <button
+                        onClick={handleButtonClick}
+                        className="group relative px-10 py-5 bg-white text-black rounded-full text-lg font-bold uppercase tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+                    >
+                        {ripples.map(r => (
+                            <span key={r.id} className="absolute bg-black/10 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ripple"
+                                style={{ left: r.x, top: r.y }} />
+                        ))}
+                        <span className="relative z-10 flex items-center justify-center gap-3">
+                            Start Journey
+                            <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </span>
+                    </button>
+                    <button
+                        onClick={() => navigate('/login')}
+                        className="px-10 py-5 rounded-full border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/50 backdrop-blur-md text-white text-lg font-bold uppercase tracking-widest transition-all duration-300"
+                    >
+                        Explore Features
+                    </button>
+                </div>
 
-                {/* Feature Stats Cards - EXACT CONTENT FROM USER CODE */}
-                <div className="mt-20 md:mt-40 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 w-full px-4">
+                {/* Features Grid */}
+                <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-8 w-full px-4">
                     <FeatureCard
-                        index={0} icon="🚀" title="17+ Powerful Features"
-                        desc="Complete learning ecosystem with AI mentorship and smart tracking."
+                        index={0} icon="⚡" title="Hyper Productivity"
+                        desc="Tools engineered for deep work. Block out noise, track progress, and conquer goals."
                         hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
                     />
                     <FeatureCard
-                        index={1} icon="🤖" title="AI Powered Learning"
-                        desc="Smart recommendations & personalized insights tailored to your unique study patterns."
+                        index={1} icon="🧠" title="AI Mentorship"
+                        desc="Personalized roadmaps and instant feedback from advanced AI designed to level you up."
                         hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
                     />
                     <FeatureCard
-                        index={2} icon="👥" title="24/7 Active Community"
-                        desc="Connect, collaborate & grow together with thousands of students world wide."
+                        index={2} icon="🌐" title="Global Sync"
+                        desc="Collaborate, compete, and connect in real-time with top learners around the world."
                         hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
                     />
                 </div>
 
-                {/* ==================== WHY CHOOSE SECTION ==================== */}
-                <div className="mt-20 md:mt-40 w-full flex flex-col items-center relative z-10 px-4">
-                    <h2 className="text-3xl md:text-6xl font-black text-center mb-10 md:mb-20 italic bg-gradient-to-r from-[#80A1BA] to-[#91C4C3] bg-clip-text text-transparent">
-                        WHY CHOOSE STUDYSPIRIT?
-                    </h2>
+                {/* Elaborated Section */}
+                <div className="mt-40 w-full flex flex-col items-center relative z-10 pt-20 border-t border-zinc-800/50">
+                    <div className="text-center mb-20 max-w-4xl px-4">
+                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-white">
+                            THE ULTIMATE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">ARSENAL</span>
+                        </h2>
+                        <p className="text-xl text-zinc-400 font-light">Everything you need to crush your learning goals, wrapped in a beautiful, distraction-free environment.</p>
+                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4">
                         {[
-                            { icon: '🧠', title: 'AI Mentorship', desc: 'Get instant feedback on your code and personalized study plans tailored to your goals.' },
-                            { icon: '⚔️', title: 'Solo & Vs Mode', desc: 'Practice alone or challenge friends in real-time coding battles to rank up.' },
-                            { icon: '🔥', title: 'Gamified Growth', desc: 'Earn XP, maintain streaks, and unlock achievements as you master new skills.' },
-                            { icon: '🧘', title: 'Wellness First', desc: 'Integrated breathing exercises and mood tracking to prevent burnout.' },
-                            { icon: '📊', title: 'Unified Dashboard', desc: 'Track your progress across LeetCode, HackerRank, and more in one place.' },
-                            { icon: '🤝', title: 'Community', desc: 'Join a thriving community of developers sharing resources and opportunities.' }
+                            { icon: '⚔️', title: 'Vs Mode', desc: 'Real-time coding battles. Rank up by proving your skills.' },
+                            { icon: '🔥', title: 'Gamification', desc: 'Streaks, XP, and unlockable badges to keep you hooked on progress.' },
+                            { icon: '🧘', title: 'Zen Mode', desc: 'Built-in wellness checks and focus timers to prevent burnout.' },
+                            { icon: '📊', title: 'Analytics', desc: 'Deep insights into your habits. Know exactly where you stand.' },
+                            { icon: '🤝', title: 'Community', desc: 'Join guilds, share resources, and study together in live audio rooms.' },
+                            { icon: '🚀', title: 'Career Path', desc: 'Interview prep, resume building, and roadmap generation by AI.' }
                         ].map((feature, i) => (
                             <div
                                 key={i}
-                                className="group relative p-8 bg-white/40 border border-[#80A1BA]/20 rounded-[2rem] backdrop-blur-md transition-all duration-500 hover:border-[#80A1BA]/80 hover:bg-white/60 hover:-translate-y-2"
+                                className="group p-8 bg-zinc-900/50 border border-zinc-800 rounded-3xl backdrop-blur-sm transition-all duration-300 hover:border-purple-500/50 hover:bg-zinc-800/50"
                             >
-                                <div className="text-5xl mb-6 drop-shadow-md">{feature.icon}</div>
-                                <h3 className="text-2xl font-bold text-gray-800 mb-4 italic uppercase">{feature.title}</h3>
-                                <p className="text-gray-600 leading-relaxed font-medium">{feature.desc}</p>
+                                <div className="text-4xl mb-4 grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">{feature.icon}</div>
+                                <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                                <p className="text-zinc-500 leading-relaxed font-light">{feature.desc}</p>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* How it Works Expanded */}
-                <section className="mt-20 md:mt-40 w-full max-w-5xl px-4">
-                    <h2 className="text-3xl md:text-6xl font-bold text-center mb-12 md:mb-24 italic text-gray-800">3 STEPS TO MASTER ANY SKILL</h2>
-                    <div className="space-y-20 md:space-y-32">
+                {/* Steps Section */}
+                <div className="mt-40 w-full max-w-6xl px-4">
+                    <div className="space-y-32">
                         {[
-                            { num: '01', title: 'Connect Your Soul', desc: 'Sync your calendars, tasks, and favorite resources. Our AI creates a unified dashboard of your upcoming challenges.' },
-                            { num: '02', title: 'Enter Flow State', desc: 'Activate focus sessions. We block distractions and keep you in the zone with dynamic ambient sounds.' },
-                            { num: '03', title: 'Rise in Ranks', desc: 'Review your analytics, earn XP, and level up your StudySpirit as you conquer goals and beat challenges.' }
+                            { num: '01', title: 'Initialize Profile', desc: 'Set up your goals, sync your existing platforms (LeetCode, GitHub), and let our AI craft your custom curriculum.' },
+                            { num: '02', title: 'Deep Work Protocol', desc: 'Enter our immersive Pomodoro sessions. Ambient soundscapes and hard notification blocks ensure absolute focus.' },
+                            { num: '03', title: 'Ascension', desc: 'Crush daily quests, rise through the global leaderboards, and transform from a student to a master.' }
                         ].map((step, i) => (
-                            <div key={i} className={`flex flex-col md:flex-row items-center gap-6 md:gap-16 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>
-                                <div className="text-7xl md:text-[12rem] font-black text-[#80A1BA]/10 select-none text-center md:text-left leading-none">{step.num}</div>
-                                <div className="flex-1 text-center md:text-left">
-                                    <h3 className="text-2xl md:text-3xl font-bold text-[#80A1BA] mb-4 md:mb-6 tracking-tighter">{step.title}</h3>
-                                    <p className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed font-medium">{step.desc}</p>
+                            <div key={i} className={`flex flex-col md:flex-row items-center gap-12 lg:gap-24 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>
+                                <div className="text-8xl md:text-[14rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-zinc-800 to-transparent select-none leading-none w-full md:w-1/2 text-center">
+                                    {step.num}
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* ==================== JOIN AS SECTION ==================== */}
-                <div className="mt-20 md:mt-40 w-full flex flex-col items-center relative z-10 px-4">
-                    <h2 className="text-3xl md:text-6xl font-black text-center mb-10 md:mb-20 italic bg-gradient-to-r from-[#80A1BA] to-[#B4DEBD] bg-clip-text text-transparent">
-                        JOIN THE REVOLUTION AS
-                    </h2>
-
-                    <div className="flex justify-center w-full">
-                        {[
-                            {
-                                role: 'student',
-                                icon: '👨‍💻',
-                                title: 'Developer / Student',
-                                desc: 'Master skills, build projects, and compete with peers.',
-                                path: '/login',
-                                color: 'from-[#80A1BA]/30 to-[#91C4C3]/30',
-                                border: 'hover:border-[#80A1BA]'
-                            }
-                        ].map((item, i) => (
-                            <div
-                                key={i}
-                                onClick={() => navigate(item.path)}
-                                className={`group relative p-10 bg-gradient-to-b ${item.color} border border-white/50 rounded-[2rem] backdrop-blur-md transition-all duration-500 border-2 ${item.border} hover:-translate-y-2 cursor-pointer text-center overflow-hidden max-w-md w-full`}
-                            >
-                                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-md">{item.icon}</div>
-                                <h3 className="text-2xl font-bold text-gray-800 mb-4 italic uppercase">{item.title}</h3>
-                                <p className="text-gray-700 leading-relaxed relative z-10 font-medium">{item.desc}</p>
-
-                                <div className="mt-8 inline-block px-6 py-2 rounded-full border border-[#80A1BA] text-sm font-bold uppercase tracking-widest text-[#80A1BA] group-hover:bg-[#80A1BA] group-hover:text-white transition-all">
-                                    Login as {item.role}
+                                <div className="w-full md:w-1/2 text-center md:text-left">
+                                    <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">{step.title}</h3>
+                                    <p className="text-lg md:text-xl text-zinc-400 leading-relaxed font-light">{step.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -251,61 +234,41 @@ export default function Landing() {
                 </div>
 
                 {/* CTA */}
-                <div className="mt-32 md:mt-80 p-8 md:p-20 w-full bg-gradient-to-t from-[#B4DEBD]/40 to-transparent rounded-[2rem] md:rounded-[4rem] text-center border-x border-t border-white/40 mx-4 max-w-[calc(100%-2rem)] md:max-w-none">
-                    <h2 className="text-4xl md:text-8xl font-black mb-6 md:mb-10 leading-none italic uppercase tracking-tighter text-gray-800">DON'T JUST STUDY.<br />RISE.</h2>
-                    <button onClick={() => navigate('/login')} className="px-8 py-4 md:px-20 md:py-8 bg-[#80A1BA] text-white font-black text-lg md:text-2xl uppercase tracking-tighter italic hover:bg-[#91C4C3] hover:text-white transition-all transform md:hover:-rotate-3 duration-500 rounded-full shadow-xl hover:shadow-[#91C4C3]/50">
-                        Unlock Your Potential Now
-                    </button>
+                <div className="mt-40 mb-20 p-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-[3rem] w-full mx-4 max-w-[calc(100%-2rem)] md:max-w-6xl overflow-hidden group">
+                    <div className="bg-black p-12 md:p-24 rounded-[2.8rem] text-center w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-500 pointer-events-none" />
+                        <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tighter text-white">READY TO LEVEL UP?</h2>
+                        <button onClick={() => navigate('/login')} className="px-12 py-5 bg-white text-black font-black text-xl md:text-2xl uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                            Join StudySpirit
+                        </button>
+                    </div>
                 </div>
 
                 {/* Footer */}
-                <footer className="mt-20 md:mt-40 pt-10 md:pt-20 pb-10 w-full border-t border-gray-300 text-gray-600 px-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-left mb-10 md:mb-20">
-                        <div>
-                            <h4 className="text-gray-800 font-black text-sm mb-6 tracking-widest uppercase italic">The App</h4>
-                            <ul className="space-y-3 text-xs font-bold">
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Dashboard</li>
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Focus Mode</li>
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Pricing</li>
-                            </ul>
+                <footer className="w-full border-t border-zinc-800/50 pt-16 pb-8 text-zinc-500 px-6 mt-20">
+                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <span className="font-black text-white bg-clip-text">STUDYSPIRIT © 2025</span>
                         </div>
-                        <div>
-                            <h4 className="text-gray-800 font-black text-sm mb-6 tracking-widest uppercase italic">Company</h4>
-                            <ul className="space-y-3 text-xs font-bold">
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">About Us</li>
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Roadmap</li>
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Careers</li>
-                            </ul>
+                        <div className="flex gap-6 text-sm font-semibold uppercase tracking-widest">
+                            <span className="hover:text-white cursor-pointer transition-colors">Privacy</span>
+                            <span className="hover:text-white cursor-pointer transition-colors">Terms</span>
+                            <span className="hover:text-white cursor-pointer transition-colors">Twitter</span>
+                            <span className="hover:text-white cursor-pointer transition-colors">GitHub</span>
                         </div>
-                        <div>
-                            <h4 className="text-gray-800 font-black text-sm mb-6 tracking-widest uppercase italic">Social</h4>
-                            <ul className="space-y-3 text-xs font-bold">
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Twitter</li>
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Discord</li>
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Github</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-gray-800 font-black text-sm mb-6 tracking-widest uppercase italic">Legal</h4>
-                            <ul className="space-y-3 text-xs font-bold">
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Privacy</li>
-                                <li className="hover:text-[#80A1BA] cursor-pointer transition-colors uppercase lg:tracking-widest">Terms</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] font-black tracking-widest uppercase text-gray-500">
-                        <span>© 2025 StudySpirit INC.</span>
-                        <span className="italic">Built for the brave.</span>
                     </div>
                 </footer>
             </div>
 
             <style>{`
         .animate-bounce-slow { animation: bounce 4s infinite; }
-        .rev { animation-direction: reverse; }
-        .animate-spin-slow { animation: spin 10s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+        .animate-gradient-x { background-size: 200% 200%; border:0; animation: gradient-x 10s ease infinite; }
+        @keyframes gradient-x { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes ripple { to { transform: translate(-50%, -50%) scale(4); opacity: 0; } }
+        .animate-ripple { width: 100px; height: 100px; animation: ripple 0.6s linear; }
+        .animate-blink { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
       `}</style>
         </div>
     );
