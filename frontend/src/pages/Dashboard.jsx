@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
@@ -21,6 +20,7 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [dashboardData, setDashboardData] = useState(null);
     const [todayStudyTime, setTodayStudyTime] = useState(0);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
     // Fetch Dashboard Data
     useEffect(() => {
@@ -98,6 +98,18 @@ export default function Dashboard() {
         };
     }, []);
 
+    // Mouse Parallax for ambient particles
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            setMousePosition({
+                x: (e.clientX / window.innerWidth) * 100,
+                y: (e.clientY / window.innerHeight) * 100
+            });
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
     // Toast Notification System
     const showToast = (message, type = 'success') => {
         const id = Date.now();
@@ -115,7 +127,7 @@ export default function Dashboard() {
             left: Math.random() * 100,
             delay: Math.random() * 0.5,
             duration: 2 + Math.random() * 2,
-            color: ['#8b5cf6', '#ec4899', '#06b6d4', '#10b981', '#f59e0b'][Math.floor(Math.random() * 5)]
+            color: ['#06b6d4', '#a855f7', '#ec4899', '#3b82f6', '#ffffff'][Math.floor(Math.random() * 5)]
         }));
 
         setConfetti(pieces);
@@ -123,22 +135,18 @@ export default function Dashboard() {
     };
 
     const features = [
-        { id: 1, name: 'Solo Mode Study', path: '/solo-mode', icon: BookOpen, from: 'from-blue-500', to: 'to-cyan-500', desc: 'Independent study with AI mentorship' },
-        { id: 2, name: 'Group Mode Study', path: '/group-mode', icon: Users, from: 'from-violet-500', to: 'to-pink-500', desc: 'Collaborative learning teams' },
-        { id: 3, name: 'Study Planner & Goals', path: '/planner', icon: Calendar, from: 'from-emerald-500', to: 'to-green-400', desc: 'Smart planning & task management' },
-        { id: 4, name: 'Quiz & Exam System', path: '/quiz', icon: ClipboardCheck, from: 'from-amber-500', to: 'to-red-500', desc: 'Secure testing with instant results' },
-        { id: 5, name: 'Study Resources Hub', path: '/resources', icon: Library, from: 'from-indigo-500', to: 'to-violet-500', desc: 'Centralized knowledge base' },
-        { id: 6, name: 'CodeSpirit', path: '/codespirit', icon: Code, from: 'from-yellow-500', to: 'to-orange-500', desc: 'Coding practice platform' },
-        { id: 7, name: 'AI Interview Prep', path: '/interview', icon: Mic, from: 'from-pink-500', to: 'to-rose-500', desc: 'Mock interview simulator' },
-        { id: 8, name: 'CareerSprint', path: '/career', icon: Briefcase, from: 'from-cyan-500', to: 'to-teal-500', desc: 'Job & internship portal' },
-        { id: 9, name: 'Project Lab', path: '/project-lab', icon: Folder, from: 'from-purple-600', to: 'to-violet-500', desc: 'Build & showcase projects' },
-        // { id: 10, name: 'ChatMentor.AI', path: '/chat-mentor', icon: MessageSquare, from: 'from-blue-500', to: 'to-indigo-500', desc: '24/7 AI tutor assistant' },
-        // { id: 11, name: 'Institution Portal', path: '/institution', icon: GraduationCap, from: 'from-red-500', to: 'to-pink-500', desc: 'Admin & management tools' },
-        // { id: 12, name: 'AI Skill Analyzer', path: '/analyzer', icon: TrendingUp, from: 'from-emerald-500', to: 'to-teal-500', desc: 'Performance analytics' },
-        // { id: 13, name: 'Events Hub', path: '/events', icon: Calendar, from: 'from-orange-500', to: 'to-rose-500', desc: 'Hackathons, webinars & contests' },
-        { id: 14, name: 'DiscussVerse', path: '/discuss', icon: MessageCircle, from: 'from-violet-500', to: 'to-indigo-500', desc: 'Global coding community' },
-        { id: 16, name: 'Soft Skills Lab', path: '/soft-skills', icon: Brain, from: 'from-pink-500', to: 'to-violet-500', desc: 'Communication training' },
-        { id: 17, name: 'Code Editors', path: '/code-editor', icon: Edit3, from: 'from-cyan-500', to: 'to-blue-500', desc: 'Online IDE & compiler' }
+        { id: 1, name: 'Solo Mode Study', path: '/solo-mode', icon: BookOpen, from: 'from-cyan-500', to: 'to-blue-500', desc: 'Independent study with AI mentorship' },
+        { id: 2, name: 'Group Mode Study', path: '/group-mode', icon: Users, from: 'from-purple-500', to: 'to-pink-500', desc: 'Collaborative learning teams' },
+        { id: 3, name: 'Study Planner & Goals', path: '/planner', icon: Calendar, from: 'from-indigo-500', to: 'to-cyan-400', desc: 'Smart planning & task management' },
+        { id: 4, name: 'Quiz & Exam System', path: '/quiz', icon: ClipboardCheck, from: 'from-pink-500', to: 'to-rose-500', desc: 'Secure testing with instant results' },
+        { id: 5, name: 'Study Resources Hub', path: '/resources', icon: Library, from: 'from-blue-600', to: 'to-purple-600', desc: 'Centralized knowledge base' },
+        { id: 6, name: 'CodeSpirit', path: '/codespirit', icon: Code, from: 'from-cyan-400', to: 'to-teal-500', desc: 'Coding practice platform' },
+        { id: 7, name: 'AI Interview Prep', path: '/interview', icon: Mic, from: 'from-fuchsia-500', to: 'to-pink-600', desc: 'Mock interview simulator' },
+        { id: 8, name: 'CareerSprint', path: '/career', icon: Briefcase, from: 'from-indigo-400', to: 'to-blue-500', desc: 'Job & internship portal' },
+        { id: 9, name: 'Project Lab', path: '/project-lab', icon: Folder, from: 'from-purple-500', to: 'to-fuchsia-500', desc: 'Build & showcase projects' },
+        { id: 14, name: 'DiscussVerse', path: '/discuss', icon: MessageCircle, from: 'from-violet-500', to: 'to-purple-600', desc: 'Global coding community' },
+        { id: 16, name: 'Soft Skills Lab', path: '/soft-skills', icon: Brain, from: 'from-pink-500', to: 'to-rose-400', desc: 'Communication training' },
+        { id: 17, name: 'Code Editors', path: '/code-editor', icon: Edit3, from: 'from-cyan-500', to: 'to-blue-600', desc: 'Online IDE & compiler' }
     ];
 
     const formatStudyTime = (seconds) => {
@@ -150,37 +158,36 @@ export default function Dashboard() {
 
     const quickStats = [
         {
-            label: 'Daily Goals',
+            label: 'Daily Tasks',
             value: stats?.dailyGoals || 0,
-            subtext: 'Tasks Today',
+            subtext: 'Missions Today',
             icon: Target,
-            from: 'from-cyan-500',
+            from: 'from-cyan-400',
             to: 'to-blue-500',
             onClick: () => navigate('/planner')
         },
         {
-            label: 'Completion Rate',
+            label: 'Success Rate',
             value: `${stats?.completionRate || 0}%`,
-            subtext: 'Keep it up!',
+            subtext: 'Keep it going!',
             icon: CheckCircle,
-            from: 'from-emerald-500',
-            to: 'to-green-400'
+            from: 'from-purple-400',
+            to: 'to-pink-500'
         },
         {
-            label: 'Study Time',
+            label: 'Focus Time',
             value: formatStudyTime(todayStudyTime),
             subtext: `Today • ${formatStudyTime((dashboardData?.user?.totalStudyTime || 0))} total`,
             icon: Clock,
-            from: 'from-violet-500',
-            to: 'to-purple-600'
+            from: 'from-pink-500',
+            to: 'to-rose-500'
         },
     ];
 
     const quickActions = [
-        // { icon: MessageSquare, label: 'Ask AI', path: '/chat-mentor', color: 'bg-blue-500' },
-        { icon: Code, label: 'Code Now', path: '/codespirit', color: 'bg-yellow-500' },
-        { icon: Calendar, label: 'Plan', path: '/planner', color: 'bg-emerald-500' },
-        ...(user?.isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin', color: 'bg-red-500' }] : [])
+        { icon: Code, label: 'Code Now', path: '/codespirit', color: 'bg-cyan-500' },
+        { icon: Calendar, label: 'Plan', path: '/planner', color: 'bg-purple-500' },
+        ...(user?.isAdmin ? [{ icon: Shield, label: 'Admin Panel', path: '/admin', color: 'bg-rose-500' }] : [])
     ];
 
     // 3D Tilt Effect
@@ -196,7 +203,7 @@ export default function Dashboard() {
         const rotateX = ((y - centerY) / centerY) * -10;
         const rotateY = ((x - centerX) / centerX) * 10;
 
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-12px) scale(1.02)`;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px) scale(1.02)`;
     };
 
     const handleMouseLeaveCard = (e) => {
@@ -204,25 +211,54 @@ export default function Dashboard() {
     };
 
     const SkeletonCard = () => (
-        <div className="h-[200px] rounded-[20px] bg-gradient-to-r from-[#1e1e32]/50 via-[#323250]/50 to-[#1e1e32]/50 bg-[length:200%_100%] animate-shimmer border border-violet-500/10 p-7">
-            <div className="w-[60px] h-[60px] bg-violet-500/20 rounded-[14px] mb-5" />
-            <div className="w-[70%] h-5 bg-violet-500/20 rounded mb-3" />
-            <div className="w-[90%] h-3.5 bg-violet-500/15 rounded" />
+        <div className="h-[200px] rounded-3xl bg-zinc-900/50 animate-pulse border border-white/5 p-8 backdrop-blur-md">
+            <div className="w-[60px] h-[60px] bg-white/10 rounded-2xl mb-6" />
+            <div className="w-[70%] h-5 bg-white/10 rounded-full mb-4" />
+            <div className="w-[90%] h-3 bg-white/5 rounded-full" />
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-[#0d0d15] relative overflow-hidden font-sans selection:bg-violet-500/30">
+        <div className="min-h-screen bg-[#09090b] relative overflow-hidden font-sans selection:bg-cyan-500/30 text-white">
 
             {/* Loading Progress Bar */}
             {loadProgress < 100 && (
-                <div className="fixed top-0 left-0 w-full h-[3px] z-[99999] bg-slate-900/50">
+                <div className="fixed top-0 left-0 w-full h-[3px] z-[99999] bg-black">
                     <div
-                        className="h-full bg-gradient-to-r from-violet-500 via-pink-500 to-cyan-500 transition-all duration-300 shadow-[0_0_10px_rgba(139,92,246,0.8)]"
+                        className="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.8)]"
                         style={{ width: `${loadProgress}%` }}
                     />
                 </div>
             )}
+
+            {/* Dark Mode Background Grid matching Landing page */}
+            <div className="fixed inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:34px_34px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+
+            {/* Glowing Orbs */}
+            <div className="fixed top-[10%] left-[20%] w-[400px] h-[400px] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none animate-float" />
+            <div className="fixed bottom-[20%] right-[10%] w-[500px] h-[500px] rounded-full bg-cyan-600/10 blur-[150px] pointer-events-none animate-float-reverse" />
+            <div className="fixed top-[40%] right-[30%] w-[300px] h-[300px] rounded-full bg-pink-600/10 blur-[120px] pointer-events-none animate-pulse-slow" />
+
+            {/* Floating Particles that follow mouse playfully */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+                {[...Array(20)].map((_, i) => (
+                    <div
+                        key={`p-${i}`}
+                        className="absolute rounded-full pointer-events-none mix-blend-screen"
+                        style={{
+                            width: `${Math.random() * 4 + 1}px`,
+                            height: `${Math.random() * 4 + 1}px`,
+                            background: ['#06b6d4', '#a855f7', '#ec4899', '#ffffff'][i % 4],
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            transform: `translate(${(mousePosition.x - 50) * (i * 0.08)}px, ${(mousePosition.y - 50) * (i * 0.08)}px)`,
+                            transition: 'transform 0.4s cubic-bezier(0.2, 0, 0, 1)',
+                            boxShadow: `0 0 10px ${['#06b6d4', '#a855f7', '#ec4899', '#ffffff'][i % 4]}`,
+                            opacity: Math.random() * 0.5 + 0.3
+                        }}
+                    />
+                ))}
+            </div>
 
             {/* Confetti Overlay */}
             {confetti.length > 0 && (
@@ -246,54 +282,45 @@ export default function Dashboard() {
             )}
 
             {/* Toast Notifications */}
-            <div className="fixed top-20 right-6 z-[9999] flex flex-col gap-3">
+            <div className="fixed top-24 right-6 z-[9999] flex flex-col gap-3">
                 {toasts.map(toast => (
                     <div
                         key={toast.id}
-                        className={`backdrop-blur-xl px-6 py-4 rounded-xl text-white font-semibold shadow-[0_10px_40px_rgba(0,0,0,0.3)] animate-slide-in border border-white/20 min-w-[250px] flex items-center gap-3 ${toast.type === 'success'
-                            ? 'bg-gradient-to-br from-emerald-500/90 to-green-400/90'
-                            : 'bg-gradient-to-br from-red-500/90 to-red-600/90'
+                        className={`backdrop-blur-2xl px-6 py-4 rounded-2xl text-white font-semibold shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-slide-in border min-w-[250px] flex items-center gap-3 ${toast.type === 'success'
+                            ? 'bg-cyan-900/40 border-cyan-500/50'
+                            : 'bg-rose-900/40 border-rose-500/50'
                             }`}
                     >
-                        <span className="text-xl">{toast.type === 'success' ? '✓' : '⚠'}</span>
-                        <span>{toast.message}</span>
+                        <span className={`text-xl drop-shadow-[0_0_10px_currentColor] ${toast.type === 'success' ? 'text-cyan-400' : 'text-rose-400'}`}>
+                            {toast.type === 'success' ? '✓' : '⚠'}
+                        </span>
+                        <span className="tracking-wide">{toast.message}</span>
                     </div>
                 ))}
             </div>
 
-            {/* Animated Background Effects */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-violet-600/20 rounded-full blur-[80px] animate-float" />
-                <div className="absolute bottom-[10%] right-[10%] w-[700px] h-[700px] bg-pink-500/15 rounded-full blur-[80px] animate-float-reverse" />
-                <div className="absolute top-1/2 right-[5%] w-[500px] h-[500px] bg-blue-500/15 rounded-full blur-[70px] animate-pulse-slow" />
-            </div>
-
-            {/* Grid Background */}
-            <div
-                className="fixed inset-0 w-full h-full opacity-30 pointer-events-none animate-grid-move"
-                style={{
-                    backgroundImage: `
-            linear-gradient(rgba(139, 92, 246, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(139, 92, 246, 0.02) 1px, transparent 1px)
-          `,
-                    backgroundSize: '50px 50px'
-                }}
-            />
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[#0f172a]/70 backdrop-blur-[30px] border-b border-violet-500/20 shadow-[0_10px_40px_rgba(139,92,246,0.15)]">
-                <div className="max-w-[1400px] mx-auto px-8 py-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <img src="/logo.png" alt="StudySpirit Logo" className="w-10 h-10 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
-                        <div className="text-3xl font-black bg-gradient-to-r from-white via-violet-300 to-blue-400 bg-clip-text text-transparent tracking-tight animate-title-glow">
-                            STUDYSPIRIT
+            <nav className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur-2xl border-b border-white/5 shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
+                <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 p-[2px]">
+                            <div className="w-full h-full bg-black rounded-[10px] flex items-center justify-center">
+                                <img src="/logo.png" alt="Logo" className="w-6 h-6 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" onError={(e) => { e.target.style.display = 'none'; }} />
+                                {!document.querySelector('img[src="/logo.png"]')?.complete && (
+                                    <span className="text-lg font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">S</span>
+                                )}
+                            </div>
+                        </div>
+                        <div className="text-2xl font-black tracking-tight text-white hidden sm:flex items-center">
+                            STUDY<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 animate-gradient-x">SPIRIT</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 md:gap-6">
                         <button
                             onClick={() => navigate('/')}
-                            className="group flex items-center justify-center p-3 rounded-xl bg-indigo-500/15 text-slate-400 transition-all duration-300 hover:bg-indigo-500/30 hover:text-blue-400 hover:scale-110 hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] shadow-[0_0_20px_rgba(99,102,241,0.1)]"
+                            className="group flex items-center justify-center p-2.5 rounded-xl bg-white/5 text-zinc-400 transition-all duration-300 hover:bg-white/10 hover:text-white hover:scale-110 border border-white/5"
                         >
                             <Home className="w-5 h-5" />
                         </button>
@@ -302,68 +329,74 @@ export default function Dashboard() {
                         {user?.isAdmin && (
                             <button
                                 onClick={() => navigate('/admin')}
-                                className="group flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/15 text-red-400 transition-all duration-300 hover:bg-red-500/30 hover:text-red-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] border border-red-500/20"
+                                className="group flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-500/10 text-rose-400 transition-all duration-300 hover:bg-rose-500/20 hover:text-rose-300 hover:scale-105 border border-rose-500/20"
                             >
                                 <Shield className="w-5 h-5" />
-                                <span className="font-bold text-sm">Admin</span>
+                                <span className="font-bold text-sm tracking-widest uppercase">Admin</span>
                             </button>
                         )}
 
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-[#1e2236]/90 to-[#28143c]/70 px-5 py-2.5 rounded-2xl border border-violet-500/20 shadow-[0_0_20px_rgba(139,92,246,0.15)] relative overflow-hidden">
-                            <div className="relative flex items-center gap-2">
-                                <div className="absolute left-0 bottom-full text-[0.5rem] animate-fire-rise opacity-0">✨</div>
-                                <div className="absolute left-1 bottom-full text-[0.5rem] animate-fire-rise opacity-0 delay-150">✨</div>
-                                <div className="absolute left-2 bottom-full text-[0.5rem] animate-fire-rise opacity-0 delay-300">✨</div>
-                                <span className="text-2xl drop-shadow-[0_0_10px_rgba(251,146,60,0.8)] animate-fire-flicker">🔥</span>
-                                <span className="text-base font-black bg-gradient-to-r from-amber-500 to-red-500 bg-clip-text text-transparent">
+                        <div className="flex items-center gap-3 bg-black/40 px-5 py-2 rounded-2xl border border-white/10 shadow-inner relative overflow-hidden backdrop-blur-md">
+                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-purple-500/5 pointer-events-none" />
+                            <div className="relative flex items-center gap-2 group cursor-default">
+                                <span className="text-xl group-hover:animate-bounce-slow drop-shadow-[0_0_10px_rgba(251,146,60,0.8)]">🔥</span>
+                                <span className="text-base font-black bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
                                     {user?.streak || 0}
                                 </span>
                             </div>
 
-                            <div className="w-px h-[30px] bg-violet-500/30 mx-2" />
+                            <div className="w-px h-6 bg-white/10 mx-1 md:mx-3" />
 
-                            <span className="text-2xl animate-bounce-slow">👨‍🎓</span>
-                            <div>
-                                <div className="text-sm font-semibold text-white">{user?.name || 'Student'}</div>
-                                <div className="text-xs text-violet-300 font-semibold tracking-wider">LEVEL {user?.level || 1}</div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-xl hidden md:inline-block">👨‍💻</span>
+                                <div className="hidden sm:block">
+                                    <div className="text-sm font-bold text-white tracking-wide">{user?.name || 'Developer'}</div>
+                                    <div className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase">LEVEL {user?.level || 1}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <div className="max-w-[1400px] mx-auto px-8 py-10 relative z-10">
+            <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10 relative z-10">
                 {/* Header Card */}
-                <div className="bg-gradient-to-br from-indigo-500/15 to-violet-500/15 backdrop-blur-[30px] rounded-3xl p-10 mb-10 border border-violet-500/30 shadow-[0_20px_60px_rgba(139,92,246,0.2)] relative overflow-hidden animate-slide-down">
-                    <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-violet-500 via-pink-500 via-cyan-500 to-transparent animate-shimmer-glow" />
+                <div className="bg-zinc-900/40 backdrop-blur-2xl rounded-[2rem] p-8 md:p-12 mb-12 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative overflow-hidden animate-slide-down">
+                    <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 animate-shimmer" />
 
-                    <div className="flex justify-between items-center flex-wrap gap-6 relative z-10">
-                        <div>
-                            <div className="text-sm text-violet-300 font-bold tracking-[0.15em] mb-3 uppercase animate-neon-glow drop-shadow-[0_0_10px_rgba(167,139,250,0.8)]">
-                                ⚡ Welcome Back
+                    <div className="flex justify-between items-center flex-col lg:flex-row gap-8 relative z-10">
+                        <div className="text-center lg:text-left w-full lg:w-auto">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 mb-4 animate-fade-in-up">
+                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                <span className="text-[10px] font-bold tracking-[0.2em] text-cyan-300 uppercase">System Online</span>
                             </div>
-                            <h1 className="text-[2.5rem] font-black text-white mb-3 tracking-tight drop-shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-                                Hey, {user?.name || 'Student'}! <span className="inline-block animate-wave">👋</span>
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tighter">
+                                Welcome Back, <br className="hidden lg:block" />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-gradient-x">
+                                    {user?.name || 'Developer'}
+                                </span>
+                                <span className="inline-block animate-wave ml-4 text-4xl">👋</span>
                             </h1>
-                            <p className="text-lg text-slate-300 font-normal">
-                                Ready to crush your goals today?
+                            <p className="text-lg md:text-xl text-zinc-400 font-light max-w-xl">
+                                Your dashboard is ready. Time to dive into deep work and crush today's objectives.
                             </p>
                         </div>
 
-                        <div className="flex gap-4 flex-wrap">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full lg:w-auto">
                             {[
-                                { label: 'Streak', value: `🔥 ${user?.streak || 0}`, from: 'from-amber-500', to: 'to-red-500' },
-                                { label: 'Level', value: user?.level || 1, from: 'from-violet-500', to: 'to-pink-500' },
-                                { label: 'XP', value: user?.xp || 0, from: 'from-cyan-500', to: 'to-blue-500' },
-                                { label: 'Reputation', value: user?.reputation || 0, from: 'from-emerald-500', to: 'to-teal-500' }
+                                { label: 'Active Streak', value: `🔥 ${user?.streak || 0}`, from: 'from-amber-400', to: 'to-orange-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+                                { label: 'Current Level', value: user?.level || 1, from: 'from-cyan-400', to: 'to-blue-500', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
+                                { label: 'Total EXP', value: user?.xp || 0, from: 'from-purple-400', to: 'to-pink-500', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
+                                { label: 'Reputation', value: user?.reputation || 0, from: 'from-emerald-400', to: 'to-teal-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' }
                             ].map((item, idx) => (
                                 <div
                                     key={idx}
-                                    className="bg-gradient-to-br from-[#1e1e32]/90 to-[#280a3c]/70 backdrop-blur-xl rounded-2xl p-5 px-7 text-center border border-violet-500/20 min-w-[110px] transition-all duration-300 shadow-[0_10px_30px_rgba(139,92,246,0.1)] hover:-translate-y-1 hover:scale-105 hover:shadow-[0_20px_50px_rgba(139,92,246,0.3)] hover:border-violet-500/50"
+                                    className={`relative bg-black/40 backdrop-blur-xl rounded-2xl p-5 text-center border transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:-translate-y-1 hover:scale-105 ${item.border}`}
                                     style={{ animation: `slideUp 0.8s ease-out ${0.1 * idx}s both` }}
                                 >
-                                    <div className="text-xs text-slate-400 font-bold mb-2 uppercase tracking-wider">{item.label}</div>
-                                    <div className={`text-[1.75rem] font-black bg-gradient-to-r ${item.from} ${item.to} bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]`}>
+                                    <div className={`absolute inset-0 rounded-2xl ${item.bg} opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+                                    <div className="text-[10px] text-zinc-400 font-bold mb-2 uppercase tracking-widest">{item.label}</div>
+                                    <div className={`text-3xl font-black bg-gradient-to-r ${item.from} ${item.to} bg-clip-text text-transparent drop-shadow-[0_0_15px_currentColor]`}>
                                         {item.value}
                                     </div>
                                 </div>
@@ -372,149 +405,145 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                {/* Quick Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     {quickStats.map((stat, idx) => (
                         <div
                             key={idx}
                             onClick={stat.onClick}
-                            className={`group bg-gradient-to-br from-[#141428]/80 to-[#1e0f32]/60 backdrop-blur-[30px] rounded-[20px] p-7 border border-violet-500/20 transition-all duration-500 relative overflow-hidden hover:-translate-y-2 hover:scale-[1.02] hover:border-violet-500/50 hover:shadow-[0_30px_60px_rgba(139,92,246,0.3)] hover:bg-gradient-to-br hover:from-[#1e0f32]/95 hover:to-[#280a3c]/80 ${stat.onClick ? 'cursor-pointer' : ''}`}
+                            className={`group bg-zinc-900/30 backdrop-blur-xl rounded-3xl p-8 border border-white/5 transition-all duration-500 relative overflow-hidden hover:-translate-y-2 hover:border-cyan-500/30 hover:shadow-[0_20px_40px_rgba(6,182,212,0.15)] hover:bg-zinc-800/40 ${stat.onClick ? 'cursor-pointer' : ''}`}
                             style={{ animation: `slideUp 0.8s ease-out ${idx * 0.1}s both` }}
                         >
-                            <div className="flex items-center gap-5">
-                                <div className={`bg-gradient-to-br ${stat.from} ${stat.to} p-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] animate-icon-bounce`}>
-                                    <stat.icon className="w-7 h-7 text-white" />
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-bl-full pointer-events-none opacity-50 group-hover:scale-110 transition-transform duration-500" />
+                            <div className="flex items-center gap-6 relative z-10">
+                                <div className={`flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${stat.from} ${stat.to} shadow-[0_10px_20px_currentColor] drop-shadow-md group-hover:animate-icon-bounce`}>
+                                    <stat.icon className="w-8 h-8 text-white" />
                                 </div>
                                 <div className="flex-1">
-                                    <div className="text-sm text-slate-400 font-semibold mb-1 uppercase tracking-wider">{stat.label}</div>
-                                    <div className={`text-[2rem] font-black mb-0.5 bg-gradient-to-r ${stat.from} ${stat.to} bg-clip-text text-transparent`}>
+                                    <div className="text-[11px] text-zinc-400 font-bold mb-1 uppercase tracking-widest">{stat.label}</div>
+                                    <div className="text-3xl font-black text-white mb-1 tracking-tight">
                                         {stat.value}
                                     </div>
-                                    {stat.subtext && <div className="text-xs text-violet-400">{stat.subtext}</div>}
+                                    {stat.subtext && <div className="text-sm text-cyan-400/80 font-medium">{stat.subtext}</div>}
                                 </div>
                             </div>
                             {stat.onClick && (
-                                <div className="absolute top-3 right-3 text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ChevronRight className="w-5 h-5" />
+                                <div className="absolute top-6 right-6 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all">
+                                    <ChevronRight className="w-6 h-6" />
                                 </div>
                             )}
                         </div>
                     ))}
                 </div>
 
-                {/* Motivation Section */}
-                <div className="bg-gradient-to-br from-pink-500/15 to-purple-500/15 backdrop-blur-[30px] rounded-[20px] p-10 mb-10 border border-pink-500/30 relative overflow-hidden animate-slide-up-delayed">
-                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent" />
-
-                    <div className="flex items-center justify-between gap-5 relative z-10 flex-wrap">
-                        <div className="flex items-center gap-5">
-                            <div className="text-[3.5rem] drop-shadow-[0_0_20px_rgba(236,72,153,0.8)] animate-bounce-slow">🚀</div>
+                {/* Celebration Alert */}
+                {user?.streak > 0 && (
+                    <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl rounded-3xl p-8 border border-white/10 relative overflow-hidden animate-slide-up-delayed mb-16 flex flex-col md:flex-row items-center justify-between gap-6 group">
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                        <div className="flex items-center gap-6 z-10">
+                            <div className="text-5xl group-hover:animate-bounce-slow drop-shadow-[0_0_20px_rgba(236,72,153,0.5)]">🔥</div>
                             <div>
-                                <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Today's Motivation</h3>
-                                <p className="text-lg bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent italic font-semibold">
-                                    "You're on a {user?.streak || 0}-day streak! Keep the momentum going! 💪"
+                                <h3 className="text-2xl font-black text-white mb-1 tracking-tighter">Unstoppable!</h3>
+                                <p className="text-zinc-400 text-lg">
+                                    You're on a <span className="text-pink-400 font-bold">{user?.streak}-day streak</span>. Keep the momentum high.
                                 </p>
                             </div>
                         </div>
-
                         <button
                             onClick={() => {
                                 triggerConfetti();
-                                showToast('🎉 Awesome! Keep going!', 'success');
+                                showToast('System Overdrive Engaged!', 'success');
                             }}
-                            className="bg-gradient-to-r from-violet-500 to-pink-500 border-none rounded-xl px-6 py-3 text-white font-bold cursor-pointer transition-all duration-300 shadow-[0_10px_30px_rgba(139,92,246,0.3)] hover:scale-105 hover:shadow-[0_15px_40px_rgba(139,92,246,0.5)]"
+                            className="bg-white text-black rounded-full px-8 py-4 font-black uppercase tracking-widest text-sm transition-all duration-300 hover:scale-105 hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] z-10 whitespace-nowrap"
                         >
-                            🎊 Celebrate
+                            Claim Reward
                         </button>
+                    </div>
+                )}
+
+                {/* Main Modules Grid */}
+                <div className="mb-8 flex items-center gap-4 animate-fade-in-up delay-200">
+                    <div className="w-2 h-8 rounded-full bg-cyan-400 animate-pulse" />
+                    <div>
+                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter">
+                            SYSTEM <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">MODULES</span>
+                        </h2>
+                        <p className="text-zinc-500 font-medium">Access your personalized toolkit for extreme productivity.</p>
                     </div>
                 </div>
 
-                {/* Features Grid */}
-                <div className="mb-6 animate-fade-in-up delay-200">
-                    <h2 className="text-[2.5rem] font-black text-white mb-3 tracking-tight drop-shadow-[0_0_20px_rgba(139,92,246,0.3)] text-shadow-glow">
-                        🚀 Explore Features
-                    </h2>
-                    <p className="text-base text-slate-400 mb-8">
-                        Choose from {features.length} powerful tools to enhance your learning experience
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {isLoading ? (
-                        [...Array(17)].map((_, i) => <SkeletonCard key={i} />)
+                        [...Array(12)].map((_, i) => <SkeletonCard key={i} />)
                     ) : (
                         features.map((feature, idx) => (
                             <button
                                 key={feature.id}
                                 onClick={() => {
                                     navigate(feature.path);
-                                    showToast(`Opening ${feature.name}...`, 'success');
+                                    showToast(`Initializing ${feature.name}...`, 'success');
                                 }}
-                                className={`group bg-gradient-to-br from-[#141428]/80 to-[#1e0fb2]/60 backdrop-blur-[30px] rounded-[20px] p-7 border transition-all duration-150 cursor-pointer text-left relative overflow-hidden text-white preserve-3d animate-scale-in hover:shadow-[0_30px_80px_rgba(139,92,246,0.4)] hover:bg-gradient-to-br hover:from-[#1e0f32]/95 hover:to-[#280a3c]/80 ${hoveredFeature === feature.id ? 'border-violet-500/60' : 'border-violet-500/20'
+                                className={`group bg-zinc-900/50 backdrop-blur-xl rounded-3xl p-8 border transition-all duration-300 cursor-pointer text-left relative overflow-hidden preserve-3d animate-scale-in flex flex-col items-start ${hoveredFeature === feature.id ? 'border-cyan-500/50 bg-zinc-800/80' : 'border-white/5'
                                     }`}
-                                style={{ animationDelay: `${(idx % 6) * 0.05}s` }}
+                                style={{ animationDelay: `${(idx % 8) * 0.05}s` }}
                                 onMouseMove={handleMouseMove}
-                                onMouseEnter={(e) => {
-                                    setHoveredFeature(feature.id);
-                                    // Apply styles via state/classes instead of direct inline if possible, but 3d tilt needs inline
-                                }}
+                                onMouseEnter={(e) => setHoveredFeature(feature.id)}
                                 onMouseLeave={(e) => {
                                     setHoveredFeature(null);
                                     handleMouseLeaveCard(e);
                                 }}
                             >
-                                <div className={`p-4 rounded-[14px] inline-flex mb-5 shadow-[0_10px_30px_rgba(0,0,0,0.3)] transition-all duration-400 drop-shadow-[0_0_10px_rgba(139,92,246,0.5)] bg-gradient-to-br ${feature.from} ${feature.to} group-hover:-translate-y-1 feature-icon`}>
-                                    <feature.icon className="w-7 h-7 text-white" />
+                                <div className={`absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-cyan-400 transform group-hover:translate-x-1 group-hover:-translate-y-1`}>
+                                    <ChevronRight className="w-5 h-5" />
+                                </div>
+                                <div className={`p-4 rounded-2xl inline-flex mb-6 shadow-lg bg-gradient-to-br ${feature.from} ${feature.to} group-hover:-translate-y-2 transition-transform duration-300 drop-shadow-[0_0_15px_currentColor] border border-white/20`}>
+                                    <feature.icon className="w-8 h-8 text-white" />
                                 </div>
 
-                                <h3 className="text-xl font-bold text-white mb-2 tracking-tight">{feature.name}</h3>
-                                <p className="text-sm text-slate-400 leading-relaxed">{feature.desc}</p>
+                                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-cyan-400 transition-colors">{feature.name}</h3>
+                                <p className="text-sm text-zinc-400 leading-relaxed font-light">{feature.desc}</p>
 
-                                <div className={`absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r ${feature.from} ${feature.to} transform scale-x-0 transition-transform duration-400 origin-left group-hover:scale-x-100 shadow-[0_0_20px_currentColor]`} />
+                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transform scale-x-0 transition-transform duration-500 origin-left group-hover:scale-x-100" />
                             </button>
                         ))
                     )}
                 </div>
             </div>
 
-            {/* Floating Action Button */}
+            {/* Quick Action FAB */}
             <div className="fixed bottom-8 right-8 z-[999]">
                 {fabOpen && quickActions.map((action, idx) => (
                     <div
                         key={idx}
-                        className="absolute right-0 cursor-pointer animate-fab-slide-in"
+                        className="absolute right-2 cursor-pointer animate-fab-slide-in flex items-center justify-end"
                         style={{
-                            bottom: `${(idx + 1) * 70}px`,
+                            bottom: `${(idx + 1) * 75}px`,
                             animationDelay: `${idx * 0.05}s`
                         }}
                         onClick={() => {
                             navigate(action.path);
                             setFabOpen(false);
-                            showToast(`Opening ${action.label}...`, 'success');
+                            showToast(`Launching ${action.label}...`, 'success');
                         }}
                     >
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 border-2 border-white/20 hover:scale-110 ${action.color} shadow-${action.color}/40`}>
-                            <action.icon className="w-6 h-6 text-white" />
-                        </div>
-
-                        <div className="absolute right-[70px] top-1/2 -translate-y-1/2 bg-slate-900/95 backdrop-blur-sm px-4 py-2 rounded-lg text-white text-sm font-semibold whitespace-nowrap border border-violet-500/30 pointer-events-none">
+                        <div className="mr-4 bg-zinc-900/90 backdrop-blur-md px-5 py-2.5 rounded-xl text-white text-sm font-bold tracking-widest uppercase border border-white/10 shadow-xl pointer-events-none">
                             {action.label}
+                        </div>
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/20 hover:scale-110 ${action.color}`}>
+                            <action.icon className="w-6 h-6 text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
                         </div>
                     </div>
                 ))}
 
                 <button
-                    className={`w-16 h-16 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 border-none cursor-pointer shadow-[0_10px_40px_rgba(139,92,246,0.5)] flex items-center justify-center transition-all duration-300 z-[1000] hover:scale-110 hover:shadow-[0_15px_50px_rgba(139,92,246,0.7)] ${fabOpen ? 'rotate-45' : 'rotate-0'}`}
+                    className={`w-16 h-16 rounded-full bg-white border-2 border-transparent cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center transition-all duration-500 z-[1000] hover:scale-110 hover:border-cyan-400 hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] ${fabOpen ? 'rotate-45 bg-zinc-800 text-white' : 'text-black'}`}
                     onClick={() => setFabOpen(!fabOpen)}
                 >
-                    <Zap className="w-7 h-7 text-white" />
+                    <Zap className={`w-7 h-7 transition-colors ${fabOpen ? 'text-white' : 'text-black'}`} />
                 </button>
             </div>
 
             <style>{`
-        @keyframes wave { 0% { transform: rotate(0deg); } 10% { transform: rotate(14deg); } 20% { transform: rotate(-8deg); } 30% { transform: rotate(14deg); } 40% { transform: rotate(-4deg); } 50% { transform: rotate(10deg); } 60% { transform: rotate(0deg); } 100% { transform: rotate(0deg); } }
-        .animate-wave { animation: wave 2.5s infinite; transform-origin: 70% 70%; display: inline-block; }
-        
         .preserve-3d { transform-style: preserve-3d; }
         
         @keyframes float { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(40px, -40px) rotate(8deg); } 50% { transform: translate(-30px, 30px) rotate(-8deg); } 75% { transform: translate(30px, 15px) rotate(5deg); } }
@@ -524,54 +553,39 @@ export default function Dashboard() {
         @keyframes pulse-slow { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.15); } }
         .animate-pulse-slow { animation: pulse-slow 20s ease-in-out infinite; }
         
-        @keyframes grid-move { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
-        .animate-grid-move { animation: grid-move 20s linear infinite; }
+        @keyframes slide-down { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-down { animation: slide-down 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
         
-        @keyframes slide-down { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-slide-down { animation: slide-down 0.8s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-up-delayed { animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both; }
         
-        @keyframes slide-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-slide-up-delayed { animation: slide-up 0.8s ease-out 0.2s both; }
-        .animate-slide-Up { animation: slide-up 0.8s ease-out both; }
+        @keyframes scale-in { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .animate-scale-in { animation: scale-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
         
-        @keyframes scale-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        .animate-scale-in { animation: scale-in 0.6s ease-out both; }
-        
-        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        .animate-bounce-slow { animation: bounce-slow 2s ease-in-out infinite; }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
         .animate-icon-bounce { animation: bounce-slow 2s ease-in-out infinite; }
         
-        @keyframes title-glow { 0%, 100% { text-shadow: 0 0 30px rgba(139, 92, 246, 0.5); } 50% { text-shadow: 0 0 60px rgba(236, 72, 153, 0.8); } }
-        .animate-title-glow { animation: title-glow 3s ease-in-out infinite; }
-        
-        @keyframes neon-glow { 0%, 100% { text-shadow: 0 0 10px rgba(167, 139, 250, 0.8); } 50% { text-shadow: 0 0 20px rgba(167, 139, 250, 1); } }
-        .animate-neon-glow { animation: neon-glow 2.5s ease-in-out infinite; }
-        
-        @keyframes shimmer-glow { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        .animate-shimmer-glow { animation: shimmer-glow 3s ease-in-out infinite; }
+        @keyframes wave { 0% { transform: rotate(0deg); } 10% { transform: rotate(14deg); } 20% { transform: rotate(-8deg); } 30% { transform: rotate(14deg); } 40% { transform: rotate(-4deg); } 50% { transform: rotate(10deg); } 60% { transform: rotate(0deg); } 100% { transform: rotate(0deg); } }
+        .animate-wave { animation: wave 2.5s infinite; transform-origin: 70% 70%; display: inline-block; }
         
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        .animate-shimmer { animation: shimmer 1.5s infinite; }
+        .animate-shimmer { animation: shimmer 2s infinite linear; background-size: 200% auto; }
         
-        @keyframes slide-in-right { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .animate-slide-in { animation: slide-in-right 0.3s ease-out forwards; }
+        @keyframes gradient-x { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 8s ease infinite; }
+        
+        @keyframes slide-in-right { from { transform: translateX(200px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .animate-slide-in { animation: slide-in-right 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         
         @keyframes fab-slide-in { from { opacity: 0; transform: translateY(20px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .animate-fab-slide-in { animation: fab-slide-in 0.3s ease-out both; }
-        
-        @keyframes confetti-fall { 0% { transform: translateY(0) rotateZ(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; } }
-        .animate-confetti { animation: confetti-fall forwards; }
-        
-        @keyframes fire-flicker { 0%, 100% { filter: drop-shadow(0 0 10px rgba(251, 146, 60, 0.8)); transform: scale(1); } 50% { filter: drop-shadow(0 0 20px rgba(239, 68, 68, 1)); transform: scale(1.1); } }
-        .animate-fire-flicker { animation: fire-flicker 2s ease-in-out infinite; }
-        
-        @keyframes fire-rise { 0% { opacity: 0; transform: translateY(0) scale(1); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateY(-30px) scale(0.5); } }
-        .animate-fire-rise { animation: fire-rise 0.8s ease-out infinite; }
+        .animate-fab-slide-in { animation: fab-slide-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
         
         @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out both; }
+        .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
         
-        .text-shadow-glow { text-shadow: -2px -2px 0 rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3); }
+        @keyframes confetti-fall { 0% { transform: translateY(0) rotateZ(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; } }
+        .animate-confetti { animation: confetti-fall forwards ease-in; }
       `}</style>
         </div>
     );
