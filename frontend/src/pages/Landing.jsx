@@ -129,7 +129,7 @@ export default function Landing() {
                 </div>
 
                 <h1 className="text-6xl sm:text-8xl md:text-9xl font-black mb-6 text-center leading-none tracking-tighter">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">STUDY</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-[var(--text-primary)] to-[var(--text-muted)]">STUDY</span>
                     <br className="md:hidden" />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-gradient-x">SPIRIT</span>
                 </h1>
