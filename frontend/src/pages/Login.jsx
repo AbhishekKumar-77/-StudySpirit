@@ -101,14 +101,6 @@ const Login = () => {
                 );
             }
 
-            // Check if verification is required (from register response)
-            if (data.requiresVerification) {
-                setVerificationEmail(data.email || email);
-                setShowVerification(true);
-                setIsLoading(false);
-                return;
-            }
-
             if (data.token) {
                 localStorage.setItem('token', data.token);
             }
@@ -304,42 +296,6 @@ const Login = () => {
                         </button>
                     </form>
 
-                    {/* Verification Overlay */}
-                    {showVerification && (
-                        <div className="absolute inset-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 sm:p-8 text-center animate-fade-in">
-                            <div className="text-6xl mb-6">📩</div>
-                            <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-4">VERIFY EMAIL</h2>
-                            <p className="text-gray-400 mb-8 max-w-sm text-sm sm:text-base">
-                                We've sent a 6-digit code to <br /><span className="text-[var(--text-primary)] font-bold">{email}</span>
-                            </p>
-
-                            <form onSubmit={handleVerify} className="w-full max-w-sm space-y-6">
-                                <input
-                                    type="text"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    placeholder="000000"
-                                    className="w-full bg-[var(--bg-secondary)]lack/40 border border-white/20 rounded-xl px-2 sm:px-5 py-6 text-2xl sm:text-3xl text-center tracking-[0.5em] sm:tracking-[1em] font-mono text-[var(--text-primary)] placeholder-gray-700 focus:outline-none focus:border-purple-500/50 transition-all font-bold"
-                                    required
-                                    autoFocus
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full py-4 rounded-xl font-black uppercase tracking-widest bg-white text-black hover:bg-purple-400 hover:text-[var(--text-primary)] transition-all transform hover:-translate-y-1"
-                                >
-                                    {isLoading ? 'Verifying...' : 'Unlock Access'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowVerification(false)}
-                                    className="text-xs text-gray-500 hover:text-[var(--text-primary)] uppercase tracking-widest mt-4"
-                                >
-                                    Start Over
-                                </button>
-                            </form>
-                        </div>
-                    )}
 
                     {/* Social Login for all */}
                     {isLogin && (

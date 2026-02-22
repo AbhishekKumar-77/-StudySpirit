@@ -38,26 +38,27 @@ exports.register = async (req, res) => {
             role: role || 'student',
             university,
             course,
-            verificationCode: otp,
-            verificationCodeExpires: otpExpires,
-            isVerified: false
+            isVerified: true
         });
 
         await user.save();
 
-        // Send verification email asynchronously in the background
-        sendVerificationEmail(email, otp, name).catch(err => {
-            console.error('⚠️ Background Email sending failed:', err);
-        });
+        // Establish Passport Session directly
+        req.login(user, async (err) => {
+            if (err) return res.status(500).json({ message: 'Session login failed after registration' });
 
-        // Log OTP to console as fallback/developer backdoor
-        console.log(`📧 [FALLBACK] Verification Code for ${email}: ${otp}`);
-
-        // DO NOT log in yet. Ask for verification.
-        res.status(201).json({
-            message: 'Registration successful. Please check your email for verification code.',
-            requiresVerification: true,
-            email: email
+            res.status(201).json({
+                message: 'Registration successful. Welcome to StudySpirit.',
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    isAdmin: user.isAdmin,
+                    avatar: user.avatar,
+                    stats: user.stats
+                }
+            });
         });
 
     } catch (error) {
@@ -139,17 +140,7 @@ exports.login = async (req, res) => {
         }
 
         // Check verification - Optional: Allow login if created before verification added
-        // But for new logic, enforce it.
-        // For existing users without `isVerified` field (undefined), we assume verified or can force update.
-        // Let's be strict for new signups.
-        if (user.isVerified === false) {
-            // Check if verification code is expired, if so generate new one (optional logic for later)
-            return res.status(403).json({
-                message: 'Please verify your email to continue.',
-                requiresVerification: true,
-                email: email
-            });
-        }
+        // Removed to bypass verification completely.
 
         // Establish Passport Session
         req.login(user, async (err) => {
