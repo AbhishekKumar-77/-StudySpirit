@@ -78,7 +78,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 absolute inset-0">
                     <div className="text-center">
                         <div className={`mb-2 ${isBrowserFullscreen ? 'text-[12rem]' : isSpotlight ? 'text-9xl' : 'text-6xl'}`}>{userAvatar || '👤'}</div>
-                        <div className={`text-white font-semibold ${isBrowserFullscreen ? 'text-4xl' : isSpotlight ? 'text-2xl' : 'text-base'}`}>{userName || 'User'}</div>
+                        <div className={`text-[var(--text-primary)] font-semibold ${isBrowserFullscreen ? 'text-4xl' : isSpotlight ? 'text-2xl' : 'text-base'}`}>{userName || 'User'}</div>
                     </div>
                 </div>
             )}
@@ -87,16 +87,16 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <span className={`text-white font-semibold ${isBrowserFullscreen ? 'text-xl' : isSpotlight ? 'text-lg' : 'text-sm'}`}>
+                        <span className={`text-[var(--text-primary)] font-semibold ${isBrowserFullscreen ? 'text-xl' : isSpotlight ? 'text-lg' : 'text-sm'}`}>
                             {userName || 'User'} {isLocal && '(You)'}
                         </span>
                         {isSpotlight && !isBrowserFullscreen && (
-                            <span className="bg-cyan- text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
+                            <span className="bg-cyan- text-[var(--text-primary)] text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
                                 PRESENTING
                             </span>
                         )}
                         {isBrowserFullscreen && (
-                            <span className="bg-red-500 text-white text-sm px-3 py-1 rounded-full font-bold animate-pulse">
+                            <span className="bg-red-500 text-[var(--text-primary)] text-sm px-3 py-1 rounded-full font-bold animate-pulse">
                                 ● FULLSCREEN
                             </span>
                         )}
@@ -121,7 +121,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                 {/* TRUE FULLSCREEN button — opens full PC screen */}
                 <button
                     onClick={enterFullscreen}
-                    className="p-2 bg-black/70 rounded-lg text-white hover:bg-cyan- transition-all"
+                    className="p-2 bg-[var(--bg-secondary)]lack/70 rounded-lg text-[var(--text-primary)] hover:bg-cyan- transition-all"
                     title={isBrowserFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen (Full PC Screen)'}
                 >
                     {isBrowserFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
@@ -134,8 +134,8 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                         onPinClick && onPinClick();
                     }}
                     className={`p-2 rounded-lg transition-all ${isPinned
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-black/70 text-white hover:bg-amber-500/80'
+                        ? 'bg-amber-500 text-[var(--text-primary)]'
+                        : 'bg-[var(--bg-secondary)]lack/70 text-[var(--text-primary)] hover:bg-amber-500/80'
                         }`}
                     title={isPinned ? 'Unpin' : 'Pin'}
                 >
@@ -145,14 +145,14 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
 
             {/* Pinned badge */}
             {isPinned && !isSpotlight && (
-                <div className="absolute top-2 right-10 bg-amber-500 text-white text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                <div className="absolute top-2 right-10 bg-amber-500 text-[var(--text-primary)] text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
                     <Pin size={12} /> Pinned
                 </div>
             )}
 
             {/* Fullscreen hint overlay — shown when in fullscreen */}
             {isBrowserFullscreen && (
-                <div className="absolute top-4 right-4 text-white/50 text-sm">
+                <div className="absolute top-4 right-4 text-[var(--text-primary)]/50 text-sm">
                     Press <kbd className="bg-white/20 px-2 py-0.5 rounded text-xs font-mono">Esc</kbd> to exit fullscreen
                 </div>
             )}

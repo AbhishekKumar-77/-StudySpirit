@@ -19,9 +19,9 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="p-8 bg-red-900 text-white min-h-screen">
+                <div className="p-8 bg-red-900 text-[var(--text-primary)] min-h-screen">
                     <h1 className="text-2xl font-bold mb-4">Something went wrong.</h1>
-                    <div className="bg-black/50 p-4 rounded mb-4 overflow-auto">
+                    <div className="bg-[var(--bg-secondary)]lack/50 p-4 rounded mb-4 overflow-auto">
                         <h2 className="text-xl font-bold text-red-300">{this.state.error?.toString()}</h2>
                         <pre className="mt-2 text-sm">{this.state.errorInfo?.componentStack}</pre>
                     </div>

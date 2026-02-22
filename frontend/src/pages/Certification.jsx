@@ -215,7 +215,7 @@ export default function Certification() {
     });
 
     return (
-        <div className="min-h-screen bg-[#09090b] relative overflow-hidden font-sans selection:bg-cyan-/30">
+        <div className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden font-sans selection:bg-cyan-/30">
             {/* Animated Background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-amber-600/20 rounded-full blur-[80px] animate-float" />
@@ -247,7 +247,7 @@ export default function Certification() {
                         </button>
                         <div className="flex items-center gap-3">
                             <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 shadow-[0_0_30px_rgba(251,191,36,0.4)]">
-                                <Award className="w-6 h-6 text-white" />
+                                <Award className="w-6 h-6 text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <h1 className="text-2xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-400 bg-clip-text text-transparent">
@@ -261,7 +261,7 @@ export default function Certification() {
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3 bg-[#18181b]/80 px-5 py-2 rounded-2xl border border-amber-500/20">
                             <GraduationCap className="w-5 h-5 text-amber-400" />
-                            <span className="text-white font-bold">{certificates.length}</span>
+                            <span className="text-[var(--text-primary)] font-bold">{certificates.length}</span>
                             <span className="text-slate-400 text-sm">Certificates</span>
                         </div>
                     </div>
@@ -279,8 +279,8 @@ export default function Certification() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === tab.id
-                                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-[0_10px_40px_rgba(251,191,36,0.4)]'
-                                : 'bg-[#18181b]/80 text-slate-400 hover:text-white hover:bg-[#2a2a40]'
+                                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)] shadow-[0_10px_40px_rgba(251,191,36,0.4)]'
+                                : 'bg-[#18181b]/80 text-slate-400 hover:text-[var(--text-primary)] hover:bg-[#2a2a40]'
                                 }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -301,7 +301,7 @@ export default function Certification() {
                                     placeholder="Search certificates..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -310,7 +310,7 @@ export default function Certification() {
                                 <select
                                     value={selectedCategory}
                                     onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="px-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
+                                    className="px-4 py-4 rounded-xl bg-[#18181b]/80 border border-slate-700 text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
                                 >
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -320,7 +320,7 @@ export default function Certification() {
 
                             <button
                                 onClick={() => setShowUploadModal(true)}
-                                className="flex items-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold hover:shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all hover:scale-105"
+                                className="flex items-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)] font-bold hover:shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all hover:scale-105"
                             >
                                 <Plus className="w-5 h-5" />
                                 Add Certificate
@@ -350,7 +350,7 @@ export default function Certification() {
 
                                         {/* Certificate Info */}
                                         <div className="p-5">
-                                            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">{cert.name}</h3>
+                                            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 line-clamp-2">{cert.name}</h3>
 
                                             <div className="space-y-2 mb-4">
                                                 <div className="flex items-center gap-2 text-sm text-slate-400">
@@ -395,7 +395,7 @@ export default function Certification() {
                                 <p className="text-slate-500 mb-6">Start by adding your first certificate!</p>
                                 <button
                                     onClick={() => setShowUploadModal(true)}
-                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold hover:shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all"
+                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)] font-bold hover:shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all"
                                 >
                                     <Plus className="w-5 h-5" />
                                     Add Your First Certificate
@@ -409,7 +409,7 @@ export default function Certification() {
                 {activeTab === 'platforms' && (
                     <div>
                         <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-white mb-2">🎓 Popular Certification Platforms</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">🎓 Popular Certification Platforms</h2>
                             <p className="text-slate-400">Complete courses and earn verified certificates from these trusted platforms</p>
                         </div>
 
@@ -429,7 +429,7 @@ export default function Certification() {
                                             {platform.logo}
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
+                                            <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-amber-400 transition-colors">
                                                 {platform.name}
                                             </h3>
                                             <div className="flex items-center gap-1 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -468,7 +468,7 @@ export default function Certification() {
             {/* Upload Modal */}
             {showUploadModal && (
                 <div
-                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-[var(--bg-secondary)]lack/80 backdrop-blur-sm p-4"
                     onClick={() => setShowUploadModal(false)}
                 >
                     <div
@@ -476,10 +476,10 @@ export default function Certification() {
                         onClick={e => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-white">Add Certificate</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)]">Add Certificate</h2>
                             <button
                                 onClick={() => setShowUploadModal(false)}
-                                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all"
+                                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-[var(--text-primary)] transition-all"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -496,7 +496,7 @@ export default function Certification() {
                                     value={uploadForm.name}
                                     onChange={(e) => setUploadForm({ ...uploadForm, name: e.target.value })}
                                     placeholder="e.g., Python for Data Science"
-                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                     required
                                 />
                             </div>
@@ -511,7 +511,7 @@ export default function Certification() {
                                     value={uploadForm.platform}
                                     onChange={(e) => setUploadForm({ ...uploadForm, platform: e.target.value })}
                                     placeholder="e.g., Coursera, Udemy, Google"
-                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                     required
                                 />
                             </div>
@@ -525,7 +525,7 @@ export default function Certification() {
                                     type="date"
                                     value={uploadForm.issueDate}
                                     onChange={(e) => setUploadForm({ ...uploadForm, issueDate: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -539,7 +539,7 @@ export default function Certification() {
                                     value={uploadForm.credentialId}
                                     onChange={(e) => setUploadForm({ ...uploadForm, credentialId: e.target.value })}
                                     placeholder="e.g., ABC123XYZ"
-                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -553,7 +553,7 @@ export default function Certification() {
                                     value={uploadForm.credentialUrl}
                                     onChange={(e) => setUploadForm({ ...uploadForm, credentialUrl: e.target.value })}
                                     placeholder="https://..."
-                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-all"
                                 />
                             </div>
 
@@ -565,7 +565,7 @@ export default function Certification() {
                                 <select
                                     value={uploadForm.category}
                                     onChange={(e) => setUploadForm({ ...uploadForm, category: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-[#09090b] border border-slate-700 text-white focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
+                                    className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-slate-700 text-[var(--text-primary)] focus:border-amber-500/50 focus:outline-none transition-all cursor-pointer"
                                 >
                                     {categories.filter(c => c.id !== 'all').map(cat => (
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -588,7 +588,7 @@ export default function Certification() {
                                     />
                                     <label
                                         htmlFor="cert-image"
-                                        className="flex items-center justify-center gap-3 w-full px-4 py-8 rounded-xl bg-[#09090b] border-2 border-dashed border-slate-700 text-slate-400 hover:border-amber-500/50 hover:text-amber-400 cursor-pointer transition-all"
+                                        className="flex items-center justify-center gap-3 w-full px-4 py-8 rounded-xl bg-[var(--bg-primary)] border-2 border-dashed border-slate-700 text-slate-400 hover:border-amber-500/50 hover:text-amber-400 cursor-pointer transition-all"
                                     >
                                         <Upload className="w-6 h-6" />
                                         <span>{uploadForm.image ? 'Image Selected' : 'Click to upload certificate image'}</span>
@@ -602,7 +602,7 @@ export default function Certification() {
                             {/* Submit Button */}
                             <button
                                 type="submit"
-                                className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold hover:shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all hover:scale-[1.02]"
+                                className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)] font-bold hover:shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all hover:scale-[1.02]"
                             >
                                 Add Certificate
                             </button>

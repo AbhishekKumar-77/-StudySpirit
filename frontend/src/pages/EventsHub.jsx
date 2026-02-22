@@ -64,13 +64,13 @@ export default function EventsHub() {
     const categories = ['All', 'Hackathon', 'Webinar', 'Contest', 'Conference', 'Workshop'];
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-white font-sans p-8 pb-20">
+        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans p-8 pb-20">
             {/* Header */}
             <header className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 animate-fade-in-up">
                 <div>
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4 group"
+                        className="flex items-center gap-2 text-slate-400 hover:text-[var(--text-primary)] transition-colors mb-4 group"
                     >
                         <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                         Back to Dashboard
@@ -91,7 +91,7 @@ export default function EventsHub() {
                             placeholder="Search events..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#1e1e2d] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/50 transition-all placeholder:text-slate-500"
+                            className="w-full bg-[#1e1e2d] border border-[var(--border-color)] rounded-xl py-3 pl-12 pr-4 text-[var(--text-primary)] focus:outline-none focus:border-rose-500/50 focus:ring-1 focus:ring-rose-500/50 transition-all placeholder:text-slate-500"
                         />
                     </div>
                 </div>
@@ -105,8 +105,8 @@ export default function EventsHub() {
                             key={cat}
                             onClick={() => setFilter(cat)}
                             className={`px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 border ${filter === cat
-                                    ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-white border-transparent shadow-[0_0_20px_rgba(244,63,94,0.4)]'
-                                    : 'bg-[#1e1e2d] text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                                    ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-[var(--text-primary)] border-transparent shadow-[0_0_20px_rgba(244,63,94,0.4)]'
+                                    : 'bg-[#1e1e2d] text-slate-400 border-[var(--border-color)] hover:border-white/20 hover:text-[var(--text-primary)]'
                                 }`}
                         >
                             {cat}
@@ -158,7 +158,7 @@ function EventCard({ event, isMonitored, onMonitor, index }) {
 
     return (
         <div
-            className="group bg-[#161622] border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl flex flex-col h-full animate-fade-in-up"
+            className="group bg-[#161622] border border-[var(--border-color)] rounded-2xl overflow-hidden hover:border-[var(--border-color)] hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl flex flex-col h-full animate-fade-in-up"
             style={{ animationDelay: `${index * 0.1}s` }}
         >
             {/* Image Banner */}
@@ -175,10 +175,10 @@ function EventCard({ event, isMonitored, onMonitor, index }) {
                 )}
 
                 <div className="absolute top-4 right-4 z-20 flex gap-2">
-                    <span className="bg-black/60 backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full text-white border border-white/10 flex items-center gap-1">
+                    <span className="bg-[var(--bg-secondary)]lack/60 backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full text-[var(--text-primary)] border border-[var(--border-color)] flex items-center gap-1">
                         {event.platform}
                     </span>
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full text-white flex items-center gap-1 shadow-lg bg-gradient-to-r ${colorClass}`}>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full text-[var(--text-primary)] flex items-center gap-1 shadow-lg bg-gradient-to-r ${colorClass}`}>
                         {event.type}
                     </span>
                 </div>
@@ -202,12 +202,12 @@ function EventCard({ event, isMonitored, onMonitor, index }) {
                         </div>
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-white/5">
+                    <div className="flex gap-3 pt-4 border-t border-[var(--border-color)]">
                         <button
                             onClick={onMonitor}
                             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold transition-all ${isMonitored
                                     ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                    : 'bg-[#1e1e2d] text-slate-300 hover:bg-[#252536] border border-white/5'
+                                    : 'bg-[#1e1e2d] text-slate-300 hover:bg-[#252536] border border-[var(--border-color)]'
                                 }`}
                         >
                             {isMonitored ? <><CheckCircle className="w-4 h-4" /> Monitoring</> : <><Bell className="w-4 h-4" /> Monitor</>}

@@ -99,8 +99,28 @@
 }
 
 @layer base {
+    :root {
+        --bg-primary: #09090b;
+        --bg-secondary: #18181b;
+        --glass-bg: rgba(24, 24, 27, 0.4);
+        --text-primary: #ffffff;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+        --border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    html.light {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #f1f5f9;
+        --glass-bg: rgba(255, 255, 255, 0.6);
+        --text-primary: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+        --border-color: rgba(0, 0, 0, 0.1);
+    }
+
     body {
-        @apply bg-[#09090b] text-white overflow-x-hidden;
+        @apply bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-x-hidden transition-colors duration-500;
     }
 }
 

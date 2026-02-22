@@ -650,7 +650,7 @@ export default function DiscussVerse() {
             <div className="h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
                 <div className="text-center">
                     <div className="text-6xl mb-4 animate-bounce">💬</div>
-                    <div className="text-xl font-bold text-white">Loading DiscussVerse...</div>
+                    <div className="text-xl font-bold text-[var(--text-primary)]">Loading DiscussVerse...</div>
                     <div className="text-slate-400 text-sm mt-2">Preparing your community hub</div>
                 </div>
             </div>
@@ -671,7 +671,7 @@ export default function DiscussVerse() {
                     </button>
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-gradient-to-br from-cyan- via-purple-500 to-pink-500 rounded-xl shadow-lg shadow-violet-500/30">
-                            <MessageCircle size={24} className="text-white" />
+                            <MessageCircle size={24} className="text-[var(--text-primary)]" />
                         </div>
                         <div>
                             <span className="text-xl font-extrabold bg-gradient-to-r from-white via-violet-200 to-pink-200 bg-clip-text text-transparent">DiscussVerse</span>
@@ -710,7 +710,7 @@ export default function DiscussVerse() {
                         <span className="text-amber-300 font-bold text-base">{user?.reputation || 0}</span>
                         <span className="text-amber-500/70 text-xs font-medium">XP</span>
                     </div>
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan- via-purple-500 to-pink-500 flex items-center justify-center text-xl cursor-pointer hover:scale-105 transition-transform duration-300 shadow-lg shadow-violet-500/30 border-2 border-white/10">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan- via-purple-500 to-pink-500 flex items-center justify-center text-xl cursor-pointer hover:scale-105 transition-transform duration-300 shadow-lg shadow-violet-500/30 border-2 border-[var(--border-color)]">
                         👤
                     </div>
                 </div>
@@ -731,8 +731,8 @@ export default function DiscussVerse() {
                                     key={view.id}
                                     onClick={() => setActiveView(view.id)}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${activeView === view.id
-                                        ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white shadow-lg shadow-violet-500/30'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                        ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
+                                        : 'text-slate-400 hover:text-[var(--text-primary)] hover:bg-slate-700/50'
                                         }`}
                                 >
                                     <view.icon size={16} />
@@ -754,8 +754,8 @@ export default function DiscussVerse() {
                                     key={channel.id}
                                     onClick={() => { setActiveChannel(channel.id); setActiveDM(null); }}
                                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1.5 transition-all duration-300 group ${activeChannel === channel.id
-                                        ? 'bg-gradient-to-r from-cyan-/25 to-pink-500/15 text-white border border-cyan-500/30 shadow-lg shadow-violet-500/10'
-                                        : 'text-slate-400 hover:bg-slate-800/70 hover:text-white hover:border-slate-700/50 border border-transparent'
+                                        ? 'bg-gradient-to-r from-cyan-/25 to-pink-500/15 text-[var(--text-primary)] border border-cyan-500/30 shadow-lg shadow-violet-500/10'
+                                        : 'text-slate-400 hover:bg-slate-800/70 hover:text-[var(--text-primary)] hover:border-slate-700/50 border border-transparent'
                                         }`}
                                 >
                                     <div className={`p-2 rounded-lg ${activeChannel === channel.id ? 'bg-cyan-/30' : 'bg-slate-700/50 group-hover:bg-slate-600/50'} transition-all`}>
@@ -777,7 +777,7 @@ export default function DiscussVerse() {
                             {studyGroups.slice(0, 3).map(group => (
                                 <button
                                     key={group.id}
-                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1.5 text-slate-400 hover:bg-slate-800/70 hover:text-white transition-all duration-300 border border-transparent hover:border-slate-700/50 group"
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1.5 text-slate-400 hover:bg-slate-800/70 hover:text-[var(--text-primary)] transition-all duration-300 border border-transparent hover:border-slate-700/50 group"
                                 >
                                     <div className="p-2 rounded-lg bg-emerald-500/20 group-hover:bg-emerald-500/30 transition-all">
                                         <Users size={18} className="text-emerald-400" />
@@ -817,13 +817,13 @@ export default function DiscussVerse() {
                                         </div>
                                         <div className="flex-1 min-w-0 text-left">
                                             <div className="flex items-center justify-between">
-                                                <div className={`text-sm font-semibold truncate ${activeDM?.id === dm.id ? 'text-white' : 'text-slate-200'}`}>{dm.user?.name || 'Unknown'}</div>
+                                                <div className={`text-sm font-semibold truncate ${activeDM?.id === dm.id ? 'text-[var(--text-primary)]' : 'text-slate-200'}`}>{dm.user?.name || 'Unknown'}</div>
                                                 <div className="text-[10px] text-slate-500 font-medium">{dm.timestamp}</div>
                                             </div>
                                             <div className={`text-xs truncate mt-0.5 ${dm.unread > 0 ? 'text-slate-300 font-medium' : 'text-slate-500'}`}>{dm.lastMessage}</div>
                                         </div>
                                         {dm.unread > 0 && (
-                                            <span className="min-w-[20px] h-5 bg-gradient-to-br from-red-500 to-pink-500 rounded-full text-[10px] font-bold flex items-center justify-center text-white shadow-md shadow-red-500/30">
+                                            <span className="min-w-[20px] h-5 bg-gradient-to-br from-red-500 to-pink-500 rounded-full text-[10px] font-bold flex items-center justify-center text-[var(--text-primary)] shadow-md shadow-red-500/30">
                                                 {dm.unread}
                                             </span>
                                         )}
@@ -853,7 +853,7 @@ export default function DiscussVerse() {
                                 <button
                                     key={idx}
                                     onClick={() => handleTrendingTopicClick(topic.tag)}
-                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1.5 text-slate-400 hover:bg-slate-800/80 hover:text-white transition-all duration-300 border border-transparent hover:border-slate-700/50 group"
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-1.5 text-slate-400 hover:bg-slate-800/80 hover:text-[var(--text-primary)] transition-all duration-300 border border-transparent hover:border-slate-700/50 group"
                                 >
                                     <div className="p-2 rounded-lg bg-pink-500/10 group-hover:bg-pink-500/20 transition-all">
                                         <Hash size={16} className="text-pink-400" />
@@ -899,7 +899,7 @@ export default function DiscussVerse() {
                                 <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-[3px] border-slate-900 shadow-sm" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="text-sm font-bold text-slate-200 group-hover:text-white truncate">You</div>
+                                <div className="text-sm font-bold text-slate-200 group-hover:text-[var(--text-primary)] truncate">You</div>
                                 <div className="text-xs text-emerald-400 font-medium flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                     Online
@@ -910,7 +910,7 @@ export default function DiscussVerse() {
                                     e.stopPropagation();
                                     handleSettings();
                                 }}
-                                className="p-2 hover:bg-slate-700 rounded-lg transition-all text-slate-400 hover:text-white"
+                                className="p-2 hover:bg-slate-700 rounded-lg transition-all text-slate-400 hover:text-[var(--text-primary)]"
                             >
                                 <Settings size={18} />
                             </button>
@@ -972,7 +972,7 @@ export default function DiscussVerse() {
                             {!activeDM && (
                                 <button
                                     onClick={() => setShowNewPost(true)}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all duration-300 border border-white/10"
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all duration-300 border border-[var(--border-color)]"
                                 >
                                     <Plus size={18} />
                                     New Post
@@ -997,7 +997,7 @@ export default function DiscussVerse() {
                                             >
                                                 <div className={`max-w-[70%] ${msg.isMine ? 'order-2' : ''}`}>
                                                     <div className={`px-5 py-3.5 rounded-2xl shadow-md transition-all duration-300 ${msg.isMine
-                                                        ? 'bg-gradient-to-br from-cyan- to-pink-600 rounded-br-none text-white shadow-violet-500/10'
+                                                        ? 'bg-gradient-to-br from-cyan- to-pink-600 rounded-br-none text-[var(--text-primary)] shadow-violet-500/10'
                                                         : 'bg-slate-800 text-slate-100 rounded-bl-none shadow-black/20 border border-slate-700/50'
                                                         }`}>
                                                         <p className="text-[15px] leading-relaxed tracking-wide">{msg.content}</p>
@@ -1052,7 +1052,7 @@ export default function DiscussVerse() {
                                                     onClick={handleSendMessage}
                                                     disabled={!messageInput.trim()}
                                                     className={`p-2.5 rounded-xl transition-all duration-300 ${messageInput.trim()
-                                                        ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5'
+                                                        ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5'
                                                         : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                                                         }`}
                                                 >
@@ -1070,13 +1070,13 @@ export default function DiscussVerse() {
                                         <div className="bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/30 animate-fade-in shadow-2xl shadow-black/50 mb-8 relative overflow-hidden group">
                                             <div className="absolute inset-0 bg-gradient-to-br from-cyan-/5 to-pink-500/5 pointer-events-none" />
                                             <div className="flex items-center justify-between mb-6 relative z-10">
-                                                <h3 className="font-bold text-xl flex items-center gap-2 text-white">
+                                                <h3 className="font-bold text-xl flex items-center gap-2 text-[var(--text-primary)]">
                                                     <div className="p-1.5 bg-cyan-/20 rounded-lg">
                                                         <Sparkles size={18} className="text-cyan-" />
                                                     </div>
                                                     Create New Post
                                                 </h3>
-                                                <button onClick={() => setShowNewPost(false)} className="p-2 hover:bg-slate-700 rounded-xl transition-colors text-slate-400 hover:text-white">
+                                                <button onClick={() => setShowNewPost(false)} className="p-2 hover:bg-slate-700 rounded-xl transition-colors text-slate-400 hover:text-[var(--text-primary)]">
                                                     <X size={20} />
                                                 </button>
                                             </div>
@@ -1096,13 +1096,13 @@ export default function DiscussVerse() {
                                             <div className="flex justify-end gap-3 relative z-10">
                                                 <button
                                                     onClick={() => setShowNewPost(false)}
-                                                    className="px-6 py-2.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all font-medium"
+                                                    className="px-6 py-2.5 text-slate-400 hover:text-[var(--text-primary)] hover:bg-slate-700/50 rounded-xl transition-all font-medium"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     onClick={handleCreatePost}
-                                                    className="px-8 py-2.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all text-white flex items-center gap-2"
+                                                    className="px-8 py-2.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all text-[var(--text-primary)] flex items-center gap-2"
                                                 >
                                                     <Send size={18} />
                                                     Post to #{channels.find(c => c.id === activeChannel)?.name}
@@ -1130,7 +1130,7 @@ export default function DiscussVerse() {
                                         currentPosts.filter(post => post.author).map(post => (
                                             <div
                                                 key={post._id || post.id}
-                                                className="bg-slate-800/40 backdrop-blur-sm rounded-2xl p-6 border border-white/5 hover:border-cyan-500/30 hover:bg-slate-800/60 transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-black/20"
+                                                className="bg-slate-800/40 backdrop-blur-sm rounded-2xl p-6 border border-[var(--border-color)] hover:border-cyan-500/30 hover:bg-slate-800/60 transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-black/20"
                                             >
                                                 {/* Post Header */}
                                                 <div className="flex items-start justify-between mb-5">
@@ -1240,7 +1240,7 @@ export default function DiscussVerse() {
                                                         >
                                                             <Share2 size={18} />
                                                         </button>
-                                                        <button className="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 hover:text-white transition-all">
+                                                        <button className="p-2 hover:bg-slate-700/50 rounded-xl text-slate-400 hover:text-[var(--text-primary)] transition-all">
                                                             <MoreVertical size={18} />
                                                         </button>
                                                     </div>
@@ -1268,7 +1268,7 @@ export default function DiscussVerse() {
                                         <div className="grid grid-cols-2 gap-4 relative z-10">
                                             <div className="text-center p-2 bg-slate-900/40 rounded-xl border border-slate-700/30">
                                                 {/* Total users on platform = all users fetched (excluding self) */}
-                                                <div className="text-xl font-bold text-white mb-0.5">{directMessages.length}</div>
+                                                <div className="text-xl font-bold text-[var(--text-primary)] mb-0.5">{directMessages.length}</div>
                                                 <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Members</div>
                                             </div>
                                             <div className="text-center p-2 bg-slate-900/40 rounded-xl border border-slate-700/30">
@@ -1298,7 +1298,7 @@ export default function DiscussVerse() {
                                                     <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-[2.5px] border-slate-900 ${getStatusColor(member.status)} shadow-sm`} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="text-sm font-semibold text-slate-300 group-hover:text-white truncate flex items-center gap-1.5">
+                                                    <div className="text-sm font-semibold text-slate-300 group-hover:text-[var(--text-primary)] truncate flex items-center gap-1.5">
                                                         {member.name}
                                                         {member.reputation > 2000 && <Crown size={12} className="text-amber-400 fill-amber-400" />}
                                                     </div>
@@ -1371,7 +1371,7 @@ export default function DiscussVerse() {
                                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
                                     <button
                                         onClick={() => setShowUserProfile(null)}
-                                        className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white/80 hover:text-white rounded-full transition-all backdrop-blur-sm"
+                                        className="absolute top-4 right-4 p-2 bg-[var(--bg-secondary)]lack/20 hover:bg-[var(--bg-secondary)]lack/40 text-[var(--text-primary)]/80 hover:text-[var(--text-primary)] rounded-full transition-all backdrop-blur-sm"
                                     >
                                         <X size={18} />
                                     </button>
@@ -1387,7 +1387,7 @@ export default function DiscussVerse() {
                                             <span className={`absolute bottom-2 -right-1 w-6 h-6 rounded-full border-[4px] border-slate-900 ${getStatusColor(profileData.status)}`} />
                                         </div>
                                         <div className="mb-2 flex gap-2">
-                                            <button className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl border border-slate-700/50 transition-all shadow-lg shadow-black/20">
+                                            <button className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-[var(--text-primary)] rounded-xl border border-slate-700/50 transition-all shadow-lg shadow-black/20">
                                                 <MoreVertical size={20} />
                                             </button>
                                         </div>
@@ -1395,7 +1395,7 @@ export default function DiscussVerse() {
 
                                     {/* User Info */}
                                     <div className="mb-6 px-2">
-                                        <h3 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                                        <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-1 flex items-center gap-2">
                                             {profileData.name}
                                             {profileData.reputation > 2000 && <Crown size={20} className="text-amber-400 fill-amber-400" />}
                                         </h3>
@@ -1433,7 +1433,7 @@ export default function DiscussVerse() {
                                                     handleSendConnectionRequest({ id: profileData.id, name: profileData.name });
                                                     setShowUserProfile(null);
                                                 }}
-                                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-bold text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-bold text-[var(--text-primary)] shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300"
                                             >
                                                 <UserPlus size={20} />
                                                 Connect
@@ -1465,10 +1465,10 @@ export default function DiscussVerse() {
                         >
                             <div className="p-6 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/50">
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">Find Connections</h3>
+                                    <h3 className="text-xl font-bold text-[var(--text-primary)]">Find Connections</h3>
                                     <p className="text-sm text-slate-400 mt-0.5">Discover students with similar interests</p>
                                 </div>
-                                <button onClick={() => setShowConnectModal(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-all border border-transparent hover:border-slate-700">
+                                <button onClick={() => setShowConnectModal(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-[var(--text-primary)] transition-all border border-transparent hover:border-slate-700">
                                     <X size={20} />
                                 </button>
                             </div>
@@ -1499,9 +1499,9 @@ export default function DiscussVerse() {
                                             </div>
                                             <button
                                                 onClick={() => handleSendConnectionRequest(user)}
-                                                className="w-full py-2 bg-slate-900 hover:bg-cyan- text-slate-300 hover:text-white rounded-xl text-sm font-semibold transition-all border border-slate-700 hover:border-cyan-500/50 flex items-center justify-center gap-2 group/btn"
+                                                className="w-full py-2 bg-slate-900 hover:bg-cyan- text-slate-300 hover:text-[var(--text-primary)] rounded-xl text-sm font-semibold transition-all border border-slate-700 hover:border-cyan-500/50 flex items-center justify-center gap-2 group/btn"
                                             >
-                                                <UserPlus size={16} className="text-slate-500 group-hover/btn:text-white transition-colors" />
+                                                <UserPlus size={16} className="text-slate-500 group-hover/btn:text-[var(--text-primary)] transition-colors" />
                                                 Connect
                                             </button>
                                         </div>
@@ -1530,14 +1530,14 @@ export default function DiscussVerse() {
                                         <div className="text-xs text-slate-500">{activePost.timestamp}</div>
                                     </div>
                                 </div>
-                                <button onClick={() => setActivePost(null)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
+                                <button onClick={() => setActivePost(null)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-[var(--text-primary)] transition-colors">
                                     <X size={20} />
                                 </button>
                             </div>
 
                             {/* Scrollable Content */}
                             <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-900/30">
-                                <h2 className="text-xl font-bold text-white mb-4">{activePost.title}</h2>
+                                <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">{activePost.title}</h2>
                                 <p className="text-slate-300 mb-6 leading-relaxed whitespace-pre-wrap">{activePost.content}</p>
 
                                 <div className="flex items-center gap-6 py-3 border-y border-slate-800/50 mb-6">
@@ -1587,7 +1587,7 @@ export default function DiscussVerse() {
                                     <button
                                         onClick={handlePostComment}
                                         disabled={!newComment.trim()}
-                                        className="bg-cyan- hover:bg-cyan- text-white p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/20"
+                                        className="bg-cyan- hover:bg-cyan- text-[var(--text-primary)] p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/20"
                                     >
                                         <Send size={20} />
                                     </button>
@@ -1605,11 +1605,11 @@ export default function DiscussVerse() {
                     <div className="fixed top-20 right-6 w-96 bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 shadow-2xl z-50 animate-fade-in">
                         <div className="p-4 border-b border-slate-800/80">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                     <Bell size={20} className="text-cyan-" />
                                     Notifications
                                 </h3>
-                                <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
+                                <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-[var(--text-primary)] transition-colors">
                                     <X size={18} />
                                 </button>
                             </div>
@@ -1627,14 +1627,14 @@ export default function DiscussVerse() {
                                             <div className="flex items-center gap-3 mb-3">
                                                 {renderAvatar(req.avatar, "w-10 h-10", "text-2xl")}
                                                 <div className="flex-1">
-                                                    <div className="text-sm font-semibold text-white">{req.name}</div>
+                                                    <div className="text-sm font-semibold text-[var(--text-primary)]">{req.name}</div>
                                                     <div className="text-xs text-slate-400">wants to connect</div>
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleAcceptConnection(req.id, req.name)}
-                                                    className="flex-1 py-2 bg-gradient-to-r from-cyan- to-pink-600 hover:shadow-lg text-white text-xs font-bold rounded-lg transition-all"
+                                                    className="flex-1 py-2 bg-gradient-to-r from-cyan- to-pink-600 hover:shadow-lg text-[var(--text-primary)] text-xs font-bold rounded-lg transition-all"
                                                 >
                                                     Accept
                                                 </button>
@@ -1665,11 +1665,11 @@ export default function DiscussVerse() {
                 <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowSettings(false)}>
                     <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-slate-700/50 shadow-2xl animate-fade-in" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                                 <Settings size={24} className="text-cyan-" />
                                 Settings
                             </h3>
-                            <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
+                            <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-[var(--text-primary)] transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
@@ -1688,7 +1688,7 @@ export default function DiscussVerse() {
                                 </div>
                                 <p className="text-xs text-slate-500">Use dark theme across the application</p>
                             </div>
-                            <button className="w-full py-3 bg-gradient-to-r from-cyan- to-pink-600 hover:shadow-lg hover:shadow-violet-500/25 text-white font-bold rounded-xl transition-all">
+                            <button className="w-full py-3 bg-gradient-to-r from-cyan- to-pink-600 hover:shadow-lg hover:shadow-violet-500/25 text-[var(--text-primary)] font-bold rounded-xl transition-all">
                                 Save Changes
                             </button>
                         </div>
@@ -1707,18 +1707,18 @@ export default function DiscussVerse() {
                                     setShowProfileMenu(false);
                                     setShowUserProfile({ isMe: true });
                                 }}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all"
+                                className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-[var(--text-primary)] transition-all"
                             >
                                 <User size={18} />
                                 <span className="text-sm font-medium">View Profile</span>
                             </button>
-                            <button className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all">
+                            <button className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-[var(--text-primary)] transition-all">
                                 <Bookmark size={18} />
                                 <span className="text-sm font-medium">Saved Posts</span>
                             </button>
                             <button
                                 onClick={handleSettings}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-white transition-all"
+                                className="w-full flex items-center gap-3 p-3 hover:bg-slate-800/80 rounded-xl text-slate-300 hover:text-[var(--text-primary)] transition-all"
                             >
                                 <Settings size={18} />
                                 <span className="text-sm font-medium">Settings</span>

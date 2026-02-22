@@ -32,7 +32,7 @@ const ResumeTemplate = ({ data, template }) => {
                 </div>
 
                 <div className="mb-8">
-                    <h2 className="text-lg font-bold text-white uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Core Skills</h2>
+                    <h2 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Core Skills</h2>
                     <div className="flex flex-wrap gap-2">
                         {data.skills?.map((skill, i) => (
                             <span key={i} className="px-3 py-1 bg-cyan-500/10 text-cyan-300 text-xs font-medium rounded-full border border-cyan-500/20">{skill}</span>
@@ -41,12 +41,12 @@ const ResumeTemplate = ({ data, template }) => {
                 </div>
 
                 <div className="mb-8">
-                    <h2 className="text-lg font-bold text-white uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Experience</h2>
+                    <h2 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Experience</h2>
                     <div className="space-y-6">
                         {data.experience?.map((exp, i) => (
                             <div key={i} className="relative pl-4 border-l border-slate-700">
                                 <div className="absolute w-2 h-2 bg-cyan-500 rounded-full -left-[5px] top-2 shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div>
-                                <h3 className="text-xl font-bold text-white">{exp.role}</h3>
+                                <h3 className="text-xl font-bold text-[var(--text-primary)]">{exp.role}</h3>
                                 <div className="text-cyan-400 font-medium text-sm mb-2">{exp.company} <span className="text-slate-500 mx-2">|</span> {exp.duration}</div>
                                 <ul className="list-disc list-inside space-y-1 text-sm text-slate-400">
                                     {exp.description?.map((desc, j) => <li key={j}>{desc}</li>)}
@@ -57,11 +57,11 @@ const ResumeTemplate = ({ data, template }) => {
                 </div>
 
                 <div className="mb-8">
-                    <h2 className="text-lg font-bold text-white uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Education</h2>
+                    <h2 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Education</h2>
                     <div className="space-y-4">
                         {data.education?.map((edu, i) => (
                             <div key={i} className="bg-slate-800/30 p-4 rounded-lg border border-slate-700">
-                                <h3 className="text-lg font-bold text-white">{edu.degree}</h3>
+                                <h3 className="text-lg font-bold text-[var(--text-primary)]">{edu.degree}</h3>
                                 <div className="text-cyan-400 text-sm mb-1">{edu.institution} • {edu.year}</div>
                                 {edu.details && <p className="text-sm text-slate-400">{edu.details}</p>}
                             </div>
@@ -71,7 +71,7 @@ const ResumeTemplate = ({ data, template }) => {
 
                 {data.additionalInfo && data.additionalInfo.length > 0 && (
                     <div>
-                        <h2 className="text-lg font-bold text-white uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Awards & Certifications</h2>
+                        <h2 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-widest border-l-4 border-cyan-500 pl-3 mb-4">Awards & Certifications</h2>
                         <ul className="list-inside list-disc space-y-1 text-sm text-slate-400">
                             {data.additionalInfo.map((info, i) => <li key={i}>{info}</li>)}
                         </ul>
@@ -737,21 +737,21 @@ export default function AIInterview() {
     };
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-white font-sans relative overflow-y-auto overflow-x-hidden">
+        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans relative overflow-y-auto overflow-x-hidden">
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-cyan-/10 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[100px]" />
             </div>
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[#0f172a]/90 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex justify-between items-center">
+            <nav className="sticky top-0 z-50 bg-[#0f172a]/90 backdrop-blur-xl border-b border-[var(--border-color)] px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center gap-4">
                     <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/10 rounded-lg">
                         <ArrowLeft className="w-6 h-6 text-slate-300" />
                     </button>
                     <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-br from-pink-500 to-rose-500 p-2 rounded-lg">
-                            <Mic className="w-6 h-6 text-white" />
+                            <Mic className="w-6 h-6 text-[var(--text-primary)]" />
                         </div>
                         <div>
                             <h1 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">AI Interview Prep</h1>
@@ -819,24 +819,24 @@ export default function AIInterview() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'technical' ? 'bg-cyan-/10 border-cyan-500' : 'bg-[#1e1e2d] border-white/5 hover:border-cyan-500/50'}`} onClick={() => setMode('technical')}>
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'technical' ? 'bg-cyan-/10 border-cyan-500' : 'bg-[#1e1e2d] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setMode('technical')}>
                                     <Cpu className={`w-8 h-8 mb-4 ${mode === 'technical' ? 'text-cyan-' : 'text-slate-500'}`} />
                                     <h3 className="text-xl font-bold mb-2">Technical Round</h3>
                                     <p className="text-sm text-slate-400">DSA, System Design, and coding concepts. Strict and focused.</p>
                                 </div>
-                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'behavioral' ? 'bg-pink-600/10 border-pink-500' : 'bg-[#1e1e2d] border-white/5 hover:border-pink-500/50'}`} onClick={() => setMode('behavioral')}>
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'behavioral' ? 'bg-pink-600/10 border-pink-500' : 'bg-[#1e1e2d] border-[var(--border-color)] hover:border-pink-500/50'}`} onClick={() => setMode('behavioral')}>
                                     <User className={`w-8 h-8 mb-4 ${mode === 'behavioral' ? 'text-pink-400' : 'text-slate-500'}`} />
                                     <h3 className="text-xl font-bold mb-2">HR / Behavioral</h3>
                                     <p className="text-sm text-slate-400">Soft skills, STAR method, and cultural fit evaluation.</p>
                                 </div>
-                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${view === 'resume-builder' ? 'bg-cyan-600/10 border-cyan-500' : 'bg-[#1e1e2d] border-white/5 hover:border-cyan-500/50'}`} onClick={() => setView('resume-builder')}>
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${view === 'resume-builder' ? 'bg-cyan-600/10 border-cyan-500' : 'bg-[#1e1e2d] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setView('resume-builder')}>
                                     <FileText className={`w-8 h-8 mb-4 ${view === 'resume-builder' ? 'text-cyan-400' : 'text-slate-500'}`} />
                                     <h3 className="text-xl font-bold mb-2">AI Resume Builder</h3>
                                     <p className="text-sm text-slate-400">Craft a perfect ATS-friendly resume with AI assistance.</p>
                                 </div>
                             </div>
 
-                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-white/5">
+                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-[var(--border-color)]">
                                 <h3 className="font-semibold mb-4">Interview Configuration</h3>
                                 <div className="space-y-4">
 
@@ -852,11 +852,11 @@ export default function AIInterview() {
                                                 if (v) u.voice = v;
                                                 window.speechSynthesis.speak(u);
                                             }}
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm text-slate-300 focus:border-cyan-500/50 focus:outline-none mb-4"
+                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 text-sm text-slate-300 focus:border-cyan-500/50 focus:outline-none mb-4"
                                         >
-                                            <option value="" className="bg-[#1e1e2d] text-white">Select a natural human voice...</option>
+                                            <option value="" className="bg-[#1e1e2d] text-[var(--text-primary)]">Select a natural human voice...</option>
                                             {availableVoices.map((v, i) => (
-                                                <option key={i} value={v.voiceURI} className="bg-[#1e1e2d] text-white">
+                                                <option key={i} value={v.voiceURI} className="bg-[#1e1e2d] text-[var(--text-primary)]">
                                                     {v.name} ({v.lang})
                                                 </option>
                                             ))}
@@ -868,7 +868,7 @@ export default function AIInterview() {
                                         <div className="flex gap-4 items-center">
                                             <button
                                                 onClick={() => fileInputRef.current?.click()}
-                                                className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm hover:bg-white/10 flex items-center gap-2"
+                                                className="px-4 py-2 bg-white/5 border border-[var(--border-color)] rounded-lg text-sm hover:bg-white/10 flex items-center gap-2"
                                             >
                                                 <UploadCloud className="w-4 h-4" />
                                                 {resumeFile ? resumeFile.name : "Upload PDF"}
@@ -880,7 +880,7 @@ export default function AIInterview() {
                                             value={resumeText}
                                             onChange={(e) => setResumeText(e.target.value)}
                                             placeholder="Or paste resume text here..."
-                                            className="w-full mt-3 h-24 bg-black/20 rounded-lg p-3 text-sm text-slate-300 border border-white/5 focus:border-cyan-500/50 focus:outline-none resize-none"
+                                            className="w-full mt-3 h-24 bg-[var(--bg-secondary)]lack/20 rounded-lg p-3 text-sm text-slate-300 border border-[var(--border-color)] focus:border-cyan-500/50 focus:outline-none resize-none"
                                         />
                                     </div>
                                 </div>
@@ -897,10 +897,10 @@ export default function AIInterview() {
 
                         {/* Right Side - Avatar Preview */}
                         <div className="hidden md:flex w-1/3 flex-col gap-4">
-                            <div className="aspect-[3/4] rounded-2xl border border-white/10 relative overflow-hidden">
+                            <div className="aspect-[3/4] rounded-2xl border border-[var(--border-color)] relative overflow-hidden">
                                 <AriaAvatar isSpeaking={false} />
                                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-black/80 to-transparent">
-                                    <h3 className="text-2xl font-bold text-white">Aria</h3>
+                                    <h3 className="text-2xl font-bold text-[var(--text-primary)]">Aria</h3>
                                     <p className="text-violet-300">Senior Tech Recruiter</p>
                                 </div>
                             </div>
@@ -912,9 +912,9 @@ export default function AIInterview() {
                 {view === 'interview' && (
                     <div className="w-full flex gap-6">
                         {/* Left Main Interface */}
-                        <div className="flex-1 flex flex-col bg-[#151520] rounded-2xl border border-white/5 overflow-hidden relative">
+                        <div className="flex-1 flex flex-col bg-[#151520] rounded-2xl border border-[var(--border-color)] overflow-hidden relative">
                             {/* Header / Question Progress */}
-                            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#1e1e2d]">
+                            <div className="p-4 border-b border-[var(--border-color)] flex justify-between items-center bg-[#1e1e2d]">
                                 <span className="font-mono text-cyan- font-bold">Question {currentQuestionNum}</span>
                                 <div className="text-xs text-slate-500">Click "End Session" when done</div>
                             </div>
@@ -923,10 +923,10 @@ export default function AIInterview() {
                             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                 {messages.map((msg, idx) => (
                                     <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`p-4 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-lg ${msg.role === 'user' ? 'bg-cyan-/90 text-white rounded-tr-sm' : 'bg-[#1e1e2d] text-slate-200 border border-white/10 rounded-tl-sm'}`}>
+                                        <div className={`p-4 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-lg ${msg.role === 'user' ? 'bg-cyan-/90 text-[var(--text-primary)] rounded-tr-sm' : 'bg-[#1e1e2d] text-slate-200 border border-[var(--border-color)] rounded-tl-sm'}`}>
                                             {msg.content}
                                             {msg.role === 'ai' && msg.feedback && (
-                                                <div className="mt-3 pt-3 border-t border-white/10 text-xs text-yellow-500/80 italic">
+                                                <div className="mt-3 pt-3 border-t border-[var(--border-color)] text-xs text-yellow-500/80 italic">
                                                     Feedback: "{msg.feedback}"
                                                 </div>
                                             )}
@@ -942,13 +942,13 @@ export default function AIInterview() {
                             </div>
 
                             {/* Controls */}
-                            <div className="p-4 bg-[#1e1e2d] border-t border-white/5">
+                            <div className="p-4 bg-[#1e1e2d] border-t border-[var(--border-color)]">
                                 <div className="flex items-center gap-4">
                                     <button
                                         onClick={toggleListening}
                                         className={`p-4 rounded-full shadow-lg transition-all ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gradient-to-r from-cyan- to-pink-600 hover:scale-105'}`}
                                     >
-                                        {isListening ? <MicOff className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6 text-white" />}
+                                        {isListening ? <MicOff className="w-6 h-6 text-[var(--text-primary)]" /> : <Mic className="w-6 h-6 text-[var(--text-primary)]" />}
                                     </button>
                                     <div className="flex-1 relative">
                                         <input
@@ -957,12 +957,12 @@ export default function AIInterview() {
                                             onChange={(e) => setInput(e.target.value)}
                                             onKeyDown={handleKeyDown}
                                             placeholder={isListening ? "Listening..." : "Type your answer..."}
-                                            className="w-full bg-[#09090b] text-white p-4 pr-12 rounded-xl border border-white/10 focus:border-cyan-500 focus:outline-none"
+                                            className="w-full bg-[var(--bg-primary)] text-[var(--text-primary)] p-4 pr-12 rounded-xl border border-[var(--border-color)] focus:border-cyan-500 focus:outline-none"
                                         />
                                         <button
                                             onClick={sendMessage}
                                             disabled={!input.trim() || isLoading}
-                                            className="absolute right-2 top-2 p-2 bg-white/10 hover:bg-cyan- rounded-lg transition-colors text-white disabled:opacity-50"
+                                            className="absolute right-2 top-2 p-2 bg-white/10 hover:bg-cyan- rounded-lg transition-colors text-[var(--text-primary)] disabled:opacity-50"
                                         >
                                             <Send className="w-5 h-5" />
                                         </button>
@@ -974,12 +974,12 @@ export default function AIInterview() {
                         {/* Right Side - Visuals */}
                         <div className="hidden lg:flex w-80 flex-col gap-4">
                             {/* AI Avatar */}
-                            <div className="aspect-video rounded-xl overflow-hidden relative border border-white/10">
+                            <div className="aspect-video rounded-xl overflow-hidden relative border border-[var(--border-color)]">
                                 <AriaAvatar isSpeaking={isSpeaking} />
                             </div>
 
                             {/* User Camera */}
-                            <div className="aspect-video bg-black rounded-xl overflow-hidden relative border border-white/10">
+                            <div className="aspect-video bg-[var(--bg-secondary)]lack rounded-xl overflow-hidden relative border border-[var(--border-color)]">
                                 {cameraEnabled ? (
                                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover transform scale-x-[-1]" />
                                 ) : (
@@ -987,16 +987,16 @@ export default function AIInterview() {
                                         <CameraOff className="w-8 h-8 text-slate-600" />
                                     </div>
                                 )}
-                                <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white">You</div>
+                                <div className="absolute bottom-2 left-2 bg-[var(--bg-secondary)]lack/60 px-2 py-1 rounded text-xs font-bold text-[var(--text-primary)]">You</div>
                             </div>
 
                             {/* Status Card */}
-                            <div className="bg-[#1e1e2d] p-4 rounded-xl border border-white/5 space-y-3">
+                            <div className="bg-[#1e1e2d] p-4 rounded-xl border border-[var(--border-color)] space-y-3">
                                 <div className="flex justify-between items-center text-sm mb-4">
                                     <span className="text-slate-400 flex items-center gap-2"><Clock className="w-4 h-4" /> Time</span>
-                                    <span className="font-mono text-white">{String(Math.floor(elapsedTime / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}</span>
+                                    <span className="font-mono text-[var(--text-primary)]">{String(Math.floor(elapsedTime / 60)).padStart(2, '0')}:{String(elapsedTime % 60).padStart(2, '0')}</span>
                                 </div>
-                                <div className="space-y-2 pt-3 border-t border-white/5">
+                                <div className="space-y-2 pt-3 border-t border-[var(--border-color)]">
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-slate-400 flex items-center gap-2" title="Avoid filler words like 'um', 'uh', 'like'"><Type className="w-4 h-4" /> Filler Words</span>
                                         <span className={`font-bold ${fillerWordCount > 5 ? 'text-amber-400' : 'text-emerald-400'}`}>{fillerWordCount}</span>
@@ -1007,9 +1007,9 @@ export default function AIInterview() {
                                     </div>
                                 </div>
 
-                                <div className="pt-3 border-t border-white/5">
+                                <div className="pt-3 border-t border-[var(--border-color)]">
                                     <span className="text-slate-400 text-xs mb-2 block">Vocal Confidence</span>
-                                    <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden flex">
+                                    <div className="w-full h-2 bg-[var(--bg-secondary)]lack/50 rounded-full overflow-hidden flex">
                                         <div
                                             className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-75"
                                             style={{ width: `${Math.min(100, (vocalVolume / 128) * 100)}%` }}
@@ -1031,16 +1031,16 @@ export default function AIInterview() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             {/* Score Card */}
-                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-white/5 relative overflow-hidden text-center flex flex-col items-center justify-center">
+                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-[var(--border-color)] relative overflow-hidden text-center flex flex-col items-center justify-center">
                                 <div className="absolute inset-0 bg-cyan-/10 blur-xl" />
                                 <div className="relative">
-                                    <div className="text-5xl font-black text-white mb-2">{sessionReport.overallScore}<span className="text-xl text-slate-500">/10</span></div>
+                                    <div className="text-5xl font-black text-[var(--text-primary)] mb-2">{sessionReport.overallScore}<span className="text-xl text-slate-500">/10</span></div>
                                     <div className="text-sm px-3 py-1 rounded-full bg-cyan-/20 text-violet-300 inline-block font-semibold">Overall Score</div>
                                 </div>
                             </div>
 
                             {/* Strengths */}
-                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-white/5 relative md:col-span-2">
+                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-[var(--border-color)] relative md:col-span-2">
                                 <h3 className="flex items-center gap-2 font-bold mb-4 text-emerald-400"><CheckCircle className="w-5 h-5" /> Key Strengths</h3>
                                 <ul className="space-y-2">
                                     {sessionReport.strengths.map((s, i) => (
@@ -1054,7 +1054,7 @@ export default function AIInterview() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             {/* Improvements */}
-                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-white/5 relative">
+                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-[var(--border-color)] relative">
                                 <h3 className="flex items-center gap-2 font-bold mb-4 text-amber-400"><AlertCircle className="w-5 h-5" /> Areas for Improvement</h3>
                                 <ul className="space-y-2">
                                     {sessionReport.improvements.map((s, i) => (
@@ -1066,7 +1066,7 @@ export default function AIInterview() {
                             </div>
 
                             {/* Final Feedback */}
-                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-white/5 relative">
+                            <div className="bg-[#1e1e2d] p-6 rounded-2xl border border-[var(--border-color)] relative">
                                 <h3 className="flex items-center gap-2 font-bold mb-4 text-cyan-"><Trophy className="w-5 h-5" /> Coach's Feedback</h3>
                                 <p className="text-sm text-slate-300 leading-relaxed italic">
                                     "{sessionReport.finalFeedback}"
@@ -1089,7 +1089,7 @@ export default function AIInterview() {
                 {view === 'resume-builder' && (
                     <div className="w-full h-full flex flex-col md:flex-row gap-6 animate-fade-in-up">
                         {/* Left: Input Form */}
-                        <div className="w-full md:w-1/2 bg-[#1e1e2d] p-6 rounded-2xl border border-white/5 overflow-y-auto">
+                        <div className="w-full md:w-1/2 bg-[#1e1e2d] p-6 rounded-2xl border border-[var(--border-color)] overflow-y-auto">
                             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                                 <FileText className="text-cyan-400" /> Build Your Resume
                             </h2>
@@ -1101,7 +1101,7 @@ export default function AIInterview() {
                                         <input
                                             value={resumeForm.name}
                                             onChange={e => setResumeForm({ ...resumeForm, name: e.target.value })}
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white"
+                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
                                         />
                                     </div>
                                     <div>
@@ -1109,7 +1109,7 @@ export default function AIInterview() {
                                         <input
                                             value={resumeForm.email}
                                             onChange={e => setResumeForm({ ...resumeForm, email: e.target.value })}
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white"
+                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
                                         />
                                     </div>
                                     <div>
@@ -1118,7 +1118,7 @@ export default function AIInterview() {
                                             value={resumeForm.phone}
                                             onChange={e => setResumeForm({ ...resumeForm, phone: e.target.value })}
                                             placeholder="+1 234..."
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white"
+                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
                                         />
                                     </div>
                                     <div>
@@ -1127,7 +1127,7 @@ export default function AIInterview() {
                                             value={resumeForm.links}
                                             onChange={e => setResumeForm({ ...resumeForm, links: e.target.value })}
                                             placeholder="linkedin.com/in/..."
-                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white"
+                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
                                         />
                                     </div>
                                 </div>
@@ -1137,7 +1137,7 @@ export default function AIInterview() {
                                     <select
                                         value={resumeForm.template}
                                         onChange={e => setResumeForm({ ...resumeForm, template: e.target.value })}
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
                                     >
                                         <option value="Modern Professional" className="bg-[#1e1e2d]">Modern Professional</option>
                                         <option value="Creative Tech" className="bg-[#1e1e2d]">Creative Tech</option>
@@ -1151,7 +1151,7 @@ export default function AIInterview() {
                                         value={resumeForm.skills}
                                         onChange={e => setResumeForm({ ...resumeForm, skills: e.target.value })}
                                         placeholder="React, Node.js, Python, Leadership, Public Speaking..."
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white h-20 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1161,7 +1161,7 @@ export default function AIInterview() {
                                         value={resumeForm.experience}
                                         onChange={e => setResumeForm({ ...resumeForm, experience: e.target.value })}
                                         placeholder="Software Engineer at Google (2020-Present). Built X feature..."
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white h-32 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-32 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1171,7 +1171,7 @@ export default function AIInterview() {
                                         value={resumeForm.education}
                                         onChange={e => setResumeForm({ ...resumeForm, education: e.target.value })}
                                         placeholder="B.Tech in CS, XYZ University (2018-2022), GPA 3.8"
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white h-24 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1181,7 +1181,7 @@ export default function AIInterview() {
                                         value={resumeForm.additionalInfo}
                                         onChange={e => setResumeForm({ ...resumeForm, additionalInfo: e.target.value })}
                                         placeholder="Certified AWS Sol Arch, Won Hackathon 2024..."
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 mt-1 text-white h-24 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1238,7 +1238,7 @@ export default function AIInterview() {
 
                         <div className="grid gap-4">
                             {interviewHistory.map((session, i) => (
-                                <div key={i} className="bg-[#1e1e2d] p-6 rounded-2xl border border-white/5 hover:border-cyan-500/30 transition-all flex justify-between items-center group">
+                                <div key={i} className="bg-[#1e1e2d] p-6 rounded-2xl border border-[var(--border-color)] hover:border-cyan-500/30 transition-all flex justify-between items-center group">
                                     <div className="flex items-center gap-6">
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${session.overallScore >= 7 ? 'bg-emerald-500/20 text-emerald-400' : session.overallScore >= 4 ? 'bg-amber-500/20 text-amber-400' : 'bg-red-500/20 text-red-400'}`}>
                                             {session.overallScore}
@@ -1246,7 +1246,7 @@ export default function AIInterview() {
                                         <div>
                                             <div className="font-bold text-lg capitalize flex items-center gap-2">
                                                 {session.mode} Interview
-                                                <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/5 normal-case">{new Date(session.startedAt).toLocaleDateString()}</span>
+                                                <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-slate-400 border border-[var(--border-color)] normal-case">{new Date(session.startedAt).toLocaleDateString()}</span>
                                             </div>
                                             <div className="text-sm text-slate-400 mt-1 flex gap-4">
                                                 <span>{session.questionsAsked} Questions</span>

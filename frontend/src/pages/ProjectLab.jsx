@@ -157,13 +157,13 @@ export default function ProjectLab() {
         const isOwner = project.owner?._id === user?._id || project.owner === user?._id;
 
         return (
-            <div className={`bg-[#1e1e2d] rounded-2xl border border-white/5 overflow-hidden hover:border-cyan-500/30 transition-all group ${viewMode === 'list' ? 'flex items-center' : ''}`}>
+            <div className={`bg-[#1e1e2d] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:border-cyan-500/30 transition-all group ${viewMode === 'list' ? 'flex items-center' : ''}`}>
                 {/* Thumbnail / Header */}
                 <div className={`bg-gradient-to-br ${categoryColors[project.category]} p-4 ${viewMode === 'list' ? 'w-20 h-20 flex-shrink-0' : 'h-32'} flex items-center justify-center relative`}>
-                    <CategoryIcon className={`text-white/80 ${viewMode === 'list' ? 'w-8 h-8' : 'w-12 h-12'}`} />
+                    <CategoryIcon className={`text-[var(--text-primary)]/80 ${viewMode === 'list' ? 'w-8 h-8' : 'w-12 h-12'}`} />
                     {project.visibility === 'private' && (
-                        <div className="absolute top-2 right-2 bg-black/30 p-1 rounded">
-                            <Lock className="w-3 h-3 text-white" />
+                        <div className="absolute top-2 right-2 bg-[var(--bg-secondary)]lack/30 p-1 rounded">
+                            <Lock className="w-3 h-3 text-[var(--text-primary)]" />
                         </div>
                     )}
                 </div>
@@ -172,7 +172,7 @@ export default function ProjectLab() {
                 <div className={`p-4 ${viewMode === 'list' ? 'flex-1 flex items-center justify-between' : ''}`}>
                     <div className={viewMode === 'list' ? 'flex-1' : ''}>
                         <div className="flex items-start justify-between mb-2">
-                            <h3 className="font-semibold text-white group-hover:text-cyan- transition-colors line-clamp-1">
+                            <h3 className="font-semibold text-[var(--text-primary)] group-hover:text-cyan- transition-colors line-clamp-1">
                                 {project.name}
                             </h3>
                             {isOwner && viewMode !== 'list' && (
@@ -217,7 +217,7 @@ export default function ProjectLab() {
                     </div>
 
                     {/* Stats */}
-                    <div className={`flex items-center gap-4 text-xs text-slate-500 ${viewMode === 'list' ? 'ml-4' : 'mt-3 pt-3 border-t border-white/5'}`}>
+                    <div className={`flex items-center gap-4 text-xs text-slate-500 ${viewMode === 'list' ? 'ml-4' : 'mt-3 pt-3 border-t border-[var(--border-color)]'}`}>
                         <button
                             onClick={(e) => { e.stopPropagation(); handleToggleStar(project._id); }}
                             className="flex items-center gap-1 hover:text-yellow-400 transition-colors"
@@ -239,7 +239,7 @@ export default function ProjectLab() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="hover:text-white"
+                                className="hover:text-[var(--text-primary)]"
                             >
                                 <Github className="w-4 h-4" />
                             </a>
@@ -250,7 +250,7 @@ export default function ProjectLab() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="hover:text-white"
+                                className="hover:text-[var(--text-primary)]"
                             >
                                 <ExternalLink className="w-4 h-4" />
                             </a>
@@ -262,7 +262,7 @@ export default function ProjectLab() {
     };
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-white">
+        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
             {/* Background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[100px]" />
@@ -281,7 +281,7 @@ export default function ProjectLab() {
                         </button>
                         <div className="flex items-center gap-3">
                             <div className="bg-gradient-to-br from-emerald-500 to-cyan-500 p-2 rounded-lg">
-                                <FolderGit2 className="w-6 h-6 text-white" />
+                                <FolderGit2 className="w-6 h-6 text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
@@ -336,14 +336,14 @@ export default function ProjectLab() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search projects..."
-                                className="pl-10 pr-4 py-2 bg-[#1e1e2d] border border-white/10 rounded-lg text-sm text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none w-64"
+                                className="pl-10 pr-4 py-2 bg-[#1e1e2d] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none w-64"
                             />
                         </div>
 
                         <select
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
-                            className="px-3 py-2 bg-[#1e1e2d] border border-white/10 rounded-lg text-sm text-white focus:border-emerald-500/50 focus:outline-none"
+                            className="px-3 py-2 bg-[#1e1e2d] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:border-emerald-500/50 focus:outline-none"
                         >
                             <option value="all">All Categories</option>
                             <option value="web">Web</option>
@@ -357,7 +357,7 @@ export default function ProjectLab() {
                             <option value="other">Other</option>
                         </select>
 
-                        <div className="flex bg-[#1e1e2d] rounded-lg border border-white/10 overflow-hidden">
+                        <div className="flex bg-[#1e1e2d] rounded-lg border border-[var(--border-color)] overflow-hidden">
                             <button
                                 onClick={() => setViewMode('grid')}
                                 className={`p-2 ${viewMode === 'grid' ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-400 hover:bg-white/10'}`}
@@ -418,10 +418,10 @@ export default function ProjectLab() {
 
             {/* Create Project Modal */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#1e1e2d] rounded-2xl border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-white">Create New Project</h2>
+                <div className="fixed inset-0 bg-[var(--bg-secondary)]lack/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#1e1e2d] rounded-2xl border border-[var(--border-color)] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-[var(--border-color)] flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-[var(--text-primary)]">Create New Project</h2>
                             <button
                                 onClick={() => setShowCreateModal(false)}
                                 className="p-2 hover:bg-white/10 rounded-lg"
@@ -439,7 +439,7 @@ export default function ProjectLab() {
                                     value={newProject.name}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, name: e.target.value }))}
                                     placeholder="My Awesome Project"
-                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                 />
                             </div>
 
@@ -451,7 +451,7 @@ export default function ProjectLab() {
                                     onChange={(e) => setNewProject(prev => ({ ...prev, description: e.target.value }))}
                                     placeholder="A brief description of your project..."
                                     rows={3}
-                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none resize-none"
+                                    className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none resize-none"
                                 />
                             </div>
 
@@ -461,7 +461,7 @@ export default function ProjectLab() {
                                 <select
                                     value={newProject.category}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, category: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-emerald-500/50 focus:outline-none"
                                 >
                                     <option value="web">Web Development</option>
                                     <option value="mobile">Mobile App</option>
@@ -483,7 +483,7 @@ export default function ProjectLab() {
                                         onClick={() => setNewProject(prev => ({ ...prev, visibility: 'public' }))}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-all ${newProject.visibility === 'public'
                                                 ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                                                : 'border-white/10 text-slate-400 hover:bg-white/5'
+                                                : 'border-[var(--border-color)] text-slate-400 hover:bg-white/5'
                                             }`}
                                     >
                                         <Globe className="w-4 h-4" />
@@ -493,7 +493,7 @@ export default function ProjectLab() {
                                         onClick={() => setNewProject(prev => ({ ...prev, visibility: 'private' }))}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-all ${newProject.visibility === 'private'
                                                 ? 'bg-orange-500/20 border-orange-500 text-orange-400'
-                                                : 'border-white/10 text-slate-400 hover:bg-white/5'
+                                                : 'border-[var(--border-color)] text-slate-400 hover:bg-white/5'
                                             }`}
                                     >
                                         <Lock className="w-4 h-4" />
@@ -512,7 +512,7 @@ export default function ProjectLab() {
                                         onChange={(e) => setTechInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTechStack())}
                                         placeholder="e.g. React, Node.js"
-                                        className="flex-1 px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                        className="flex-1 px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                     />
                                     <button
                                         onClick={addTechStack}
@@ -543,7 +543,7 @@ export default function ProjectLab() {
                                     value={newProject.githubUrl}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, githubUrl: e.target.value }))}
                                     placeholder="https://github.com/username/repo"
-                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                 />
                             </div>
 
@@ -555,15 +555,15 @@ export default function ProjectLab() {
                                     value={newProject.liveUrl}
                                     onChange={(e) => setNewProject(prev => ({ ...prev, liveUrl: e.target.value }))}
                                     placeholder="https://myproject.vercel.app"
-                                    className="w-full px-4 py-2 bg-[#09090b] border border-white/10 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
+                                    className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
                                 />
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-white/10 flex justify-end gap-3">
+                        <div className="p-6 border-t border-[var(--border-color)] flex justify-end gap-3">
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                                className="px-4 py-2 text-slate-400 hover:text-[var(--text-primary)] transition-colors"
                             >
                                 Cancel
                             </button>

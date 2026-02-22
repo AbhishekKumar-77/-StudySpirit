@@ -595,8 +595,8 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                                 if (t.id !== 'select') setSelectedTextId(null);
                             }}
                             className={`p-2.5 rounded-lg transition-all relative group ${tool === t.id
-                                ? 'bg-gradient-to-r from-cyan- to-purple-500 text-white shadow-lg shadow-violet-500/30'
-                                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                                ? 'bg-gradient-to-r from-cyan- to-purple-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
+                                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-[var(--text-primary)]'
                                 }`}
                             title={t.label}
                         >
@@ -617,7 +617,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                                 <select
                                     value={fontSize}
                                     onChange={(e) => setFontSize(Number(e.target.value))}
-                                    className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
+                                    className="bg-slate-700 text-[var(--text-primary)] px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
                                 >
                                     {fontSizes.map(size => (
                                         <option key={size} value={size}>{size}px</option>
@@ -630,7 +630,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                                 <select
                                     value={fontFamily}
                                     onChange={(e) => setFontFamily(e.target.value)}
-                                    className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
+                                    className="bg-slate-700 text-[var(--text-primary)] px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
                                     style={{ fontFamily: fontFamily }}
                                 >
                                     {fontFamilies.map(font => (
@@ -690,7 +690,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <button
                         onClick={handleUndo}
                         disabled={historyIndex <= 0}
-                        className="p-2.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-2.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         title="Undo"
                     >
                         <Undo size={18} />
@@ -698,7 +698,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <button
                         onClick={handleRedo}
                         disabled={historyIndex >= history.length - 1}
-                        className="p-2.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-2.5 rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         title="Redo"
                     >
                         <Redo size={18} />
@@ -823,7 +823,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     }}
                 >
                     <div className="flex items-center justify-between mb-3">
-                        <span className="text-white font-bold flex items-center gap-2">
+                        <span className="text-[var(--text-primary)] font-bold flex items-center gap-2">
                             <Type size={18} className="text-cyan-" />
                             Add Text
                         </span>
@@ -831,7 +831,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                             <select
                                 value={fontSize}
                                 onChange={(e) => setFontSize(Number(e.target.value))}
-                                className="bg-slate-700 text-white px-2 py-1 rounded text-sm focus:outline-none"
+                                className="bg-slate-700 text-[var(--text-primary)] px-2 py-1 rounded text-sm focus:outline-none"
                             >
                                 {fontSizes.map(size => (
                                     <option key={size} value={size}>{size}px</option>
@@ -840,7 +840,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                             <select
                                 value={fontFamily}
                                 onChange={(e) => setFontFamily(e.target.value)}
-                                className="bg-slate-700 text-white px-2 py-1 rounded text-sm focus:outline-none"
+                                className="bg-slate-700 text-[var(--text-primary)] px-2 py-1 rounded text-sm focus:outline-none"
                             >
                                 {fontFamilies.map(font => (
                                     <option key={font.name} value={font.name}>{font.label}</option>
@@ -855,7 +855,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                         placeholder="Type your text here..."
                         autoFocus
                         rows={3}
-                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 resize-none"
+                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 resize-none"
                         style={{ color, fontSize: `${Math.min(fontSize * 0.7, 24)}px`, fontFamily }}
                     />
 
@@ -877,7 +877,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <div className="flex gap-2">
                         <button
                             onClick={handleAddText}
-                            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-cyan- to-purple-500 text-white rounded-lg font-bold hover:from-cyan- hover:to-purple-600 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-cyan- to-purple-500 text-[var(--text-primary)] rounded-lg font-bold hover:from-cyan- hover:to-purple-600 transition-all flex items-center justify-center gap-2"
                         >
                             <Type size={16} />
                             Add Text
@@ -888,7 +888,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                                 setTextInput('');
                                 setTextPosition(null);
                             }}
-                            className="px-4 py-2.5 bg-slate-700 text-white rounded-lg font-bold hover:bg-slate-600 transition-all"
+                            className="px-4 py-2.5 bg-slate-700 text-[var(--text-primary)] rounded-lg font-bold hover:bg-slate-600 transition-all"
                         >
                             Cancel
                         </button>

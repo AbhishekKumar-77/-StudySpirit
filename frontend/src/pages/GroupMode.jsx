@@ -1465,7 +1465,7 @@ export default function GroupMode() {
             {/* Error Notification */}
             {error && (
                 <div className="fixed top-4 right-4 z-[10000] animate-fadeIn">
-                    <div className="bg-red-500/90 backdrop-blur-sm text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 border border-red-400/50">
+                    <div className="bg-red-500/90 backdrop-blur-sm text-[var(--text-primary)] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 border border-red-400/50">
                         <X size={20} className="text-red-200" />
                         <div>
                             <div className="font-bold">Error</div>
@@ -1485,7 +1485,7 @@ export default function GroupMode() {
             {/* Create Group Modal */}
             {showCreateModal && (
                 <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
+                    className="fixed inset-0 bg-[var(--bg-secondary)]lack/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
                     onClick={() => setShowCreateModal(false)}
                 >
                     <div
@@ -1493,7 +1493,7 @@ export default function GroupMode() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-3xl font-black text-white flex items-center gap-3">
+                            <h2 className="text-3xl font-black text-[var(--text-primary)] flex items-center gap-3">
                                 <Users size={32} className="text-cyan-" /> Create / Join Group
                             </h2>
                             <button
@@ -1505,9 +1505,9 @@ export default function GroupMode() {
                         </div>
 
                         {/* Tabs for Create / Join */}
-                        <div className="flex gap-4 mb-6 border-b border-white/10 pb-4">
-                            <button className="text-white font-bold border-b-2 border-cyan-500 pb-2">Create Group</button>
-                            <button className="text-slate-400 font-semibold pb-2 hover:text-white transition-colors">Join by Code</button>
+                        <div className="flex gap-4 mb-6 border-b border-[var(--border-color)] pb-4">
+                            <button className="text-[var(--text-primary)] font-bold border-b-2 border-cyan-500 pb-2">Create Group</button>
+                            <button className="text-slate-400 font-semibold pb-2 hover:text-[var(--text-primary)] transition-colors">Join by Code</button>
                         </div>
 
                         <div className="mb-6">
@@ -1517,7 +1517,7 @@ export default function GroupMode() {
                                 value={newGroupName}
                                 onChange={(e) => setNewGroupName(e.target.value)}
                                 placeholder="e.g., React Developers Squad"
-                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-white text-base focus:outline-none focus:border-cyan-500 transition-all"
+                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all"
                             />
                         </div>
 
@@ -1526,7 +1526,7 @@ export default function GroupMode() {
                             <select
                                 value={newGroupCategory}
                                 onChange={(e) => setNewGroupCategory(e.target.value)}
-                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-white text-base focus:outline-none focus:border-cyan-500 transition-all"
+                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all"
                             >
                                 {['General', 'DSA', 'Web Dev', 'AI/ML', 'System Design', 'Mobile Dev', 'DevOps'].map(c => (
                                     <option key={c} value={c} className="bg-slate-900">{c}</option>
@@ -1540,7 +1540,7 @@ export default function GroupMode() {
                                 value={newGroupGoal}
                                 onChange={(e) => setNewGroupGoal(e.target.value)}
                                 placeholder="What do you want to achieve together?"
-                                className="w-full min-h-[100px] p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-white text-base resize-y focus:outline-none focus:border-cyan-500 transition-all"
+                                className="w-full min-h-[100px] p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base resize-y focus:outline-none focus:border-cyan-500 transition-all"
                             />
                         </div>
 
@@ -1552,12 +1552,12 @@ export default function GroupMode() {
                                 onChange={(e) => setCustomInviteCode(e.target.value.toUpperCase())}
                                 placeholder="e.g. DSA123 (Leave empty for auto-generated)"
                                 maxLength={10}
-                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-white text-base focus:outline-none focus:border-cyan-500 transition-all uppercase"
+                                className="w-full p-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-cyan-500 transition-all uppercase"
                             />
                         </div>
 
                         {/* Invide Code Section (for Joining) - To be implemented fully later */}
-                        <div className="mb-6 border-t border-white/10 pt-6">
+                        <div className="mb-6 border-t border-[var(--border-color)] pt-6">
                             <label className="text-slate-400 text-sm mb-2 block">Or Join with Invite Code</label>
                             <div className="flex gap-2">
                                 <input
@@ -1565,12 +1565,12 @@ export default function GroupMode() {
                                     value={inviteCode}
                                     onChange={(e) => setInviteCode(e.target.value)}
                                     placeholder="Enter Code (e.g. DSA12345)"
-                                    className="flex-1 p-4 bg-slate-800/80 border border-white/10 rounded-xl text-white text-base focus:outline-none focus:border-emerald-500 transition-all"
+                                    className="flex-1 p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-emerald-500 transition-all"
                                 />
                                 <button
                                     onClick={handleJoinGroup}
                                     disabled={loading || !inviteCode}
-                                    className="px-6 bg-slate-700 hover:bg-emerald-600 rounded-xl text-white font-bold transition-colors disabled:opacity-50"
+                                    className="px-6 bg-slate-700 hover:bg-emerald-600 rounded-xl text-[var(--text-primary)] font-bold transition-colors disabled:opacity-50"
                                 >
                                     Join
                                 </button>
@@ -1581,14 +1581,14 @@ export default function GroupMode() {
                             <button
                                 onClick={handleCreateGroup}
                                 disabled={loading}
-                                className="flex-1 p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
+                                className="flex-1 p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-[var(--text-primary)] font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
                             >
                                 {loading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
                                 Create Group
                             </button>
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="flex-1 p-4 bg-slate-800/80 border border-white/10 rounded-xl text-white font-bold hover:bg-slate-700/80 transition-all"
+                                className="flex-1 p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-slate-700/80 transition-all"
                             >
                                 Cancel
                             </button>
@@ -1600,7 +1600,7 @@ export default function GroupMode() {
             {/* Create Challenge Modal */}
             {showCreateChallengeModal && (
                 <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
+                    className="fixed inset-0 bg-[var(--bg-secondary)]lack/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
                     onClick={() => setShowCreateChallengeModal(false)}
                 >
                     <div
@@ -1608,7 +1608,7 @@ export default function GroupMode() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black text-white flex items-center gap-3">
+                            <h2 className="text-2xl font-black text-[var(--text-primary)] flex items-center gap-3">
                                 <Target size={28} className="text-amber-500" />
                                 Create Challenge
                             </h2>
@@ -1628,7 +1628,7 @@ export default function GroupMode() {
                                 value={newChallenge.title}
                                 onChange={(e) => setNewChallenge(prev => ({ ...prev, title: e.target.value }))}
                                 placeholder="e.g., Complete 100 DSA Problems"
-                                className="w-full p-4 bg-slate-800/80 border border-amber-500/30 rounded-xl text-white focus:outline-none focus:border-amber-500 transition-all"
+                                className="w-full p-4 bg-slate-800/80 border border-amber-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                             />
                         </div>
 
@@ -1640,7 +1640,7 @@ export default function GroupMode() {
                                 onChange={(e) => setNewChallenge(prev => ({ ...prev, description: e.target.value }))}
                                 placeholder="Describe the challenge rules and goals..."
                                 rows={3}
-                                className="w-full p-4 bg-slate-800/80 border border-amber-500/30 rounded-xl text-white focus:outline-none focus:border-amber-500 transition-all resize-none"
+                                className="w-full p-4 bg-slate-800/80 border border-amber-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all resize-none"
                             />
                         </div>
 
@@ -1653,7 +1653,7 @@ export default function GroupMode() {
                                     value={newChallenge.target}
                                     onChange={(e) => setNewChallenge(prev => ({ ...prev, target: e.target.value }))}
                                     min="1"
-                                    className="w-full p-4 bg-slate-800/80 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500 transition-all"
+                                    className="w-full p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                                 />
                             </div>
                             <div>
@@ -1664,7 +1664,7 @@ export default function GroupMode() {
                                     onChange={(e) => setNewChallenge(prev => ({ ...prev, days: e.target.value }))}
                                     min="1"
                                     max="365"
-                                    className="w-full p-4 bg-slate-800/80 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500 transition-all"
+                                    className="w-full p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                                 />
                             </div>
                         </div>
@@ -1675,7 +1675,7 @@ export default function GroupMode() {
                             <select
                                 value={newChallenge.category}
                                 onChange={(e) => setNewChallenge(prev => ({ ...prev, category: e.target.value }))}
-                                className="w-full p-4 bg-slate-800/80 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500 transition-all"
+                                className="w-full p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-amber-500 transition-all"
                             >
                                 {['DSA', 'Web Dev', 'AI/ML', 'System Design', 'Mobile Dev', 'DevOps', 'General', 'Competitive', 'Interview Prep'].map(cat => (
                                     <option key={cat} value={cat} className="bg-slate-900">{cat}</option>
@@ -1691,8 +1691,8 @@ export default function GroupMode() {
                                     type="button"
                                     onClick={() => setNewChallenge(prev => ({ ...prev, visibility: 'public' }))}
                                     className={`flex-1 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${newChallenge.visibility === 'public'
-                                        ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white'
-                                        : 'bg-slate-800/60 text-slate-400 border border-white/10 hover:border-emerald-500/50'
+                                        ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-[var(--text-primary)]'
+                                        : 'bg-slate-800/60 text-slate-400 border border-[var(--border-color)] hover:border-emerald-500/50'
                                         }`}
                                 >
                                     <Globe size={20} />
@@ -1702,8 +1702,8 @@ export default function GroupMode() {
                                     type="button"
                                     onClick={() => setNewChallenge(prev => ({ ...prev, visibility: 'private' }))}
                                     className={`flex-1 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${newChallenge.visibility === 'private'
-                                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white'
-                                        : 'bg-slate-800/60 text-slate-400 border border-white/10 hover:border-amber-500/50'
+                                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-[var(--text-primary)]'
+                                        : 'bg-slate-800/60 text-slate-400 border border-[var(--border-color)] hover:border-amber-500/50'
                                         }`}
                                 >
                                     <Lock size={20} />
@@ -1727,8 +1727,8 @@ export default function GroupMode() {
                                         type="button"
                                         onClick={() => setNewChallenge(prev => ({ ...prev, reward: xp }))}
                                         className={`flex-1 p-3 rounded-xl font-bold transition-all flex items-center justify-center gap-1 ${newChallenge.reward === xp
-                                            ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white'
-                                            : 'bg-slate-800/60 text-slate-400 border border-white/10 hover:border-amber-500/50'
+                                            ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]'
+                                            : 'bg-slate-800/60 text-slate-400 border border-[var(--border-color)] hover:border-amber-500/50'
                                             }`}
                                     >
                                         <Zap size={16} />
@@ -1743,14 +1743,14 @@ export default function GroupMode() {
                             <button
                                 onClick={handleCreateChallenge}
                                 disabled={loading}
-                                className="flex-1 p-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
+                                className="flex-1 p-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl text-[var(--text-primary)] font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
                             >
                                 {loading ? <Loader2 className="animate-spin" size={20} /> : <Target size={20} />}
                                 Create Challenge
                             </button>
                             <button
                                 onClick={() => setShowCreateChallengeModal(false)}
-                                className="flex-1 p-4 bg-slate-800/80 border border-white/10 rounded-xl text-white font-bold hover:bg-slate-700/80 transition-all"
+                                className="flex-1 p-4 bg-slate-800/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-slate-700/80 transition-all"
                             >
                                 Cancel
                             </button>
@@ -1762,7 +1762,7 @@ export default function GroupMode() {
             {/* Challenge Leaderboard Modal */}
             {showChallengeLeaderboard && selectedChallenge && (
                 <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
+                    className="fixed inset-0 bg-[var(--bg-secondary)]lack/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
                     onClick={() => setShowChallengeLeaderboard(false)}
                 >
                     <div
@@ -1771,7 +1771,7 @@ export default function GroupMode() {
                     >
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h2 className="text-2xl font-black text-white flex items-center gap-3">
+                                <h2 className="text-2xl font-black text-[var(--text-primary)] flex items-center gap-3">
                                     <Trophy size={28} className="text-amber-500" />
                                     Challenge Leaderboard
                                 </h2>
@@ -1788,10 +1788,10 @@ export default function GroupMode() {
                         {/* Challenge Stats */}
                         <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-slate-800/50 rounded-xl">
                             <div className="text-center">
-                                <div className="text-2xl font-black text-white">{selectedChallenge.target}</div>
+                                <div className="text-2xl font-black text-[var(--text-primary)]">{selectedChallenge.target}</div>
                                 <div className="text-xs text-slate-400">{selectedChallenge.unit || 'Target'}</div>
                             </div>
-                            <div className="text-center border-l border-r border-white/10">
+                            <div className="text-center border-l border-r border-[var(--border-color)]">
                                 <div className="text-2xl font-black text-cyan-">{selectedChallenge.participants?.length || 0}</div>
                                 <div className="text-xs text-slate-400">Participants</div>
                             </div>
@@ -1815,13 +1815,13 @@ export default function GroupMode() {
                                         className={`flex items-center gap-4 p-4 rounded-xl transition-all ${index === 0 ? 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30' :
                                             index === 1 ? 'bg-slate-700/30 border border-slate-500/30' :
                                                 index === 2 ? 'bg-amber-700/20 border border-amber-700/30' :
-                                                    'bg-slate-800/50 border border-white/5'
+                                                    'bg-slate-800/50 border border-[var(--border-color)]'
                                             }`}
                                     >
                                         {/* Rank */}
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${index === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white' :
-                                            index === 1 ? 'bg-slate-400 text-white' :
-                                                index === 2 ? 'bg-amber-700 text-white' :
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${index === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]' :
+                                            index === 1 ? 'bg-slate-400 text-[var(--text-primary)]' :
+                                                index === 2 ? 'bg-amber-700 text-[var(--text-primary)]' :
                                                     'bg-slate-700 text-slate-400'
                                             }`}>
                                             {participant.rank || index + 1}
@@ -1838,7 +1838,7 @@ export default function GroupMode() {
 
                                         {/* Name & Progress */}
                                         <div className="flex-1">
-                                            <div className="font-bold text-white flex items-center gap-2">
+                                            <div className="font-bold text-[var(--text-primary)] flex items-center gap-2">
                                                 {participant.name}
                                                 {participant.completed && <Check size={16} className="text-emerald-500" />}
                                             </div>
@@ -1865,7 +1865,7 @@ export default function GroupMode() {
             {/* Study Room Modal */}
             {showStudyRoom && (
                 <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
+                    className="fixed inset-0 bg-[var(--bg-secondary)]lack/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
                     onClick={() => setShowStudyRoom(false)}
                 >
                     <div
@@ -1873,7 +1873,7 @@ export default function GroupMode() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black text-white">
+                            <h2 className="text-2xl font-black text-[var(--text-primary)]">
                                 🎥 Live Study Room {isWebRTCInitialized && '- Connected'}
                             </h2>
                             <button
@@ -1912,7 +1912,7 @@ export default function GroupMode() {
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isMicOn
                                             ? 'bg-gradient-to-r from-emerald-500 to-green-600'
                                             : 'bg-red-500/20 text-red-400'
-                                            } text-white disabled:opacity-50`}
+                                            } text-[var(--text-primary)] disabled:opacity-50`}
                                     >
                                         {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
                                         {isMicOn ? 'Mute' : 'Unmute'}
@@ -1924,7 +1924,7 @@ export default function GroupMode() {
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isCameraOn
                                             ? 'bg-gradient-to-r from-emerald-500 to-green-600'
                                             : 'bg-red-500/20 text-red-400'
-                                            } text-white disabled:opacity-50`}
+                                            } text-[var(--text-primary)] disabled:opacity-50`}
                                     >
                                         {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
                                         Camera
@@ -1936,7 +1936,7 @@ export default function GroupMode() {
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isScreenSharing
                                             ? 'bg-gradient-to-r from-cyan- to-purple-600'
                                             : 'bg-slate-800/80 border-cyan-500/30'
-                                            } text-white disabled:opacity-50`}
+                                            } text-[var(--text-primary)] disabled:opacity-50`}
                                     >
                                         <Monitor size={20} />
                                         {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
@@ -1947,7 +1947,7 @@ export default function GroupMode() {
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showWhiteboard
                                             ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
                                             : 'bg-slate-800/80 border-cyan-500/30'
-                                            } text-white`}
+                                            } text-[var(--text-primary)]`}
                                     >
                                         <Edit size={20} />
                                         Whiteboard
@@ -1956,7 +1956,7 @@ export default function GroupMode() {
 
                                 {/* Group Pomodoro Timer */}
                                 <div className="mt-6 p-6 bg-gradient-to-r from-red-500/15 to-amber-500/15 rounded-2xl border border-red-500/20 text-center">
-                                    <h4 className="text-white font-bold mb-4">Group Focus Timer</h4>
+                                    <h4 className="text-[var(--text-primary)] font-bold mb-4">Group Focus Timer</h4>
                                     <div className="text-5xl font-black bg-gradient-to-r from-red-500 to-amber-500 bg-clip-text text-transparent mb-4 font-mono">
                                         {formatTime(groupPomodoroTime)}
                                     </div>
@@ -1964,8 +1964,8 @@ export default function GroupMode() {
                                         <button
                                             onClick={() => setIsGroupTimerRunning(!isGroupTimerRunning)}
                                             className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 ${isGroupTimerRunning
-                                                ? 'bg-red-500/30 text-white'
-                                                : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white'
+                                                ? 'bg-red-500/30 text-[var(--text-primary)]'
+                                                : 'bg-gradient-to-r from-emerald-500 to-green-600 text-[var(--text-primary)]'
                                                 }`}
                                         >
                                             {isGroupTimerRunning ? <Pause size={16} /> : <Play size={16} />}
@@ -1976,7 +1976,7 @@ export default function GroupMode() {
                                                 setIsGroupTimerRunning(false);
                                                 setGroupPomodoroTime(25 * 60);
                                             }}
-                                            className="px-5 py-2.5 bg-slate-800/80 border border-white/20 rounded-xl font-bold flex items-center gap-2 text-white"
+                                            className="px-5 py-2.5 bg-slate-800/80 border border-white/20 rounded-xl font-bold flex items-center gap-2 text-[var(--text-primary)]"
                                         >
                                             <Square size={16} />
                                             Reset
@@ -1988,7 +1988,7 @@ export default function GroupMode() {
                                 {showWhiteboard && (
                                     <div className="mt-6">
                                         <div className="flex items-center justify-between mb-3">
-                                            <h4 className="text-white font-bold flex items-center gap-2">
+                                            <h4 className="text-[var(--text-primary)] font-bold flex items-center gap-2">
                                                 <PenTool size={20} className="text-cyan-400" />
                                                 Interactive Whiteboard
                                             </h4>
@@ -2040,7 +2040,7 @@ export default function GroupMode() {
                             {/* Participants & Chat Sidebar */}
                             <div>
                                 <div className="bg-slate-800/80 rounded-2xl p-5 mb-5 border border-cyan-500/20">
-                                    <h4 className="text-white font-bold mb-4 flex items-center gap-2">
+                                    <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2">
                                         <Users size={20} className="text-emerald-500" /> Participants ({liveParticipants.length})
                                     </h4>
                                     <div className="space-y-3">
@@ -2055,7 +2055,7 @@ export default function GroupMode() {
                                                     <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-slate-900 ${user.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className="text-sm text-white font-semibold">
+                                                    <div className="text-sm text-[var(--text-primary)] font-semibold">
                                                         {user.name || user.userName || 'Participant'}
                                                     </div>
                                                     <div className="text-xs text-slate-400">{user.studying || 'In room'}</div>
@@ -2067,7 +2067,7 @@ export default function GroupMode() {
 
                                 {/* Quick Chat */}
                                 <div className="bg-slate-800/80 rounded-2xl p-5 border border-cyan-500/20">
-                                    <h4 className="text-white font-bold mb-4 flex items-center gap-2">
+                                    <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2">
                                         <MessageCircle size={20} className="text-cyan-500" /> Quick Chat
                                     </h4>
                                     <div className="h-[200px] bg-slate-900/50 rounded-xl p-3 mb-3 overflow-y-auto">
@@ -2081,7 +2081,7 @@ export default function GroupMode() {
                                                     <div className="text-xs text-slate-400 mb-1">
                                                         {msg.user} • {msg.time}
                                                     </div>
-                                                    <div className="text-sm text-white">{msg.message}</div>
+                                                    <div className="text-sm text-[var(--text-primary)]">{msg.message}</div>
                                                 </div>
                                             ))
                                         )}
@@ -2093,11 +2093,11 @@ export default function GroupMode() {
                                             onChange={(e) => setCurrentMessage(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                                             placeholder="Type a message..."
-                                            className="flex-1 p-2.5 bg-slate-900/50 border border-cyan-500/20 rounded-lg text-white text-sm focus:outline-none focus:border-cyan-500"
+                                            className="flex-1 p-2.5 bg-slate-900/50 border border-cyan-500/20 rounded-lg text-[var(--text-primary)] text-sm focus:outline-none focus:border-cyan-500"
                                         />
                                         <button
                                             onClick={sendMessage}
-                                            className="bg-gradient-to-r from-cyan- to-purple-600 px-4 rounded-lg text-white"
+                                            className="bg-gradient-to-r from-cyan- to-purple-600 px-4 rounded-lg text-[var(--text-primary)]"
                                         >
                                             <Send size={18} />
                                         </button>
@@ -2113,7 +2113,7 @@ export default function GroupMode() {
             {/* Group Detail Modal */}
             {showGroupDetail && groupDetailData && (
                 <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
+                    className="fixed inset-0 bg-[var(--bg-secondary)]lack/80 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn"
                     onClick={closeGroupDetail}
                 >
                     <div
@@ -2132,7 +2132,7 @@ export default function GroupMode() {
                                         )}
                                     </div>
                                     <div>
-                                        <h2 className="text-3xl font-black text-white mb-1">{groupDetailData.name}</h2>
+                                        <h2 className="text-3xl font-black text-[var(--text-primary)] mb-1">{groupDetailData.name}</h2>
                                         <div className="flex items-center gap-4 text-sm">
                                             <span className="text-slate-400 flex items-center gap-1.5">
                                                 <Users size={16} />
@@ -2161,14 +2161,14 @@ export default function GroupMode() {
                                 <Hash size={20} className="text-cyan-" />
                                 <div className="flex-1">
                                     <div className="text-xs text-slate-400 mb-1">Invite Code</div>
-                                    <div className="text-lg font-mono font-bold text-white tracking-wider">
+                                    <div className="text-lg font-mono font-bold text-[var(--text-primary)] tracking-wider">
                                         {groupDetailData.inviteCode}
                                     </div>
                                 </div>
                                 <button
                                     onClick={copyInviteCode}
                                     className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all ${copiedInviteCode
-                                        ? 'bg-emerald-500 text-white'
+                                        ? 'bg-emerald-500 text-[var(--text-primary)]'
                                         : 'bg-cyan-/20 text-cyan- hover:bg-cyan-/30'
                                         }`}
                                 >
@@ -2193,8 +2193,8 @@ export default function GroupMode() {
                                         key={tab}
                                         onClick={() => setActiveGroupTab(tab)}
                                         className={`px-5 py-2.5 rounded-xl font-bold capitalize transition-all ${activeGroupTab === tab
-                                            ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white'
-                                            : 'bg-slate-800/60 text-slate-400 hover:bg-cyan-/20 hover:text-white'
+                                            ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
+                                            : 'bg-slate-800/60 text-slate-400 hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
                                             }`}
                                     >
                                         {tab === 'chat' && <MessageCircle size={18} className="inline mr-2" />}
@@ -2213,8 +2213,8 @@ export default function GroupMode() {
                                             groupAPI.getJoinRequests(groupDetailData._id).then(res => setJoinRequests(res.requests || []));
                                         }}
                                         className={`px-5 py-2.5 rounded-xl font-bold capitalize transition-all ${activeGroupTab === 'requests'
-                                            ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white'
-                                            : 'bg-slate-800/60 text-slate-400 hover:bg-cyan-/20 hover:text-white'
+                                            ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
+                                            : 'bg-slate-800/60 text-slate-400 hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
                                             }`}
                                     >
                                         <Bell size={18} className="inline mr-2" />
@@ -2255,15 +2255,15 @@ export default function GroupMode() {
                                                         </div>
                                                         <div className={`flex-1 ${msg.isMe ? 'text-right' : ''}`}>
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <span className={`text-sm font-bold ${msg.isMe ? 'text-cyan-' : 'text-white'}`}>
+                                                                <span className={`text-sm font-bold ${msg.isMe ? 'text-cyan-' : 'text-[var(--text-primary)]'}`}>
                                                                     {msg.user}
                                                                 </span>
                                                                 <span className="text-xs text-slate-500">{msg.time}</span>
                                                             </div>
                                                             <div
                                                                 className={`inline-block px-4 py-2.5 rounded-2xl ${msg.isMe
-                                                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white'
-                                                                    : 'bg-slate-700/80 text-white'
+                                                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
+                                                                    : 'bg-slate-700/80 text-[var(--text-primary)]'
                                                                     }`}
                                                             >
                                                                 {msg.message}
@@ -2283,11 +2283,11 @@ export default function GroupMode() {
                                             onChange={(e) => setGroupMessageInput(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && sendGroupMessage()}
                                             placeholder="Type your message..."
-                                            className="flex-1 px-5 py-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-white focus:outline-none focus:border-cyan-500 transition-all"
+                                            className="flex-1 px-5 py-4 bg-slate-800/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
                                         />
                                         <button
                                             onClick={sendGroupMessage}
-                                            className="bg-gradient-to-r from-cyan- to-purple-600 px-8 py-4 rounded-xl text-white font-bold flex items-center gap-2 hover:scale-105 transition-transform"
+                                            className="bg-gradient-to-r from-cyan- to-purple-600 px-8 py-4 rounded-xl text-[var(--text-primary)] font-bold flex items-center gap-2 hover:scale-105 transition-transform"
                                         >
                                             <Send size={20} />
                                             Send
@@ -2300,7 +2300,7 @@ export default function GroupMode() {
                             {activeGroupTab === 'members' && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-2xl font-bold text-white">
+                                        <h3 className="text-2xl font-bold text-[var(--text-primary)]">
                                             Group Members ({groupDetailData.members?.length || 0})
                                         </h3>
                                     </div>
@@ -2326,7 +2326,7 @@ export default function GroupMode() {
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <span className="text-lg font-bold text-white">
+                                                                <span className="text-lg font-bold text-[var(--text-primary)]">
                                                                     {userData.name || 'Unknown'}
                                                                 </span>
                                                                 {member.role === 'admin' && (
@@ -2370,26 +2370,26 @@ export default function GroupMode() {
                                                                     <div className="absolute right-0 top-full mt-2 bg-slate-800 border border-cyan-500/30 rounded-xl overflow-hidden shadow-2xl z-20 min-w-[180px]">
                                                                         <button
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'admin')}
-                                                                            className="w-full px-4 py-3 text-left text-sm text-white hover:bg-cyan-/20 flex items-center gap-2"
+                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
                                                                         >
                                                                             <Crown size={16} className="text-amber-500" />
                                                                             Make Admin
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'moderator')}
-                                                                            className="w-full px-4 py-3 text-left text-sm text-white hover:bg-cyan-/20 flex items-center gap-2"
+                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
                                                                         >
                                                                             <Shield size={16} className="text-cyan-500" />
                                                                             Make Moderator
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'member')}
-                                                                            className="w-full px-4 py-3 text-left text-sm text-white hover:bg-cyan-/20 flex items-center gap-2"
+                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
                                                                         >
                                                                             <Users size={16} className="text-slate-400" />
                                                                             Make Member
                                                                         </button>
-                                                                        <div className="border-t border-white/10" />
+                                                                        <div className="border-t border-[var(--border-color)]" />
                                                                         <button
                                                                             onClick={() => handleRemoveMember(memberId)}
                                                                             className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-red-500/20 flex items-center gap-2"
@@ -2415,9 +2415,9 @@ export default function GroupMode() {
                                     {/* Study Room Hero */}
                                     <div className="bg-gradient-to-br from-cyan-/20 via-purple-600/20 to-pink-600/20 rounded-2xl p-8 border border-cyan-500/30 text-center">
                                         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-cyan- to-pink-500 mb-4">
-                                            <Video size={40} className="text-white" />
+                                            <Video size={40} className="text-[var(--text-primary)]" />
                                         </div>
-                                        <h3 className="text-2xl font-black text-white mb-2">Group Study Room</h3>
+                                        <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2">Group Study Room</h3>
                                         <p className="text-slate-400 mb-6 max-w-lg mx-auto">
                                             Start a live video study session with your group members.
                                             Share screens, use the whiteboard, and stay focused together with the group pomodoro timer!
@@ -2425,7 +2425,7 @@ export default function GroupMode() {
 
                                         <button
                                             onClick={() => joinStudyRoomWithWebRTC(groupDetailData?._id || groupDetailData?.id || 'default-room')}
-                                            className="px-8 py-4 bg-gradient-to-r from-cyan- via-purple-500 to-pink-500 rounded-xl font-bold text-white text-lg flex items-center gap-3 mx-auto hover:scale-105 transition-transform shadow-lg shadow-violet-500/30"
+                                            className="px-8 py-4 bg-gradient-to-r from-cyan- via-purple-500 to-pink-500 rounded-xl font-bold text-[var(--text-primary)] text-lg flex items-center gap-3 mx-auto hover:scale-105 transition-transform shadow-lg shadow-violet-500/30"
                                         >
                                             <Video size={24} />
                                             Start Study Session
@@ -2438,7 +2438,7 @@ export default function GroupMode() {
                                             <div className="w-12 h-12 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-3">
                                                 <Camera size={24} className="text-emerald-400" />
                                             </div>
-                                            <h4 className="font-bold text-white mb-1">Video Calls</h4>
+                                            <h4 className="font-bold text-[var(--text-primary)] mb-1">Video Calls</h4>
                                             <p className="text-sm text-slate-400">See your study partners and stay connected face-to-face.</p>
                                         </div>
 
@@ -2446,7 +2446,7 @@ export default function GroupMode() {
                                             <div className="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-3">
                                                 <Monitor size={24} className="text-cyan-400" />
                                             </div>
-                                            <h4 className="font-bold text-white mb-1">Screen Sharing</h4>
+                                            <h4 className="font-bold text-[var(--text-primary)] mb-1">Screen Sharing</h4>
                                             <p className="text-sm text-slate-400">Share your screen to explain concepts or solve problems together.</p>
                                         </div>
 
@@ -2454,7 +2454,7 @@ export default function GroupMode() {
                                             <div className="w-12 h-12 rounded-lg bg-amber-500/20 flex items-center justify-center mb-3">
                                                 <Clock size={24} className="text-amber-400" />
                                             </div>
-                                            <h4 className="font-bold text-white mb-1">Group Focus Timer</h4>
+                                            <h4 className="font-bold text-[var(--text-primary)] mb-1">Group Focus Timer</h4>
                                             <p className="text-sm text-slate-400">Synchronized pomodoro timer to keep everyone focused.</p>
                                         </div>
                                     </div>
@@ -2462,7 +2462,7 @@ export default function GroupMode() {
                                     {/* Active Members Section */}
                                     <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
                                         <div className="flex justify-between items-center mb-4">
-                                            <h4 className="font-bold text-white flex items-center gap-2">
+                                            <h4 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
                                                 <Users size={20} className="text-cyan-" />
                                                 Group Members
                                             </h4>
@@ -2485,7 +2485,7 @@ export default function GroupMode() {
                                                                 memberUser.avatar || '👤'
                                                             )}
                                                         </div>
-                                                        <span className="text-sm text-white">{memberUser.name}</span>
+                                                        <span className="text-sm text-[var(--text-primary)]">{memberUser.name}</span>
                                                         {member.role === 'admin' && <Crown size={14} className="text-amber-500" />}
                                                     </div>
                                                 );
@@ -2499,13 +2499,13 @@ export default function GroupMode() {
                             {activeGroupTab === 'settings' && (
                                 <div className="space-y-6">
                                     <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
-                                        <h3 className="text-xl font-bold text-white mb-4">Group Information</h3>
+                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">Group Information</h3>
 
                                         <div className="space-y-4">
                                             <div>
                                                 <label className="text-sm text-slate-400 mb-2 block">Group Goal</label>
                                                 <div className="p-4 bg-cyan-/10 rounded-xl border border-cyan-500/20">
-                                                    <p className="text-white">{groupDetailData.goal}</p>
+                                                    <p className="text-[var(--text-primary)]">{groupDetailData.goal}</p>
                                                 </div>
                                             </div>
 
@@ -2513,14 +2513,14 @@ export default function GroupMode() {
                                                 <div>
                                                     <label className="text-sm text-slate-400 mb-2 block">Progress</label>
                                                     <div className="p-4 bg-slate-700/60 rounded-xl">
-                                                        <div className="text-2xl font-black text-white">{groupDetailData.progress || 0}%</div>
+                                                        <div className="text-2xl font-black text-[var(--text-primary)]">{groupDetailData.progress || 0}%</div>
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <label className="text-sm text-slate-400 mb-2 block">Group Streak</label>
                                                     <div className="p-4 bg-slate-700/60 rounded-xl flex items-center gap-2">
                                                         <Flame size={24} className="text-amber-500" />
-                                                        <div className="text-2xl font-black text-white">{groupDetailData.streak || 0} days</div>
+                                                        <div className="text-2xl font-black text-[var(--text-primary)]">{groupDetailData.streak || 0} days</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2550,7 +2550,7 @@ export default function GroupMode() {
 
                                     {/* Admin Settings */}
                                     <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
-                                        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                                             <Settings size={20} className="text-cyan-" />
                                             Group Settings (Admin Only)
                                         </h3>
@@ -2562,7 +2562,7 @@ export default function GroupMode() {
                                                     type="text"
                                                     defaultValue={groupDetailData.name}
                                                     onChange={(e) => setEditGroupData(prev => ({ ...prev, name: e.target.value }))}
-                                                    className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                                                    className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
                                                     placeholder="Group name"
                                                 />
                                             </div>
@@ -2572,7 +2572,7 @@ export default function GroupMode() {
                                                 <textarea
                                                     defaultValue={groupDetailData.goal}
                                                     onChange={(e) => setEditGroupData(prev => ({ ...prev, goal: e.target.value }))}
-                                                    className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-500 min-h-[100px]"
+                                                    className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 min-h-[100px]"
                                                     placeholder="What do you want to achieve?"
                                                 />
                                             </div>
@@ -2583,7 +2583,7 @@ export default function GroupMode() {
                                                     <select
                                                         defaultValue={groupDetailData.category}
                                                         onChange={(e) => setEditGroupData(prev => ({ ...prev, category: e.target.value }))}
-                                                        className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                                                        className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
                                                     >
                                                         {['General', 'DSA', 'Web Dev', 'AI/ML', 'System Design', 'Mobile Dev', 'DevOps'].map(c => (
                                                             <option key={c} value={c}>{c}</option>
@@ -2595,7 +2595,7 @@ export default function GroupMode() {
                                                     <select
                                                         defaultValue={groupDetailData.privacy || 'public'}
                                                         onChange={(e) => setEditGroupData(prev => ({ ...prev, privacy: e.target.value }))}
-                                                        className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-500"
+                                                        className="w-full p-3 bg-slate-900/50 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500"
                                                     >
                                                         <option value="public">Public</option>
                                                         <option value="private">Private</option>
@@ -2607,7 +2607,7 @@ export default function GroupMode() {
                                             <button
                                                 onClick={handleUpdateGroupSettings}
                                                 disabled={loading || Object.keys(editGroupData).length === 0}
-                                                className="w-full p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-white font-bold hover:scale-[1.02] transition-transform disabled:opacity-50"
+                                                className="w-full p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-[var(--text-primary)] font-bold hover:scale-[1.02] transition-transform disabled:opacity-50"
                                             >
                                                 {loading ? (
                                                     <Loader2 className="animate-spin inline mr-2" size={20} />
@@ -2636,7 +2636,7 @@ export default function GroupMode() {
                             {activeGroupTab === 'requests' && (
                                 <div className="space-y-6">
                                     <div className="bg-slate-800/60 rounded-2xl p-6 border border-cyan-500/20">
-                                        <h3 className="text-xl font-bold text-white mb-4">Join Requests</h3>
+                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">Join Requests</h3>
                                         {joinRequests.length === 0 ? (
                                             <p className="text-slate-400">No pending requests.</p>
                                         ) : (
@@ -2652,7 +2652,7 @@ export default function GroupMode() {
                                                                 )}
                                                             </div>
                                                             <div>
-                                                                <div className="font-bold text-white">{req.user.name}</div>
+                                                                <div className="font-bold text-[var(--text-primary)]">{req.user.name}</div>
                                                                 <div className="text-xs text-slate-400">Requested: {new Date(req.requestedAt).toLocaleDateString()}</div>
                                                             </div>
                                                         </div>
@@ -2716,7 +2716,7 @@ export default function GroupMode() {
                     <div className="flex gap-3 items-center">
                         <button
                             onClick={() => joinStudyRoomWithWebRTC(groupDetailData?._id || groupDetailData?.id || 'default-room')}
-                            className="bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-3 rounded-xl text-sm font-bold text-white flex items-center gap-2 hover:scale-105 transition-transform"
+                            className="bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-3 rounded-xl text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 hover:scale-105 transition-transform"
                         >
                             <Radio size={18} />
                             Live Room
@@ -2734,13 +2734,13 @@ export default function GroupMode() {
                     <div className="flex items-center gap-6 flex-wrap justify-between">
                         <div className="flex items-center gap-6">
                             <div className="bg-gradient-to-r from-cyan- to-pink-500 p-6 rounded-2xl shadow-xl shadow-violet-500/40 animate-bounce">
-                                <Users2 size={48} className="text-white" />
+                                <Users2 size={48} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <div className="text-sm text-cyan- font-bold tracking-widest mb-2 uppercase">
                                     🚀 Collaborative Learning Ecosystem
                                 </div>
-                                <h1 className="text-4xl font-black text-white mb-3 tracking-tight">
+                                <h1 className="text-4xl font-black text-[var(--text-primary)] mb-3 tracking-tight">
                                     Group Study Hub
                                 </h1>
                                 <p className="text-lg text-slate-400">
@@ -2751,7 +2751,7 @@ export default function GroupMode() {
 
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="bg-gradient-to-r from-emerald-500 to-green-600 px-8 py-4 rounded-xl text-base font-bold text-white flex items-center gap-2 hover:scale-105 transition-transform shadow-xl shadow-emerald-500/30"
+                            className="bg-gradient-to-r from-emerald-500 to-green-600 px-8 py-4 rounded-xl text-base font-bold text-[var(--text-primary)] flex items-center gap-2 hover:scale-105 transition-transform shadow-xl shadow-emerald-500/30"
                         >
                             <Plus size={20} />
                             Create New Group
@@ -2761,10 +2761,10 @@ export default function GroupMode() {
 
                 {/* Stats Overview */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-cyan- to-purple-600 p-3.5 rounded-xl shadow-lg">
-                                <Users size={24} className="text-white" />
+                                <Users size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <div className="text-xs text-slate-400 font-semibold uppercase">Active Groups</div>
@@ -2775,10 +2775,10 @@ export default function GroupMode() {
                         </div>
                     </div>
 
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-emerald-500 to-green-600 p-3.5 rounded-xl shadow-lg">
-                                <Video size={24} className="text-white" />
+                                <Video size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <div className="text-xs text-slate-400 font-semibold uppercase">Live Rooms</div>
@@ -2789,10 +2789,10 @@ export default function GroupMode() {
                         </div>
                     </div>
 
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-3.5 rounded-xl shadow-lg">
-                                <Target size={24} className="text-white" />
+                                <Target size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <div className="text-xs text-slate-400 font-semibold uppercase">Challenges</div>
@@ -2803,10 +2803,10 @@ export default function GroupMode() {
                         </div>
                     </div>
 
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-white/5 hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-r from-pink-500 to-rose-600 p-3.5 rounded-xl shadow-lg">
-                                <Radio size={24} className="text-white" />
+                                <Radio size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <div className="text-xs text-slate-400 font-semibold uppercase">Live Now</div>
@@ -2825,8 +2825,8 @@ export default function GroupMode() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center gap-2 transition-all ${activeTab === tab.id
-                                ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white shadow-xl shadow-violet-500/30'
-                                : 'bg-slate-800/60 text-white hover:bg-cyan-/20 hover:scale-105'
+                                ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-xl shadow-violet-500/30'
+                                : 'bg-slate-800/60 text-[var(--text-primary)] hover:bg-cyan-/20 hover:scale-105'
                                 }`}
                         >
                             <tab.icon size={18} />
@@ -2846,7 +2846,7 @@ export default function GroupMode() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search groups..."
-                                    className="w-full py-3.5 pl-12 pr-4 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-500 transition-all"
+                                    className="w-full py-3.5 pl-12 pr-4 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
                                 />
                             </div>
                         </div>
@@ -2870,7 +2870,7 @@ export default function GroupMode() {
                                                     group.avatar || '👥'
                                                 )}
                                             </div>
-                                            <h3 className="text-xl font-bold text-white mb-2">{group.name}</h3>
+                                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{group.name}</h3>
                                             <div className="flex items-center justify-center gap-4 text-sm text-slate-400">
                                                 <span className="flex items-center gap-1.5">
                                                     <Users size={16} />
@@ -2886,7 +2886,7 @@ export default function GroupMode() {
                                         <div className="mb-5">
                                             <div className="flex justify-between mb-2">
                                                 <span className="text-sm text-slate-400 font-semibold">Group Progress</span>
-                                                <span className="text-sm font-bold text-white">{group.progress}%</span>
+                                                <span className="text-sm font-bold text-[var(--text-primary)]">{group.progress}%</span>
                                             </div>
                                             <div className="w-full h-2 bg-cyan-/20 rounded-full overflow-hidden">
                                                 <div
@@ -2898,7 +2898,7 @@ export default function GroupMode() {
 
                                         <div className={`p-3 ${colors.bgLight} rounded-xl mb-4`}>
                                             <div className={`text-xs ${colors.text} font-bold uppercase mb-1`}>GROUP GOAL</div>
-                                            <div className="text-sm text-white">{group.goal}</div>
+                                            <div className="text-sm text-[var(--text-primary)]">{group.goal}</div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3 mb-4">
@@ -2914,7 +2914,7 @@ export default function GroupMode() {
                                             </div>
                                         </div>
 
-                                        <button className={`w-full bg-gradient-to-r ${colors.gradient} py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform`}>
+                                        <button className={`w-full bg-gradient-to-r ${colors.gradient} py-3.5 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform`}>
                                             <ChevronRight size={18} />
                                             Open Group
                                         </button>
@@ -2938,13 +2938,13 @@ export default function GroupMode() {
                                 <input
                                     type="text"
                                     placeholder="Search live rooms..."
-                                    className="w-full py-3.5 pl-12 pr-4 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-white focus:outline-none focus:border-cyan-500 transition-all"
+                                    className="w-full py-3.5 pl-12 pr-4 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-all"
                                 />
                             </div>
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="px-5 py-3.5 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-white cursor-pointer focus:outline-none"
+                                className="px-5 py-3.5 bg-slate-800/60 border border-cyan-500/20 rounded-xl text-[var(--text-primary)] cursor-pointer focus:outline-none"
                             >
                                 <option value="all">All Categories</option>
                                 <option value="DSA">DSA</option>
@@ -2959,7 +2959,7 @@ export default function GroupMode() {
                                 <div
                                     key={room.id}
                                     onClick={() => handleJoinRoom(room.id)}
-                                    className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-white/5 hover:-translate-y-2 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                                    className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-[var(--border-color)] hover:-translate-y-2 transition-all duration-300 cursor-pointer relative overflow-hidden"
                                 >
                                     <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 rounded-full text-xs font-bold text-red-500">
                                         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -2974,7 +2974,7 @@ export default function GroupMode() {
                                                 room.avatar || '🎥'
                                             )}
                                         </div>
-                                        <h3 className="text-xl font-bold text-white mb-2">{room.name}</h3>
+                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{room.name}</h3>
                                         <div className="text-sm text-slate-400 mb-1">Host: {room.host}</div>
                                         <div className="text-base text-cyan-">{room.topic}</div>
                                     </div>
@@ -2998,7 +2998,7 @@ export default function GroupMode() {
 
                                     <button
                                         onClick={() => joinStudyRoomWithWebRTC(room.id)}
-                                        className="w-full bg-gradient-to-r from-pink-500 to-fuchsia-500 py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                        className="w-full bg-gradient-to-r from-pink-500 to-fuchsia-500 py-3.5 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                     >
                                         <Video size={18} />
                                         Join Room
@@ -3015,7 +3015,7 @@ export default function GroupMode() {
                         {/* Header with Create Button */}
                         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
                             <div>
-                                <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-3">
+                                <h2 className="text-2xl font-black text-[var(--text-primary)] mb-2 flex items-center gap-3">
                                     <Target className="text-amber-500" size={28} />
                                     Challenges Hub
                                 </h2>
@@ -3023,7 +3023,7 @@ export default function GroupMode() {
                             </div>
                             <button
                                 onClick={() => setShowCreateChallengeModal(true)}
-                                className="bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-3.5 rounded-xl text-white font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg shadow-emerald-500/30"
+                                className="bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-3.5 rounded-xl text-[var(--text-primary)] font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg shadow-emerald-500/30"
                             >
                                 <Plus size={20} />
                                 Create Challenge
@@ -3035,7 +3035,7 @@ export default function GroupMode() {
                             <button
                                 onClick={() => setChallengeTab('public')}
                                 className={`px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${challengeTab === 'public'
-                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white shadow-lg shadow-violet-500/30'
+                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
                                     : 'bg-slate-800/60 text-slate-300 hover:bg-cyan-/20'
                                     }`}
                             >
@@ -3045,7 +3045,7 @@ export default function GroupMode() {
                             <button
                                 onClick={() => setChallengeTab('my')}
                                 className={`px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${challengeTab === 'my'
-                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-white shadow-lg shadow-violet-500/30'
+                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
                                     : 'bg-slate-800/60 text-slate-300 hover:bg-cyan-/20'
                                     }`}
                             >
@@ -3061,7 +3061,7 @@ export default function GroupMode() {
                                     key={cat}
                                     onClick={() => setChallengeFilterCategory(cat)}
                                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${challengeFilterCategory === cat
-                                        ? 'bg-amber-500 text-white'
+                                        ? 'bg-amber-500 text-[var(--text-primary)]'
                                         : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700'
                                         }`}
                                 >
@@ -3083,11 +3083,11 @@ export default function GroupMode() {
                                 {publicChallenges.length === 0 ? (
                                     <div className="text-center py-20 bg-slate-800/40 rounded-2xl border border-cyan-500/20">
                                         <Globe size={60} className="mx-auto mb-4 text-slate-600" />
-                                        <h3 className="text-xl font-bold text-white mb-2">No Public Challenges Yet</h3>
+                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Public Challenges Yet</h3>
                                         <p className="text-slate-400 mb-6">Be the first to create a public challenge!</p>
                                         <button
                                             onClick={() => setShowCreateChallengeModal(true)}
-                                            className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-white font-bold hover:scale-105 transition-transform"
+                                            className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-[var(--text-primary)] font-bold hover:scale-105 transition-transform"
                                         >
                                             Create Public Challenge
                                         </button>
@@ -3118,7 +3118,7 @@ export default function GroupMode() {
                                                         {/* Icon & Title */}
                                                         <div className="mb-4">
                                                             <div className="text-4xl mb-3">{challenge.icon || '🎯'}</div>
-                                                            <h3 className="text-xl font-bold text-white mb-2 pr-16">{challenge.title}</h3>
+                                                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 pr-16">{challenge.title}</h3>
                                                             <p className="text-sm text-slate-400 line-clamp-2">{challenge.description}</p>
                                                         </div>
 
@@ -3144,12 +3144,12 @@ export default function GroupMode() {
                                                         </div>
 
                                                         {/* Stats */}
-                                                        <div className="grid grid-cols-3 gap-3 mb-4 py-3 border-t border-b border-white/5">
+                                                        <div className="grid grid-cols-3 gap-3 mb-4 py-3 border-t border-b border-[var(--border-color)]">
                                                             <div className="text-center">
-                                                                <div className="text-lg font-black text-white">{participantCount}</div>
+                                                                <div className="text-lg font-black text-[var(--text-primary)]">{participantCount}</div>
                                                                 <div className="text-xs text-slate-400">Joined</div>
                                                             </div>
-                                                            <div className="text-center border-l border-r border-white/5">
+                                                            <div className="text-center border-l border-r border-[var(--border-color)]">
                                                                 <div className={`text-lg font-black ${daysLeft <= 3 ? 'text-red-400' : daysLeft <= 7 ? 'text-amber-400' : 'text-emerald-400'}`}>
                                                                     {daysLeft > 0 ? daysLeft : 0}
                                                                 </div>
@@ -3166,7 +3166,7 @@ export default function GroupMode() {
                                                             {isParticipant ? (
                                                                 <button
                                                                     onClick={() => handleViewLeaderboard(challenge)}
-                                                                    className="flex-1 bg-gradient-to-r from-cyan- to-purple-600 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                                                    className="flex-1 bg-gradient-to-r from-cyan- to-purple-600 py-3 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                                                 >
                                                                     <Trophy size={18} />
                                                                     View Leaderboard
@@ -3174,7 +3174,7 @@ export default function GroupMode() {
                                                             ) : (
                                                                 <button
                                                                     onClick={() => handleJoinChallenge(challenge._id || challenge.id)}
-                                                                    className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                                                    className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 py-3 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                                                 >
                                                                     <Plus size={18} />
                                                                     Join Challenge
@@ -3182,7 +3182,7 @@ export default function GroupMode() {
                                                             )}
                                                             <button
                                                                 onClick={() => handleViewLeaderboard(challenge)}
-                                                                className="p-3 bg-slate-700/50 rounded-xl text-slate-300 hover:bg-cyan-/30 hover:text-white transition-all"
+                                                                className="p-3 bg-slate-700/50 rounded-xl text-slate-300 hover:bg-cyan-/30 hover:text-[var(--text-primary)] transition-all"
                                                                 title="View Leaderboard"
                                                             >
                                                                 <Medal size={18} />
@@ -3202,11 +3202,11 @@ export default function GroupMode() {
                                 {myChallenges.length === 0 ? (
                                     <div className="text-center py-20 bg-slate-800/40 rounded-2xl border border-cyan-500/20">
                                         <Target size={60} className="mx-auto mb-4 text-slate-600" />
-                                        <h3 className="text-xl font-bold text-white mb-2">No Challenges Created Yet</h3>
+                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">No Challenges Created Yet</h3>
                                         <p className="text-slate-400 mb-6">Create your first challenge and invite others to join!</p>
                                         <button
                                             onClick={() => setShowCreateChallengeModal(true)}
-                                            className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-white font-bold hover:scale-105 transition-transform"
+                                            className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-[var(--text-primary)] font-bold hover:scale-105 transition-transform"
                                         >
                                             Create My First Challenge
                                         </button>
@@ -3235,17 +3235,17 @@ export default function GroupMode() {
                                                     {/* Icon & Title */}
                                                     <div className="mb-4">
                                                         <div className="text-4xl mb-3">{challenge.icon || '🎯'}</div>
-                                                        <h3 className="text-xl font-bold text-white mb-2 pr-16">{challenge.title}</h3>
+                                                        <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 pr-16">{challenge.title}</h3>
                                                         <p className="text-sm text-slate-400 line-clamp-2">{challenge.description}</p>
                                                     </div>
 
                                                     {/* Stats */}
-                                                    <div className="grid grid-cols-3 gap-3 mb-4 py-3 border-t border-b border-white/5">
+                                                    <div className="grid grid-cols-3 gap-3 mb-4 py-3 border-t border-b border-[var(--border-color)]">
                                                         <div className="text-center">
-                                                            <div className="text-lg font-black text-white">{participantCount}</div>
+                                                            <div className="text-lg font-black text-[var(--text-primary)]">{participantCount}</div>
                                                             <div className="text-xs text-slate-400">Participants</div>
                                                         </div>
-                                                        <div className="text-center border-l border-r border-white/5">
+                                                        <div className="text-center border-l border-r border-[var(--border-color)]">
                                                             <div className={`text-lg font-black ${daysLeft <= 3 ? 'text-red-400' : 'text-emerald-400'}`}>
                                                                 {daysLeft > 0 ? daysLeft : 0}
                                                             </div>
@@ -3260,7 +3260,7 @@ export default function GroupMode() {
                                                     {/* Actions */}
                                                     <button
                                                         onClick={() => handleViewLeaderboard(challenge)}
-                                                        className="w-full bg-gradient-to-r from-cyan- to-pink-500 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                                        className="w-full bg-gradient-to-r from-cyan- to-pink-500 py-3 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                                     >
                                                         <Trophy size={18} />
                                                         View Leaderboard
@@ -3282,7 +3282,7 @@ export default function GroupMode() {
                 {activeTab === 'leaderboard' && (
                     <div className="animate-fadeIn">
                         <div className="mb-8">
-                            <h2 className="text-2xl font-black text-white mb-3">Group Leaderboard</h2>
+                            <h2 className="text-2xl font-black text-[var(--text-primary)] mb-3">Group Leaderboard</h2>
                             <p className="text-slate-400">Top performers in your study groups</p>
                         </div>
 
@@ -3292,24 +3292,24 @@ export default function GroupMode() {
                                     key={member.rank}
                                     className={`bg-slate-800/60 backdrop-blur-xl rounded-2xl p-5 border flex items-center gap-4 hover:-translate-y-1 transition-all ${member.rank === 1 ? 'border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent' :
                                         member.rank === 2 ? 'border-slate-400/30' :
-                                            member.rank === 3 ? 'border-amber-700/30' : 'border-white/5'
+                                            member.rank === 3 ? 'border-amber-700/30' : 'border-[var(--border-color)]'
                                         }`}
                                 >
-                                    <div className={`w-10 h-10 flex items-center justify-center rounded-full font-black text-lg ${member.rank === 1 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white' :
-                                        member.rank === 2 ? 'bg-slate-400 text-white' :
-                                            member.rank === 3 ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-400'
+                                    <div className={`w-10 h-10 flex items-center justify-center rounded-full font-black text-lg ${member.rank === 1 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]' :
+                                        member.rank === 2 ? 'bg-slate-400 text-[var(--text-primary)]' :
+                                            member.rank === 3 ? 'bg-amber-700 text-[var(--text-primary)]' : 'bg-slate-700 text-slate-400'
                                         }`}>
                                         {member.rank}
                                     </div>
                                     <div className="text-4xl">
                                         {(member.avatar && (member.avatar.startsWith('http') || member.avatar.startsWith('data:'))) ? (
-                                            <img src={member.avatar} alt={member.name} className="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
+                                            <img src={member.avatar} alt={member.name} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--border-color)]" />
                                         ) : (
                                             member.avatar || '👤'
                                         )}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="text-white font-bold flex items-center gap-2">
+                                        <div className="text-[var(--text-primary)] font-bold flex items-center gap-2">
                                             {member.name}
                                             <span className="text-xl">{member.badge}</span>
                                         </div>

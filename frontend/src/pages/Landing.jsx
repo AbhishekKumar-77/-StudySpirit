@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 const FeatureCard = ({ icon, title, desc, index, hoveredCard, setHoveredCard }) => {
     return (
         <div
-            className={`relative p-10 bg-black/40 backdrop-blur-3xl rounded-3xl border transition-all duration-500 cursor-pointer min-h-[400px] flex flex-col items-center justify-center text-center overflow-hidden z-10
+            className={`relative p-10 bg-[var(--bg-secondary)]lack/40 backdrop-blur-3xl rounded-3xl border transition-all duration-500 cursor-pointer min-h-[400px] flex flex-col items-center justify-center text-center overflow-hidden z-10
         ${hoveredCard === index
                     ? 'scale-105 -translate-y-3 border-cyan-500/50 shadow-[0_30px_80px_rgba(6,182,212,0.3)]'
-                    : 'border-white/10'}`}
+                    : 'border-[var(--border-color)]'}`}
             onMouseEnter={() => setHoveredCard(index)}
             onMouseLeave={() => setHoveredCard(null)}
         >
@@ -18,8 +18,8 @@ const FeatureCard = ({ icon, title, desc, index, hoveredCard, setHoveredCard }) 
                 {icon}
             </div>
 
-            <h3 className="text-2xl font-bold text-white mb-4 uppercase tracking-wider">{title}</h3>
-            <p className="text-zinc-400 leading-relaxed">{desc}</p>
+            <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4 uppercase tracking-wider">{title}</h3>
+            <p className="text-[var(--text-secondary)] leading-relaxed">{desc}</p>
         </div>
     );
 };
@@ -68,7 +68,7 @@ export default function Landing() {
     };
 
     return (
-        <div className="relative min-h-screen bg-[#09090b] text-white flex flex-col items-center justify-center overflow-hidden py-20 px-6 font-sans">
+        <div className="relative min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center overflow-hidden py-20 px-6 font-sans">
             {/* Dark Mode Background Grid */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:34px_34px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
@@ -81,14 +81,14 @@ export default function Landing() {
             <nav className="absolute top-0 w-full z-50 p-6 flex justify-between items-center max-w-7xl mx-auto">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 p-[2px]">
-                        <div className="w-full h-full bg-black rounded-xl flex items-center justify-center">
+                        <div className="w-full h-full bg-[var(--bg-secondary)]lack rounded-xl flex items-center justify-center">
                             <img src="/logo.png" alt="Logo" className="w-8 h-8 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" onError={(e) => { e.target.style.display = 'none'; }} />
                             {!document.querySelector('img[src="/logo.png"]')?.complete && (
                                 <span className="text-xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">S</span>
                             )}
                         </div>
                     </div>
-                    <div className="text-2xl font-black tracking-tight text-white flex items-center">
+                    <div className="text-2xl font-black tracking-tight text-[var(--text-primary)] flex items-center">
                         STUDY<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">SPIRIT</span>
                     </div>
                 </div>
@@ -97,7 +97,7 @@ export default function Landing() {
                     className="group relative px-6 py-2 bg-transparent overflow-hidden rounded-full border border-zinc-800 hover:border-cyan-500/50 transition-all font-semibold tracking-wide"
                 >
                     <div className="absolute inset-0 w-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                    <span className="relative z-10 text-zinc-300 group-hover:text-white transition-colors">LOGIN</span>
+                    <span className="relative z-10 text-zinc-300 group-hover:text-[var(--text-primary)] transition-colors">LOGIN</span>
                 </button>
             </nav>
 
@@ -134,7 +134,7 @@ export default function Landing() {
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-gradient-x">SPIRIT</span>
                 </h1>
 
-                <p className="text-lg md:text-2xl text-zinc-400 max-w-3xl mb-12 min-h-[60px] leading-relaxed text-center font-light">
+                <p className="text-lg md:text-2xl text-[var(--text-secondary)] max-w-3xl mb-12 min-h-[60px] leading-relaxed text-center font-light">
                     {typedText}
                     {showCursor && <span className="animate-blink ml-1 border-r-2 border-cyan-400">&nbsp;</span>}
                 </p>
@@ -145,7 +145,7 @@ export default function Landing() {
                         className="group relative px-10 py-5 bg-white text-black rounded-full text-lg font-bold uppercase tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
                     >
                         {ripples.map(r => (
-                            <span key={r.id} className="absolute bg-black/10 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ripple"
+                            <span key={r.id} className="absolute bg-[var(--bg-secondary)]lack/10 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ripple"
                                 style={{ left: r.x, top: r.y }} />
                         ))}
                         <span className="relative z-10 flex items-center justify-center gap-3">
@@ -157,7 +157,7 @@ export default function Landing() {
                     </button>
                     <button
                         onClick={() => navigate('/login')}
-                        className="px-10 py-5 rounded-full border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/50 backdrop-blur-md text-white text-lg font-bold uppercase tracking-widest transition-all duration-300"
+                        className="px-10 py-5 rounded-full border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/50 backdrop-blur-md text-[var(--text-primary)] text-lg font-bold uppercase tracking-widest transition-all duration-300"
                     >
                         Explore Features
                     </button>
@@ -185,10 +185,10 @@ export default function Landing() {
                 {/* Elaborated Section */}
                 <div className="mt-40 w-full flex flex-col items-center relative z-10 pt-20 border-t border-zinc-800/50">
                     <div className="text-center mb-20 max-w-4xl px-4">
-                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-white">
+                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-[var(--text-primary)]">
                             THE ULTIMATE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">ARSENAL</span>
                         </h2>
-                        <p className="text-xl text-zinc-400 font-light">Everything you need to crush your learning goals, wrapped in a beautiful, distraction-free environment.</p>
+                        <p className="text-xl text-[var(--text-secondary)] font-light">Everything you need to crush your learning goals, wrapped in a beautiful, distraction-free environment.</p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4">
@@ -202,11 +202,11 @@ export default function Landing() {
                         ].map((feature, i) => (
                             <div
                                 key={i}
-                                className="group p-8 bg-zinc-900/50 border border-zinc-800 rounded-3xl backdrop-blur-sm transition-all duration-300 hover:border-purple-500/50 hover:bg-zinc-800/50"
+                                className="group p-8 bg-[var(--glass-bg)] border border-zinc-800 rounded-3xl backdrop-blur-sm transition-all duration-300 hover:border-purple-500/50 hover:bg-zinc-800/50"
                             >
                                 <div className="text-4xl mb-4 grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">{feature.icon}</div>
-                                <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                                <p className="text-zinc-500 leading-relaxed font-light">{feature.desc}</p>
+                                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{feature.title}</h3>
+                                <p className="text-[var(--text-muted)] leading-relaxed font-light">{feature.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -225,8 +225,8 @@ export default function Landing() {
                                     {step.num}
                                 </div>
                                 <div className="w-full md:w-1/2 text-center md:text-left">
-                                    <h3 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">{step.title}</h3>
-                                    <p className="text-lg md:text-xl text-zinc-400 leading-relaxed font-light">{step.desc}</p>
+                                    <h3 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-6 tracking-tight">{step.title}</h3>
+                                    <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed font-light">{step.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -235,9 +235,9 @@ export default function Landing() {
 
                 {/* CTA */}
                 <div className="mt-40 mb-20 p-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-[3rem] w-full mx-4 max-w-[calc(100%-2rem)] md:max-w-6xl overflow-hidden group">
-                    <div className="bg-black p-12 md:p-24 rounded-[2.8rem] text-center w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
+                    <div className="bg-[var(--bg-secondary)]lack p-12 md:p-24 rounded-[2.8rem] text-center w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
                         <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-500 pointer-events-none" />
-                        <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tighter text-white">READY TO LEVEL UP?</h2>
+                        <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tighter text-[var(--text-primary)]">READY TO LEVEL UP?</h2>
                         <button onClick={() => navigate('/login')} className="px-12 py-5 bg-white text-black font-black text-xl md:text-2xl uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                             Join StudySpirit
                         </button>
@@ -245,16 +245,16 @@ export default function Landing() {
                 </div>
 
                 {/* Footer */}
-                <footer className="w-full border-t border-zinc-800/50 pt-16 pb-8 text-zinc-500 px-6 mt-20">
+                <footer className="w-full border-t border-zinc-800/50 pt-16 pb-8 text-[var(--text-muted)] px-6 mt-20">
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="flex items-center gap-2">
-                            <span className="font-black text-white bg-clip-text">STUDYSPIRIT © 2025</span>
+                            <span className="font-black text-[var(--text-primary)] bg-clip-text">STUDYSPIRIT © 2025</span>
                         </div>
                         <div className="flex gap-6 text-sm font-semibold uppercase tracking-widest">
-                            <span className="hover:text-white cursor-pointer transition-colors">Privacy</span>
-                            <span className="hover:text-white cursor-pointer transition-colors">Terms</span>
-                            <span className="hover:text-white cursor-pointer transition-colors">Twitter</span>
-                            <span className="hover:text-white cursor-pointer transition-colors">GitHub</span>
+                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">Privacy</span>
+                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">Terms</span>
+                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">Twitter</span>
+                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">GitHub</span>
                         </div>
                     </div>
                 </footer>

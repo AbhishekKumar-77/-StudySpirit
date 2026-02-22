@@ -506,7 +506,7 @@ export default function StudySprintQuiz() {
     // --------------------------- RENDER ---------------------------
     return (
         <div
-            className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative pb-20 overflow-hidden font-sans text-white"
+            className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative pb-20 overflow-hidden font-sans text-[var(--text-primary)]"
             ref={fullscreenRef}
         >
             {/* Background Glow */}
@@ -523,13 +523,13 @@ export default function StudySprintQuiz() {
                         <ArrowLeft size={18} /> Back to Dashboard
                     </button>
 
-                    <div className="text-2xl font-black text-white flex items-center gap-3">
+                    <div className="text-2xl font-black text-[var(--text-primary)] flex items-center gap-3">
                         <Zap size={32} className="text-amber-500" />
                         StudySprint Quiz Pro
                     </div>
 
                     <div className="flex items-center gap-4 text-cyan- font-semibold">
-                        <span>Quiz Code: <strong className="text-white">{quizCode}</strong></span>
+                        <span>Quiz Code: <strong className="text-[var(--text-primary)]">{quizCode}</strong></span>
                         <button
                             onClick={generateQuizCode}
                             className="bg-cyan-/20 p-2 rounded-lg transition-all duration-300 hover:bg-cyan-/30"
@@ -547,7 +547,7 @@ export default function StudySprintQuiz() {
 
                     <div className="flex items-center justify-between flex-wrap gap-6">
                         <div>
-                            <h1 className="text-5xl font-black text-white mb-3">
+                            <h1 className="text-5xl font-black text-[var(--text-primary)] mb-3">
                                 {activeTab === "teacher" ? quizTitle : activeTab === "student" ? "Live Exam Mode" : activeTab === "practice" ? "AI Practice Arena" : "Global Leaderboard"}
                             </h1>
                             <p className="text-xl text-slate-400">
@@ -562,17 +562,17 @@ export default function StudySprintQuiz() {
                                 <button onClick={() => saveQuiz("draft")} disabled={isSaving} className="px-6 py-4 bg-slate-800 text-slate-300 font-bold rounded-xl shadow border border-slate-700 transition-all duration-300 hover:bg-slate-700 flex items-center gap-2">
                                     <Edit size={20} /> Save as Draft
                                 </button>
-                                <button onClick={() => saveQuiz("published")} disabled={isSaving} className="px-8 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70">
+                                <button onClick={() => saveQuiz("published")} disabled={isSaving} className="px-8 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70">
                                     <Share2 size={20} /> {isSaving ? "Saving..." : "Publish Exam"}
                                 </button>
                             </div>
                         )}
                         {activeTab === "student" && joinedQuiz && showResult && (
                             <div className="flex gap-3">
-                                <button className="px-8 py-4 bg-gradient-to-br from-cyan- to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2">
+                                <button className="px-8 py-4 bg-gradient-to-br from-cyan- to-pink-500 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2">
                                     <BookOpen size={20} /> Review Answers
                                 </button>
-                                <button className="px-6 py-3 bg-white/10 text-white rounded-xl hover:bg-white/15 transition-all duration-300 flex items-center gap-2">
+                                <button className="px-6 py-3 bg-white/10 text-[var(--text-primary)] rounded-xl hover:bg-white/15 transition-all duration-300 flex items-center gap-2">
                                     <Download size={20} /> Export Scorecard
                                 </button>
                             </div>
@@ -594,7 +594,7 @@ export default function StudySprintQuiz() {
                             className={`
                                 flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300
                                 ${activeTab === tab.id
-                                    ? "bg-gradient-to-br from-cyan- to-pink-500 text-white shadow-lg shadow-violet-500/30 scale-105"
+                                    ? "bg-gradient-to-br from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30 scale-105"
                                     : "bg-slate-800/60 text-slate-300 hover:bg-slate-700/80 hover:shadow-md"
                                 }
                             `}
@@ -608,7 +608,7 @@ export default function StudySprintQuiz() {
                         className={`
                             flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 ml-auto
                             ${activeTab === "drafts"
-                                ? "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30 scale-105"
+                                ? "bg-gradient-to-br from-amber-500 to-orange-500 text-[var(--text-primary)] shadow-lg shadow-amber-500/30 scale-105"
                                 : "bg-slate-800/60 text-slate-300 hover:bg-slate-700/80 hover:shadow-md"
                             }
                         `}
@@ -621,10 +621,10 @@ export default function StudySprintQuiz() {
 
                 {/* TEACHER CREATOR */}
                 {activeTab === "teacher" && (
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-white/10 shadow-xl transition-all duration-300">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-[var(--border-color)] shadow-xl transition-all duration-300">
                         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
                             <div>
-                                <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-3 border-b-2 border-cyan-500/30 pb-3">
+                                <h2 className="text-2xl font-black text-[var(--text-primary)] mb-6 flex items-center gap-3 border-b-2 border-cyan-500/30 pb-3">
                                     <FilePlus size={32} /> Create New Question
                                 </h2>
 
@@ -633,13 +633,13 @@ export default function StudySprintQuiz() {
                                     value={quizTitle}
                                     onChange={(e) => setQuizTitle(e.target.value)}
                                     placeholder="Quiz Title (e.g., React Mastery Test)"
-                                    className="w-full p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-white text-lg font-semibold mb-5 focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300"
+                                    className="w-full p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-semibold mb-5 focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300"
                                 />
 
                                 <div className="mb-5">
                                     <label className="text-slate-400 mb-2 block text-sm">Question Type:</label>
                                     <div className="flex gap-4">
-                                        <label className="flex items-center gap-2 cursor-pointer text-white font-medium hover:text-cyan- transition-colors">
+                                        <label className="flex items-center gap-2 cursor-pointer text-[var(--text-primary)] font-medium hover:text-cyan- transition-colors">
                                             <input
                                                 type="radio"
                                                 name="questionType"
@@ -649,7 +649,7 @@ export default function StudySprintQuiz() {
                                                 className="accent-violet-500 w-4 h-4"
                                             /> MCQ
                                         </label>
-                                        <label className="flex items-center gap-2 cursor-pointer text-white font-medium hover:text-cyan- transition-colors">
+                                        <label className="flex items-center gap-2 cursor-pointer text-[var(--text-primary)] font-medium hover:text-cyan- transition-colors">
                                             <input
                                                 type="radio"
                                                 name="questionType"
@@ -667,7 +667,7 @@ export default function StudySprintQuiz() {
                                     value={newQ}
                                     onChange={(e) => setNewQ(e.target.value)}
                                     placeholder="Enter your question here..."
-                                    className="w-full p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-white text-lg font-semibold mb-5 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300 resize-y"
+                                    className="w-full p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-semibold mb-5 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300 resize-y"
                                 />
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
@@ -682,10 +682,10 @@ export default function StudySprintQuiz() {
                                                 }}
                                                 placeholder={`Option ${i + 1}`}
                                                 className={`
-                                                    w-full pl-10 pr-4 py-3.5 rounded-xl text-white transition-all duration-300 outline-none border
+                                                    w-full pl-10 pr-4 py-3.5 rounded-xl text-[var(--text-primary)] transition-all duration-300 outline-none border
                                                     ${correct === i
                                                         ? "bg-emerald-500/20 border-emerald-500"
-                                                        : "bg-slate-900/60 border-white/10 group-hover:border-cyan-500/50"
+                                                        : "bg-slate-900/60 border-[var(--border-color)] group-hover:border-cyan-500/50"
                                                     }
                                                 `}
                                             />
@@ -702,8 +702,8 @@ export default function StudySprintQuiz() {
                                             className={`
                                                 px-5 py-3 rounded-xl font-bold transition-all duration-300 shadow-md
                                                 ${correct === i
-                                                    ? "bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-emerald-500/30"
-                                                    : "bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                                    ? "bg-gradient-to-br from-emerald-500 to-emerald-700 text-[var(--text-primary)] shadow-emerald-500/30"
+                                                    : "bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-[var(--text-primary)]"
                                                 }
                                             `}
                                         >
@@ -714,13 +714,13 @@ export default function StudySprintQuiz() {
 
                                 <button
                                     onClick={addQuestion}
-                                    className="w-full py-4 bg-gradient-to-br from-cyan- to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 text-lg"
+                                    className="w-full py-4 bg-gradient-to-br from-cyan- to-pink-500 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 text-lg"
                                 >
                                     Add Question to Quiz
                                 </button>
 
                                 <div className="mt-10 border-t border-cyan-500/20 pt-8">
-                                    <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-xl">
+                                    <h3 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2 text-xl">
                                         <Brain size={24} className="text-amber-500" /> Generate AI Questions
                                     </h3>
                                     <div className="flex gap-4">
@@ -729,7 +729,7 @@ export default function StudySprintQuiz() {
                                             value={aiTeacherTopic}
                                             onChange={(e) => setAiTeacherTopic(e.target.value)}
                                             placeholder="Topic for AI questions (e.g., 'React Hooks', 'Data Structures')"
-                                            className="flex-1 p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300"
+                                            className="flex-1 p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300"
                                         />
                                         <input
                                             type="number"
@@ -738,12 +738,12 @@ export default function StudySprintQuiz() {
                                             value={aiQuestionCount}
                                             onChange={(e) => setAiQuestionCount(parseInt(e.target.value) || 5)}
                                             placeholder="Count"
-                                            className="w-24 p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300 text-center"
+                                            className="w-24 p-4 bg-slate-900/60 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300 text-center"
                                         />
                                         <button
                                             onClick={handleTeacherAIGeneration}
                                             disabled={isGenerating}
-                                            className="px-6 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2 whitespace-nowrap disabled:opacity-70"
+                                            className="px-6 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2 whitespace-nowrap disabled:opacity-70"
                                         >
                                             <Sparkles size={20} /> {isGenerating ? "Generating..." : "Generate with AI"}
                                         </button>
@@ -753,17 +753,17 @@ export default function StudySprintQuiz() {
 
                             <div className="space-y-6">
                                 <div>
-                                    <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-xl">
+                                    <h3 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2 text-xl">
                                         <Settings size={24} className="text-slate-400" /> Quiz Settings
                                     </h3>
-                                    <div className="bg-slate-900/50 p-6 rounded-2xl border border-white/5 space-y-4">
+                                    <div className="bg-slate-900/50 p-6 rounded-2xl border border-[var(--border-color)] space-y-4">
                                         <div>
                                             <label className="text-slate-400 text-sm mb-1 block">Time Limit (minutes)</label>
                                             <input
                                                 type="number"
                                                 value={settings.timeLimit}
                                                 onChange={(e) => setSettings({ ...settings, timeLimit: parseInt(e.target.value) || 30 })}
-                                                className="w-full p-3 bg-slate-800 border border-white/10 rounded-lg text-white focus:border-cyan-500 outline-none transition-all"
+                                                className="w-full p-3 bg-slate-800 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-cyan-500 outline-none transition-all"
                                             />
                                         </div>
                                         <div>
@@ -773,7 +773,7 @@ export default function StudySprintQuiz() {
                                                 step="0.05"
                                                 value={settings.negativeMarking}
                                                 onChange={(e) => setSettings({ ...settings, negativeMarking: parseFloat(e.target.value) || 0 })}
-                                                className="w-full p-3 bg-slate-800 border border-white/10 rounded-lg text-white focus:border-cyan-500 outline-none transition-all"
+                                                className="w-full p-3 bg-slate-800 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-cyan-500 outline-none transition-all"
                                             />
                                         </div>
                                         <div>
@@ -781,7 +781,7 @@ export default function StudySprintQuiz() {
                                             <select
                                                 value={settings.difficulty}
                                                 onChange={(e) => setSettings({ ...settings, difficulty: e.target.value })}
-                                                className="w-full p-3 bg-slate-800 border border-white/10 rounded-lg text-white focus:border-cyan-500 outline-none transition-all"
+                                                className="w-full p-3 bg-slate-800 border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-cyan-500 outline-none transition-all"
                                             >
                                                 <option value="easy">Easy</option>
                                                 <option value="medium">Medium</option>
@@ -789,7 +789,7 @@ export default function StudySprintQuiz() {
                                             </select>
                                         </div>
 
-                                        <div className="flex items-center justify-between py-2 border-t border-white/5 mt-2">
+                                        <div className="flex items-center justify-between py-2 border-t border-[var(--border-color)] mt-2">
                                             <label className="text-slate-400 text-sm">Randomize</label>
                                             <input
                                                 type="checkbox"
@@ -798,7 +798,7 @@ export default function StudySprintQuiz() {
                                                 className="w-5 h-5 accent-violet-500 cursor-pointer"
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between py-2 border-t border-white/5">
+                                        <div className="flex items-center justify-between py-2 border-t border-[var(--border-color)]">
                                             <label className="text-slate-400 text-sm flex items-center gap-2">
                                                 Secure Mode <AlertCircle size={14} className="text-amber-500" />
                                             </label>
@@ -809,7 +809,7 @@ export default function StudySprintQuiz() {
                                                 className="w-5 h-5 accent-violet-500 cursor-pointer"
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between py-2 border-t border-white/5">
+                                        <div className="flex items-center justify-between py-2 border-t border-[var(--border-color)]">
                                             <label className="text-slate-400 text-sm">Instant Results</label>
                                             <input
                                                 type="checkbox"
@@ -824,7 +824,7 @@ export default function StudySprintQuiz() {
                         </div>
 
                         <div className="mt-10">
-                            <h3 className="text-white font-bold mb-4 text-xl border-b border-white/10 pb-2">
+                            <h3 className="text-[var(--text-primary)] font-bold mb-4 text-xl border-b border-[var(--border-color)] pb-2">
                                 Added Questions <span className="text-cyan-">({questions.length})</span>
                             </h3>
                             {questions.length === 0 && (
@@ -835,10 +835,10 @@ export default function StudySprintQuiz() {
                             )}
                             <div className="space-y-3">
                                 {questions.map((q, idx) => (
-                                    <div key={q.id} className="bg-slate-900/60 p-5 rounded-xl border border-white/5 hover:border-cyan-500/50 transition-colors group">
+                                    <div key={q.id} className="bg-slate-900/60 p-5 rounded-xl border border-[var(--border-color)] hover:border-cyan-500/50 transition-colors group">
                                         <div className="flex justify-between items-start gap-4">
                                             <div className="flex-1">
-                                                <p className="text-lg font-medium text-white mb-3">
+                                                <p className="text-lg font-medium text-[var(--text-primary)] mb-3">
                                                     <span className="text-cyan- font-bold mr-2">Q{idx + 1}:</span>
                                                     {q.question}
                                                 </p>
@@ -848,7 +848,7 @@ export default function StudySprintQuiz() {
                                                             px-3 py-2 rounded-lg text-sm font-medium border
                                                             ${i === q.correct
                                                                 ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
-                                                                : "bg-slate-800/50 border-white/5 text-slate-400"
+                                                                : "bg-slate-800/50 border-[var(--border-color)] text-slate-400"
                                                             }
                                                         `}>
                                                             {opt}
@@ -872,8 +872,8 @@ export default function StudySprintQuiz() {
 
                 {/* MY DRAFTS */}
                 {activeTab === "drafts" && (
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-white/10 shadow-xl transition-all duration-300 min-h-[400px]">
-                        <h2 className="text-3xl font-black text-white mb-6 flex items-center gap-3 border-b-2 border-amber-500/30 pb-4">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-7 border border-[var(--border-color)] shadow-xl transition-all duration-300 min-h-[400px]">
+                        <h2 className="text-3xl font-black text-[var(--text-primary)] mb-6 flex items-center gap-3 border-b-2 border-amber-500/30 pb-4">
                             <BookOpen size={36} className="text-amber-500" /> My Saved Quizzes
                         </h2>
 
@@ -884,7 +884,7 @@ export default function StudySprintQuiz() {
                                 <p className="text-sm mt-2">Go to 'Create Quiz' to start building one.</p>
                                 <button
                                     onClick={() => setActiveTab("teacher")}
-                                    className="mt-6 px-6 py-3 bg-cyan- text-white rounded-lg hover:bg-cyan- transition-colors"
+                                    className="mt-6 px-6 py-3 bg-cyan- text-[var(--text-primary)] rounded-lg hover:bg-cyan- transition-colors"
                                 >
                                     Create a Quiz
                                 </button>
@@ -892,10 +892,10 @@ export default function StudySprintQuiz() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {drafts.map((draft) => (
-                                    <div key={draft.code} className="bg-slate-900/60 p-6 rounded-2xl border border-white/10 hover:border-amber-500/50 transition-all group flex flex-col justify-between">
+                                    <div key={draft.code} className="bg-slate-900/60 p-6 rounded-2xl border border-[var(--border-color)] hover:border-amber-500/50 transition-all group flex flex-col justify-between">
                                         <div>
                                             <div className="flex justify-between items-start mb-3">
-                                                <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-2">
+                                                <h3 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-amber-400 transition-colors line-clamp-2">
                                                     {draft.title}
                                                 </h3>
                                                 <span className={`text-xs px-2 py-1 rounded-md font-bold ${draft.status === 'draft' ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/20 text-emerald-500'}`}>
@@ -909,10 +909,10 @@ export default function StudySprintQuiz() {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/5">
+                                        <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-[var(--border-color)]">
                                             <button
                                                 onClick={() => loadDraft(draft)}
-                                                className="w-full py-2.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition flex items-center justify-center gap-2 font-medium"
+                                                className="w-full py-2.5 bg-slate-800 text-[var(--text-primary)] rounded-lg hover:bg-slate-700 transition flex items-center justify-center gap-2 font-medium"
                                             >
                                                 <Edit size={16} /> Edit
                                             </button>
@@ -947,9 +947,9 @@ export default function StudySprintQuiz() {
                 {activeTab === "student" && (
                     <div className="min-h-[400px]">
                         {!joinedQuiz && (
-                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-16 border border-white/10 shadow-xl text-center max-w-2xl mx-auto mt-10">
+                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-16 border border-[var(--border-color)] shadow-xl text-center max-w-2xl mx-auto mt-10">
                                 <Users size={80} className="text-cyan- mx-auto mb-6" />
-                                <h2 className="text-4xl font-black text-white mb-4">Join a Quiz</h2>
+                                <h2 className="text-4xl font-black text-[var(--text-primary)] mb-4">Join a Quiz</h2>
                                 <p className="text-xl text-slate-400 mb-8">
                                     Enter the quiz code provided by your teacher to begin your exam.
                                 </p>
@@ -959,12 +959,12 @@ export default function StudySprintQuiz() {
                                         value={studentQuizCodeInput}
                                         onChange={(e) => setStudentQuizCodeInput(e.target.value)}
                                         placeholder="Enter Code (e.g. SP1234)"
-                                        className="flex-1 p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-white text-lg font-bold text-center focus:border-cyan-500 outline-none uppercase tracking-widest"
+                                        className="flex-1 p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-bold text-center focus:border-cyan-500 outline-none uppercase tracking-widest"
                                     />
                                 </div>
                                 <button
                                     onClick={joinQuiz}
-                                    className="mt-6 px-12 py-4 bg-gradient-to-br from-cyan- to-pink-500 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto text-lg"
+                                    className="mt-6 px-12 py-4 bg-gradient-to-br from-cyan- to-pink-500 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto text-lg"
                                 >
                                     <ChevronRight size={24} /> Join Quiz
                                 </button>
@@ -972,14 +972,14 @@ export default function StudySprintQuiz() {
                         )}
 
                         {joinedQuiz && !examStarted && !showResult && (
-                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-16 border border-white/10 shadow-xl text-center max-w-3xl mx-auto mt-10">
+                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-16 border border-[var(--border-color)] shadow-xl text-center max-w-3xl mx-auto mt-10">
                                 <Trophy size={80} className="text-amber-500 mx-auto mb-6 animate-pulse" />
-                                <h2 className="text-4xl font-black text-white mb-4">Ready to Start?</h2>
+                                <h2 className="text-4xl font-black text-[var(--text-primary)] mb-4">Ready to Start?</h2>
                                 <div className="flex flex-wrap justify-center gap-4 mb-8 text-lg font-medium text-slate-300">
-                                    <span className="px-4 py-2 bg-slate-900/50 rounded-lg border border-white/10">
+                                    <span className="px-4 py-2 bg-slate-900/50 rounded-lg border border-[var(--border-color)]">
                                         {joinedQuiz.questions.length} Questions
                                     </span>
-                                    <span className="px-4 py-2 bg-slate-900/50 rounded-lg border border-white/10">
+                                    <span className="px-4 py-2 bg-slate-900/50 rounded-lg border border-[var(--border-color)]">
                                         {joinedQuiz.settings.timeLimit} Minutes
                                     </span>
                                     {joinedQuiz.settings.negativeMarking > 0 && (
@@ -998,7 +998,7 @@ export default function StudySprintQuiz() {
 
                                 <button
                                     onClick={startExam}
-                                    className="px-12 py-5 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-bold rounded-2xl shadow-xl shadow-emerald-500/30 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto text-xl"
+                                    className="px-12 py-5 bg-gradient-to-br from-emerald-500 to-emerald-700 text-[var(--text-primary)] font-bold rounded-2xl shadow-xl shadow-emerald-500/30 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto text-xl"
                                 >
                                     <PlayCircle size={32} /> Start Exam Now
                                 </button>
@@ -1023,15 +1023,15 @@ export default function StudySprintQuiz() {
                                     )}
 
                                     {/* Exam Header */}
-                                    <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-white/10 shadow-2xl mb-8 flex justify-between items-center">
+                                    <div className="bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] shadow-2xl mb-8 flex justify-between items-center">
                                         <div className="flex items-center gap-5">
-                                            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-cyan- to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20">
+                                            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-cyan- to-indigo-600 flex items-center justify-center text-[var(--text-primary)] shadow-lg shadow-violet-500/20">
                                                 <Brain size={32} />
                                             </div>
                                             <div>
-                                                <h1 className="text-2xl font-black text-white tracking-tight">{joinedQuiz.title || "Proctored Exam"}</h1>
+                                                <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">{joinedQuiz.title || "Proctored Exam"}</h1>
                                                 <div className="flex items-center gap-3 text-slate-400 font-medium text-sm mt-1">
-                                                    <span className="px-2 py-0.5 bg-slate-800 rounded border border-white/5 uppercase text-xs tracking-wider">{joinedQuiz.settings.difficulty}</span>
+                                                    <span className="px-2 py-0.5 bg-slate-800 rounded border border-[var(--border-color)] uppercase text-xs tracking-wider">{joinedQuiz.settings.difficulty}</span>
                                                     <span>•</span>
                                                     <span>{currentQuestionIndex + 1} / {joinedQuiz.questions.length} Questions</span>
                                                 </div>
@@ -1039,7 +1039,7 @@ export default function StudySprintQuiz() {
                                         </div>
 
                                         <div className={`
-                                            flex items-center gap-3 px-6 py-3 rounded-xl bg-black/40 border border-white/5 shadow-inner backdrop-blur-md
+                                            flex items-center gap-3 px-6 py-3 rounded-xl bg-[var(--bg-secondary)]lack/40 border border-[var(--border-color)] shadow-inner backdrop-blur-md
                                             ${timeLeft < 300 ? "text-red-500 animate-pulse border-red-500/30" : "text-emerald-400 border-emerald-500/20"}
                                         `}>
                                             <Timer size={28} />
@@ -1048,10 +1048,10 @@ export default function StudySprintQuiz() {
                                     </div>
 
                                     {/* Question Card */}
-                                    <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl p-10 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                                    <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl p-10 border border-[var(--border-color)] shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan- via-fuchsia-600 to-cyan-600"></div>
 
-                                        <h3 className="text-3xl font-bold text-white mb-10 leading-relaxed tracking-wide">
+                                        <h3 className="text-3xl font-bold text-[var(--text-primary)] mb-10 leading-relaxed tracking-wide">
                                             {joinedQuiz.questions[currentQuestionIndex].question}
                                         </h3>
 
@@ -1065,8 +1065,8 @@ export default function StudySprintQuiz() {
                                                     className={`
                                                         w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group
                                                         ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
-                                                            ? "bg-gradient-to-r from-cyan-/20 to-cyan-600/20 border-cyan-500 text-white shadow-[0_0_30px_rgba(34,211,238,0.15)] transform scale-[1.01]"
-                                                            : "bg-slate-800/40 border-transparent hover:bg-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white"
+                                                            ? "bg-gradient-to-r from-cyan-/20 to-cyan-600/20 border-cyan-500 text-[var(--text-primary)] shadow-[0_0_30px_rgba(34,211,238,0.15)] transform scale-[1.01]"
+                                                            : "bg-slate-800/40 border-transparent hover:bg-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-[var(--text-primary)]"
                                                         }
                                                     `}
                                                 >
@@ -1089,11 +1089,11 @@ export default function StudySprintQuiz() {
                                             ))}
                                         </div>
 
-                                        <div className="flex justify-between mt-12 pt-8 border-t border-white/5">
+                                        <div className="flex justify-between mt-12 pt-8 border-t border-[var(--border-color)]">
                                             <button
                                                 onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
                                                 disabled={currentQuestionIndex === 0}
-                                                className="px-8 py-4 bg-slate-800/50 text-white font-bold rounded-xl hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                                                className="px-8 py-4 bg-slate-800/50 text-[var(--text-primary)] font-bold rounded-xl hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                                             >
                                                 <ArrowLeft size={20} /> Previous
                                             </button>
@@ -1101,14 +1101,14 @@ export default function StudySprintQuiz() {
                                             {currentQuestionIndex < joinedQuiz.questions.length - 1 ? (
                                                 <button
                                                     onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
-                                                    className="px-10 py-4 bg-gradient-to-br from-cyan- to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/20 hover:scale-105 hover:shadow-violet-500/40 transition-all flex items-center gap-2"
+                                                    className="px-10 py-4 bg-gradient-to-br from-cyan- to-indigo-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-violet-500/20 hover:scale-105 hover:shadow-violet-500/40 transition-all flex items-center gap-2"
                                                 >
                                                     Next Question <ChevronRight size={20} />
                                                 </button>
                                             ) : (
                                                 <button
                                                     onClick={submitExam}
-                                                    className="px-12 py-4 bg-gradient-to-br from-rose-500 to-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 hover:scale-105 hover:shadow-red-500/50 transition-all flex items-center gap-2"
+                                                    className="px-12 py-4 bg-gradient-to-br from-rose-500 to-red-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-red-500/30 hover:scale-105 hover:shadow-red-500/50 transition-all flex items-center gap-2"
                                                 >
                                                     <Target size={20} /> Submit Exam
                                                 </button>
@@ -1120,25 +1120,25 @@ export default function StudySprintQuiz() {
                         )}
 
                         {showResult && joinedQuiz && (
-                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-16 border border-white/10 shadow-xl text-center max-w-2xl mx-auto mt-10 animate-fade-in-up">
+                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-16 border border-[var(--border-color)] shadow-xl text-center max-w-2xl mx-auto mt-10 animate-fade-in-up">
                                 <Award size={120} className="text-amber-500 mx-auto mb-6 animate-bounce" />
                                 <h2 className="text-6xl font-black text-emerald-400 mb-4">{score}%</h2>
-                                <p className="text-2xl text-white font-bold mb-2">Excellent Work!</p>
+                                <p className="text-2xl text-[var(--text-primary)] font-bold mb-2">Excellent Work!</p>
                                 <p className="text-xl text-slate-400 mb-8">
-                                    You answered <span className="text-white font-bold">{Object.values(userAnswers).filter((a, idx) => a === joinedQuiz.questions[idx]?.correct).length}</span> out of {joinedQuiz.questions.length} correctly.
+                                    You answered <span className="text-[var(--text-primary)] font-bold">{Object.values(userAnswers).filter((a, idx) => a === joinedQuiz.questions[idx]?.correct).length}</span> out of {joinedQuiz.questions.length} correctly.
                                 </p>
                                 <div className="flex gap-4 justify-center">
                                     {joinedQuiz.settings.allowReview && (
                                         <button
                                             onClick={() => setIsReviewingAnswers(true)}
-                                            className="px-8 py-4 bg-gradient-to-br from-cyan- to-blue-500 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105"
+                                            className="px-8 py-4 bg-gradient-to-br from-cyan- to-blue-500 text-[var(--text-primary)] font-bold rounded-xl shadow-lg transition-all hover:scale-105"
                                         >
                                             Review Answers
                                         </button>
                                     )}
                                     <button
                                         onClick={() => { setShowResult(false); setJoinedQuiz(null); setStudentQuizCodeInput(""); setIsReviewingAnswers(false); }}
-                                        className="px-8 py-4 bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-600 transition-all hover:scale-105"
+                                        className="px-8 py-4 bg-slate-700 text-[var(--text-primary)] font-bold rounded-xl hover:bg-slate-600 transition-all hover:scale-105"
                                     >
                                         Take Another Quiz
                                     </button>
@@ -1148,9 +1148,9 @@ export default function StudySprintQuiz() {
 
                         {/* REVIEW ANSWERS UI */}
                         {isReviewingAnswers && joinedQuiz && (
-                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-10 border border-white/10 shadow-xl max-w-4xl mx-auto mt-10 animate-fade-in-up mb-10">
-                                <div className="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
-                                    <h2 className="text-4xl font-black text-white flex items-center gap-3">
+                            <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-10 border border-[var(--border-color)] shadow-xl max-w-4xl mx-auto mt-10 animate-fade-in-up mb-10">
+                                <div className="flex justify-between items-center mb-10 border-b border-[var(--border-color)] pb-6">
+                                    <h2 className="text-4xl font-black text-[var(--text-primary)] flex items-center gap-3">
                                         <BookOpen className="text-cyan-" size={36} /> Review Answers
                                     </h2>
                                     <button
@@ -1171,9 +1171,9 @@ export default function StudySprintQuiz() {
                                             <div key={q.id} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" :
                                                 isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"
                                                 }`}>
-                                                <h4 className="text-xl text-white font-bold mb-6 flex items-start gap-3">
+                                                <h4 className="text-xl text-[var(--text-primary)] font-bold mb-6 flex items-start gap-3">
                                                     <span className={`px-3 py-1 rounded text-sm font-black ${isCorrect ? "bg-emerald-500 text-slate-900" :
-                                                        isSkipped ? "bg-amber-500 text-slate-900" : "bg-red-500 text-white"
+                                                        isSkipped ? "bg-amber-500 text-slate-900" : "bg-red-500 text-[var(--text-primary)]"
                                                         }`}>
                                                         Q{idx + 1}
                                                     </span>
@@ -1222,11 +1222,11 @@ export default function StudySprintQuiz() {
 
                 {/* AI PRACTICE */}
                 {activeTab === "practice" && (
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.3)] min-h-[500px]">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-8 border border-[var(--border-color)] shadow-[0_20px_60px_rgba(0,0,0,0.3)] min-h-[500px]">
                         {!practiceStarted ? (
                             <div className="text-center py-20 max-w-2xl mx-auto">
                                 <Bot size={100} className="text-cyan- mx-auto mb-8" />
-                                <h2 className="text-5xl font-black text-white mb-6">AI Practice Arena</h2>
+                                <h2 className="text-5xl font-black text-[var(--text-primary)] mb-6">AI Practice Arena</h2>
                                 <p className="text-xl text-slate-400 mb-10">
                                     Generate unlimited AI-powered questions based on your preferred topic and difficulty.
                                 </p>
@@ -1236,12 +1236,12 @@ export default function StudySprintQuiz() {
                                         value={studentPracticeTopic}
                                         onChange={(e) => setStudentPracticeTopic(e.target.value)}
                                         placeholder="Enter topic (e.g., 'React Hooks')"
-                                        className="w-full p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-white text-lg focus:border-cyan-500 outline-none transition-all"
+                                        className="w-full p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg focus:border-cyan-500 outline-none transition-all"
                                     />
                                     <select
                                         value={studentPracticeDifficulty}
                                         onChange={(e) => setStudentPracticeDifficulty(e.target.value)}
-                                        className="w-full p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-white text-lg focus:border-cyan-500 outline-none transition-all"
+                                        className="w-full p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg focus:border-cyan-500 outline-none transition-all"
                                     >
                                         <option value="easy">Easy</option>
                                         <option value="medium">Medium</option>
@@ -1254,12 +1254,12 @@ export default function StudySprintQuiz() {
                                         value={practiceQuestionCount}
                                         onChange={(e) => setPracticeQuestionCount(parseInt(e.target.value) || 5)}
                                         placeholder="Number of Questions"
-                                        className="w-full p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-white text-lg focus:border-cyan-500 outline-none transition-all"
+                                        className="w-full p-4 bg-slate-900 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg focus:border-cyan-500 outline-none transition-all"
                                     />
                                 </div>
                                 <button
                                     onClick={generateAIQuestionsForPractice}
-                                    className="px-12 py-5 bg-gradient-to-br from-cyan- to-indigo-600 text-white font-bold rounded-2xl shadow-xl shadow-violet-500/30 transition-all duration-300 hover:scale-105 hover:shadow-violet-500/50 flex items-center gap-3 mx-auto text-xl"
+                                    className="px-12 py-5 bg-gradient-to-br from-cyan- to-indigo-600 text-[var(--text-primary)] font-bold rounded-2xl shadow-xl shadow-violet-500/30 transition-all duration-300 hover:scale-105 hover:shadow-violet-500/50 flex items-center gap-3 mx-auto text-xl"
                                 >
                                     <Sparkles size={24} /> Generate Questions
                                 </button>
@@ -1277,7 +1277,7 @@ export default function StudySprintQuiz() {
                                             </div>
                                         </div>
 
-                                        <h3 className="text-3xl font-bold text-white mb-10 leading-relaxed">
+                                        <h3 className="text-3xl font-bold text-[var(--text-primary)] mb-10 leading-relaxed">
                                             {aiQuestions[practiceIndex].question}
                                         </h3>
 
@@ -1295,7 +1295,7 @@ export default function StudySprintQuiz() {
                                                                 : i === lastChosenPracticeOption
                                                                     ? "bg-red-500/20 border-red-500 text-red-100"
                                                                     : "bg-slate-900/40 border-transparent opacity-50"
-                                                            : "bg-slate-900/40 border-transparent hover:bg-slate-800 hover:border-cyan-500/50 text-slate-300 hover:text-white"
+                                                            : "bg-slate-900/40 border-transparent hover:bg-slate-800 hover:border-cyan-500/50 text-slate-300 hover:text-[var(--text-primary)]"
                                                         }
                                                     `}
                                                 >
@@ -1323,7 +1323,7 @@ export default function StudySprintQuiz() {
                                                     <Lightbulb size={24} className="text-yellow-400" /> AI Feedback
                                                 </h4>
                                                 <p className="text-slate-300 leading-relaxed">
-                                                    The correct answer is <span className="font-bold text-white">Option {String.fromCharCode(65 + aiQuestions[practiceIndex].correct)}</span>.
+                                                    The correct answer is <span className="font-bold text-[var(--text-primary)]">Option {String.fromCharCode(65 + aiQuestions[practiceIndex].correct)}</span>.
                                                 </p>
                                             </div>
                                         )}
@@ -1334,7 +1334,7 @@ export default function StudySprintQuiz() {
                                                 onClick={nextPracticeQuestion}
                                                 disabled={!practiceAnswered && practiceIndex < aiQuestions.length - 1}
                                                 className={`
-                                                    px-10 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all duration-300 text-lg flex items-center gap-2 mx-auto
+                                                    px-10 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all duration-300 text-lg flex items-center gap-2 mx-auto
                                                     ${(!practiceAnswered && practiceIndex < aiQuestions.length - 1) ? "opacity-50 cursor-not-allowed grayscale" : "hover:scale-105"}
                                                 `}
                                             >
@@ -1345,7 +1345,7 @@ export default function StudySprintQuiz() {
                                 ) : (
                                     <div className="text-center animate-fade-in-up">
                                         <Award size={100} className="text-amber-500 mx-auto mb-6 animate-bounce" />
-                                        <h2 className="text-4xl font-black text-white mb-2">Practice Complete!</h2>
+                                        <h2 className="text-4xl font-black text-[var(--text-primary)] mb-2">Practice Complete!</h2>
                                         <p className="text-xl text-slate-400 mb-8">
                                             Final Score: <span className="text-emerald-400 font-bold">{practiceScore}</span> / {aiQuestions.length}
                                         </p>
@@ -1356,7 +1356,7 @@ export default function StudySprintQuiz() {
                                                 const isCorrect = userAnswerIdx === q.correct;
                                                 return (
                                                     <div key={q.id} className={`p-6 rounded-xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" : "bg-red-500/10 border-red-500/30"}`}>
-                                                        <h4 className="text-white font-bold mb-3 flex items-start gap-2">
+                                                        <h4 className="text-[var(--text-primary)] font-bold mb-3 flex items-start gap-2">
                                                             <span className="opacity-50">Q{idx + 1}.</span> {q.question}
                                                         </h4>
                                                         <div className="space-y-2 text-sm">
@@ -1378,7 +1378,7 @@ export default function StudySprintQuiz() {
 
                                         <button
                                             onClick={() => { setPracticeStarted(false); setAiQuestions([]); setPracticeFinished(false); }}
-                                            className="px-10 py-4 bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-600 transition-all hover:scale-105"
+                                            className="px-10 py-4 bg-slate-700 text-[var(--text-primary)] font-bold rounded-xl hover:bg-slate-600 transition-all hover:scale-105"
                                         >
                                             Start New Practice
                                         </button>
@@ -1391,19 +1391,19 @@ export default function StudySprintQuiz() {
 
                 {/* LEADERBOARD */}
                 {activeTab === "leaderboard" && (
-                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-xl max-w-5xl mx-auto">
-                        <h2 className="text-3xl font-black text-white mb-8 flex items-center gap-3 border-b border-white/10 pb-4">
+                    <div className="bg-slate-800/60 backdrop-blur-xl rounded-2xl p-8 border border-[var(--border-color)] shadow-xl max-w-5xl mx-auto">
+                        <h2 className="text-3xl font-black text-[var(--text-primary)] mb-8 flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
                             <Trophy size={40} className="text-amber-500" /> Global Leaderboard
                         </h2>
                         <div className="flex flex-col gap-2">
                             {leaderboard.length === 0 ? (
-                                <div className="text-center py-20 bg-slate-900/40 rounded-2xl border border-white/5 animate-fade-in">
+                                <div className="text-center py-20 bg-slate-900/40 rounded-2xl border border-[var(--border-color)] animate-fade-in">
                                     <div className="text-6xl mb-6 animate-float">🏆</div>
-                                    <h3 className="text-2xl font-bold text-white mb-2">Be the First Champion!</h3>
+                                    <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Be the First Champion!</h3>
                                     <p className="text-slate-400 mb-8 max-w-md mx-auto">No scores recorded yet. Take a quiz now to claim the throne and set the standard for others.</p>
                                     <button
                                         onClick={() => setActiveTab('student')}
-                                        className="px-8 py-3 bg-gradient-to-r from-cyan- to-indigo-600 rounded-xl font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 hover:scale-105 transition-all duration-300"
+                                        className="px-8 py-3 bg-gradient-to-r from-cyan- to-indigo-600 rounded-xl font-bold text-[var(--text-primary)] shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 hover:scale-105 transition-all duration-300"
                                     >
                                         Start a Quiz Now
                                     </button>
@@ -1416,20 +1416,20 @@ export default function StudySprintQuiz() {
                                         flex items-center gap-6 p-6 rounded-2xl transition-all duration-300 hover:scale-[1.01]
                                         ${player.isYou
                                                 ? "bg-cyan-/20 border border-cyan-500/30 shadow-[0_0_30px_rgba(139,92,246,0.1)]"
-                                                : "bg-slate-900/40 border border-white/5 hover:bg-slate-800/60"
+                                                : "bg-slate-900/40 border border-[var(--border-color)] hover:bg-slate-800/60"
                                             }
                                     `}
                                     >
                                         <div className="w-16 flex justify-center text-3xl font-black">
                                             {player.rank === 1 ? <Crown size={40} className="text-amber-400 animate-bounce" />
                                                 : player.rank === 2 ? <div className="relative"><Crown size={36} className="text-slate-300" /><span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-slate-800">2</span></div>
-                                                    : player.rank === 3 ? <div className="relative"><Crown size={32} className="text-amber-700" /><span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-white">3</span></div>
+                                                    : player.rank === 3 ? <div className="relative"><Crown size={32} className="text-amber-700" /><span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-[var(--text-primary)]">3</span></div>
                                                         : <span className="text-slate-500">#{player.rank}</span>}
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-1">
-                                                <h3 className="text-xl font-bold text-white">{player.name}</h3>
-                                                {player.isYou && <span className="px-2 py-0.5 bg-cyan- text-white text-xs font-bold rounded uppercase tracking-wider">You</span>}
+                                                <h3 className="text-xl font-bold text-[var(--text-primary)]">{player.name}</h3>
+                                                {player.isYou && <span className="px-2 py-0.5 bg-cyan- text-[var(--text-primary)] text-xs font-bold rounded uppercase tracking-wider">You</span>}
                                             </div>
                                             <div className="flex gap-6 text-sm font-medium text-slate-400">
                                                 <span className="flex items-center gap-1.5"><Clock size={16} className="text-cyan-400" /> {player.time}</span>
@@ -1437,7 +1437,7 @@ export default function StudySprintQuiz() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-2xl font-black text-white">{player.score}%</div>
+                                            <div className="text-2xl font-black text-[var(--text-primary)]">{player.score}%</div>
                                             <div className="text-xs text-slate-500 font-bold uppercase tracking-wider">Score</div>
                                         </div>
                                         <div className="w-12 flex justify-center">

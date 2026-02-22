@@ -1,8 +1,8 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 import { AppProvider } from './context/AppContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import ThemeToggle from './components/ThemeToggle';
 
 // ============== LAZY LOADED PAGES ==============
 // Each page only downloads when the user navigates to it
@@ -57,6 +57,7 @@ function App() {
   return (
     <AppProvider>
       <ErrorBoundary>
+        <ThemeToggle />
         <Router>
           <Suspense fallback={<PageLoader />}>
             <Routes>

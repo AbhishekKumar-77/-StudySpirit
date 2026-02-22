@@ -211,7 +211,7 @@ export default function Dashboard() {
     };
 
     const SkeletonCard = () => (
-        <div className="h-[200px] rounded-3xl bg-zinc-900/50 animate-pulse border border-white/5 p-8 backdrop-blur-md">
+        <div className="h-[200px] rounded-3xl bg-[var(--glass-bg)] animate-pulse border border-[var(--border-color)] p-8 backdrop-blur-md">
             <div className="w-[60px] h-[60px] bg-white/10 rounded-2xl mb-6" />
             <div className="w-[70%] h-5 bg-white/10 rounded-full mb-4" />
             <div className="w-[90%] h-3 bg-white/5 rounded-full" />
@@ -219,11 +219,11 @@ export default function Dashboard() {
     );
 
     return (
-        <div className="min-h-screen bg-[#09090b] relative overflow-hidden font-sans selection:bg-cyan-500/30 text-white">
+        <div className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden font-sans selection:bg-cyan-500/30 text-[var(--text-primary)]">
 
             {/* Loading Progress Bar */}
             {loadProgress < 100 && (
-                <div className="fixed top-0 left-0 w-full h-[3px] z-[99999] bg-black">
+                <div className="fixed top-0 left-0 w-full h-[3px] z-[99999] bg-[var(--bg-secondary)]lack">
                     <div
                         className="h-full bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.8)]"
                         style={{ width: `${loadProgress}%` }}
@@ -286,7 +286,7 @@ export default function Dashboard() {
                 {toasts.map(toast => (
                     <div
                         key={toast.id}
-                        className={`backdrop-blur-2xl px-6 py-4 rounded-2xl text-white font-semibold shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-slide-in border min-w-[250px] flex items-center gap-3 ${toast.type === 'success'
+                        className={`backdrop-blur-2xl px-6 py-4 rounded-2xl text-[var(--text-primary)] font-semibold shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-slide-in border min-w-[250px] flex items-center gap-3 ${toast.type === 'success'
                             ? 'bg-cyan-900/40 border-cyan-500/50'
                             : 'bg-rose-900/40 border-rose-500/50'
                             }`}
@@ -301,18 +301,18 @@ export default function Dashboard() {
 
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur-2xl border-b border-white/5 shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
+            <nav className="sticky top-0 z-50 bg-[var(--bg-primary)]/80 backdrop-blur-2xl border-b border-[var(--border-color)] shadow-[0_10px_50px_rgba(0,0,0,0.5)]">
                 <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 p-[2px]">
-                            <div className="w-full h-full bg-black rounded-[10px] flex items-center justify-center">
+                            <div className="w-full h-full bg-[var(--bg-secondary)]lack rounded-[10px] flex items-center justify-center">
                                 <img src="/logo.png" alt="Logo" className="w-6 h-6 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" onError={(e) => { e.target.style.display = 'none'; }} />
                                 {!document.querySelector('img[src="/logo.png"]')?.complete && (
                                     <span className="text-lg font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">S</span>
                                 )}
                             </div>
                         </div>
-                        <div className="text-2xl font-black tracking-tight text-white hidden sm:flex items-center">
+                        <div className="text-2xl font-black tracking-tight text-[var(--text-primary)] hidden sm:flex items-center">
                             STUDY<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 animate-gradient-x">SPIRIT</span>
                         </div>
                     </div>
@@ -320,7 +320,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-4 md:gap-6">
                         <button
                             onClick={() => navigate('/')}
-                            className="group flex items-center justify-center p-2.5 rounded-xl bg-white/5 text-zinc-400 transition-all duration-300 hover:bg-white/10 hover:text-white hover:scale-110 border border-white/5"
+                            className="group flex items-center justify-center p-2.5 rounded-xl bg-white/5 text-[var(--text-secondary)] transition-all duration-300 hover:bg-white/10 hover:text-[var(--text-primary)] hover:scale-110 border border-[var(--border-color)]"
                         >
                             <Home className="w-5 h-5" />
                         </button>
@@ -336,7 +336,7 @@ export default function Dashboard() {
                             </button>
                         )}
 
-                        <div className="flex items-center gap-3 bg-black/40 px-5 py-2 rounded-2xl border border-white/10 shadow-inner relative overflow-hidden backdrop-blur-md">
+                        <div className="flex items-center gap-3 bg-[var(--bg-secondary)]lack/40 px-5 py-2 rounded-2xl border border-[var(--border-color)] shadow-inner relative overflow-hidden backdrop-blur-md">
                             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-purple-500/5 pointer-events-none" />
                             <div className="relative flex items-center gap-2 group cursor-default">
                                 <span className="text-xl group-hover:animate-bounce-slow drop-shadow-[0_0_10px_rgba(251,146,60,0.8)]">🔥</span>
@@ -350,7 +350,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-3">
                                 <span className="text-xl hidden md:inline-block">👨‍💻</span>
                                 <div className="hidden sm:block">
-                                    <div className="text-sm font-bold text-white tracking-wide">{user?.name || 'Developer'}</div>
+                                    <div className="text-sm font-bold text-[var(--text-primary)] tracking-wide">{user?.name || 'Developer'}</div>
                                     <div className="text-[10px] text-cyan-400 font-bold tracking-widest uppercase">LEVEL {user?.level || 1}</div>
                                 </div>
                             </div>
@@ -361,7 +361,7 @@ export default function Dashboard() {
 
             <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10 relative z-10">
                 {/* Header Card */}
-                <div className="bg-zinc-900/40 backdrop-blur-2xl rounded-[2rem] p-8 md:p-12 mb-12 border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative overflow-hidden animate-slide-down">
+                <div className="bg-[var(--glass-bg)] backdrop-blur-2xl rounded-[2rem] p-8 md:p-12 mb-12 border border-[var(--border-color)] shadow-[0_20px_60px_rgba(0,0,0,0.5)] relative overflow-hidden animate-slide-down">
                     <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 animate-shimmer" />
 
                     <div className="flex justify-between items-center flex-col lg:flex-row gap-8 relative z-10">
@@ -370,14 +370,14 @@ export default function Dashboard() {
                                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                                 <span className="text-[10px] font-bold tracking-[0.2em] text-cyan-300 uppercase">System Online</span>
                             </div>
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tighter">
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-[var(--text-primary)] mb-4 tracking-tighter">
                                 Welcome Back, <br className="hidden lg:block" />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-gradient-x">
                                     {user?.name || 'Developer'}
                                 </span>
                                 <span className="inline-block animate-wave ml-4 text-4xl">👋</span>
                             </h1>
-                            <p className="text-lg md:text-xl text-zinc-400 font-light max-w-xl">
+                            <p className="text-lg md:text-xl text-[var(--text-secondary)] font-light max-w-xl">
                                 Your dashboard is ready. Time to dive into deep work and crush today's objectives.
                             </p>
                         </div>
@@ -391,11 +391,11 @@ export default function Dashboard() {
                             ].map((item, idx) => (
                                 <div
                                     key={idx}
-                                    className={`relative bg-black/40 backdrop-blur-xl rounded-2xl p-5 text-center border transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:-translate-y-1 hover:scale-105 ${item.border}`}
+                                    className={`relative bg-[var(--bg-secondary)]lack/40 backdrop-blur-xl rounded-2xl p-5 text-center border transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:-translate-y-1 hover:scale-105 ${item.border}`}
                                     style={{ animation: `slideUp 0.8s ease-out ${0.1 * idx}s both` }}
                                 >
                                     <div className={`absolute inset-0 rounded-2xl ${item.bg} opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
-                                    <div className="text-[10px] text-zinc-400 font-bold mb-2 uppercase tracking-widest">{item.label}</div>
+                                    <div className="text-[10px] text-[var(--text-secondary)] font-bold mb-2 uppercase tracking-widest">{item.label}</div>
                                     <div className={`text-3xl font-black bg-gradient-to-r ${item.from} ${item.to} bg-clip-text text-transparent drop-shadow-[0_0_15px_currentColor]`}>
                                         {item.value}
                                     </div>
@@ -411,24 +411,24 @@ export default function Dashboard() {
                         <div
                             key={idx}
                             onClick={stat.onClick}
-                            className={`group bg-zinc-900/30 backdrop-blur-xl rounded-3xl p-8 border border-white/5 transition-all duration-500 relative overflow-hidden hover:-translate-y-2 hover:border-cyan-500/30 hover:shadow-[0_20px_40px_rgba(6,182,212,0.15)] hover:bg-zinc-800/40 ${stat.onClick ? 'cursor-pointer' : ''}`}
+                            className={`group bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] transition-all duration-500 relative overflow-hidden hover:-translate-y-2 hover:border-cyan-500/30 hover:shadow-[0_20px_40px_rgba(6,182,212,0.15)] hover:bg-zinc-800/40 ${stat.onClick ? 'cursor-pointer' : ''}`}
                             style={{ animation: `slideUp 0.8s ease-out ${idx * 0.1}s both` }}
                         >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-bl-full pointer-events-none opacity-50 group-hover:scale-110 transition-transform duration-500" />
                             <div className="flex items-center gap-6 relative z-10">
                                 <div className={`flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${stat.from} ${stat.to} shadow-[0_10px_20px_currentColor] drop-shadow-md group-hover:animate-icon-bounce`}>
-                                    <stat.icon className="w-8 h-8 text-white" />
+                                    <stat.icon className="w-8 h-8 text-[var(--text-primary)]" />
                                 </div>
                                 <div className="flex-1">
-                                    <div className="text-[11px] text-zinc-400 font-bold mb-1 uppercase tracking-widest">{stat.label}</div>
-                                    <div className="text-3xl font-black text-white mb-1 tracking-tight">
+                                    <div className="text-[11px] text-[var(--text-secondary)] font-bold mb-1 uppercase tracking-widest">{stat.label}</div>
+                                    <div className="text-3xl font-black text-[var(--text-primary)] mb-1 tracking-tight">
                                         {stat.value}
                                     </div>
                                     {stat.subtext && <div className="text-sm text-cyan-400/80 font-medium">{stat.subtext}</div>}
                                 </div>
                             </div>
                             {stat.onClick && (
-                                <div className="absolute top-6 right-6 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all">
+                                <div className="absolute top-6 right-6 text-[var(--text-muted)] group-hover:text-cyan-400 group-hover:translate-x-1 transition-all">
                                     <ChevronRight className="w-6 h-6" />
                                 </div>
                             )}
@@ -438,13 +438,13 @@ export default function Dashboard() {
 
                 {/* Celebration Alert */}
                 {user?.streak > 0 && (
-                    <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl rounded-3xl p-8 border border-white/10 relative overflow-hidden animate-slide-up-delayed mb-16 flex flex-col md:flex-row items-center justify-between gap-6 group">
+                    <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden animate-slide-up-delayed mb-16 flex flex-col md:flex-row items-center justify-between gap-6 group">
                         <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                         <div className="flex items-center gap-6 z-10">
                             <div className="text-5xl group-hover:animate-bounce-slow drop-shadow-[0_0_20px_rgba(236,72,153,0.5)]">🔥</div>
                             <div>
-                                <h3 className="text-2xl font-black text-white mb-1 tracking-tighter">Unstoppable!</h3>
-                                <p className="text-zinc-400 text-lg">
+                                <h3 className="text-2xl font-black text-[var(--text-primary)] mb-1 tracking-tighter">Unstoppable!</h3>
+                                <p className="text-[var(--text-secondary)] text-lg">
                                     You're on a <span className="text-pink-400 font-bold">{user?.streak}-day streak</span>. Keep the momentum high.
                                 </p>
                             </div>
@@ -465,10 +465,10 @@ export default function Dashboard() {
                 <div className="mb-8 flex items-center gap-4 animate-fade-in-up delay-200">
                     <div className="w-2 h-8 rounded-full bg-cyan-400 animate-pulse" />
                     <div>
-                        <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter">
+                        <h2 className="text-3xl md:text-4xl font-black text-[var(--text-primary)] tracking-tighter">
                             SYSTEM <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">MODULES</span>
                         </h2>
-                        <p className="text-zinc-500 font-medium">Access your personalized toolkit for extreme productivity.</p>
+                        <p className="text-[var(--text-muted)] font-medium">Access your personalized toolkit for extreme productivity.</p>
                     </div>
                 </div>
 
@@ -483,7 +483,7 @@ export default function Dashboard() {
                                     navigate(feature.path);
                                     showToast(`Initializing ${feature.name}...`, 'success');
                                 }}
-                                className={`group bg-zinc-900/50 backdrop-blur-xl rounded-3xl p-8 border transition-all duration-300 cursor-pointer text-left relative overflow-hidden preserve-3d animate-scale-in flex flex-col items-start ${hoveredFeature === feature.id ? 'border-cyan-500/50 bg-zinc-800/80' : 'border-white/5'
+                                className={`group bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-8 border transition-all duration-300 cursor-pointer text-left relative overflow-hidden preserve-3d animate-scale-in flex flex-col items-start ${hoveredFeature === feature.id ? 'border-cyan-500/50 bg-zinc-800/80' : 'border-[var(--border-color)]'
                                     }`}
                                 style={{ animationDelay: `${(idx % 8) * 0.05}s` }}
                                 onMouseMove={handleMouseMove}
@@ -497,11 +497,11 @@ export default function Dashboard() {
                                     <ChevronRight className="w-5 h-5" />
                                 </div>
                                 <div className={`p-4 rounded-2xl inline-flex mb-6 shadow-lg bg-gradient-to-br ${feature.from} ${feature.to} group-hover:-translate-y-2 transition-transform duration-300 border border-white/20`}>
-                                    <feature.icon className="w-8 h-8 text-white" />
+                                    <feature.icon className="w-8 h-8 text-[var(--text-primary)]" />
                                 </div>
 
-                                <h3 className="text-xl font-bold text-white mb-3 tracking-tight group-hover:text-cyan-400 transition-colors">{feature.name}</h3>
-                                <p className="text-sm text-zinc-400 leading-relaxed font-light">{feature.desc}</p>
+                                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3 tracking-tight group-hover:text-cyan-400 transition-colors">{feature.name}</h3>
+                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-light">{feature.desc}</p>
 
                                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 transform scale-x-0 transition-transform duration-500 origin-left group-hover:scale-x-100" />
                             </button>
@@ -526,20 +526,20 @@ export default function Dashboard() {
                             showToast(`Launching ${action.label}...`, 'success');
                         }}
                     >
-                        <div className="mr-4 bg-zinc-900/90 backdrop-blur-md px-5 py-2.5 rounded-xl text-white text-sm font-bold tracking-widest uppercase border border-white/10 shadow-xl pointer-events-none">
+                        <div className="mr-4 bg-zinc-900/90 backdrop-blur-md px-5 py-2.5 rounded-xl text-[var(--text-primary)] text-sm font-bold tracking-widest uppercase border border-[var(--border-color)] shadow-xl pointer-events-none">
                             {action.label}
                         </div>
                         <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 border-2 border-white/20 hover:scale-110 ${action.color}`}>
-                            <action.icon className="w-6 h-6 text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
+                            <action.icon className="w-6 h-6 text-[var(--text-primary)] drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
                         </div>
                     </div>
                 ))}
 
                 <button
-                    className={`w-16 h-16 rounded-full bg-white border-2 border-transparent cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center transition-all duration-500 z-[1000] hover:scale-110 hover:border-cyan-400 hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] ${fabOpen ? 'rotate-45 bg-zinc-800 text-white' : 'text-black'}`}
+                    className={`w-16 h-16 rounded-full bg-white border-2 border-transparent cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.3)] flex items-center justify-center transition-all duration-500 z-[1000] hover:scale-110 hover:border-cyan-400 hover:shadow-[0_0_40px_rgba(6,182,212,0.6)] ${fabOpen ? 'rotate-45 bg-zinc-800 text-[var(--text-primary)]' : 'text-black'}`}
                     onClick={() => setFabOpen(!fabOpen)}
                 >
-                    <Zap className={`w-7 h-7 transition-colors ${fabOpen ? 'text-white' : 'text-black'}`} />
+                    <Zap className={`w-7 h-7 transition-colors ${fabOpen ? 'text-[var(--text-primary)]' : 'text-black'}`} />
                 </button>
             </div>
 

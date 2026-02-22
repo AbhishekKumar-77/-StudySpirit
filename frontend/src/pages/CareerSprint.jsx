@@ -15,7 +15,7 @@ function loadJSON(key, fallback) {
 function saveJSON(key, obj) { localStorage.setItem(key, JSON.stringify(obj)); }
 
 const TYPE_CONFIG = {
-    job: { label: 'Full-time Job', color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-500/15 text-blue-400 border-blue-500/30', icon: Briefcase },
+    job: { label: 'Full-time Job', color: 'from-blue-500 to-cyan-500', bg: 'bg-[var(--bg-secondary)]lue-500/15 text-blue-400 border-blue-500/30', icon: Briefcase },
     internship: { label: 'Internship', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/15 text-purple-400 border-purple-500/30', icon: BookOpen },
     hackathon: { label: 'Hackathon', color: 'from-yellow-500 to-orange-500', bg: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30', icon: Trophy },
 };
@@ -86,7 +86,7 @@ export default function CareerSprint() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-16 font-sans text-white relative overflow-x-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-16 font-sans text-[var(--text-primary)] relative overflow-x-hidden">
             {/* BG blobs */}
             <div className="absolute top-[5%] left-[5%] w-[600px] h-[600px] bg-cyan-500/8 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[5%] right-[5%] w-[500px] h-[500px] bg-teal-500/8 rounded-full blur-[120px] pointer-events-none" />
@@ -103,7 +103,7 @@ export default function CareerSprint() {
                     <button
                         onClick={() => fetchData(true)}
                         disabled={loading}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${loading ? 'bg-slate-700 cursor-wait text-slate-400' : 'bg-slate-800 hover:bg-slate-700 border border-white/10 text-white'}`}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${loading ? 'bg-slate-700 cursor-wait text-slate-400' : 'bg-slate-800 hover:bg-slate-700 border border-[var(--border-color)] text-[var(--text-primary)]'}`}
                     >
                         <RefreshCw size={15} className={loading ? 'animate-spin text-cyan-400' : 'text-cyan-400'} />
                         {loading ? 'Loading...' : 'Refresh'}
@@ -118,7 +118,7 @@ export default function CareerSprint() {
                     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
                     <div className="flex items-center gap-6 flex-wrap">
                         <div className="bg-gradient-to-br from-cyan-500 to-teal-600 p-5 rounded-2xl shadow-lg shadow-cyan-500/30 flex-shrink-0">
-                            <RocketIcon size={44} className="text-white" />
+                            <RocketIcon size={44} className="text-[var(--text-primary)]" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="text-xs text-cyan-400 font-bold tracking-widest uppercase mb-1">Real Opportunities · Updated Live</div>
@@ -132,7 +132,7 @@ export default function CareerSprint() {
                                 { label: 'Jobs', value: listings.filter(l => l.type === 'job').length, icon: Briefcase, color: 'text-blue-400' },
                                 { label: 'Internships', value: listings.filter(l => l.type === 'internship').length, icon: BookOpen, color: 'text-purple-400' },
                             ].map(stat => (
-                                <div key={stat.label} className="bg-slate-800/60 rounded-2xl px-5 py-3 text-center border border-white/5">
+                                <div key={stat.label} className="bg-slate-800/60 rounded-2xl px-5 py-3 text-center border border-[var(--border-color)]">
                                     <stat.icon size={18} className={`${stat.color} mx-auto mb-1`} />
                                     <div className={`text-2xl font-black ${stat.color}`}>{stat.value}</div>
                                     <div className="text-xs text-slate-500">{stat.label}</div>
@@ -142,25 +142,25 @@ export default function CareerSprint() {
                     </div>
                     {/* Source badges */}
                     {sources.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/5">
+                        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[var(--border-color)]">
                             <span className="text-xs text-slate-500 self-center">Sources:</span>
                             {sources.map(s => (
-                                <span key={s} className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 border border-white/10 text-slate-400">{s}</span>
+                                <span key={s} className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 border border-[var(--border-color)] text-slate-400">{s}</span>
                             ))}
                         </div>
                     )}
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6 items-center bg-slate-800/40 backdrop-blur-xl p-3 rounded-2xl border border-white/5">
+                <div className="flex flex-col md:flex-row gap-4 mb-6 items-center bg-slate-800/40 backdrop-blur-xl p-3 rounded-2xl border border-[var(--border-color)]">
                     <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 w-full md:w-auto flex-shrink-0">
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm whitespace-nowrap transition-all ${activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-cyan-500 to-teal-600 text-white shadow-lg shadow-cyan-500/20'
-                                    : 'bg-slate-900/50 text-slate-400 hover:text-white hover:bg-slate-900'
+                                    ? 'bg-gradient-to-r from-cyan-500 to-teal-600 text-[var(--text-primary)] shadow-lg shadow-cyan-500/20'
+                                    : 'bg-slate-900/50 text-slate-400 hover:text-[var(--text-primary)] hover:bg-slate-900'
                                     }`}
                             >
                                 <tab.icon size={14} />
@@ -178,7 +178,7 @@ export default function CareerSprint() {
                             placeholder="Search by title, company, skills..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white focus:border-cyan-500/50 focus:outline-none transition-all placeholder:text-slate-600 text-sm"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-[var(--border-color)] text-[var(--text-primary)] focus:border-cyan-500/50 focus:outline-none transition-all placeholder:text-slate-600 text-sm"
                         />
                     </div>
                 </div>
@@ -187,7 +187,7 @@ export default function CareerSprint() {
                 {loading && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-slate-800/40 rounded-2xl p-6 border border-white/5 animate-pulse">
+                            <div key={i} className="bg-slate-800/40 rounded-2xl p-6 border border-[var(--border-color)] animate-pulse">
                                 <div className="flex gap-3 mb-4">
                                     <div className="w-12 h-12 rounded-xl bg-slate-700" />
                                     <div className="flex-1">
@@ -226,7 +226,7 @@ export default function CareerSprint() {
                             return (
                                 <div
                                     key={item.id}
-                                    className="group relative bg-slate-800/50 backdrop-blur-xl rounded-2xl p-5 border border-white/5 hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/5 flex flex-col"
+                                    className="group relative bg-slate-800/50 backdrop-blur-xl rounded-2xl p-5 border border-[var(--border-color)] hover:border-cyan-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/5 flex flex-col"
                                 >
                                     {/* Top gradient line on hover */}
                                     <div className={`absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r ${typeConf.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
@@ -235,7 +235,7 @@ export default function CareerSprint() {
                                     <div className="flex items-start justify-between gap-3 mb-4">
                                         <div className="flex items-center gap-3 min-w-0">
                                             {/* Company Logo */}
-                                            <div className="w-12 h-12 rounded-xl bg-slate-700/80 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            <div className="w-12 h-12 rounded-xl bg-slate-700/80 border border-[var(--border-color)] flex items-center justify-center overflow-hidden flex-shrink-0">
                                                 <img
                                                     src={item.logo}
                                                     alt={item.company}
@@ -304,12 +304,12 @@ export default function CareerSprint() {
                                     {item.tags && item.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mb-4">
                                             {item.tags.slice(0, 4).map(tag => (
-                                                <span key={tag} className="text-xs px-2 py-0.5 rounded-lg bg-slate-900 border border-white/5 text-slate-400">
+                                                <span key={tag} className="text-xs px-2 py-0.5 rounded-lg bg-slate-900 border border-[var(--border-color)] text-slate-400">
                                                     {tag}
                                                 </span>
                                             ))}
                                             {item.tags.length > 4 && (
-                                                <span className="text-xs px-2 py-0.5 rounded-lg bg-slate-900 border border-white/5 text-slate-500">
+                                                <span className="text-xs px-2 py-0.5 rounded-lg bg-slate-900 border border-[var(--border-color)] text-slate-500">
                                                     +{item.tags.length - 4}
                                                 </span>
                                             )}
@@ -317,11 +317,11 @@ export default function CareerSprint() {
                                     )}
 
                                     {/* Footer */}
-                                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--border-color)]">
                                         <span className="text-xs text-slate-600 bg-slate-900/80 px-2 py-1 rounded-lg">via {item.source}</span>
                                         <button
                                             onClick={() => window.open(item.link, '_blank', 'noopener')}
-                                            className={`flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl bg-gradient-to-r ${typeConf.color} text-white hover:opacity-90 transition-all shadow-lg`}
+                                            className={`flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl bg-gradient-to-r ${typeConf.color} text-[var(--text-primary)] hover:opacity-90 transition-all shadow-lg`}
                                         >
                                             Apply <ExternalLink size={13} />
                                         </button>
