@@ -974,7 +974,7 @@ export default function SoloMode() {
 
             {/* FULLSCREEN FOCUS MODE OVERLAY */}
             {isFullscreenFocus && (
-                <div className="fixed inset-0 bg-gradient-to-br    z-[10000] flex flex-col">
+                <div className="fixed inset-0 bg-[var(--bg-primary)] z-[10000] flex flex-col">
                     {/* Distraction Warning Toast */}
                     {showDistractionWarning && (
                         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500/90 text-[var(--text-primary)] px-6 py-3 rounded-2xl flex items-center gap-3 shadow-2xl animate-bounce z-50">
