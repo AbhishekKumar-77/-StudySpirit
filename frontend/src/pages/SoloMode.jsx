@@ -975,8 +975,17 @@ export default function SoloMode() {
             {/* FULLSCREEN FOCUS MODE OVERLAY */}
             {isFullscreenFocus && (
                 <div
-                    className="fixed inset-0 z-[10000] flex flex-col"
-                    style={{ backgroundColor: 'var(--bg-primary)' }}
+                    className="flex flex-col"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100vw',
+                        height: '100vh',
+                        zIndex: 99999,
+                        backgroundColor: '#09090b',
+                        overflow: 'hidden'
+                    }}
                 >
                     {/* Distraction Warning Toast */}
                     {showDistractionWarning && (
@@ -1035,7 +1044,7 @@ export default function SoloMode() {
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1 flex flex-col items-center justify-center gap-6 relative z-0">
+                    <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-6 relative z-0 overflow-y-auto">
                         {/* Timer Mode Switcher */}
                         <div className="flex p-1.5 bg-white/5 rounded-xl gap-1">
                             <button
