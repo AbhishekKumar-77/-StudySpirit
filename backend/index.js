@@ -37,7 +37,9 @@ const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
     'https://study-spirit.vercel.app',
-    'https://study-spirit-wv4j.vercel.app'
+    'https://study-spirit-wv4j.vercel.app',
+    'https://studyspirit.in',
+    'https://www.studyspirit.in'
 ];
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
