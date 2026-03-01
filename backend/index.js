@@ -35,6 +35,10 @@ const port = process.env.PORT || 3000;
 // Dynamic CORS — works in dev AND production
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'https://localhost:5173',
+    'https://localhost:5174',
     'http://localhost:3000',
     'https://study-spirit.vercel.app',
     'https://study-spirit-wv4j.vercel.app',

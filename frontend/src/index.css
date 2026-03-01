@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ========================================
+   🎮 STUDYSPIRIT GAMING THEME ENGINE
+   ======================================== */
 
 @theme {
     @keyframes floatDynamic {
@@ -90,6 +95,115 @@
         }
     }
 
+    @keyframes neonPulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 5px var(--neon-glow), 0 0 10px var(--neon-glow), 0 0 20px var(--neon-glow);
+        }
+
+        50% {
+            box-shadow: 0 0 10px var(--neon-glow), 0 0 25px var(--neon-glow), 0 0 50px var(--neon-glow);
+        }
+    }
+
+    @keyframes scanline {
+        0% {
+            transform: translateY(-100%);
+        }
+
+        100% {
+            transform: translateY(100vh);
+        }
+    }
+
+    @keyframes hexFloat {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0.03;
+        }
+
+        50% {
+            transform: translateY(-30px) rotate(180deg);
+            opacity: 0.08;
+        }
+    }
+
+    @keyframes xpBarGlow {
+
+        0%,
+        100% {
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+        }
+
+        50% {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6), 0 0 40px rgba(0, 255, 136, 0.2);
+        }
+    }
+
+    @keyframes borderGlow {
+
+        0%,
+        100% {
+            border-color: rgba(0, 255, 136, 0.15);
+        }
+
+        50% {
+            border-color: rgba(0, 255, 136, 0.4);
+        }
+    }
+
+    @keyframes glitchText {
+
+        0%,
+        100% {
+            text-shadow: 2px 0 #ff00ea, -2px 0 #00ffab;
+        }
+
+        25% {
+            text-shadow: -2px 0 #ff00ea, 2px 0 #00ffab;
+        }
+
+        50% {
+            text-shadow: 2px 2px #ff00ea, -2px -2px #00ffab;
+        }
+
+        75% {
+            text-shadow: -2px 2px #ff00ea, 2px -2px #00ffab;
+        }
+    }
+
+    @keyframes matrixRain {
+        0% {
+            transform: translateY(-100%);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateY(100vh);
+            opacity: 0;
+        }
+    }
+
+    @keyframes powerUp {
+        0% {
+            transform: scale(1);
+            filter: brightness(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+            filter: brightness(1.3);
+        }
+
+        100% {
+            transform: scale(1);
+            filter: brightness(1);
+        }
+    }
+
     --animate-float-dynamic: floatDynamic 25s ease-in-out infinite;
     --animate-pulse-custom: pulse-custom 20s ease-in-out infinite;
     --animate-title-3d: title3D 3s ease-in-out infinite;
@@ -98,45 +212,234 @@
     --animate-blink: blink 1s infinite;
 }
 
+/* ========================================
+   🌑 DARK MODE (Default) — CYBER GAMING
+   ======================================== */
 @layer base {
     :root {
-        --bg-primary: #09090b;
-        --bg-secondary: #18181b;
-        --glass-bg: rgba(24, 24, 27, 0.4);
-        --text-primary: #ffffff;
-        --text-secondary: #a1a1aa;
-        --text-muted: #71717a;
-        --border-color: rgba(255, 255, 255, 0.05);
+        /* Core backgrounds */
+        --bg-primary: #06080e;
+        --bg-secondary: #0d1117;
+        --glass-bg: rgba(13, 17, 23, 0.65);
+
+        /* Text hierarchy */
+        --text-primary: #e6edf3;
+        --text-secondary: #8b949e;
+        --text-muted: #484f58;
+
+        /* Borders & surfaces */
+        --border-color: rgba(0, 255, 136, 0.08);
+
+        /* Gaming accent colors */
+        --neon-primary: #00ff88;
+        --neon-secondary: #00d4ff;
+        --neon-accent: #ff00ea;
+        --neon-warning: #ffaa00;
+        --neon-danger: #ff3366;
+        --neon-glow: rgba(0, 255, 136, 0.4);
+
+        /* XP & Level colors */
+        --xp-bar: linear-gradient(90deg, #00ff88, #00d4ff);
+        --health-bar: linear-gradient(90deg, #ff3366, #ff6b6b);
+        --mana-bar: linear-gradient(90deg, #6366f1, #a855f7);
+
+        /* Card surfaces */
+        --card-bg: rgba(13, 17, 23, 0.8);
+        --card-hover: rgba(0, 255, 136, 0.03);
+        --card-border: rgba(0, 255, 136, 0.12);
+        --card-glow: 0 0 30px rgba(0, 255, 136, 0.08);
+
+        /* Gaming fonts */
+        --font-gaming: 'Orbitron', 'Inter', sans-serif;
+        --font-hud: 'Rajdhani', 'Inter', sans-serif;
+        --font-body: 'Inter', -apple-system, sans-serif;
     }
 
+    /* ========================================
+       ☀️ LIGHT MODE — CLEAN GAMING
+       ======================================== */
     html.light {
-        --bg-primary: #f8fafc;
-        --bg-secondary: #f1f5f9;
-        --glass-bg: rgba(255, 255, 255, 0.6);
-        --text-primary: #0f172a;
-        --text-secondary: #334155;
-        --text-muted: #64748b;
-        --border-color: rgba(0, 0, 0, 0.1);
+        --bg-primary: #f0f2f5;
+        --bg-secondary: #ffffff;
+        --glass-bg: rgba(255, 255, 255, 0.75);
+
+        --text-primary: #1a1a2e;
+        --text-secondary: #4a5568;
+        --text-muted: #a0aec0;
+
+        --border-color: rgba(99, 102, 241, 0.12);
+
+        --neon-primary: #6366f1;
+        --neon-secondary: #0ea5e9;
+        --neon-accent: #ec4899;
+        --neon-warning: #f59e0b;
+        --neon-danger: #ef4444;
+        --neon-glow: rgba(99, 102, 241, 0.3);
+
+        --xp-bar: linear-gradient(90deg, #6366f1, #8b5cf6);
+        --health-bar: linear-gradient(90deg, #ef4444, #f97316);
+        --mana-bar: linear-gradient(90deg, #8b5cf6, #d946ef);
+
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --card-hover: rgba(99, 102, 241, 0.04);
+        --card-border: rgba(99, 102, 241, 0.15);
+        --card-glow: 0 4px 24px rgba(99, 102, 241, 0.1);
+
+        --font-gaming: 'Orbitron', 'Inter', sans-serif;
+        --font-hud: 'Rajdhani', 'Inter', sans-serif;
+        --font-body: 'Inter', -apple-system, sans-serif;
     }
 
     body {
         @apply bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-x-hidden transition-colors duration-500;
+        font-family: var(--font-body);
     }
 }
 
-/* Custom Ripple Animation */
-@keyframes rippleEffect {
-    to {
-        width: 600px;
-        height: 600px;
-        opacity: 0;
-    }
+/* ========================================
+   🎮 GAMING GLASS CARDS
+   ======================================== */
+.glass-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(20px);
+    box-shadow: var(--card-glow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.animate-ripple {
-    animation: rippleEffect 0.6s ease-out forwards;
+.glass-card:hover {
+    background: var(--card-hover);
+    border-color: var(--neon-primary);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.12), var(--card-glow);
+    transform: translateY(-2px);
 }
 
+html.light .glass-card:hover {
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+}
+
+/* ========================================
+   ⚡ NEON BUTTON SYSTEM
+   ======================================== */
+.btn-neon {
+    position: relative;
+    background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+    color: #000;
+    font-family: var(--font-hud);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-neon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.btn-neon:hover::before {
+    left: 100%;
+}
+
+.btn-neon:hover {
+    box-shadow: 0 0 20px var(--neon-glow), 0 0 40px var(--neon-glow);
+    transform: scale(1.02);
+}
+
+/* ========================================
+   📊 XP / HEALTH / MANA BARS
+   ======================================== */
+.xp-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    position: relative;
+}
+
+.xp-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--xp-bar);
+    animation: xpBarGlow 2s ease-in-out infinite;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.xp-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.4);
+    filter: blur(4px);
+    animation: shimmer 2s infinite;
+}
+
+html.light .xp-bar {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+/* ========================================
+   🏆 RANK BADGES
+   ======================================== */
+.rank-badge {
+    font-family: var(--font-gaming);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    padding: 4px 12px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+    position: relative;
+    overflow: hidden;
+}
+
+.rank-badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+}
+
+.rank-bronze {
+    background: linear-gradient(135deg, #cd7f32, #b87333);
+    color: #fff;
+}
+
+.rank-silver {
+    background: linear-gradient(135deg, #a8a9ad, #c0c0c0);
+    color: #1a1a2e;
+}
+
+.rank-gold {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #1a1a2e;
+}
+
+.rank-platinum {
+    background: linear-gradient(135deg, #00d4ff, #00ff88);
+    color: #06080e;
+}
+
+.rank-diamond {
+    background: linear-gradient(135deg, #ff00ea, #6366f1, #00d4ff);
+    color: #fff;
+}
+
+/* ========================================
+   🎯 GAMING SCROLLBARS
+   ======================================== */
 @layer utilities {
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
@@ -144,16 +447,19 @@
     }
 
     .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.5);
+        background: rgba(6, 8, 14, 0.8);
+        border-radius: 0;
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.3);
+        background: linear-gradient(180deg, var(--neon-primary), var(--neon-secondary));
         border-radius: 10px;
+        box-shadow: 0 0 6px var(--neon-glow);
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgba(99, 102, 241, 0.5);
+        background: var(--neon-primary);
+        box-shadow: 0 0 12px var(--neon-glow);
     }
 
     @keyframes fade-in-up {
@@ -171,4 +477,177 @@
     .animate-fade-in-up {
         animation: fade-in-up 0.6s ease-out both;
     }
+}
+
+/* ========================================
+   🔲 GAMING GRID BACKGROUND (Dark)
+   ======================================== */
+:root .gaming-grid-bg {
+    background-image:
+        linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+html.light .gaming-grid-bg {
+    background-image:
+        linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* ========================================
+   ✨ GAMING TEXT EFFECTS
+   ======================================== */
+.text-gaming {
+    font-family: var(--font-gaming);
+    letter-spacing: 0.05em;
+}
+
+.text-hud {
+    font-family: var(--font-hud);
+    letter-spacing: 0.08em;
+}
+
+.text-neon {
+    color: var(--neon-primary);
+    text-shadow: 0 0 10px var(--neon-glow), 0 0 20px var(--neon-glow);
+}
+
+html.light .text-neon {
+    text-shadow: none;
+    color: var(--neon-primary);
+}
+
+.text-glitch {
+    animation: glitchText 3s infinite;
+}
+
+/* ========================================
+   🎮 GAMING TOOLTIP
+   ======================================== */
+.gaming-tooltip {
+    position: relative;
+}
+
+.gaming-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    padding: 6px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    font-family: var(--font-hud);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.gaming-tooltip:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* ========================================
+   🎵 ANIMATION UTILITIES
+   ======================================== */
+.animate-neon-pulse {
+    animation: neonPulse 2s ease-in-out infinite;
+}
+
+.animate-scanline::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-primary), transparent);
+    opacity: 0.15;
+    animation: scanline 4s linear infinite;
+    pointer-events: none;
+}
+
+.animate-power-up {
+    animation: powerUp 0.5s ease-out;
+}
+
+.animate-border-glow {
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+/* ========================================
+   🎨 ACHIEVEMENT / NOTIFICATION STYLES
+   ======================================== */
+.achievement-unlock {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 170, 0, 0.05));
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+}
+
+.quest-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.quest-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--xp-bar);
+    border-radius: 0 4px 4px 0;
+}
+
+/* ========================================
+   📱 RESPONSIVE GAMING UI
+   ======================================== */
+@media (max-width: 768px) {
+    .text-gaming {
+        letter-spacing: 0.02em;
+    }
+}
+
+/* Custom Ripple Animation */
+@keyframes rippleEffect {
+    to {
+        width: 600px;
+        height: 600px;
+        opacity: 0;
+    }
+}
+
+.animate-ripple {
+    animation: rippleEffect 0.6s ease-out forwards;
+}
+
+/* ========================================
+   🔄 SMOOTH THEME TRANSITION
+   ======================================== */
+*,
+*::before,
+*::after {
+    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Exclude elements where transition causes issues */
+input,
+textarea,
+select,
+button,
+a,
+video,
+canvas,
+svg,
+img {
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }

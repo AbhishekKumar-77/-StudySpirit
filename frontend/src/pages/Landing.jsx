@@ -1,39 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const FeatureCard = ({ icon, title, desc, index, hoveredCard, setHoveredCard }) => {
-    return (
-        <div
-            className={`relative p-10 bg-[var(--bg-secondary)]lack/40 backdrop-blur-3xl rounded-3xl border transition-all duration-500 cursor-pointer min-h-[400px] flex flex-col items-center justify-center text-center overflow-hidden z-10
-        ${hoveredCard === index
-                    ? 'scale-105 -translate-y-3 border-cyan-500/50 shadow-[0_30px_80px_rgba(6,182,212,0.3)]'
-                    : 'border-[var(--border-color)]'}`}
-            onMouseEnter={() => setHoveredCard(index)}
-            onMouseLeave={() => setHoveredCard(null)}
-        >
-            <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent transition-transform duration-500 transform ${hoveredCard === index ? 'scale-x-100' : 'scale-x-0'}`} />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
-
-            <div className={`text-6xl mb-8 filter drop-shadow-[0_0_20px_rgba(6,182,212,0.8)] transition-all duration-500 ${hoveredCard === index ? 'animate-bounce-slow' : ''}`}>
-                {icon}
-            </div>
-
-            <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4 uppercase tracking-wider">{title}</h3>
-            <p className="text-[var(--text-secondary)] leading-relaxed">{desc}</p>
-        </div>
-    );
-};
-
 export default function Landing() {
     const navigate = useNavigate();
-    const [hoveredCard, setHoveredCard] = useState(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [ripples, setRipples] = useState([]);
     const [typedText, setTypedText] = useState('');
     const [showCursor, setShowCursor] = useState(true);
+    const [scrollY, setScrollY] = useState(0);
 
     const fullText = "Study the way you want, succeed the way you dream.";
 
+    // Typing animation
     useEffect(() => {
         let index = 0;
         const typingInterval = setInterval(() => {
@@ -48,228 +25,344 @@ export default function Landing() {
         return () => clearInterval(typingInterval);
     }, []);
 
+    // Mouse parallax on hero image
     useEffect(() => {
         const handleMouseMove = (e) => {
             setMousePosition({
-                x: (e.clientX / window.innerWidth) * 100,
-                y: (e.clientY / window.innerHeight) * 100
+                x: (e.clientX / window.innerWidth - 0.5) * 20,
+                y: (e.clientY / window.innerHeight - 0.5) * 10,
             });
         };
         window.addEventListener('mousemove', handleMouseMove);
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    const handleButtonClick = (e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const ripple = { x: e.clientX - rect.left, y: e.clientY - rect.top, id: Date.now() };
-        setRipples([...ripples, ripple]);
-        setTimeout(() => setRipples(prev => prev.filter(r => r.id !== ripple.id)), 600);
-        setTimeout(() => navigate('/login'), 300);
-    };
+    // Scroll parallax
+    useEffect(() => {
+        const handleScroll = () => setScrollY(window.scrollY);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const features = [
+        { icon: '📖', title: 'Solo Mode', desc: 'Focus sessions, Pomodoro, AI mentor & deep work tools.' },
+        { icon: '👥', title: 'Group Mode', desc: 'Study in live rooms with real-time video, chat & sync.' },
+        { icon: '🧠', title: 'AI Interview', desc: 'Practice mock interviews with Aria, your AI interviewer.' },
+        { icon: '🏆', title: 'Gamification', desc: 'Earn XP, maintain streaks & climb the leaderboard.' },
+        { icon: '💻', title: 'CodeSpirit', desc: 'Solve problems, run code live & level up your skills.' },
+        { icon: '🚀', title: 'CareerSprint', desc: 'AI resume, job board & interview prep in one place.' },
+    ];
+
+    const steps = [
+        { num: '01', title: 'Create Your Profile', desc: 'Set your goals, track your stack, and let AI personalize your learning path.' },
+        { num: '02', title: 'Deep Work Protocol', desc: 'Enter Pomodoro sessions. Block distractions. Study with purpose.' },
+        { num: '03', title: 'Rise & Ascend', desc: 'Track progress, earn badges, and go from student to master.' },
+    ];
 
     return (
-        <div className="relative min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center overflow-hidden py-20 px-6 font-sans">
-            {/* Dark Mode Background Grid */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:34px_34px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+        <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", color: '#f0e6cc', background: '#0d0b09' }}>
 
-            {/* Glowing Orbs */}
-            <div className="absolute top-[10%] left-[20%] w-[300px] h-[300px] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-[20%] right-[10%] w-[400px] h-[400px] rounded-full bg-cyan-600/20 blur-[150px] pointer-events-none" />
-            <div className="absolute top-[40%] right-[30%] w-[250px] h-[250px] rounded-full bg-pink-600/10 blur-[100px] pointer-events-none" />
+            {/* ========== HERO SECTION ========== */}
+            <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
-            {/* Navbar */}
-            <nav className="absolute top-0 w-full z-50 p-6 flex justify-between items-center max-w-7xl mx-auto">
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 p-[2px]">
-                        <div className="w-full h-full bg-[var(--bg-secondary)]lack rounded-xl flex items-center justify-center">
-                            <img src="/logo.png" alt="Logo" className="w-8 h-8 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" onError={(e) => { e.target.style.display = 'none'; }} />
-                            {!document.querySelector('img[src="/logo.png"]')?.complete && (
-                                <span className="text-xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">S</span>
-                            )}
+                {/* Background Image with Parallax */}
+                <div style={{
+                    position: 'absolute', inset: 0, zIndex: 0,
+                    transform: `translateX(${mousePosition.x * 0.3}px) translateY(${mousePosition.y * 0.3 + scrollY * 0.4}px) scale(1.15)`,
+                    transition: 'transform 0.6s cubic-bezier(0.2, 0, 0, 1)',
+                    backgroundImage: `url('/study-desk.jpg')`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center top',
+                }} />
+
+                {/* Multi-layer overlay: bottom dark fade + color tint */}
+                <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(to bottom, rgba(13,11,9,0.45) 0%, rgba(13,11,9,0.3) 40%, rgba(13,11,9,0.88) 75%, rgba(13,11,9,1) 100%)' }} />
+                {/* Warm amber tint from the lamp */}
+                <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'radial-gradient(ellipse 60% 50% at 20% 30%, rgba(212,136,42,0.12) 0%, transparent 70%)' }} />
+                {/* Top vignette */}
+                <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'radial-gradient(ellipse 100% 60% at 50% 0%, rgba(13,11,9,0.6) 0%, transparent 70%)' }} />
+
+                {/* NAVBAR */}
+                <nav style={{ position: 'relative', zIndex: 10, padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 1400, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                            width: 44, height: 44, borderRadius: 12,
+                            background: 'linear-gradient(135deg, #d4882a, #c97d1a)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 0 20px rgba(212,136,42,0.4)',
+                            fontSize: 20, fontWeight: 900
+                        }}>📚</div>
+                        <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em', color: '#f0e6cc' }}>
+                            STUDY<span style={{ color: '#d4882a' }}>SPIRIT</span>
                         </div>
                     </div>
-                    <div className="text-2xl font-black tracking-tight text-[var(--text-primary)] flex items-center">
-                        STUDY<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">SPIRIT</span>
-                    </div>
-                </div>
-                <button
-                    onClick={() => navigate('/login')}
-                    className="group relative px-6 py-2 bg-transparent overflow-hidden rounded-full border border-zinc-800 hover:border-cyan-500/50 transition-all font-semibold tracking-wide"
-                >
-                    <div className="absolute inset-0 w-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                    <span className="relative z-10 text-zinc-300 group-hover:text-[var(--text-primary)] transition-colors">LOGIN</span>
-                </button>
-            </nav>
 
-            {/* Floating Particles that follow mouse playfully */}
-            {[...Array(20)].map((_, i) => (
-                <div
-                    key={`p-${i}`}
-                    className="absolute rounded-full pointer-events-none mix-blend-screen"
-                    style={{
-                        width: `${Math.random() * 4 + 1}px`,
-                        height: `${Math.random() * 4 + 1}px`,
-                        background: ['#06b6d4', '#a855f7', '#ec4899', '#ffffff'][i % 4],
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                        transform: `translate(${(mousePosition.x - 50) * (i * 0.08)}px, ${(mousePosition.y - 50) * (i * 0.08)}px)`,
-                        transition: 'transform 0.4s cubic-bezier(0.2, 0, 0, 1)',
-                        boxShadow: `0 0 10px ${['#06b6d4', '#a855f7', '#ec4899', '#ffffff'][i % 4]}`,
-                        opacity: Math.random() * 0.5 + 0.3
-                    }}
-                />
-            ))}
-
-            {/* Hero Section */}
-            <div className="relative z-10 max-w-7xl w-full flex flex-col items-center mt-24">
-
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 backdrop-blur-md mb-8">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                    <span className="text-xs font-bold tracking-[0.2em] text-cyan-300 uppercase">Next-Gen AI Platform</span>
-                </div>
-
-                <h1 className="text-6xl sm:text-8xl md:text-9xl font-black mb-6 text-center leading-none tracking-tighter">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-[var(--text-primary)] to-[var(--text-muted)]">STUDY</span>
-                    <br className="md:hidden" />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 animate-gradient-x">SPIRIT</span>
-                </h1>
-
-                <p className="text-lg md:text-2xl text-[var(--text-secondary)] max-w-3xl mb-12 min-h-[60px] leading-relaxed text-center font-light">
-                    {typedText}
-                    {showCursor && <span className="animate-blink ml-1 border-r-2 border-cyan-400">&nbsp;</span>}
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-6">
-                    <button
-                        onClick={handleButtonClick}
-                        className="group relative px-10 py-5 bg-white text-black rounded-full text-lg font-bold uppercase tracking-widest overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
-                    >
-                        {ripples.map(r => (
-                            <span key={r.id} className="absolute bg-[var(--bg-secondary)]lack/10 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 animate-ripple"
-                                style={{ left: r.x, top: r.y }} />
-                        ))}
-                        <span className="relative z-10 flex items-center justify-center gap-3">
-                            Start Journey
-                            <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </span>
-                    </button>
                     <button
                         onClick={() => navigate('/login')}
-                        className="px-10 py-5 rounded-full border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800/50 backdrop-blur-md text-[var(--text-primary)] text-lg font-bold uppercase tracking-widest transition-all duration-300"
+                        style={{
+                            padding: '10px 28px', borderRadius: 999,
+                            background: 'rgba(212,136,42,0.12)',
+                            border: '1px solid rgba(212,136,42,0.35)',
+                            color: '#d4882a',
+                            fontWeight: 700, fontSize: 13, letterSpacing: '0.12em',
+                            cursor: 'pointer', textTransform: 'uppercase',
+                            backdropFilter: 'blur(12px)',
+                            transition: 'all 0.3s ease',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(212,136,42,0.25)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(212,136,42,0.3)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,136,42,0.12)'; e.currentTarget.style.boxShadow = 'none'; }}
                     >
-                        Explore Features
+                        Login
                     </button>
-                </div>
+                </nav>
 
-                {/* Features Grid */}
-                <div className="mt-40 grid grid-cols-1 md:grid-cols-3 gap-8 w-full px-4">
-                    <FeatureCard
-                        index={0} icon="⚡" title="Hyper Productivity"
-                        desc="Tools engineered for deep work. Block out noise, track progress, and conquer goals."
-                        hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
-                    />
-                    <FeatureCard
-                        index={1} icon="🧠" title="AI Mentorship"
-                        desc="Personalized roadmaps and instant feedback from advanced AI designed to level you up."
-                        hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
-                    />
-                    <FeatureCard
-                        index={2} icon="🌐" title="Global Sync"
-                        desc="Collaborate, compete, and connect in real-time with top learners around the world."
-                        hoveredCard={hoveredCard} setHoveredCard={setHoveredCard}
-                    />
-                </div>
+                {/* HERO CONTENT */}
+                <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 24px 120px', maxWidth: 900, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
-                {/* Elaborated Section */}
-                <div className="mt-40 w-full flex flex-col items-center relative z-10 pt-20 border-t border-zinc-800/50">
-                    <div className="text-center mb-20 max-w-4xl px-4">
-                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-[var(--text-primary)]">
-                            THE ULTIMATE <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">ARSENAL</span>
-                        </h2>
-                        <p className="text-xl text-[var(--text-secondary)] font-light">Everything you need to crush your learning goals, wrapped in a beautiful, distraction-free environment.</p>
+                    {/* Badge */}
+                    <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                        padding: '6px 18px', borderRadius: 999,
+                        background: 'rgba(212,136,42,0.1)',
+                        border: '1px solid rgba(212,136,42,0.3)',
+                        marginBottom: 32, backdropFilter: 'blur(12px)',
+                    }}>
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#d4882a', animation: 'pulse 2s infinite' }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: '#d4882a', textTransform: 'uppercase' }}>Your Study Sanctuary</span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4">
-                        {[
-                            { icon: '⚔️', title: 'Vs Mode', desc: 'Real-time coding battles. Rank up by proving your skills.' },
-                            { icon: '🔥', title: 'Gamification', desc: 'Streaks, XP, and unlockable badges to keep you hooked on progress.' },
-                            { icon: '🧘', title: 'Zen Mode', desc: 'Built-in wellness checks and focus timers to prevent burnout.' },
-                            { icon: '📊', title: 'Analytics', desc: 'Deep insights into your habits. Know exactly where you stand.' },
-                            { icon: '🤝', title: 'Community', desc: 'Join guilds, share resources, and study together in live audio rooms.' },
-                            { icon: '🚀', title: 'Career Path', desc: 'Interview prep, resume building, and roadmap generation by AI.' }
-                        ].map((feature, i) => (
-                            <div
-                                key={i}
-                                className="group p-8 bg-[var(--glass-bg)] border border-zinc-800 rounded-3xl backdrop-blur-sm transition-all duration-300 hover:border-purple-500/50 hover:bg-zinc-800/50"
-                            >
-                                <div className="text-4xl mb-4 grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300">{feature.icon}</div>
-                                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{feature.title}</h3>
-                                <p className="text-[var(--text-muted)] leading-relaxed font-light">{feature.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                    {/* Main Title */}
+                    <h1 style={{
+                        fontSize: 'clamp(52px, 9vw, 100px)',
+                        fontWeight: 900, lineHeight: 1,
+                        letterSpacing: '-0.04em', marginBottom: 24,
+                        textShadow: '0 4px 40px rgba(0,0,0,0.8)',
+                    }}>
+                        <span style={{ color: '#f0e6cc' }}>STUDY</span>
+                        <br />
+                        <span style={{
+                            background: 'linear-gradient(135deg, #d4882a 0%, #f0a030 40%, #c97d1a 100%)',
+                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                            filter: 'drop-shadow(0 0 30px rgba(212,136,42,0.4))',
+                        }}>SPIRIT</span>
+                    </h1>
 
-                {/* Steps Section */}
-                <div className="mt-40 w-full max-w-6xl px-4">
-                    <div className="space-y-32">
-                        {[
-                            { num: '01', title: 'Initialize Profile', desc: 'Set up your goals, sync your existing platforms (LeetCode, GitHub), and let our AI craft your custom curriculum.' },
-                            { num: '02', title: 'Deep Work Protocol', desc: 'Enter our immersive Pomodoro sessions. Ambient soundscapes and hard notification blocks ensure absolute focus.' },
-                            { num: '03', title: 'Ascension', desc: 'Crush daily quests, rise through the global leaderboards, and transform from a student to a master.' }
-                        ].map((step, i) => (
-                            <div key={i} className={`flex flex-col md:flex-row items-center gap-12 lg:gap-24 ${i % 2 !== 0 ? 'md:flex-row-reverse' : ''}`}>
-                                <div className="text-8xl md:text-[14rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-zinc-800 to-transparent select-none leading-none w-full md:w-1/2 text-center">
-                                    {step.num}
-                                </div>
-                                <div className="w-full md:w-1/2 text-center md:text-left">
-                                    <h3 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-6 tracking-tight">{step.title}</h3>
-                                    <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed font-light">{step.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                    {/* Typed Subtitle */}
+                    <p style={{ fontSize: 'clamp(16px, 2.5vw, 22px)', color: '#c4aa88', fontWeight: 300, lineHeight: 1.6, maxWidth: 580, marginBottom: 48, minHeight: 60 }}>
+                        {typedText}
+                        {showCursor && <span style={{ borderRight: '2px solid #d4882a', marginLeft: 2, animation: 'blink 1s step-end infinite' }}>&nbsp;</span>}
+                    </p>
 
-                {/* CTA */}
-                <div className="mt-40 mb-20 p-1 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-[3rem] w-full mx-4 max-w-[calc(100%-2rem)] md:max-w-6xl overflow-hidden group">
-                    <div className="bg-[var(--bg-secondary)]lack p-12 md:p-24 rounded-[2.8rem] text-center w-full h-full relative overflow-hidden flex flex-col items-center justify-center">
-                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-500 pointer-events-none" />
-                        <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tighter text-[var(--text-primary)]">READY TO LEVEL UP?</h2>
-                        <button onClick={() => navigate('/login')} className="px-12 py-5 bg-white text-black font-black text-xl md:text-2xl uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                            Join StudySpirit
+                    {/* CTAs */}
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <button
+                            onClick={() => navigate('/login')}
+                            style={{
+                                padding: '18px 44px', borderRadius: 999,
+                                background: 'linear-gradient(135deg, #d4882a, #c97d1a)',
+                                border: 'none', color: '#0d0b09',
+                                fontWeight: 800, fontSize: 15, letterSpacing: '0.08em',
+                                cursor: 'pointer', textTransform: 'uppercase',
+                                boxShadow: '0 8px 30px rgba(212,136,42,0.45), 0 0 0 1px rgba(212,136,42,0.3)',
+                                transition: 'all 0.3s ease',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(212,136,42,0.6)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(212,136,42,0.45)'; }}
+                        >
+                            Start Journey →
+                        </button>
+                        <button
+                            onClick={() => navigate('/login')}
+                            style={{
+                                padding: '18px 44px', borderRadius: 999,
+                                background: 'rgba(240,230,204,0.06)',
+                                border: '1px solid rgba(240,230,204,0.2)',
+                                color: '#c4aa88',
+                                fontWeight: 700, fontSize: 15, letterSpacing: '0.08em',
+                                cursor: 'pointer', textTransform: 'uppercase',
+                                backdropFilter: 'blur(12px)',
+                                transition: 'all 0.3s ease',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,136,42,0.4)'; e.currentTarget.style.color = '#d4882a'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(240,230,204,0.2)'; e.currentTarget.style.color = '#c4aa88'; }}
+                        >
+                            Explore Features
                         </button>
                     </div>
-                </div>
 
-                {/* Footer */}
-                <footer className="w-full border-t border-zinc-800/50 pt-16 pb-8 text-[var(--text-muted)] px-6 mt-20">
-                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div className="flex items-center gap-2">
-                            <span className="font-black text-[var(--text-primary)] bg-clip-text">STUDYSPIRIT © 2025</span>
-                        </div>
-                        <div className="flex gap-6 text-sm font-semibold uppercase tracking-widest">
-                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">Privacy</span>
-                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">Terms</span>
-                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">Twitter</span>
-                            <span className="hover:text-[var(--text-primary)] cursor-pointer transition-colors">GitHub</span>
-                        </div>
+                    {/* Scroll hint */}
+                    <div style={{ marginTop: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, opacity: 0.4 }}>
+                        <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, transparent, #d4882a)', animation: 'growLine 2s ease-in-out infinite' }} />
+                        <span style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a89070' }}>Scroll</span>
                     </div>
-                </footer>
+                </div>
             </div>
 
+            {/* ========== FEATURES SECTION ========== */}
+            <div style={{ background: '#0d0b09', padding: '120px 24px' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+
+                    {/* Section header */}
+                    <div style={{ textAlign: 'center', marginBottom: 80 }}>
+                        <div style={{
+                            display: 'inline-block', padding: '4px 16px', borderRadius: 4,
+                            background: 'rgba(212,136,42,0.1)', border: '1px solid rgba(212,136,42,0.2)',
+                            fontSize: 11, letterSpacing: '0.2em', color: '#d4882a', textTransform: 'uppercase',
+                            marginBottom: 20
+                        }}>Arsenal</div>
+                        <h2 style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 900, letterSpacing: '-0.03em', color: '#f0e6cc', margin: '0 0 16px' }}>
+                            THE ULTIMATE <span style={{ background: 'linear-gradient(135deg, #d4882a, #f0a030)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>TOOLKIT</span>
+                        </h2>
+                        <p style={{ color: '#a89070', fontSize: 18, fontWeight: 300 }}>Everything you need to crush your learning goals.</p>
+                    </div>
+
+                    {/* Feature cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+                        {features.map((f, i) => (
+                            <div
+                                key={i}
+                                style={{
+                                    padding: '32px',
+                                    background: 'rgba(92,58,26,0.08)',
+                                    border: '1px solid rgba(212,136,42,0.1)',
+                                    borderRadius: 20,
+                                    backdropFilter: 'blur(12px)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = 'rgba(212,136,42,0.08)';
+                                    e.currentTarget.style.borderColor = 'rgba(212,136,42,0.3)';
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.background = 'rgba(92,58,26,0.08)';
+                                    e.currentTarget.style.borderColor = 'rgba(212,136,42,0.1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                {/* Warm glow on hover accent */}
+                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, #d4882a, transparent)', opacity: 0 }} className="card-top-line" />
+
+                                <div style={{ fontSize: 40, marginBottom: 20 }}>{f.icon}</div>
+                                <h3 style={{ fontSize: 20, fontWeight: 700, color: '#f0e6cc', marginBottom: 12, letterSpacing: '-0.01em' }}>{f.title}</h3>
+                                <p style={{ fontSize: 15, color: '#a89070', lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ========== HOW IT WORKS SECTION ========== */}
+            <div style={{ background: '#100e0b', padding: '120px 24px' }}>
+                <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 80 }}>
+                        <h2 style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 900, letterSpacing: '-0.03em', color: '#f0e6cc', margin: '0 0 16px' }}>
+                            THE <span style={{ background: 'linear-gradient(135deg, #d4882a, #f0a030)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>PATH</span>
+                        </h2>
+                        <p style={{ color: '#a89070', fontSize: 18, fontWeight: 300 }}>Three steps to mastery.</p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 64 }}>
+                        {steps.map((step, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 48, flexDirection: i % 2 === 1 ? 'row-reverse' : 'row', flexWrap: 'wrap' }}>
+                                {/* Big number */}
+                                <div style={{
+                                    fontSize: 'clamp(80px, 12vw, 140px)', fontWeight: 900,
+                                    background: 'linear-gradient(180deg, rgba(212,136,42,0.15) 0%, transparent 100%)',
+                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                                    letterSpacing: '-0.05em', lineHeight: 1, minWidth: 160, textAlign: 'center',
+                                    filter: 'drop-shadow(0 0 20px rgba(212,136,42,0.1))',
+                                }}>{step.num}</div>
+
+                                {/* Text */}
+                                <div style={{ flex: 1, minWidth: 280 }}>
+                                    <div style={{ width: 40, height: 3, background: 'linear-gradient(90deg, #d4882a, #c97d1a)', borderRadius: 99, marginBottom: 20 }} />
+                                    <h3 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: '#f0e6cc', marginBottom: 16, letterSpacing: '-0.02em' }}>{step.title}</h3>
+                                    <p style={{ fontSize: 18, color: '#a89070', lineHeight: 1.7, margin: 0, fontWeight: 300 }}>{step.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ========== CTA SECTION ========== */}
+            <div style={{ background: '#0d0b09', padding: '100px 24px', position: 'relative', overflow: 'hidden' }}>
+                {/* Subtle warm glow background */}
+                <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(212,136,42,0.07), transparent)' }} />
+
+                <div style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+                    {/* Image thumbnail above CTA */}
+                    <div style={{
+                        width: 80, height: 80, borderRadius: 24,
+                        margin: '0 auto 32px',
+                        background: 'linear-gradient(135deg, #d4882a, #5c3a1a)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 36,
+                        boxShadow: '0 0 40px rgba(212,136,42,0.3)',
+                    }}>✨</div>
+
+                    <h2 style={{ fontSize: 'clamp(36px, 7vw, 72px)', fontWeight: 900, letterSpacing: '-0.04em', color: '#f0e6cc', marginBottom: 24 }}>
+                        READY TO<br />
+                        <span style={{ background: 'linear-gradient(135deg, #d4882a, #f0a030)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>LEVEL UP?</span>
+                    </h2>
+                    <p style={{ fontSize: 18, color: '#a89070', marginBottom: 48, fontWeight: 300 }}>
+                        Join thousands of students turning late-night study sessions into their superpower.
+                    </p>
+                    <button
+                        onClick={() => navigate('/login')}
+                        style={{
+                            padding: '22px 60px', borderRadius: 999,
+                            background: 'linear-gradient(135deg, #d4882a, #c97d1a)',
+                            border: 'none', color: '#0d0b09',
+                            fontWeight: 900, fontSize: 17, letterSpacing: '0.1em',
+                            cursor: 'pointer', textTransform: 'uppercase',
+                            boxShadow: '0 0 60px rgba(212,136,42,0.4)',
+                            transition: 'all 0.3s ease',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 0 80px rgba(212,136,42,0.6)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 0 60px rgba(212,136,42,0.4)'; }}
+                    >
+                        Join StudySpirit →
+                    </button>
+                </div>
+            </div>
+
+            {/* ========== FOOTER ========== */}
+            <footer style={{ background: '#0a0807', borderTop: '1px solid rgba(212,136,42,0.08)', padding: '40px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                <div style={{ fontWeight: 800, fontSize: 15, color: '#5c3a1a', letterSpacing: '0.05em' }}>
+                    STUDY<span style={{ color: '#d4882a' }}>SPIRIT</span> © 2025
+                </div>
+                <div style={{ display: 'flex', gap: 32, fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                    {['Privacy', 'Terms', 'GitHub'].map(link => (
+                        <span key={link} style={{ color: '#5c3a1a', cursor: 'pointer', transition: 'color 0.2s' }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#d4882a'}
+                            onMouseLeave={e => e.currentTarget.style.color = '#5c3a1a'}
+                        >{link}</span>
+                    ))}
+                </div>
+            </footer>
+
             <style>{`
-        .animate-bounce-slow { animation: bounce 4s infinite; }
-        .animate-gradient-x { background-size: 200% 200%; border:0; animation: gradient-x 10s ease infinite; }
-        @keyframes gradient-x { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        @keyframes ripple { to { transform: translate(-50%, -50%) scale(4); opacity: 0; } }
-        .animate-ripple { width: 100px; height: 100px; animation: ripple 0.6s linear; }
-        .animate-blink { animation: blink 1s step-end infinite; }
-        @keyframes blink { 50% { border-color: transparent; } }
-      `}</style>
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; transform: scale(1); }
+                    50% { opacity: 0.5; transform: scale(0.8); }
+                }
+                @keyframes blink {
+                    50% { border-color: transparent; }
+                }
+                @keyframes growLine {
+                    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+                    50% { opacity: 0.8; transform: scaleY(1.2); }
+                }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                html { scroll-behavior: smooth; }
+            `}</style>
         </div>
     );
 }

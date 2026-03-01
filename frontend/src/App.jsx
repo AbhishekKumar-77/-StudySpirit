@@ -26,28 +26,49 @@ const EventsHub = lazy(() => import('./pages/EventsHub'));
 const Certification = lazy(() => import('./pages/Certification'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 
-// ============== LOADING FALLBACK ==============
+// ============== GAMING LOADING SCREEN ==============
 const PageLoader = () => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     height: '100vh',
-    background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-    color: 'white',
-    fontFamily: "'Inter', 'Segoe UI', sans-serif"
+    background: '#06080e',
+    color: '#e6edf3',
+    fontFamily: "'Orbitron', 'Inter', sans-serif",
+    position: 'relative',
+    overflow: 'hidden'
   }}>
-    <div style={{ textAlign: 'center' }}>
+    {/* Grid background */}
+    <div style={{
+      position: 'absolute', inset: 0, opacity: 0.05,
+      backgroundImage: 'linear-gradient(rgba(0,255,136,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,0.3) 1px, transparent 1px)',
+      backgroundSize: '40px 40px'
+    }} />
+
+    <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+      {/* Spinner */}
       <div style={{
-        width: 48,
-        height: 48,
-        border: '4px solid rgba(255,255,255,0.1)',
-        borderTop: '4px solid #818cf8',
+        width: 56, height: 56,
+        border: '3px solid rgba(0,255,136,0.1)',
+        borderTop: '3px solid #00ff88',
+        borderRight: '3px solid #00d4ff',
         borderRadius: '50%',
         animation: 'spin 0.8s linear infinite',
-        margin: '0 auto 16px'
+        margin: '0 auto 20px',
+        boxShadow: '0 0 20px rgba(0,255,136,0.3)'
       }} />
-      <p style={{ fontSize: 16, opacity: 0.8 }}>Loading...</p>
+
+      {/* Loading text */}
+      <p style={{
+        fontSize: 11,
+        opacity: 0.6,
+        letterSpacing: '0.3em',
+        textTransform: 'uppercase',
+        color: '#00ff88'
+      }}>
+        INITIALIZING...
+      </p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   </div>
