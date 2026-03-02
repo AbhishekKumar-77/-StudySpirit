@@ -1,0 +1,794 @@
+/* BASE STYLES */
+.dashboard-container {
+    min-height: 100vh;
+    background-color: #0b1a38;
+    /* Deep rich blue base */
+    overflow-x: hidden;
+    position: relative;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.ambient-background {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, #15397f 0%, #0b1a38 60%, #050a14 100%);
+    z-index: 1;
+}
+
+.ambient-grid {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(0, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 2;
+}
+
+/* NAVBAR */
+.dash-nav {
+    position: relative;
+    z-index: 100;
+    background: rgba(5, 10, 20, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.nav-logo img {
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 0 10px #00d2ff);
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.logo-text span {
+    color: #00d2ff;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-home,
+.nav-admin {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-profile {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: rgba(0, 153, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.streak {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ffb199;
+}
+
+.divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(0, 255, 255, 0.3);
+}
+
+.profile-info {
+    text-align: left;
+}
+
+.profile-name {
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.profile-level {
+    font-size: 10px;
+    color: #00d2ff;
+    letter-spacing: 1px;
+}
+
+/* CONTENT & TOP STATS */
+.dashboard-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    /* Wider */
+    margin: 40px auto;
+    padding: 0 24px;
+}
+
+.welcome-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.welcome-header {
+    text-align: center;
+}
+
+.system-online {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: 20px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #0fff;
+    margin-bottom: 24px;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #00ffff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00ffff;
+    animation: pulse 2s infinite;
+}
+
+h1 {
+    font-size: 48px;
+    color: #fff;
+    margin: 0 0 12px;
+}
+
+.highlight-name {
+    color: #00d2ff;
+    text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.wave {
+    display: inline-block;
+    animation: wave 2.5s infinite;
+    transform-origin: 70% 70%;
+}
+
+.top-stats-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.top-stat-box {
+    background: rgba(0, 20, 40, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px 30px;
+    text-align: center;
+    min-width: 140px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.top-stat-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 0.4);
+}
+
+.stat-label {
+    font-size: 10px;
+    font-weight: bold;
+    color: #8892b0;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.text-amber {
+    color: #f59e0b;
+    text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+}
+
+.text-cyan {
+    color: #06b6d4;
+    text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+}
+
+.text-purple {
+    color: #a855f7;
+    text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+}
+
+.text-emerald {
+    color: #10b981;
+    text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}
+
+/* Quick Stats Grid */
+.quick-stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.quick-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(0, 20, 40, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.quick-stat-card:hover {
+    border-color: rgba(0, 255, 255, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0, 255, 255, 0.2);
+}
+
+.quick-stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.qs-label {
+    font-size: 11px;
+    color: #8892b0;
+    letter-spacing: 1px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.qs-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.qs-subtext {
+    font-size: 13px;
+    color: rgba(0, 255, 255, 0.8);
+}
+
+.qs-arrow {
+    position: absolute;
+    right: 24px;
+    color: #8892b0;
+    transition: transform 0.3s;
+}
+
+.quick-stat-card:hover .qs-arrow {
+    transform: translateX(5px);
+    color: #00ffff;
+}
+
+/* Streak Reward */
+.streak-reward-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, rgba(236, 72, 153, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+    border: 1px solid rgba(236, 72, 153, 0.3);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 60px;
+    backdrop-filter: blur(10px);
+}
+
+.reward-content {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.reward-icon {
+    font-size: 48px;
+    filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.8));
+    animation: pulse 2s infinite;
+}
+
+.streak-reward-card h2 {
+    font-size: 28px;
+    color: #fff;
+    margin: 0 0 8px;
+}
+
+.streak-reward-card p {
+    color: #8892b0;
+    font-size: 16px;
+    margin: 0;
+}
+
+.streak-reward-card strong {
+    color: #ff007f;
+}
+
+.claim-reward-btn {
+    background: #fff;
+    color: #000;
+    font-weight: bold;
+    font-family: 'Share Tech Mono';
+    letter-spacing: 2px;
+    padding: 16px 32px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
+}
+
+.claim-reward-btn:hover {
+    background: #00ffff;
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.6);
+    transform: scale(1.05);
+}
+
+
+/* ================== THE HUGE HOLOGRAPHIC SYSTEM ================== */
+
+.holographic-title {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.system-modules-header h2 {
+    font-size: 32px;
+    color: #fff;
+    margin: 0 0 8px;
+    letter-spacing: 2px;
+}
+
+.system-modules-header span {
+    color: #00d2ff;
+}
+
+.system-modules-header p {
+    color: #8892b0;
+    margin: 0;
+}
+
+.hologram-wrapper {
+    position: relative;
+    width: 100%;
+    height: 900px;
+    /* HUGE HEIGHT */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+}
+
+.holographic-scene {
+    position: relative;
+    z-index: 10;
+    width: 1000px;
+    height: 700px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease-out;
+}
+
+/* Central Holographic Book */
+.central-book-container {
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-style: preserve-3d;
+    animation: bookFloat 6s ease-in-out infinite;
+    z-index: 20;
+}
+
+@keyframes bookFloat {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotateX(15deg) rotateY(0deg);
+    }
+
+    50% {
+        transform: translateY(-25px) rotateX(10deg) rotateY(2deg);
+    }
+}
+
+.book-base-glow {
+    position: absolute;
+    bottom: -150px;
+    width: 500px;
+    height: 120px;
+    background: radial-gradient(ellipse at center, rgba(0, 153, 255, 0.8) 0%, rgba(0, 102, 255, 0.4) 40%, transparent 70%);
+    filter: blur(30px);
+    transform: rotateX(75deg);
+    border-radius: 50%;
+}
+
+.base-ring {
+    position: absolute;
+    bottom: -150px;
+    width: 600px;
+    height: 600px;
+    border: 3px dashed rgba(0, 153, 255, 0.3);
+    border-radius: 50%;
+    transform: rotateX(75deg);
+    box-shadow: inset 0 0 80px rgba(0, 153, 255, 0.2), 0 0 80px rgba(0, 153, 255, 0.2);
+    animation: ringSpin 30s linear infinite;
+}
+
+.ring-segment {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 15px;
+    height: 100%;
+    transform-origin: center;
+    background: linear-gradient(to bottom, rgba(0, 255, 255, 0.8) 0%, transparent 10%, transparent 90%, rgba(0, 255, 255, 0.8) 100%);
+    opacity: 0.4;
+}
+
+@keyframes ringSpin {
+    0% {
+        transform: rotateX(75deg) rotateZ(0deg);
+    }
+
+    100% {
+        transform: rotateX(75deg) rotateZ(360deg);
+    }
+}
+
+.css-book {
+    position: relative;
+    width: 250px;
+    height: 200px;
+    transform-style: preserve-3d;
+    transform: rotateX(20deg) rotateY(-20deg) scale(0.85);
+    pointer-events: none;
+}
+
+.book-cover-left,
+.book-cover-right {
+    position: absolute;
+    top: 0;
+    width: 125px;
+    height: 180px;
+    background: linear-gradient(135deg, rgba(30, 144, 255, 0.9) 0%, rgba(0, 76, 255, 0.8) 100%);
+    border: 3px solid rgba(0, 255, 255, 0.8);
+    border-radius: 6px;
+    box-shadow: 0 0 40px rgba(0, 153, 255, 0.6), inset 0 0 30px rgba(0, 255, 255, 0.5);
+    overflow: hidden;
+}
+
+.poly-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(120deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%), linear-gradient(-60deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+    background-size: 30px 30px;
+    mix-blend-mode: overlay;
+}
+
+.book-cover-left {
+    left: 0;
+    transform-origin: right center;
+    transform: rotateY(-30deg) skewY(15deg);
+    border-right: none;
+}
+
+.book-cover-right {
+    right: 0;
+    transform-origin: left center;
+    transform: rotateY(30deg) skewY(-15deg);
+    border-left: none;
+}
+
+.book-center-light {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 230px;
+    background: #fff;
+    box-shadow: 0 0 60px 30px rgba(200, 255, 255, 0.9), 0 0 120px 50px rgba(0, 255, 255, 0.8);
+    border-radius: 50%;
+}
+
+/* ORBITING FEATURES */
+.orbit-container {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feature-node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 200px;
+    /* Big Width */
+    height: 400px;
+    /* Massive Height for tall beams */
+    pointer-events: none;
+    /* Let the children catch clicks */
+}
+
+
+
+.ground-ripple {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) rotateX(75deg);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 255, 255, 0.4);
+    box-shadow: 0 0 30px rgba(0, 153, 255, 0.6), inset 0 0 20px rgba(0, 153, 255, 0.4);
+    transition: all 0.3s ease;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.2) 0%, transparent 70%);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.feature-node.hovered .ground-ripple {
+    width: 120px;
+    height: 120px;
+    border-color: rgba(0, 255, 255, 1);
+    box-shadow: 0 0 60px rgba(0, 255, 255, 1), inset 0 0 40px rgba(0, 255, 255, 0.8);
+}
+
+.holo-beam {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 180px;
+    background: linear-gradient(to top, rgba(0, 200, 255, 0.8), rgba(0, 255, 255, 0.1));
+    box-shadow: 0 0 25px rgba(0, 200, 255, 0.6);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.holo-beam-core {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 100%;
+    background: #fff;
+    box-shadow: 0 0 15px #0ff;
+}
+
+.feature-node.hovered .holo-beam {
+    height: 250px;
+    width: 80px;
+    background: linear-gradient(to top, rgba(0, 255, 255, 1), rgba(0, 255, 255, 0.2));
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+}
+
+.icon-sphere {
+    position: absolute;
+    bottom: 220px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(0, 20, 50, 0.7);
+    border: 3px solid rgba(0, 153, 255, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 30px rgba(0, 153, 255, 0.4), inset 0 0 20px rgba(0, 153, 255, 0.4);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.icon-sphere-glow {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.5) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.icon-sphere-border {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 255, 255, 0.2);
+    border-top-color: rgba(0, 255, 255, 0.8);
+    border-bottom-color: rgba(0, 255, 255, 0.8);
+    animation: spinIconBorder 4s linear infinite;
+}
+
+.feature-node.hovered .icon-sphere {
+    border-color: rgba(0, 255, 255, 1);
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.8), inset 0 0 30px rgba(0, 255, 255, 0.8);
+    transform: translateY(-20px) scale(1.15);
+    bottom: 240px;
+}
+
+.feature-node.hovered .icon-sphere-glow {
+    opacity: 1;
+}
+
+.feature-icon {
+    color: rgba(0, 200, 255, 0.8);
+    z-index: 10;
+    transition: all 0.3s;
+}
+
+.feature-node.hovered .feature-icon {
+    color: #fff;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 1));
+}
+
+.feature-label {
+    position: absolute;
+    bottom: 280px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    opacity: 1;
+    /* Always visible */
+    transform: translateY(0);
+    transition: all 0.3s ease;
+    text-shadow: 0 0 10px rgba(0, 153, 255, 0.8);
+    background: rgba(0, 20, 50, 0.8);
+    padding: 6px 12px;
+    border: none;
+    border-top: 2px solid rgba(0, 255, 255, 0.6);
+    border-radius: 4px;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.feature-node.hovered .feature-label {
+    bottom: 310px;
+    border-color: rgba(0, 255, 255, 1);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+    text-shadow: 0 0 15px rgba(0, 255, 255, 1);
+    background: rgba(0, 30, 70, 0.9);
+}
+
+.watermark {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(0, 153, 255, 0.3);
+    font-size: 14px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 100;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.5);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes wave {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    10% {
+        transform: rotate(14deg);
+    }
+
+    20% {
+        transform: rotate(-8deg);
+    }
+
+    30% {
+        transform: rotate(14deg);
+    }
+
+    40% {
+        transform: rotate(-4deg);
+    }
+
+    50% {
+        transform: rotate(10deg);
+    }
+
+    60% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes spinIconBorder {
+    100% {
+        transform: rotate(360deg);
+    }
+}
