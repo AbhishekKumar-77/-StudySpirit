@@ -382,14 +382,25 @@ export default function SoloMode() {
 
     const [tasks, setTasks] = useState([]);
 
-    const [achievements] = useState([
-        { id: 1, title: 'First Blood', icon: Trophy, unlocked: true, description: 'Solve your first problem', xp: 50 },
-        { id: 2, title: '100 Problems', icon: Target, unlocked: true, description: 'Solve 100 problems', xp: 500 },
-        { id: 3, title: 'Streak Master', icon: Flame, unlocked: true, description: '7 day streak', xp: 200 },
-        { id: 4, title: 'Hard Crusher', icon: Medal, unlocked: false, description: 'Solve 50 hard problems', xp: 1000 },
-        { id: 5, title: 'Contest Winner', icon: Award, unlocked: false, description: 'Top 100 in a contest', xp: 2000 },
-        { id: 6, title: 'All Rounder', icon: Star, unlocked: true, description: 'Connect all platforms', xp: 300 }
-    ]);
+    // Dynamically calculate achievements based on real stats
+    const totalSolved = Object.values(platformProfiles)
+        .filter(p => p.connected)
+        .reduce((acc, p) => acc + (p.problemsSolved || 0), 0);
+
+    const totalHard = Object.values(platformProfiles)
+        .filter(p => p.connected)
+        .reduce((acc, p) => acc + (p.hard || 0), 0);
+
+    const connectedCount = Object.values(platformProfiles).filter(p => p.connected).length;
+
+    const achievements = [
+        { id: 1, title: 'First Blood', icon: Trophy, unlocked: totalSolved >= 1, description: 'Solve your first problem', xp: 50 },
+        { id: 2, title: '100 Problems', icon: Target, unlocked: totalSolved >= 100, description: 'Solve 100 problems', xp: 500 },
+        { id: 3, title: 'Streak Master', icon: Flame, unlocked: studyStreak >= 7, description: '7 day streak', xp: 200 },
+        { id: 4, title: 'Hard Crusher', icon: Medal, unlocked: totalHard >= 50, description: 'Solve 50 hard problems', xp: 1000 },
+        { id: 5, title: 'Consistency', icon: Award, unlocked: studyStreak >= 30, description: '30 day streak', xp: 2000 },
+        { id: 6, title: 'All Rounder', icon: Star, unlocked: connectedCount >= 3, description: 'Connect 3+ platforms', xp: 300 }
+    ];
 
     const [chatHistory, setChatHistory] = useState([
         { type: 'ai', message: "Hello! I'm your AI coding mentor. Based on your LeetCode profile, I can see you're doing great with Arrays. Want me to suggest some challenging Graph problems to improve that skill? 🚀" },
