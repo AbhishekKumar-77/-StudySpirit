@@ -4,6 +4,35 @@
  */
 
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const https = require('https');
+const http = require('http');
+
+function fetchWithRedirect(url, maxRedirects = 5) {
+    return new Promise((resolve, reject) => {
+        if (maxRedirects <= 0) return reject(new Error('Too many redirects'));
+        const mod = url.startsWith('https') ? https : http;
+        const req = mod.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+            }
+        }, (res) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                let loc = res.headers.location;
+                if (loc.startsWith('/')) {
+                    const u = new URL(url);
+                    loc = u.protocol + '//' + u.host + loc;
+                }
+                return fetchWithRedirect(loc, maxRedirects - 1).then(resolve).catch(reject);
+            }
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve({ status: res.statusCode, data }));
+        });
+        req.on('error', reject);
+        req.setTimeout(10000, () => { req.destroy(); reject(new Error('Timeout')); });
+    });
+}
 
 // ==================== LEETCODE API ====================
 
@@ -126,8 +155,10 @@ async function fetchLeetCodeContestRating(username) {
  */
 async function fetchCodeforcesProfile(handle) {
     try {
-        const response = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
-        const data = await response.json();
+        const result = await fetchWithRedirect(`https://codeforces.com/api/user.info?handles=${handle}`);
+        if (result.status !== 200) return null;
+
+        const data = JSON.parse(result.data);
 
         if (data.status !== 'OK' || !data.result?.[0]) {
             return null;
@@ -156,8 +187,10 @@ async function fetchCodeforcesProfile(handle) {
  */
 async function fetchCodeforcesSolvedCount(handle) {
     try {
-        const response = await fetch(`https://codeforces.com/api/user.status?handle=${handle}`);
-        const data = await response.json();
+        const result = await fetchWithRedirect(`https://codeforces.com/api/user.status?handle=${handle}`);
+        if (result.status !== 200) return 0;
+
+        const data = JSON.parse(result.data);
 
         if (data.status !== 'OK') {
             return 0;
@@ -184,8 +217,10 @@ async function fetchCodeforcesSolvedCount(handle) {
  */
 async function fetchCodeforcesContests() {
     try {
-        const response = await fetch('https://codeforces.com/api/contest.list?gym=false');
-        const data = await response.json();
+        const result = await fetchWithRedirect('https://codeforces.com/api/contest.list?gym=false');
+        if (result.status !== 200) return [];
+
+        const data = JSON.parse(result.data);
 
         if (data.status !== 'OK') {
             return [];
@@ -220,22 +255,38 @@ async function fetchCodeforcesContests() {
  */
 async function fetchCodeChefProfile(username) {
     try {
-        // Using the unofficial CodeChef API
-        const response = await fetch(`https://codechef-api.vercel.app/handle/${username}`);
-        const data = await response.json();
+        // We scrape directly from CodeChef's robust user profile using our custom redirects config
+        const response = await fetchWithRedirect(`https://www.codechef.com/users/${username}`);
 
-        if (!data || data.success === false) {
+        if (response.status !== 200 || !response.data) {
             return null;
         }
 
+        const html = response.data;
+
+        // Use RegEx to parse the necessary HTML values
+        const ratingMatch = html.match(/rating-number[^>]*>(\d+)/);
+        const maxMatch = html.match(/Highest Rating[^>]*>(\d+)/i);
+        const rankMatch = html.match(/Global Rank[^>]*>[^<]*<a[^>]*>(\d+)/i);
+        const starsMatch = html.match(/class="rating"[^>]*>(\d)\s*&#x2605;/i) || html.match(/(\d)\s*&#x2605;/i);
+        const problemsMatch = html.match(/Fully Solved \(([0-9]+)\)/i);
+
+        let rating = 0;
+        if (ratingMatch && ratingMatch[1]) {
+            rating = parseInt(ratingMatch[1]);
+        }
+
+        if (rating === 0) return null; // Invalid user typically has no rating block
+
         return {
-            username: data.name || username,
-            rating: data.currentRating || 0,
-            maxRating: data.highestRating || 0,
-            stars: data.stars || '1★',
-            globalRank: data.globalRank || 0,
-            countryRank: data.countryRank || 0,
-            country: data.countryName || '',
+            username: username,
+            rating: rating,
+            maxRating: maxMatch ? parseInt(maxMatch[1]) : 0,
+            stars: starsMatch ? `${starsMatch[1]}★` : '1★',
+            globalRank: rankMatch ? parseInt(rankMatch[1]) : 0,
+            countryRank: 0,
+            country: '',
+            solved: problemsMatch ? parseInt(problemsMatch[1]) : 0,
             connected: true
         };
     } catch (error) {
@@ -248,28 +299,8 @@ async function fetchCodeChefProfile(username) {
  * Alternative CodeChef profile fetch using different API
  */
 async function fetchCodeChefProfileAlt(username) {
-    try {
-        const response = await fetch(`https://codechef-api.herokuapp.com/users/${username}`);
-        const data = await response.json();
-
-        if (!data || data.status === 'error') {
-            return null;
-        }
-
-        return {
-            username: data.username || username,
-            rating: parseInt(data.rating) || 0,
-            maxRating: parseInt(data.highest_rating) || 0,
-            stars: data.stars || '1★',
-            globalRank: data.global_rank || 0,
-            countryRank: data.country_rank || 0,
-            solved: data.fully_solved?.count || 0,
-            connected: true
-        };
-    } catch (error) {
-        console.error('CodeChef Alt API Error:', error.message);
-        return null;
-    }
+    // Redundant since the direct scraping works without external third-party tools
+    return await fetchCodeChefProfile(username);
 }
 
 // ==================== HACKERRANK API ====================
