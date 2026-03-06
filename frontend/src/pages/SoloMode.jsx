@@ -809,6 +809,22 @@ export default function SoloMode() {
         }
     };
 
+    const handleAddModuleToTasks = (module) => {
+        const newTasks = [];
+        module.topics.forEach((topic) => {
+            const title = typeof topic === 'string' ? topic : topic.title;
+            newTasks.push({
+                id: Date.now() + Math.random(),
+                title: `${module.title}: ${title}`,
+                completed: false,
+                xp: 25
+            });
+        });
+
+        setTasks(prev => [...prev, ...newTasks]);
+        setActiveTab('dashboard'); // Redirect to dashboard to see their new tasks automatically
+    };
+
     const triggerCelebration = () => {
         setShowCelebration(true);
         const pieces = Array.from({ length: 50 }, (_, i) => ({
@@ -2384,7 +2400,16 @@ export default function SoloMode() {
                                                     <div className="p-6 grid gap-4">
                                                         {level.modules.map((module, modIdx) => (
                                                             <div key={modIdx} className="bg-[var(--glass-bg)] rounded-xl p-5 hover:bg-[var(--border-color)]/40 transition-colors border border-[var(--border-color)]">
-                                                                <h4 className="text-lg font-bold text-indigo-300 mb-2">{module.title}</h4>
+                                                                <div className="flex justify-between items-start gap-3 mb-2">
+                                                                    <h4 className="text-lg font-bold text-indigo-300">{module.title}</h4>
+                                                                    <button
+                                                                        onClick={() => handleAddModuleToTasks(module)}
+                                                                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-/20 to-purple-500/20 hover:from-cyan-/40 hover:to-purple-500/40 border border-cyan-500/30 rounded-lg text-xs font-bold text-[var(--text-primary)] transition-all flex items-center gap-1.5 whitespace-nowrap"
+                                                                        title="Add these topics to your daily Planner tasks"
+                                                                    >
+                                                                        <Plus className="w-3.5 h-3.5" /> Planner
+                                                                    </button>
+                                                                </div>
                                                                 <p className="text-sm text-[var(--text-secondary)] mb-4">{module.description}</p>
 
                                                                 <div className="space-y-3 mt-4">
