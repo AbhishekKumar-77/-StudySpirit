@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import * as soloApi from '../services/soloApi';
+import confetti from 'canvas-confetti';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
     Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight
@@ -15,6 +16,90 @@ export default function Dashboard() {
     const [dashboardData, setDashboardData] = useState(null);
     const [todayStudyTime, setTodayStudyTime] = useState(0);
     const [isLight, setIsLight] = useState(false);
+    const [rewardClaimed, setRewardClaimed] = useState(false);
+
+    // Fireworks & Confetti Burst
+    const fireConfetti = useCallback(() => {
+        if (rewardClaimed) return;
+        setRewardClaimed(true);
+
+        const duration = 3000;
+        const end = Date.now() + duration;
+
+        const colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#f43f5e', '#06b6d4', '#ff6b6b', '#ffd93d'];
+
+        // Center burst
+        confetti({
+            particleCount: 100,
+            spread: 100,
+            origin: { x: 0.5, y: 0.5 },
+            colors,
+            startVelocity: 45,
+            gravity: 0.8,
+            shapes: ['circle', 'square'],
+            scalar: 1.2,
+            zIndex: 10000
+        });
+
+        // Side bursts
+        setTimeout(() => {
+            confetti({ particleCount: 50, angle: 60, spread: 70, origin: { x: 0, y: 0.6 }, colors, zIndex: 10000 });
+            confetti({ particleCount: 50, angle: 120, spread: 70, origin: { x: 1, y: 0.6 }, colors, zIndex: 10000 });
+        }, 200);
+
+        // Continuous firework bursts
+        const interval = setInterval(() => {
+            if (Date.now() > end) {
+                clearInterval(interval);
+                return;
+            }
+
+            confetti({
+                particleCount: 30,
+                angle: 60 + Math.random() * 60,
+                spread: 60 + Math.random() * 40,
+                origin: { x: Math.random(), y: Math.random() * 0.4 },
+                colors,
+                startVelocity: 30 + Math.random() * 20,
+                gravity: 1,
+                zIndex: 10000
+            });
+        }, 250);
+
+        // Star burst at top
+        setTimeout(() => {
+            confetti({
+                particleCount: 80,
+                spread: 160,
+                origin: { x: 0.5, y: 0.2 },
+                colors,
+                startVelocity: 55,
+                gravity: 1.2,
+                shapes: ['star'],
+                scalar: 1.5,
+                zIndex: 10000
+            });
+        }, 500);
+
+        // Final grand burst
+        setTimeout(() => {
+            confetti({
+                particleCount: 150,
+                spread: 180,
+                origin: { x: 0.5, y: 0.35 },
+                colors,
+                startVelocity: 50,
+                gravity: 0.6,
+                shapes: ['circle', 'square', 'star'],
+                scalar: 1.3,
+                ticks: 300,
+                zIndex: 10000
+            });
+        }, 1200);
+
+        // Reset after 5 seconds
+        setTimeout(() => setRewardClaimed(false), 5000);
+    }, [rewardClaimed]);
 
     // Theme Detection
     useEffect(() => {
@@ -209,7 +294,12 @@ export default function Dashboard() {
                                 <p>You're on a <strong>{user?.streak}-day streak</strong>. Keep the momentum high.</p>
                             </div>
                         </div>
-                        <button className="claim-reward-btn">CLAIM REWARD</button>
+                        <button
+                            className={`claim-reward-btn ${rewardClaimed ? 'claimed' : ''}`}
+                            onClick={fireConfetti}
+                        >
+                            {rewardClaimed ? '✨ CLAIMED ✓' : '🎉 CLAIM REWARD'}
+                        </button>
                     </div>
                 )}
 
