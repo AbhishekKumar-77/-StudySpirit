@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const soloController = require('../controllers/soloController');
+const aiController = require('../controllers/aiController');
 const multer = require('multer');
 const { aiLimiter } = require('../middleware/rateLimiter');
 
@@ -74,32 +75,32 @@ router.post('/ai/interview', (req, res, next) => {
         // Everything went fine.
         next();
     });
-}, soloController.interviewWithAI);
+}, aiController.interviewWithAI);
 
 // End Interview & Generate Report
-router.post('/ai/interview/end', soloController.endInterview);
+router.post('/ai/interview/end', aiController.endInterview);
 
 // Interview History
-router.get('/ai/interview/history', soloController.getInterviewHistory);
+router.get('/ai/interview/history', aiController.getInterviewHistory);
 
 // Single Interview Session Detail
-router.get('/ai/interview/:sessionId', soloController.getInterviewSession);
+router.get('/ai/interview/:sessionId', aiController.getInterviewSession);
 
 // Soft Skills AI Conversation (Real-time)
-router.post('/ai/softskills', aiLimiter, soloController.softSkillsAI);
+router.post('/ai/softskills', aiLimiter, aiController.softSkillsAI);
 
 // Vocabulary Generation (50 words)
-router.get('/vocabulary', aiLimiter, soloController.generateVocabulary);
+router.get('/vocabulary', aiLimiter, aiController.generateVocabulary);
 
 // Writing Routes
-router.get('/writing/topic', aiLimiter, soloController.generateWritingTopic);
-router.post('/writing/evaluate', aiLimiter, soloController.evaluateWriting);
+router.get('/writing/topic', aiLimiter, aiController.generateWritingTopic);
+router.post('/writing/evaluate', aiLimiter, aiController.evaluateWriting);
 
 // Speaking Routes
-router.get('/speaking/topic', aiLimiter, soloController.generateSpeakingTopic);
-router.post('/speaking/evaluate', aiLimiter, soloController.evaluateSpeech);
+router.get('/speaking/topic', aiLimiter, aiController.generateSpeakingTopic);
+router.post('/speaking/evaluate', aiLimiter, aiController.evaluateSpeech);
 
 // AI Resume Builder
-router.post('/ai/resume/generate', aiLimiter, soloController.generateResume);
+router.post('/ai/resume/generate', aiLimiter, aiController.generateResume);
 
 module.exports = router;
