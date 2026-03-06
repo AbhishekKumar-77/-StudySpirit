@@ -13,6 +13,7 @@ import {
     RotateCcw, Pause, Circle, Maximize2, Minimize2
 } from 'lucide-react';
 import * as soloApi from '../services/soloApi';
+import { taskAPI } from '../services/plannerApi';
 
 // Helper to format AI messages with markdown-like rendering
 function FormatAIMessage({ text }) {
@@ -808,21 +809,27 @@ export default function SoloMode() {
             setIsGeneratingTree(false);
         }
     };
-
-    const handleAddModuleToTasks = (module) => {
-        const newTasks = [];
-        module.topics.forEach((topic) => {
-            const title = typeof topic === 'string' ? topic : topic.title;
-            newTasks.push({
-                id: Date.now() + Math.random(),
-                title: `${module.title}: ${title}`,
-                completed: false,
-                xp: 25
-            });
-        });
-
-        setTasks(prev => [...prev, ...newTasks]);
-        setActiveTab('dashboard'); // Redirect to dashboard to see their new tasks automatically
+    const handleAddModuleToTasks = async (module) => {
+        try {
+            // Add all module topics as actual persistent tasks in Planner
+            for (const topic of module.topics) {
+                const title = typeof topic === 'string' ? topic : topic.title;
+                const taskData = {
+                    title: `${module.title} - ${title}`,
+                    priority: 'high',
+                    subject: 'Skill Mastery',
+                    estimatedTime: 60, // 60 minutes
+                    dueDate: new Date().toISOString()
+                };
+                await taskAPI.create(taskData);
+            }
+            // Navigate directly to the actual Planner page where tasks are displayed
+            navigate('/planner');
+        } catch (error) {
+            console.error('Failed to add tasks to planner:', error);
+            // Even if one fails, redirect them to the planner so they can see what was added
+            navigate('/planner');
+        }
     };
 
     const triggerCelebration = () => {
