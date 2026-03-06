@@ -1,0 +1,10 @@
+const fs = require('fs');
+const filepath = 'c:/Users/abhis/Desktop/StudySpirit/frontend/src/pages/SoloMode.jsx';
+let content = fs.readFileSync(filepath, 'utf8');
+content = content.replace(/text-cyan-(?=[\" \/])/g, 'text-cyan-400');
+content = content.replace(/bg-cyan-(?=[\" \/])/g, 'bg-cyan-500');
+content = content.replace(/bg-\[var\(\-\-bg\-secondary\)\]lue-/g, 'bg-blue-');
+content = content.replace(/bg-\[var\(\-\-bg\-secondary\)\]lack\//g, 'bg-black/');
+content = content.replace(/min-h-screen bg-gradient-to-br    relative/g, 'min-h-screen bg-[var(--bg-primary)] relative transition-colors duration-300');
+fs.writeFileSync(filepath, content);
+console.log('done');
