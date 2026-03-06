@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import * as soloApi from '../services/soloApi';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
-    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight
+    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -12,20 +12,17 @@ export default function Dashboard() {
     const { user, stats, setUser, setStats } = useApp();
     const navigate = useNavigate();
     const [hoveredFeature, setHoveredFeature] = useState(null);
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const [dashboardData, setDashboardData] = useState(null);
     const [todayStudyTime, setTodayStudyTime] = useState(0);
+    const [isLight, setIsLight] = useState(false);
 
-    const handleMouseMove = (e) => {
-        setMousePosition({
-            x: (e.clientX / window.innerWidth - 0.5) * 20,
-            y: (e.clientY / window.innerHeight - 0.5) * 20
-        });
-    };
-
+    // Theme Detection
     useEffect(() => {
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
+        const checkTheme = () => setIsLight(document.documentElement.classList.contains('light'));
+        checkTheme();
+        const observer = new MutationObserver(checkTheme);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
     }, []);
 
     // Fetch Dashboard Data
@@ -63,18 +60,18 @@ export default function Dashboard() {
     };
 
     const features = [
-        { id: 1, name: 'Solo Mode', path: '/solo-mode', icon: BookOpen },
-        { id: 2, name: 'Group Mode', path: '/group-mode', icon: Users },
-        { id: 3, name: 'Planner', path: '/planner', icon: Calendar },
-        { id: 4, name: 'Quizzes', path: '/quiz', icon: ClipboardCheck },
-        { id: 5, name: 'Resources', path: '/resources', icon: Library },
-        { id: 6, name: 'CodeSpirit', path: '/codespirit', icon: Code },
-        { id: 7, name: 'Interview prep', path: '/interview', icon: Mic },
-        { id: 8, name: 'CareerSprint', path: '/career', icon: Briefcase },
-        { id: 9, name: 'Project Lab', path: '/project-lab', icon: Folder },
-        { id: 10, name: 'DiscussVerse', path: '/discuss', icon: MessageCircle },
-        { id: 11, name: 'Soft Skills', path: '/soft-skills', icon: Brain },
-        { id: 12, name: 'Editors', path: '/code-editor', icon: Edit3 }
+        { id: 1, name: 'Solo Mode', description: 'Deep focus study sessions', path: '/solo-mode', icon: BookOpen, color: '#6366f1' },
+        { id: 2, name: 'Group Mode', description: 'Collaborate with peers', path: '/group-mode', icon: Users, color: '#8b5cf6' },
+        { id: 3, name: 'Planner', description: 'Organize your schedule', path: '/planner', icon: Calendar, color: '#ec4899' },
+        { id: 4, name: 'Quizzes', description: 'Test your knowledge', path: '/quiz', icon: ClipboardCheck, color: '#f59e0b' },
+        { id: 5, name: 'Resources', description: 'Curated study materials', path: '/resources', icon: Library, color: '#10b981' },
+        { id: 6, name: 'CodeSpirit', description: 'Practice coding challenges', path: '/codespirit', icon: Code, color: '#06b6d4' },
+        { id: 7, name: 'Interview Prep', description: 'AI-powered mock interviews', path: '/interview', icon: Mic, color: '#f43f5e' },
+        { id: 8, name: 'CareerSprint', description: 'Plan your career path', path: '/career', icon: Briefcase, color: '#84cc16' },
+        { id: 9, name: 'Project Lab', description: 'Build real-world projects', path: '/project-lab', icon: Folder, color: '#f97316' },
+        { id: 10, name: 'DiscussVerse', description: 'Community discussions', path: '/discuss', icon: MessageCircle, color: '#14b8a6' },
+        { id: 11, name: 'Soft Skills', description: 'Communication & leadership', path: '/soft-skills', icon: Brain, color: '#a855f7' },
+        { id: 12, name: 'Editors', description: 'Online code editor', path: '/code-editor', icon: Edit3, color: '#64748b' }
     ];
 
     const quickStats = [
@@ -83,29 +80,29 @@ export default function Dashboard() {
             value: stats?.dailyGoals || 0,
             subtext: 'Missions Today',
             icon: Target,
-            from: '#00d2ff', to: '#3a7bd5'
+            from: '#6366f1', to: '#8b5cf6'
         },
         {
             label: 'Success Rate',
             value: `${stats?.completionRate || 0}%`,
             subtext: 'Keep it going!',
             icon: CheckCircle,
-            from: '#f093fb', to: '#f5576c'
+            from: '#ec4899', to: '#f43f5e'
         },
         {
             label: 'Focus Time',
             value: formatStudyTime(todayStudyTime),
             subtext: `Today • ${formatStudyTime((dashboardData?.user?.totalStudyTime || 0))} total`,
             icon: Clock,
-            from: '#ff0844', to: '#ffb199'
+            from: '#f97316', to: '#f59e0b'
         },
     ];
 
     return (
-        <div className="dashboard-container">
-            {/* Ambient Background Gradient */}
-            <div className="ambient-background" />
-            <div className="ambient-grid" />
+        <div className={`dashboard-container ${isLight ? 'light-mode' : 'dark-mode'}`}>
+            {/* Background Image with Overlay */}
+            <div className="dashboard-bg" />
+            <div className="dashboard-overlay" />
 
             {/* Navbar */}
             <nav className="dash-nav">
@@ -141,42 +138,56 @@ export default function Dashboard() {
             </nav>
 
             <div className="dashboard-content">
-                {/* Header Card (Welcome Back + Top Stats) */}
-                <div className="welcome-card">
-                    <div className="welcome-header">
-                        <div className="system-online">
-                            <span className="pulse-dot"></span> SYSTEM ONLINE
-                        </div>
-                        <h1>Welcome Back,<br /><span className="highlight-name">{user?.name || 'Developer'}</span> <span className="wave">👋</span></h1>
-                        <p>Your dashboard is ready. Time to dive into deep work and crush today's objectives.</p>
+                {/* Welcome Section */}
+                <div className="welcome-section">
+                    <div className="welcome-badge">
+                        <span className="pulse-dot"></span> SYSTEM ONLINE
                     </div>
+                    <h1 className="welcome-title">
+                        Welcome Back, <br />
+                        <span className="highlight-name">{user?.name || 'Developer'}</span> <span className="wave">👋</span>
+                    </h1>
+                    <p className="welcome-subtitle">Your dashboard is ready. Time to dive into deep work and crush today's objectives.</p>
+                </div>
 
-                    <div className="top-stats-grid">
-                        <div className="top-stat-box box-amber">
-                            <div className="stat-label">ACTIVE STREAK</div>
-                            <div className="stat-value text-amber">🔥 {user?.streak || 0}</div>
+                {/* Stats Row */}
+                <div className="stats-row">
+                    <div className="stat-pill">
+                        <span className="stat-pill-icon">🔥</span>
+                        <div>
+                            <div className="stat-pill-label">Streak</div>
+                            <div className="stat-pill-value amber">{user?.streak || 0}</div>
                         </div>
-                        <div className="top-stat-box box-cyan">
-                            <div className="stat-label">CURRENT LEVEL</div>
-                            <div className="stat-value text-cyan">{user?.level || 1}</div>
+                    </div>
+                    <div className="stat-pill">
+                        <span className="stat-pill-icon">⚡</span>
+                        <div>
+                            <div className="stat-pill-label">Level</div>
+                            <div className="stat-pill-value cyan">{user?.level || 1}</div>
                         </div>
-                        <div className="top-stat-box box-purple">
-                            <div className="stat-label">TOTAL EXP</div>
-                            <div className="stat-value text-purple">{user?.xp || 0}</div>
+                    </div>
+                    <div className="stat-pill">
+                        <span className="stat-pill-icon">✨</span>
+                        <div>
+                            <div className="stat-pill-label">Total XP</div>
+                            <div className="stat-pill-value purple">{user?.xp || 0}</div>
                         </div>
-                        <div className="top-stat-box box-emerald">
-                            <div className="stat-label">REPUTATION</div>
-                            <div className="stat-value text-emerald">{user?.reputation || 0}</div>
+                    </div>
+                    <div className="stat-pill">
+                        <span className="stat-pill-icon">🏆</span>
+                        <div>
+                            <div className="stat-pill-label">Reputation</div>
+                            <div className="stat-pill-value emerald">{user?.reputation || 0}</div>
                         </div>
                     </div>
                 </div>
 
-                {/* Quick Stats Grid */}
+                {/* Quick Stats Cards */}
                 <div className="quick-stats-container">
                     {quickStats.map((stat, idx) => (
                         <div key={idx} className="quick-stat-card">
                             <div className="quick-stat-icon" style={{ background: `linear-gradient(135deg, ${stat.from}, ${stat.to})` }}>
-                                <stat.icon size={28} color="#fff" />
+                                <stat.icon size={24} color="#fff" />
                             </div>
                             <div className="quick-stat-info">
                                 <div className="qs-label">{stat.label}</div>
@@ -202,97 +213,40 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                <div className="holographic-title">
-                    <div className="system-modules-header">
-                        <h2>HOLOGRAPHIC <span>MODULES</span></h2>
-                        <p>Access your personalized toolkit for extreme productivity.</p>
-                    </div>
+                {/* Features Section Title */}
+                <div className="features-header">
+                    <h2>Your <span>Toolkit</span></h2>
+                    <p>Access your personalized modules for extreme productivity.</p>
                 </div>
 
-                {/* Holographic Scene (Increased Size & Spacing) */}
-                <div className="hologram-wrapper">
-                    <div className="holographic-scene" style={{
-                        transform: `rotateX(${mousePosition.y}deg) rotateY(${mousePosition.x}deg)`
-                    }}>
-
-                        {/* Central Holographic Book */}
-                        <div className="central-book-container">
-                            <div className="book-base-glow" />
-
-                            <div className="css-book">
-                                <div className="book-cover-left">
-                                    <div className="poly-pattern"></div>
+                {/* Feature Cards Grid */}
+                <div className="features-grid">
+                    {features.map((feature) => {
+                        const isHovered = hoveredFeature === feature.id;
+                        return (
+                            <div
+                                key={feature.id}
+                                className={`feature-card ${isHovered ? 'hovered' : ''}`}
+                                onMouseEnter={() => setHoveredFeature(feature.id)}
+                                onMouseLeave={() => setHoveredFeature(null)}
+                                onClick={() => navigate(feature.path)}
+                            >
+                                <div className="feature-card-glow" style={{ background: feature.color }} />
+                                <div className="feature-card-icon" style={{ background: `${feature.color}15`, borderColor: `${feature.color}40` }}>
+                                    <feature.icon size={26} style={{ color: feature.color }} />
                                 </div>
-                                <div className="book-cover-right">
-                                    <div className="poly-pattern"></div>
+                                <h3 className="feature-card-name">{feature.name}</h3>
+                                <p className="feature-card-desc">{feature.description}</p>
+                                <div className="feature-card-arrow" style={{ color: feature.color }}>
+                                    <ArrowRight size={18} />
                                 </div>
-                                <div className="book-spine"></div>
-                                <div className="book-center-light"></div>
                             </div>
-
-                            {/* Ring Base on the ground */}
-                            <div className="base-ring">
-                                {[...Array(24)].map((_, i) => (
-                                    <div key={i} className="ring-segment" style={{ transform: `rotate(${i * 15}deg)` }}></div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Orbiting Modules (Larger Orbit) */}
-                        <div className="orbit-container">
-                            {features.map((feature, idx) => {
-                                const total = features.length;
-                                const angle = (idx / total) * 360;
-                                const isHovered = hoveredFeature === feature.id;
-
-                                // MUCH Larger elliptical orbit for spacing
-                                const radiusX = 540;
-                                const radiusY = 280;
-                                const rad = (angle - 90) * (Math.PI / 180);
-                                const x = Math.cos(rad) * radiusX;
-                                const y = Math.sin(rad) * radiusY;
-
-                                // Z-index logic: Front items higher, back items lower
-                                const zIndex = Math.floor(y) + 500;
-                                const scale = 1 + (y / radiusY) * 0.3; // Front nodes larger, back nodes smaller
-
-                                return (
-                                    <div
-                                        key={feature.id}
-                                        className={`feature-node ${isHovered ? 'hovered' : ''}`}
-                                        onMouseEnter={() => setHoveredFeature(feature.id)}
-                                        onMouseLeave={() => setHoveredFeature(null)}
-                                        onClick={() => navigate(feature.path)}
-                                        style={{
-                                            transform: `translate3d(${x}px, ${y}px, 0) scale(${scale})`,
-                                            zIndex: isHovered ? 9999 : zIndex // Huge z-index to stay on top
-                                        }}
-                                    >
-                                        <div className="ground-ripple" />
-
-                                        <div className="holo-beam">
-                                            <div className="holo-beam-core" />
-                                        </div>
-
-                                        <div className="icon-sphere">
-                                            <div className="icon-sphere-glow" />
-                                            <div className="icon-sphere-border" />
-                                            <feature.icon size={20} className="feature-icon" />
-                                        </div>
-
-                                        <div className="feature-label">
-                                            {feature.name}
-                                        </div>
-
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div >
-                </div >
-            </div >
+                        );
+                    })}
+                </div>
+            </div>
 
             <div className="watermark">StudySpirit Nexus System</div>
-        </div >
+        </div>
     );
 }
