@@ -515,7 +515,7 @@ export default function StudySprintQuiz() {
             <div className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[100px] z-0 pointer-events-none"></div>
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-cyan-500/10 px-8 py-5 transition-all duration-300">
+            <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-[var(--border-color)] px-8 py-4 transition-all duration-300">
                 <div className="max-w-[1400px] mx-auto flex items-center">
                     <button
                         onClick={() => navigate("/dashboard")}
@@ -523,21 +523,6 @@ export default function StudySprintQuiz() {
                     >
                         <ArrowLeft size={18} /> Back to Dashboard
                     </button>
-
-                    <div className="text-2xl font-black text-[var(--text-primary)] flex items-center gap-3">
-                        <Zap size={32} className="text-amber-500" />
-                        StudySprint Quiz Pro
-                    </div>
-
-                    <div className="flex items-center gap-4 text-cyan-400  font-semibold">
-                        <span>Quiz Code: <strong className="text-[var(--text-primary)]">{quizCode}</strong></span>
-                        <button
-                            onClick={generateQuizCode}
-                            className="bg-cyan-500 /20 p-2 rounded-lg transition-all duration-300 hover:bg-cyan-500 /30"
-                        >
-                            <RotateCcw size={16} className="text-cyan-400 " />
-                        </button>
-                    </div>
                 </div>
             </nav>
 
