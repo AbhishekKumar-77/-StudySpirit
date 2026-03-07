@@ -516,10 +516,10 @@ export default function StudySprintQuiz() {
 
             {/* Navbar */}
             <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-cyan-500/10 px-8 py-5 transition-all duration-300">
-                <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+                <div className="max-w-[1400px] mx-auto flex items-center">
                     <button
                         onClick={() => navigate("/dashboard")}
-                        className="flex items-center gap-3 bg-cyan-500 /10 text-cyan-400  px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 hover:bg-cyan-500 /20 hover:-translate-x-1"
+                        className="flex items-center gap-3 bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 hover:border-cyan-500/50 hover:-translate-x-1"
                     >
                         <ArrowLeft size={18} /> Back to Dashboard
                     </button>
