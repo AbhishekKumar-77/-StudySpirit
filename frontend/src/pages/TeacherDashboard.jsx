@@ -62,22 +62,38 @@ export default function TeacherDashboard() {
     useEffect(() => {
         const socket = connectSocket();
 
-        const onConnect = () => setSocketConnected(true);
-        const onDisconnect = () => setSocketConnected(false);
+        const onConnect = () => {
+            console.log('🔌 Teacher socket connected:', socket.id);
+            setSocketConnected(true);
+        };
+        const onDisconnect = () => {
+            console.log('🔌 Teacher socket disconnected');
+            setSocketConnected(false);
+        };
 
         // Teacher receives live student count + list
-        const onStudentsUpdate = ({ quizCode, count, students }) => {
-            if (quizCode === monitoringCode) {
-                setLiveStudents(students || []);
+        const onStudentsUpdate = (data) => {
+            console.log('📡 quiz:students:update received:', JSON.stringify(data));
+            console.log('📡 monitoringCode:', monitoringCode, 'received quizCode:', data?.quizCode);
+            const code = (data?.quizCode || '').toUpperCase().trim();
+            const myCode = (monitoringCode || '').toUpperCase().trim();
+            if (code === myCode) {
+                console.log('✅ Codes match! Updating students list:', data?.students?.length);
+                setLiveStudents(data?.students || []);
+            } else {
+                console.log('⚠️ Code mismatch:', code, '!==', myCode);
             }
         };
 
         // Teacher receives real-time submission alert
-        const onNewSubmission = ({ studentName, score, timeTaken, quizCode }) => {
-            if (quizCode === monitoringCode) {
-                const entry = { studentName, score, timeTaken, submittedAt: Date.now() };
+        const onNewSubmission = (data) => {
+            console.log('📡 quiz:new:submission received:', JSON.stringify(data));
+            const code = (data?.quizCode || '').toUpperCase().trim();
+            const myCode = (monitoringCode || '').toUpperCase().trim();
+            if (code === myCode) {
+                const entry = { studentName: data.studentName, score: data.score, timeTaken: data.timeTaken, submittedAt: Date.now() };
                 setLiveSubmissions(prev => [entry, ...prev]);
-                setNotifications(prev => [`🎓 ${studentName} submitted — ${score}%`, ...prev.slice(0, 4)]);
+                setNotifications(prev => [`🎓 ${data.studentName} submitted — ${data.score}%`, ...prev.slice(0, 4)]);
             }
         };
 
@@ -86,19 +102,32 @@ export default function TeacherDashboard() {
         socket.on('quiz:students:update', onStudentsUpdate);
         socket.on('quiz:new:submission', onNewSubmission);
 
-        if (socket.connected) setSocketConnected(true);
+        if (socket.connected) {
+            setSocketConnected(true);
+            console.log('🔌 Teacher socket already connected:', socket.id);
+        }
+
+        // Debug: log all events from server
+        socket.onAny((event, ...args) => {
+            if (event.startsWith('quiz:')) {
+                console.log(`📡 [Teacher] Event: ${event}`, args);
+            }
+        });
 
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('quiz:students:update', onStudentsUpdate);
             socket.off('quiz:new:submission', onNewSubmission);
+            socket.offAny();
         };
     }, [monitoringCode]);
 
     const startMonitoring = async (code) => {
         const codeToWatch = (code || monitorCode).toUpperCase().trim();
         if (!codeToWatch) return;
+
+        console.log('🎯 Starting monitor for:', codeToWatch);
 
         // Stop watching previous quiz
         if (prevWatchCode.current) {
@@ -115,7 +144,10 @@ export default function TeacherDashboard() {
 
         // Start watching
         const socket = connectSocket();
-        const doWatch = () => socket.emit('quiz:teacher:watch', { quizCode: codeToWatch });
+        const doWatch = () => {
+            console.log('📡 Emitting quiz:teacher:watch for:', codeToWatch, 'socket connected:', socket.connected, 'socket id:', socket.id);
+            socket.emit('quiz:teacher:watch', { quizCode: codeToWatch });
+        };
         if (socket.connected) doWatch(); else socket.once('connect', doWatch);
 
         // Also load answer key
@@ -190,8 +222,8 @@ export default function TeacherDashboard() {
                         <button key={item.id}
                             onClick={() => item.external ? navigate('/quiz') : setActiveTab(item.id)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${activeTab === item.id && !item.external
-                                    ? 'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30'
-                                    : 'text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]'
+                                ? 'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30'
+                                : 'text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]'
                                 }`}
                         >
                             <item.icon size={18} />
@@ -548,8 +580,8 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {q.options?.map((opt, oi) => (
                                                     <div key={oi} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${oi === q.correct
-                                                            ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-bold'
-                                                            : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)]'
+                                                        ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-bold'
+                                                        : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)]'
                                                         }`}>
                                                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black ${oi === q.correct ? 'bg-emerald-500 text-white' : 'bg-[var(--border-color)] text-[var(--text-muted)]'
                                                             }`}>
@@ -638,9 +670,9 @@ function LeaderboardSection() {
         <div className="space-y-3 max-w-4xl">
             {leaderboard.map((p, i) => (
                 <div key={p.id || i} className={`flex items-center gap-5 p-5 rounded-2xl border transition-all ${i === 0 ? 'bg-amber-500/5 border-amber-500/25' :
-                        i === 1 ? 'bg-slate-400/5 border-slate-400/20' :
-                            i === 2 ? 'bg-orange-500/5 border-orange-400/20' :
-                                'bg-[var(--bg-secondary)] border-[var(--border-color)]'
+                    i === 1 ? 'bg-slate-400/5 border-slate-400/20' :
+                        i === 2 ? 'bg-orange-500/5 border-orange-400/20' :
+                            'bg-[var(--bg-secondary)] border-[var(--border-color)]'
                     }`}>
                     <div className="w-10 text-center font-black text-xl">
                         {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span className="text-[var(--text-muted)] text-base">#{i + 1}</span>}

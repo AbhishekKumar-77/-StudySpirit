@@ -230,7 +230,7 @@ export default function StudySprintQuiz() {
                     const socket = getSocket();
                     if (socket) {
                         socket.emit("quiz:leave", {
-                            quizCode: studentQuizCodeInput,
+                            quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                             studentId: user?._id || user?.id || "guest"
                         });
                     }
@@ -271,12 +271,12 @@ export default function StudySprintQuiz() {
                 try {
                     const socket = connectSocket();
                     const doJoin = () => socket.emit('quiz:join', {
-                        quizCode: studentQuizCodeInput,
+                        quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                         studentId: user?._id || user?.id || 'guest',
                         studentName: user?.name || 'Student'
                     });
-                    if (socket.connected) doJoin(); else socket.once('connect', doJoin);
-                } catch (_e) {}
+                    if (socket.connected) { doJoin(); console.log("📡 Socket quiz:join emitted (connected)"); } else { socket.once('connect', () => { doJoin(); console.log("📡 Socket quiz:join emitted (after connect)"); }); }
+                } catch (_e) { console.error("❌ Socket join error:", _e); }
                 // Also update local quiz code display if needed, or just keep input
             } else {
                 alert(data.message || "Invalid Quiz Code!");
@@ -304,11 +304,11 @@ export default function StudySprintQuiz() {
         try {
             const socket = connectSocket();
             const doJoin = () => socket.emit('quiz:join', {
-                quizCode: studentQuizCodeInput,
+                quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                 studentId: user?._id || user?.id || 'guest',
                 studentName: user?.name || 'Student'
             });
-            if (socket.connected) doJoin(); else socket.once('connect', doJoin);
+            if (socket.connected) { doJoin(); console.log("📡 Socket quiz:join emitted from startExam"); } else { socket.once('connect', () => { doJoin(); console.log("📡 Socket quiz:join emitted from startExam (after connect)"); }); }
         } catch (e) { console.error('Socket join error', e); }
     };
 
@@ -349,8 +349,8 @@ export default function StudySprintQuiz() {
                 const socket = getSocket();
                 if (socket) {
                     const taken = (joinedQuiz.settings.timeLimit * 60) - timeLeft;
-                    socket.emit('quiz:submitted', {
-                        quizCode: studentQuizCodeInput,
+                    console.log("📡 Emitting quiz:submitted..."); socket.emit('quiz:submitted', {
+                        quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                         studentId: user?._id || user?.id || 'guest',
                         studentName: user?.name || 'Student',
                         score: Math.round(finalScore),
@@ -358,7 +358,7 @@ export default function StudySprintQuiz() {
                         totalQuestions: quizQs.length
                     });
                     socket.emit('quiz:leave', {
-                        quizCode: studentQuizCodeInput,
+                        quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                         studentId: user?._id || user?.id || 'guest'
                     });
                 }

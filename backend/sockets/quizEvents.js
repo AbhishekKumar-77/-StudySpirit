@@ -7,17 +7,23 @@
  * - quiz:teacher:watch → teacher joins the monitor room for a quiz code
  */
 
-// In-memory store: quizCode → { students: Map<userId, {name, joinedAt, status, score}> }
+// In-memory store: quizCode → Map<userId, {name, joinedAt, status, score}>
 const activeQuizRooms = new Map();
 
 module.exports = function registerQuizEvents(socket, io) {
 
     // ── STUDENT: joins exam room ──────────────────────────────────
-    socket.on('quiz:join', ({ quizCode, studentId, studentName }) => {
-        if (!quizCode || !studentId) return;
+    socket.on('quiz:join', (data) => {
+        console.log('📥 quiz:join received:', JSON.stringify(data));
+        const { studentId, studentName } = data || {};
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
 
-        const room = `quiz:${quizCode}`;
-        socket.join(room);
+        if (!quizCode || !studentId) {
+            console.log('⚠️ quiz:join missing data — quizCode:', quizCode, 'studentId:', studentId);
+            return;
+        }
+
+        socket.join(`quiz:${quizCode}`);
 
         if (!activeQuizRooms.has(quizCode)) {
             activeQuizRooms.set(quizCode, new Map());
@@ -26,23 +32,28 @@ module.exports = function registerQuizEvents(socket, io) {
         activeQuizRooms.get(quizCode).set(studentId, {
             name: studentName || 'Student',
             joinedAt: Date.now(),
-            status: 'active',   // active | submitted
+            status: 'active',
             score: null
         });
 
         // Notify teacher monitor room
         const students = Array.from(activeQuizRooms.get(quizCode).values());
+        console.log(`📝 ${studentName} joined quiz room ${quizCode} — total ${students.length} students`);
+        console.log(`📡 Emitting to teacher:${quizCode}`);
+
         io.to(`teacher:${quizCode}`).emit('quiz:students:update', {
             quizCode,
             count: students.length,
             students
         });
-
-        console.log(`📝 ${studentName} joined quiz room ${quizCode}`);
     });
 
-    // ── STUDENT: leaves exam room (tab close / manual exit) ───────
-    socket.on('quiz:leave', ({ quizCode, studentId }) => {
+    // ── STUDENT: leaves exam room ─────────────────────────────────
+    socket.on('quiz:leave', (data) => {
+        console.log('📤 quiz:leave received:', JSON.stringify(data));
+        const { studentId } = data || {};
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+
         if (!quizCode || !studentId) return;
 
         if (activeQuizRooms.has(quizCode)) {
@@ -61,38 +72,41 @@ module.exports = function registerQuizEvents(socket, io) {
     });
 
     // ── STUDENT: submitted exam ───────────────────────────────────
-    socket.on('quiz:submitted', ({ quizCode, studentId, studentName, score, timeTaken, totalQuestions }) => {
+    socket.on('quiz:submitted', (data) => {
+        console.log('✅ quiz:submitted received:', JSON.stringify(data));
+        const { studentId, studentName, score, timeTaken, totalQuestions } = data || {};
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+
         if (!quizCode || !studentId) return;
 
-        if (activeQuizRooms.has(quizCode)) {
-            const room = activeQuizRooms.get(quizCode);
-            if (room.has(studentId)) {
-                room.get(studentId).status = 'submitted';
-                room.get(studentId).score = score;
-                room.get(studentId).timeTaken = timeTaken;
-            } else {
-                // Add if not joined already (e.g. quick submit)
-                room.set(studentId, {
-                    name: studentName || 'Student',
-                    status: 'submitted',
-                    score,
-                    timeTaken,
-                    joinedAt: Date.now()
-                });
-            }
+        if (!activeQuizRooms.has(quizCode)) {
+            activeQuizRooms.set(quizCode, new Map());
+        }
+
+        const room = activeQuizRooms.get(quizCode);
+        if (room.has(studentId)) {
+            room.get(studentId).status = 'submitted';
+            room.get(studentId).score = score;
+            room.get(studentId).timeTaken = timeTaken;
+        } else {
+            room.set(studentId, {
+                name: studentName || 'Student',
+                status: 'submitted',
+                score,
+                timeTaken,
+                joinedAt: Date.now()
+            });
         }
 
         console.log(`✅ ${studentName} submitted quiz ${quizCode} with score ${score}%`);
 
-        // Push live leaderboard update to teacher monitor room
-        const students = Array.from((activeQuizRooms.get(quizCode) || new Map()).values());
+        const students = Array.from(room.values());
         io.to(`teacher:${quizCode}`).emit('quiz:students:update', {
             quizCode,
             count: students.length,
             students
         });
 
-        // Also emit a "submission alert" to teacher
         io.to(`teacher:${quizCode}`).emit('quiz:new:submission', {
             studentName: studentName || 'A student',
             score,
@@ -103,14 +117,16 @@ module.exports = function registerQuizEvents(socket, io) {
     });
 
     // ── TEACHER: starts watching a quiz room ─────────────────────
-    socket.on('quiz:teacher:watch', ({ quizCode }) => {
+    socket.on('quiz:teacher:watch', (data) => {
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
         if (!quizCode) return;
 
         socket.join(`teacher:${quizCode}`);
-        console.log(`👁 Teacher monitoring quiz ${quizCode}`);
+        console.log(`👁 Teacher monitoring quiz ${quizCode} (socket: ${socket.id})`);
 
-        // Send current state immediately
         const students = Array.from((activeQuizRooms.get(quizCode) || new Map()).values());
+        console.log(`👁 Sending current state: ${students.length} students`);
+
         socket.emit('quiz:students:update', {
             quizCode,
             count: students.length,
@@ -119,7 +135,14 @@ module.exports = function registerQuizEvents(socket, io) {
     });
 
     // ── TEACHER: stops watching ───────────────────────────────────
-    socket.on('quiz:teacher:unwatch', ({ quizCode }) => {
-        if (quizCode) socket.leave(`teacher:${quizCode}`);
+    socket.on('quiz:teacher:unwatch', (data) => {
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+        if (quizCode) {
+            socket.leave(`teacher:${quizCode}`);
+            console.log(`👁 Teacher stopped monitoring ${quizCode}`);
+        }
     });
+
+    // ── Debug: log all registered quiz events ────────────────────
+    console.log(`🎯 Quiz socket events registered for socket: ${socket.id}`);
 };
