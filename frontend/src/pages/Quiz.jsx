@@ -224,6 +224,17 @@ export default function StudySprintQuiz() {
                     document.exitFullscreen().catch(() => { });
                 }
             };
+
+                // Cleanup socket room if student leaves the page mid-exam
+                try {
+                    const socket = getSocket();
+                    if (socket) {
+                        socket.emit("quiz:leave", {
+                            quizCode: studentQuizCodeInput,
+                            studentId: user?._id || user?.id || "guest"
+                        });
+                    }
+                } catch(e) {}
         }
     }, [examStarted, joinedQuiz, activeTab, examSubmitted, showResult]);
 
@@ -255,6 +266,17 @@ export default function StudySprintQuiz() {
                 setShowResult(false);
                 setIsReviewingAnswers(false);
                 setWarnings(0);
+
+                // Pre-connect socket so teacher sees student joining
+                try {
+                    const socket = connectSocket();
+                    const doJoin = () => socket.emit('quiz:join', {
+                        quizCode: studentQuizCodeInput,
+                        studentId: user?._id || user?.id || 'guest',
+                        studentName: user?.name || 'Student'
+                    });
+                    if (socket.connected) doJoin(); else socket.once('connect', doJoin);
+                } catch (_e) {}
                 // Also update local quiz code display if needed, or just keep input
             } else {
                 alert(data.message || "Invalid Quiz Code!");
