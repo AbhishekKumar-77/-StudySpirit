@@ -440,7 +440,7 @@ export default function Planner() {
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', width: '100%', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
                             <div style={{
-                                background: 'linear-gradient(135deg, #10b981, #059669)',
+                                background: 'var(--neon-primary)',
                                 padding: '24px',
                                 borderRadius: '20px',
                                 boxShadow: '0 10px 40px rgba(16, 185, 129, 0.4)',
@@ -493,7 +493,7 @@ export default function Planner() {
                                         <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                                             Pomodoro Timer - {timerMode === 'work' ? 'Focus Time' : 'Break Time'}
                                         </h3>
-                                        <div style={{ fontSize: window.innerWidth < 768 ? '2rem' : '3rem', fontWeight: '900', color: '#f59e0b', marginTop: '8px' }}>
+                                        <div style={{ fontSize: window.innerWidth < 768 ? '2rem' : '3rem', fontWeight: '900', color: 'var(--neon-warning)', marginTop: '8px' }}>
                                             {formatTime(pomodoroTime)}
                                         </div>
                                     </div>
@@ -545,7 +545,7 @@ export default function Planner() {
                             { icon: CheckSquare, label: 'Tasks Completed', value: `${overview.performance.completedTasks}/${overview.performance.totalTasks}`, color: '#10b981' },
                             { icon: Target, label: 'Active Goals', value: overview.performance.totalGoals - overview.performance.completedGoals, color: '#06b6d4' },
                             { icon: Clock, label: 'Total Tasks', value: overview.performance.totalTasks, color: '#8b5cf6' },
-                            { icon: TrendingUp, label: 'Completion Rate', value: overview.performance.totalTasks > 0 ? `${Math.round((overview.performance.completedTasks / overview.performance.totalTasks) * 100)}%` : '0%', color: '#f59e0b' }
+                            { icon: TrendingUp, label: 'Completion Rate', value: overview.performance.totalTasks > 0 ? `${Math.round((overview.performance.completedTasks / overview.performance.totalTasks) * 100)}%` : '0%', color: 'var(--neon-warning)' }
                         ].map((stat, idx) => (
                             <div key={idx} style={{
                                 background: 'var(--bg-secondary)',
@@ -810,7 +810,7 @@ export default function Planner() {
                                             style={{
                                                 width: '100%',
                                                 padding: '16px',
-                                                background: 'rgba(30, 34, 54, 0.8)',
+                                                background: 'var(--bg-secondary)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
                                                 color: 'var(--text-primary)',
@@ -835,7 +835,7 @@ export default function Planner() {
                                                 style={{
                                                     width: '100%',
                                                     padding: '16px',
-                                                    background: 'rgba(30, 34, 54, 0.8)',
+                                                    background: 'var(--bg-secondary)',
                                                     border: '1px solid rgba(139, 92, 246, 0.3)',
                                                     borderRadius: '12px',
                                                     color: 'var(--text-primary)',
@@ -857,7 +857,7 @@ export default function Planner() {
                                                 style={{
                                                     width: '100%',
                                                     padding: '16px',
-                                                    background: 'rgba(30, 34, 54, 0.8)',
+                                                    background: 'var(--bg-secondary)',
                                                     border: '1px solid rgba(139, 92, 246, 0.3)',
                                                     borderRadius: '12px',
                                                     color: 'var(--text-primary)',
@@ -881,7 +881,7 @@ export default function Planner() {
                                             style={{
                                                 width: '100%',
                                                 padding: '16px',
-                                                background: 'rgba(30, 34, 54, 0.8)',
+                                                background: 'var(--bg-secondary)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
                                                 color: 'var(--text-primary)',
@@ -932,7 +932,7 @@ export default function Planner() {
                                             style={{
                                                 width: '100%',
                                                 padding: '16px',
-                                                background: 'rgba(30, 34, 54, 0.8)',
+                                                background: 'var(--bg-secondary)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
                                                 color: 'var(--text-primary)',
@@ -953,7 +953,7 @@ export default function Planner() {
                                             style={{
                                                 width: '100%',
                                                 padding: '16px',
-                                                background: 'rgba(30, 34, 54, 0.8)',
+                                                background: 'var(--bg-secondary)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
                                                 color: 'var(--text-primary)',
@@ -1182,7 +1182,7 @@ export default function Planner() {
                                             style={{
                                                 width: '100%',
                                                 padding: '16px',
-                                                background: 'linear-gradient(135deg, #10b981, #059669)',
+                                                background: 'var(--neon-primary)',
                                                 border: 'none',
                                                 borderRadius: '12px',
                                                 color: 'var(--text-primary)',
@@ -1224,7 +1224,7 @@ export default function Planner() {
                                         <button
                                             onClick={() => setShowAddTask(!showAddTask)}
                                             style={{
-                                                background: 'linear-gradient(135deg, #10b981, #059669)',
+                                                background: 'var(--neon-primary)',
                                                 border: 'none',
                                                 color: 'var(--text-primary)',
                                                 padding: '10px 20px',
@@ -1252,7 +1252,7 @@ export default function Planner() {
                                                 style={{
                                                     width: '100%',
                                                     padding: '14px',
-                                                    background: 'rgba(30, 34, 54, 0.8)',
+                                                    background: 'var(--bg-secondary)',
                                                     border: '1px solid rgba(16, 185, 129, 0.3)',
                                                     borderRadius: '10px',
                                                     color: 'var(--text-primary)',
@@ -1289,7 +1289,7 @@ export default function Planner() {
                                                     onClick={addTask}
                                                     style={{
                                                         flex: 1,
-                                                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                                                        background: 'var(--neon-primary)',
                                                         border: 'none',
                                                         color: 'var(--text-primary)',
                                                         padding: '12px',
@@ -1339,7 +1339,7 @@ export default function Planner() {
                                                                 key={task.id}
                                                                 style={{
                                                                     padding: '16px',
-                                                                    background: task.completed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(30, 34, 54, 0.8)',
+                                                                    background: task.completed ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-secondary)',
                                                                     borderRadius: '12px',
                                                                     border: '1px solid var(--border-color)',
                                                                     display: 'flex',
@@ -1365,13 +1365,13 @@ export default function Planner() {
                                                                         flexShrink: 0
                                                                     }}
                                                                 >
-                                                                    {task.completed && <Check size={16} color="white" />}
+                                                                    {task.completed && <Check size={16} color="#ffffff" />}
                                                                 </div>
                                                                 <div style={{ flex: 1 }}>
                                                                     <div style={{
                                                                         fontSize: '1rem',
                                                                         fontWeight: '600',
-                                                                        color: task.completed ? '#6ee7b7' : 'white',
+                                                                        color: task.completed ? 'var(--text-muted)' : 'var(--text-primary)',
                                                                         textDecoration: task.completed ? 'line-through' : 'none',
                                                                         marginBottom: '6px'
                                                                     }}>
@@ -1443,7 +1443,7 @@ export default function Planner() {
                                                     key={idx}
                                                     style={{
                                                         padding: '16px',
-                                                        background: 'rgba(30, 34, 54, 0.8)',
+                                                        background: 'var(--bg-secondary)',
                                                         borderRadius: '12px',
                                                         border: '1px solid var(--border-color)'
                                                     }}
@@ -1526,7 +1526,7 @@ export default function Planner() {
                                         style={{
                                             width: '100%',
                                             padding: '14px',
-                                            background: 'rgba(30, 34, 54, 0.8)',
+                                            background: 'var(--bg-secondary)',
                                             border: '1px solid rgba(6, 182, 212, 0.3)',
                                             borderRadius: '10px',
                                             color: 'var(--text-primary)',
@@ -1541,7 +1541,7 @@ export default function Planner() {
                                         style={{
                                             width: '100%',
                                             padding: '14px',
-                                            background: 'rgba(30, 34, 54, 0.8)',
+                                            background: 'var(--bg-secondary)',
                                             border: '1px solid rgba(6, 182, 212, 0.3)',
                                             borderRadius: '10px',
                                             color: 'var(--text-primary)',
@@ -1986,7 +1986,7 @@ export default function Planner() {
                                             border: '1px solid rgba(245, 158, 11, 0.3)',
                                             borderRadius: '50px',
                                             fontSize: '0.9rem',
-                                            color: '#f59e0b',
+                                            color: 'var(--neon-warning)',
                                             fontWeight: '600'
                                         }}>
                                             {tech}
@@ -2063,7 +2063,7 @@ export default function Planner() {
                                 }}
                                 style={{
                                     padding: '14px 28px',
-                                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                                    background: 'var(--neon-primary)',
                                     border: 'none',
                                     borderRadius: '12px',
                                     color: 'var(--text-primary)',
@@ -2087,7 +2087,7 @@ export default function Planner() {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: 'rgba(15, 23, 42, 0.9)',
+                    background: 'var(--bg-primary)',
                     backdropFilter: 'blur(10px)',
                     zIndex: 100,
                     display: 'flex',
