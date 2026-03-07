@@ -10,14 +10,15 @@ exports.generateAIQuestions = async (req, res) => {
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
 
         const prompt = `Generate ${count || 5} multiple choice questions about "${topic}" for ${difficulty || 'medium'} level students.
-        Each question must have 4 options.
+        Each question must have exactly 4 options.
+        IMPORTANT: Vary the correct answer position randomly and evenly — spread the "correct" index evenly across 0, 1, 2, and 3. Do NOT always set "correct" to 2 (option C). Make each question's correct answer a different index.
         Return a strictly valid JSON array of objects.
         Do not output any markdown code blocks, just the raw JSON.
         Structure per object:
         {
             "question": "Question text",
             "options": ["Option A", "Option B", "Option C", "Option D"],
-            "correct": 0, // Index of correct answer (0-3)
+            "correct": 0, // Index of correct answer (0-3), vary this across questions
             "type": "${type || 'mcq'}",
             "difficulty": "${difficulty || 'medium'}"
         }`;
@@ -91,13 +92,29 @@ exports.generateAIQuestions = async (req, res) => {
             else throw new Error("AI did not return an array");
         }
 
-        // Add IDs
-        questions = questions.map((q, i) => ({
-            ...q,
-            id: Date.now() + i,
-            options: q.options || ["True", "False"], // Safety fallback
-            correct: typeof q.correct === 'number' ? q.correct : 0
-        }));
+        // Add IDs + shuffle options to prevent AI bias (LLMs tend to put correct answer at C)
+        questions = questions.map((q, i) => {
+            const opts = q.options || ["True", "False"];
+            const correctIdx = typeof q.correct === 'number' ? q.correct : 0;
+            const correctAnswer = opts[correctIdx]; // Save the correct answer text
+
+            // Fisher-Yates shuffle
+            const shuffled = [...opts];
+            for (let j = shuffled.length - 1; j > 0; j--) {
+                const k = Math.floor(Math.random() * (j + 1));
+                [shuffled[j], shuffled[k]] = [shuffled[k], shuffled[j]];
+            }
+
+            // Find new position of the correct answer after shuffle
+            const newCorrectIdx = shuffled.indexOf(correctAnswer);
+
+            return {
+                ...q,
+                id: Date.now() + i,
+                options: shuffled,
+                correct: newCorrectIdx >= 0 ? newCorrectIdx : 0
+            };
+        });
 
         res.json({ success: true, questions });
 
