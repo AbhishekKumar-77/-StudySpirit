@@ -97,6 +97,7 @@ export default function Planner() {
     });
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         setTimeout(() => setAnimateCards(true), 100);
     }, []);
 
