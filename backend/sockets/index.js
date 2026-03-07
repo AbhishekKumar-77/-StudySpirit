@@ -5,6 +5,7 @@
 const registerGroupEvents = require('./groupEvents');
 const registerRoomEvents = require('./roomEvents');
 const registerWebRTCEvents = require('./webrtcEvents');
+const registerQuizEvents = require('./quizEvents');
 const User = require('../models/User');
 
 // Shared state — tracked per-process
@@ -81,6 +82,7 @@ module.exports = function setupSocketHandlers(io) {
         registerGroupEvents(socket, io);
         registerRoomEvents(socket, io, roomParticipants);
         registerWebRTCEvents(socket, io, webrtcRooms);
+        registerQuizEvents(socket, io);
 
         // Disconnect handler
         socket.on('disconnect', async () => {

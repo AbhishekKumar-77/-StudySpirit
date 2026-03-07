@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { API_BASE } from "../config";
+import { connectSocket, getSocket } from "../services/groupAPI";
 import {
     ArrowLeft, FilePlus, Clock, Edit, Sparkles, CheckCircle, Award,
     Trash2, Brain, Users, Send, BarChart, Target, Trophy, Zap,
@@ -276,6 +277,17 @@ export default function StudySprintQuiz() {
         setUserAnswers({});
         setCurrentQuestionIndex(0);
         setShowResult(false);
+
+        // Notify teacher: student joined exam
+        try {
+            const socket = connectSocket();
+            const doJoin = () => socket.emit('quiz:join', {
+                quizCode: studentQuizCodeInput,
+                studentId: user?._id || user?.id || 'guest',
+                studentName: user?.name || 'Student'
+            });
+            if (socket.connected) doJoin(); else socket.once('connect', doJoin);
+        } catch (e) { console.error('Socket join error', e); }
     };
 
     const submitExam = async () => {
@@ -310,7 +322,25 @@ export default function StudySprintQuiz() {
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft
                 })
             });
-            // Don't update local leaderboard state here, it will refresh on tab view
+            // Notify teacher: student submitted (real-time)
+            try {
+                const socket = getSocket();
+                if (socket) {
+                    const taken = (joinedQuiz.settings.timeLimit * 60) - timeLeft;
+                    socket.emit('quiz:submitted', {
+                        quizCode: studentQuizCodeInput,
+                        studentId: user?._id || user?.id || 'guest',
+                        studentName: user?.name || 'Student',
+                        score: Math.round(finalScore),
+                        timeTaken: taken,
+                        totalQuestions: quizQs.length
+                    });
+                    socket.emit('quiz:leave', {
+                        quizCode: studentQuizCodeInput,
+                        studentId: user?._id || user?.id || 'guest'
+                    });
+                }
+            } catch (se) { console.error('Socket submit error', se); }
         } catch (e) {
             console.error("Submit error", e);
         }
