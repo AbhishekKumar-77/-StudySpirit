@@ -136,7 +136,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 process.on('uncaughtException', (error) => {
-    console.error('💥 Uncaught Exception:', error.message);
+    console.error('💥 Uncaught Exception:', error.stack);
     // Give server time to finish ongoing requests before dying
     server.close(() => {
         process.exit(1);

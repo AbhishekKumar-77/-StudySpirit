@@ -1635,3 +1635,5 @@ For each Topic, list key **Subtopics**.
 
 
 
+
+exports.logHeartbeat = async (req, res) => { res.status(200).json({ success: true, message: 'Heartbeat logged' }); };
