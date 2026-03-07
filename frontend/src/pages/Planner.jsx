@@ -362,9 +362,7 @@ export default function Planner() {
 
             <div style={{
                 minHeight: '100vh',
-                background: focusMode
-                    ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
-                    : 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%)',
+                background: 'var(--bg-primary)',
                 position: 'relative',
                 paddingBottom: '60px',
                 transition: 'background 1s ease'
@@ -374,7 +372,7 @@ export default function Planner() {
                     position: 'absolute',
                     top: '10%',
                     right: '10%',
-                    width: '500px',
+                    width: 'min(100%, 500px)',
                     height: '500px',
                     background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
                     borderRadius: '50%',
@@ -384,13 +382,13 @@ export default function Planner() {
 
                 {/* Navbar */}
                 <nav style={{
-                    background: 'rgba(15, 23, 42, 0.8)',
+                    background: 'var(--bg-primary)',
                     backdropFilter: 'blur(20px)',
                     borderBottom: '1px solid rgba(16, 185, 129, 0.1)',
                     position: 'sticky',
                     top: 0,
                     zIndex: 50,
-                    padding: '20px 32px'
+                    padding: window.innerWidth < 768 ? '10px 16px' : '20px 32px'
                 }}>
                     <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <button
@@ -414,50 +412,10 @@ export default function Planner() {
                             Back to Dashboard
                         </button>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '10px 16px',
-                                background: 'rgba(245, 158, 11, 0.1)',
-                                borderRadius: '10px',
-                                border: '1px solid rgba(245, 158, 11, 0.3)'
-                            }}>
-                                <Flame size={20} color="#f59e0b" />
-                                <span style={{ fontSize: '0.875rem', fontWeight: '700', color: '#f59e0b' }}>
-                                    {studyStreak} Day Streak
-                                </span>
-                            </div>
-
-                            <button
-                                onClick={() => setFocusMode(!focusMode)}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    padding: '10px 16px',
-                                    background: focusMode ? 'rgba(139, 92, 246, 0.2)' : 'rgba(30, 34, 54, 0.6)',
-                                    border: `1px solid ${focusMode ? '#8b5cf6' : 'rgba(255, 255, 255, 0.08)'}`,
-                                    borderRadius: '10px',
-                                    color: focusMode ? '#a855f7' : '#8892a6',
-                                    cursor: 'pointer',
-                                    fontWeight: '600',
-                                    fontSize: '0.875rem'
-                                }}
-                            >
-                                {focusMode ? <Moon size={18} /> : <Sun size={18} />}
-                                Focus Mode
-                            </button>
-
-                            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
-                                Study Planner Pro
-                            </div>
-                        </div>
                     </div>
                 </nav>
 
-                <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 32px' }}>
+                <div style={{ maxWidth: '1400px', margin: '0 auto', padding: window.innerWidth < 768 ? '20px 16px' : '40px 32px' }}>
                     {/* Header */}
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(52, 211, 153, 0.2) 100%)',
@@ -480,7 +438,7 @@ export default function Planner() {
                             background: 'linear-gradient(90deg, transparent, #10b981, #34d399, transparent)'
                         }}></div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap', width: '100%', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
                             <div style={{
                                 background: 'linear-gradient(135deg, #10b981, #059669)',
                                 padding: '24px',
@@ -502,15 +460,15 @@ export default function Planner() {
                                     Module 3 - Enhanced Edition
                                 </div>
                                 <h1 style={{
-                                    fontSize: '2.5rem',
+                                    fontSize: window.innerWidth < 768 ? '1.75rem' : '2.5rem',
                                     fontWeight: '900',
-                                    color: 'white',
+                                    color: 'var(--text-primary)',
                                     marginBottom: '12px',
                                     letterSpacing: '-0.02em'
                                 }}>
                                     AI-Powered Study Planner
                                 </h1>
-                                <p style={{ fontSize: '1.125rem', color: '#a3b3c7' }}>
+                                <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)' }}>
                                     Smart planning, task management & goal tracking with advanced AI assistance
                                 </p>
                             </div>
@@ -524,7 +482,7 @@ export default function Planner() {
                             backdropFilter: 'blur(20px)',
                             borderRadius: '20px',
                             padding: '28px',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            border: '1px solid var(--border-color)',
                             marginBottom: '24px',
                             animation: 'fadeInUp 0.5s ease'
                         }}>
@@ -532,10 +490,10 @@ export default function Planner() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                     <Timer size={28} color="#f59e0b" />
                                     <div>
-                                        <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
+                                        <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                                             Pomodoro Timer - {timerMode === 'work' ? 'Focus Time' : 'Break Time'}
                                         </h3>
-                                        <div style={{ fontSize: '3rem', fontWeight: '900', color: '#f59e0b', marginTop: '8px' }}>
+                                        <div style={{ fontSize: window.innerWidth < 768 ? '2rem' : '3rem', fontWeight: '900', color: '#f59e0b', marginTop: '8px' }}>
                                             {formatTime(pomodoroTime)}
                                         </div>
                                     </div>
@@ -548,7 +506,7 @@ export default function Planner() {
                                             background: isTimerRunning ? 'rgba(239, 68, 68, 0.2)' : 'linear-gradient(135deg, #10b981, #059669)',
                                             border: 'none',
                                             borderRadius: '12px',
-                                            color: 'white',
+                                            color: 'var(--text-primary)',
                                             fontWeight: '700',
                                             cursor: 'pointer',
                                             display: 'flex',
@@ -567,10 +525,10 @@ export default function Planner() {
                                         }}
                                         style={{
                                             padding: '12px',
-                                            background: 'rgba(30, 34, 54, 0.6)',
-                                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                                            background: 'var(--bg-secondary)',
+                                            border: '1px solid var(--border-color)',
                                             borderRadius: '12px',
-                                            color: '#8892a6',
+                                            color: 'var(--text-secondary)',
                                             cursor: 'pointer'
                                         }}
                                     >
@@ -582,7 +540,7 @@ export default function Planner() {
                     )}
 
                     {/* Stats Overview */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '20px', marginBottom: '32px' }}>
                         {[
                             { icon: CheckSquare, label: 'Tasks Completed', value: `${overview.performance.completedTasks}/${overview.performance.totalTasks}`, color: '#10b981' },
                             { icon: Target, label: 'Active Goals', value: overview.performance.totalGoals - overview.performance.completedGoals, color: '#06b6d4' },
@@ -590,11 +548,11 @@ export default function Planner() {
                             { icon: TrendingUp, label: 'Completion Rate', value: overview.performance.totalTasks > 0 ? `${Math.round((overview.performance.completedTasks / overview.performance.totalTasks) * 100)}%` : '0%', color: '#f59e0b' }
                         ].map((stat, idx) => (
                             <div key={idx} style={{
-                                background: 'rgba(30, 34, 54, 0.6)',
+                                background: 'var(--bg-secondary)',
                                 backdropFilter: 'blur(20px)',
                                 borderRadius: '20px',
                                 padding: '28px',
-                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                border: '1px solid var(--border-color)',
                                 transition: 'all 0.4s',
                                 animation: `fadeIn ${0.5 + idx * 0.1}s ease`,
                                 cursor: 'pointer'
@@ -617,8 +575,8 @@ export default function Planner() {
                                         <stat.icon size={24} color={stat.color} />
                                     </div>
                                     <div>
-                                        <div style={{ fontSize: '0.875rem', color: '#8892a6', marginBottom: '4px' }}>{stat.label}</div>
-                                        <div style={{ fontSize: '1.75rem', fontWeight: '900', color: 'white' }}>{stat.value}</div>
+                                        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>{stat.label}</div>
+                                        <div style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--text-primary)' }}>{stat.value}</div>
                                     </div>
                                 </div>
                             </div>
@@ -645,8 +603,8 @@ export default function Planner() {
                                     border: 'none',
                                     cursor: 'pointer',
                                     transition: 'all 0.3s',
-                                    background: activeTab === tab.id ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(30, 34, 54, 0.6)',
-                                    color: 'white',
+                                    background: activeTab === tab.id ? 'linear-gradient(135deg, #10b981, #059669)' : 'var(--bg-secondary)',
+                                    color: 'var(--text-primary)',
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.05em',
                                     transform: activeTab === tab.id ? 'scale(1.05)' : 'scale(1)',
@@ -666,24 +624,24 @@ export default function Planner() {
                     {activeTab === 'techniques' && (
                         <div>
                             <div style={{ marginBottom: '32px' }}>
-                                <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'white', marginBottom: '12px' }}>
+                                <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '12px' }}>
                                     💡 Study Techniques Library
                                 </h2>
-                                <p style={{ fontSize: '1rem', color: '#8892a6' }}>
+                                <p style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>
                                     Master proven study methods to boost your learning efficiency
                                 </p>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: '24px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))', gap: '24px' }}>
                                 {studyTechniques.map((technique) => (
                                     <div
                                         key={technique.id}
                                         style={{
-                                            background: 'rgba(30, 34, 54, 0.6)',
+                                            background: 'var(--bg-secondary)',
                                             backdropFilter: 'blur(20px)',
                                             borderRadius: '20px',
                                             padding: '32px',
-                                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                                            border: '1px solid var(--border-color)',
                                             transition: 'all 0.4s'
                                         }}
                                         onMouseEnter={(e) => {
@@ -693,24 +651,24 @@ export default function Planner() {
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                                            e.currentTarget.style.borderColor = 'var(--border-color)';
                                             e.currentTarget.style.boxShadow = 'none';
                                         }}
                                     >
                                         {/* Header */}
                                         <div style={{ display: 'flex', alignItems: 'start', gap: '16px', marginBottom: '20px' }}>
                                             <div style={{
-                                                fontSize: '3rem',
+                                                fontSize: window.innerWidth < 768 ? '2rem' : '3rem',
                                                 lineHeight: 1,
                                                 animation: 'float 3s ease-in-out infinite'
                                             }}>
                                                 {technique.icon}
                                             </div>
                                             <div style={{ flex: 1 }}>
-                                                <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '8px' }}>
+                                                <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
                                                     {technique.name}
                                                 </h3>
-                                                <p style={{ fontSize: '0.95rem', color: '#a3b3c7', lineHeight: '1.6' }}>
+                                                <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
                                                     {technique.description}
                                                 </p>
                                             </div>
@@ -722,19 +680,19 @@ export default function Planner() {
                                                 <div style={{ fontSize: '1.5rem', fontWeight: '900', color: technique.color, marginBottom: '4px' }}>
                                                     {technique.effectiveness}%
                                                 </div>
-                                                <div style={{ fontSize: '0.75rem', color: '#8892a6' }}>Effective</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Effective</div>
                                             </div>
                                             <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '10px' }}>
                                                 <div style={{ fontSize: '0.875rem', fontWeight: '700', color: '#6366f1', marginBottom: '4px' }}>
                                                     {technique.difficulty}
                                                 </div>
-                                                <div style={{ fontSize: '0.75rem', color: '#8892a6' }}>Difficulty</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Difficulty</div>
                                             </div>
                                             <div style={{ textAlign: 'center', padding: '12px', background: 'rgba(6, 182, 212, 0.1)', borderRadius: '10px' }}>
                                                 <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#06b6d4', marginBottom: '4px', lineHeight: '1.3' }}>
                                                     {technique.timeCommitment}
                                                 </div>
-                                                <div style={{ fontSize: '0.75rem', color: '#8892a6' }}>Time</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Time</div>
                                             </div>
                                         </div>
 
@@ -770,11 +728,11 @@ export default function Planner() {
                                             border: `1px solid ${technique.color}30`,
                                             borderRadius: '12px'
                                         }}>
-                                            <div style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ fontSize: '0.875rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <ListChecks size={18} color={technique.color} />
                                                 How to Apply:
                                             </div>
-                                            <ol style={{ margin: 0, paddingLeft: '20px', color: '#a3b3c7', fontSize: '0.875rem', lineHeight: '1.8' }}>
+                                            <ol style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: '1.8' }}>
                                                 {technique.steps.map((step, idx) => (
                                                     <li key={idx} style={{ marginBottom: '6px' }}>{step}</li>
                                                 ))}
@@ -792,7 +750,7 @@ export default function Planner() {
                                                 width: '100%',
                                                 background: `linear-gradient(135deg, ${technique.color}, ${technique.color}dd)`,
                                                 border: 'none',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 padding: '14px',
                                                 borderRadius: '12px',
                                                 fontSize: '0.875rem',
@@ -821,10 +779,10 @@ export default function Planner() {
                     {activeTab === 'builder' && (
                         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
                             <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-                                <h2 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'white', marginBottom: '12px' }}>
+                                <h2 style={{ fontSize: window.innerWidth < 768 ? '1.75rem' : '2.5rem', fontWeight: '900', color: 'var(--text-primary)', marginBottom: '12px' }}>
                                     🤖 AI Study Plan Builder
                                 </h2>
-                                <p style={{ fontSize: '1.125rem', color: '#a3b3c7', maxWidth: '600px', margin: '0 auto' }}>
+                                <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
                                     Answer a few questions and let AI create a personalized study plan for you
                                 </p>
                             </div>
@@ -841,7 +799,7 @@ export default function Planner() {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                                     {/* Subjects/Topics */}
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '10px' }}>
+                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                             📚 What do you want to study?
                                         </label>
                                         <input
@@ -855,7 +813,7 @@ export default function Planner() {
                                                 background: 'rgba(30, 34, 54, 0.8)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 fontSize: '1rem',
                                                 outline: 'none'
                                             }}
@@ -865,7 +823,7 @@ export default function Planner() {
                                     {/* Days and Hours */}
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '10px' }}>
+                                            <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                                 📅 Days Available
                                             </label>
                                             <input
@@ -880,14 +838,14 @@ export default function Planner() {
                                                     background: 'rgba(30, 34, 54, 0.8)',
                                                     border: '1px solid rgba(139, 92, 246, 0.3)',
                                                     borderRadius: '12px',
-                                                    color: 'white',
+                                                    color: 'var(--text-primary)',
                                                     fontSize: '1rem',
                                                     outline: 'none'
                                                 }}
                                             />
                                         </div>
                                         <div>
-                                            <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '10px' }}>
+                                            <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                                 ⏰ Hours Per Day
                                             </label>
                                             <input
@@ -902,7 +860,7 @@ export default function Planner() {
                                                     background: 'rgba(30, 34, 54, 0.8)',
                                                     border: '1px solid rgba(139, 92, 246, 0.3)',
                                                     borderRadius: '12px',
-                                                    color: 'white',
+                                                    color: 'var(--text-primary)',
                                                     fontSize: '1rem',
                                                     outline: 'none'
                                                 }}
@@ -912,7 +870,7 @@ export default function Planner() {
 
                                     {/* Goal */}
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '10px' }}>
+                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                             🎯 What's your main goal?
                                         </label>
                                         <input
@@ -926,7 +884,7 @@ export default function Planner() {
                                                 background: 'rgba(30, 34, 54, 0.8)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 fontSize: '1rem',
                                                 outline: 'none'
                                             }}
@@ -935,7 +893,7 @@ export default function Planner() {
 
                                     {/* Current Level */}
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '10px' }}>
+                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                             📊 Your Current Level
                                         </label>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
@@ -945,10 +903,10 @@ export default function Planner() {
                                                     onClick={() => setPlanInputs({ ...planInputs, currentLevel: level })}
                                                     style={{
                                                         padding: '14px',
-                                                        background: planInputs.currentLevel === level ? 'rgba(139, 92, 246, 0.3)' : 'rgba(30, 34, 54, 0.6)',
-                                                        border: `2px solid ${planInputs.currentLevel === level ? '#8b5cf6' : 'rgba(255, 255, 255, 0.08)'}`,
+                                                        background: planInputs.currentLevel === level ? 'rgba(139, 92, 246, 0.3)' : 'var(--bg-secondary)',
+                                                        border: `2px solid ${planInputs.currentLevel === level ? '#8b5cf6' : 'var(--border-color)'}`,
                                                         borderRadius: '12px',
-                                                        color: 'white',
+                                                        color: 'var(--text-primary)',
                                                         fontSize: '0.875rem',
                                                         fontWeight: '700',
                                                         cursor: 'pointer',
@@ -964,7 +922,7 @@ export default function Planner() {
 
                                     {/* Deadline */}
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '10px' }}>
+                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                             📆 Deadline (Optional)
                                         </label>
                                         <input
@@ -977,7 +935,7 @@ export default function Planner() {
                                                 background: 'rgba(30, 34, 54, 0.8)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 fontSize: '1rem',
                                                 outline: 'none'
                                             }}
@@ -986,7 +944,7 @@ export default function Planner() {
 
                                     {/* Preferred Technique */}
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '10px' }}>
+                                        <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                             💡 Preferred Study Technique
                                         </label>
                                         <select
@@ -998,7 +956,7 @@ export default function Planner() {
                                                 background: 'rgba(30, 34, 54, 0.8)',
                                                 border: '1px solid rgba(139, 92, 246, 0.3)',
                                                 borderRadius: '12px',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 fontSize: '1rem',
                                                 outline: 'none',
                                                 cursor: 'pointer'
@@ -1058,7 +1016,7 @@ export default function Planner() {
                                             width: '100%',
                                             background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
                                             border: 'none',
-                                            color: 'white',
+                                            color: 'var(--text-primary)',
                                             padding: '18px',
                                             borderRadius: '14px',
                                             fontSize: '1.125rem',
@@ -1100,7 +1058,7 @@ export default function Planner() {
                                             <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#10b981', marginBottom: '8px' }}>
                                                 💡 Pro Tips for Better Results
                                             </div>
-                                            <ul style={{ margin: 0, paddingLeft: '20px', color: '#a3b3c7', fontSize: '0.875rem', lineHeight: '1.7' }}>
+                                            <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: '1.7' }}>
                                                 <li>Be specific about your subjects (e.g., "React Hooks, Redux" instead of just "React")</li>
                                                 <li>Set realistic daily hours based on your schedule</li>
                                                 <li>Include both learning and practice time in your estimate</li>
@@ -1116,14 +1074,14 @@ export default function Planner() {
                                         <div style={{ fontSize: '1.5rem', color: '#a855f7', fontWeight: '700', marginBottom: '16px', animation: 'pulse 1.5s infinite' }}>
                                             🤖 AI is crafting your perfect plan...
                                         </div>
-                                        <div style={{ color: '#a3b3c7' }}>Analyzing your goals, subjects, and schedule</div>
+                                        <div style={{ color: 'var(--text-muted)' }}>Analyzing your goals, subjects, and schedule</div>
                                     </div>
                                 )}
 
                                 {generatedPlan && generatedPlan.status === 'complete' && (
                                     <div style={{
                                         marginTop: '32px',
-                                        background: '#1e2236',
+                                        background: 'var(--bg-secondary)',
                                         borderRadius: '20px',
                                         padding: '32px',
                                         border: '1px solid rgba(139, 92, 246, 0.3)',
@@ -1131,10 +1089,10 @@ export default function Planner() {
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '24px' }}>
                                             <div>
-                                                <h3 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'white', marginBottom: '8px' }}>
+                                                <h3 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px' }}>
                                                     {generatedPlan.name}
                                                 </h3>
-                                                <p style={{ color: '#a3b3c7', fontSize: '1rem' }}>{generatedPlan.description}</p>
+                                                <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>{generatedPlan.description}</p>
                                             </div>
                                             <div style={{ padding: '8px 16px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', borderRadius: '8px', fontWeight: '700' }}>
                                                 AI Generated
@@ -1143,21 +1101,21 @@ export default function Planner() {
 
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
                                             <div style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', textAlign: 'center' }}>
-                                                <div style={{ color: '#8892a6', fontSize: '0.85rem', marginBottom: '4px' }}>Duration</div>
-                                                <div style={{ color: 'white', fontWeight: '700', fontSize: '1.2rem' }}>{generatedPlan.duration}</div>
+                                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '4px' }}>Duration</div>
+                                                <div style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '1.2rem' }}>{generatedPlan.duration}</div>
                                             </div>
                                             <div style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', textAlign: 'center' }}>
-                                                <div style={{ color: '#8892a6', fontSize: '0.85rem', marginBottom: '4px' }}>Daily Focus</div>
-                                                <div style={{ color: 'white', fontWeight: '700', fontSize: '1.2rem' }}>{generatedPlan.hoursPerDay}h</div>
+                                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '4px' }}>Daily Focus</div>
+                                                <div style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '1.2rem' }}>{generatedPlan.hoursPerDay}h</div>
                                             </div>
                                             <div style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '12px', textAlign: 'center' }}>
-                                                <div style={{ color: '#8892a6', fontSize: '0.85rem', marginBottom: '4px' }}>Subjects</div>
-                                                <div style={{ color: 'white', fontWeight: '700', fontSize: '1.2rem' }}>{generatedPlan.subjects.length}</div>
+                                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '4px' }}>Subjects</div>
+                                                <div style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '1.2rem' }}>{generatedPlan.subjects.length}</div>
                                             </div>
                                         </div>
 
                                         <div style={{ marginBottom: '32px' }}>
-                                            <h4 style={{ color: 'white', fontWeight: '700', marginBottom: '16px' }}>Your Schedule Snapshot</h4>
+                                            <h4 style={{ color: 'var(--text-primary)', fontWeight: '700', marginBottom: '16px' }}>Your Schedule Snapshot</h4>
                                             {Object.entries(generatedPlan.schedule).map(([day, details], idx) => (
                                                 <div key={idx} style={{ display: 'flex', gap: '16px', marginBottom: '12px', padding: '12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px' }}>
                                                     <div style={{ minWidth: '80px', color: '#a855f7', fontWeight: '700', textTransform: 'capitalize' }}>{day}</div>
@@ -1227,7 +1185,7 @@ export default function Planner() {
                                                 background: 'linear-gradient(135deg, #10b981, #059669)',
                                                 border: 'none',
                                                 borderRadius: '12px',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 fontSize: '1.1rem',
                                                 fontWeight: '800',
                                                 cursor: 'pointer',
@@ -1252,14 +1210,14 @@ export default function Planner() {
                             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
                                 {/* Task List */}
                                 <div style={{
-                                    background: 'rgba(30, 34, 54, 0.6)',
+                                    background: 'var(--bg-secondary)',
                                     backdropFilter: 'blur(20px)',
                                     borderRadius: '20px',
                                     padding: '28px',
-                                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                                    border: '1px solid var(--border-color)'
                                 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                                        <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <CheckSquare size={24} color="#10b981" />
                                             Task Manager
                                         </h3>
@@ -1268,7 +1226,7 @@ export default function Planner() {
                                             style={{
                                                 background: 'linear-gradient(135deg, #10b981, #059669)',
                                                 border: 'none',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 padding: '10px 20px',
                                                 borderRadius: '10px',
                                                 fontSize: '0.875rem',
@@ -1297,7 +1255,7 @@ export default function Planner() {
                                                     background: 'rgba(30, 34, 54, 0.8)',
                                                     border: '1px solid rgba(16, 185, 129, 0.3)',
                                                     borderRadius: '10px',
-                                                    color: 'white',
+                                                    color: 'var(--text-primary)',
                                                     fontSize: '0.95rem',
                                                     marginBottom: '12px'
                                                 }}
@@ -1312,10 +1270,10 @@ export default function Planner() {
                                                             padding: '10px',
                                                             background: newTask.priority === priority ?
                                                                 (priority === 'high' ? 'rgba(239, 68, 68, 0.2)' : priority === 'medium' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(59, 130, 246, 0.2)') :
-                                                                'rgba(30, 34, 54, 0.6)',
+                                                                'var(--bg-secondary)',
                                                             border: `1px solid ${priority === 'high' ? '#ef4444' : priority === 'medium' ? '#f59e0b' : '#3b82f6'}`,
                                                             borderRadius: '8px',
-                                                            color: 'white',
+                                                            color: 'var(--text-primary)',
                                                             fontSize: '0.875rem',
                                                             fontWeight: '600',
                                                             cursor: 'pointer',
@@ -1333,7 +1291,7 @@ export default function Planner() {
                                                         flex: 1,
                                                         background: 'linear-gradient(135deg, #10b981, #059669)',
                                                         border: 'none',
-                                                        color: 'white',
+                                                        color: 'var(--text-primary)',
                                                         padding: '12px',
                                                         borderRadius: '10px',
                                                         fontWeight: '700',
@@ -1383,14 +1341,14 @@ export default function Planner() {
                                                                     padding: '16px',
                                                                     background: task.completed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(30, 34, 54, 0.8)',
                                                                     borderRadius: '12px',
-                                                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                                                    border: '1px solid var(--border-color)',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     gap: '16px',
                                                                     transition: 'all 0.3s'
                                                                 }}
                                                                 onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
-                                                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'}
+                                                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                                                             >
                                                                 <div
                                                                     onClick={() => toggleTask(task.id)}
@@ -1430,10 +1388,10 @@ export default function Planner() {
                                                                         }}>
                                                                             {task.priority}
                                                                         </span>
-                                                                        <span style={{ fontSize: '0.75rem', color: '#8892a6', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                                             <Clock size={14} /> {task.time}
                                                                         </span>
-                                                                        <span style={{ fontSize: '0.75rem', color: '#8892a6' }}>
+                                                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                                                                             {task.subject}
                                                                         </span>
                                                                     </div>
@@ -1466,13 +1424,13 @@ export default function Planner() {
 
                                 {/* Weekly Overview */}
                                 <div style={{
-                                    background: 'rgba(30, 34, 54, 0.6)',
+                                    background: 'var(--bg-secondary)',
                                     backdropFilter: 'blur(20px)',
                                     borderRadius: '20px',
                                     padding: '28px',
-                                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                                    border: '1px solid var(--border-color)'
                                 }}>
-                                    <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <Calendar size={24} color="#10b981" />
                                         Weekly Activity
                                     </h3>
@@ -1487,15 +1445,15 @@ export default function Planner() {
                                                         padding: '16px',
                                                         background: 'rgba(30, 34, 54, 0.8)',
                                                         borderRadius: '12px',
-                                                        border: '1px solid rgba(255, 255, 255, 0.08)'
+                                                        border: '1px solid var(--border-color)'
                                                     }}
                                                 >
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                                         <div>
-                                                            <div style={{ fontSize: '1rem', fontWeight: '700', color: 'white', marginBottom: '4px' }}>
+                                                            <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
                                                                 {day.day}
                                                             </div>
-                                                            <div style={{ fontSize: '0.875rem', color: '#8892a6' }}>
+                                                            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
                                                                 {day.completed} completed / {day.created} created
                                                             </div>
                                                         </div>
@@ -1524,7 +1482,7 @@ export default function Planner() {
                     {activeTab === 'goals' && (
                         <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                                <h3 style={{ fontSize: '1.75rem', fontWeight: '700', color: 'white' }}>
+                                <h3 style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                                     Your Goals
                                 </h3>
                                 <button
@@ -1532,7 +1490,7 @@ export default function Planner() {
                                     style={{
                                         background: 'linear-gradient(135deg, #06b6d4, #0ea5e9)',
                                         border: 'none',
-                                        color: 'white',
+                                        color: 'var(--text-primary)',
                                         padding: '12px 24px',
                                         borderRadius: '12px',
                                         fontSize: '0.875rem',
@@ -1554,10 +1512,10 @@ export default function Planner() {
                                     backdropFilter: 'blur(20px)',
                                     borderRadius: '20px',
                                     padding: '28px',
-                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    border: '1px solid var(--border-color)',
                                     marginBottom: '24px'
                                 }}>
-                                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '16px' }}>
+                                    <h4 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '16px' }}>
                                         Create New Goal
                                     </h4>
                                     <input
@@ -1571,7 +1529,7 @@ export default function Planner() {
                                             background: 'rgba(30, 34, 54, 0.8)',
                                             border: '1px solid rgba(6, 182, 212, 0.3)',
                                             borderRadius: '10px',
-                                            color: 'white',
+                                            color: 'var(--text-primary)',
                                             fontSize: '0.95rem',
                                             marginBottom: '12px'
                                         }}
@@ -1586,7 +1544,7 @@ export default function Planner() {
                                             background: 'rgba(30, 34, 54, 0.8)',
                                             border: '1px solid rgba(6, 182, 212, 0.3)',
                                             borderRadius: '10px',
-                                            color: 'white',
+                                            color: 'var(--text-primary)',
                                             fontSize: '0.95rem',
                                             marginBottom: '12px'
                                         }}
@@ -1599,10 +1557,10 @@ export default function Planner() {
                                                 style={{
                                                     flex: 1,
                                                     padding: '12px',
-                                                    background: newGoal.type === type ? 'rgba(6, 182, 212, 0.2)' : 'rgba(30, 34, 54, 0.6)',
-                                                    border: `1px solid ${newGoal.type === type ? '#06b6d4' : 'rgba(255, 255, 255, 0.08)'}`,
+                                                    background: newGoal.type === type ? 'rgba(6, 182, 212, 0.2)' : 'var(--bg-secondary)',
+                                                    border: `1px solid ${newGoal.type === type ? '#06b6d4' : 'var(--border-color)'}`,
                                                     borderRadius: '10px',
-                                                    color: 'white',
+                                                    color: 'var(--text-primary)',
                                                     fontSize: '0.875rem',
                                                     fontWeight: '600',
                                                     cursor: 'pointer',
@@ -1620,7 +1578,7 @@ export default function Planner() {
                                                 flex: 1,
                                                 background: 'linear-gradient(135deg, #06b6d4, #0ea5e9)',
                                                 border: 'none',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 padding: '12px',
                                                 borderRadius: '10px',
                                                 fontWeight: '700',
@@ -1653,11 +1611,11 @@ export default function Planner() {
                                     <div
                                         key={goal.id}
                                         style={{
-                                            background: 'rgba(30, 34, 54, 0.6)',
+                                            background: 'var(--bg-secondary)',
                                             backdropFilter: 'blur(20px)',
                                             borderRadius: '20px',
                                             padding: '28px',
-                                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                                            border: '1px solid var(--border-color)',
                                             transition: 'all 0.4s',
                                             cursor: 'pointer'
                                         }}
@@ -1668,13 +1626,13 @@ export default function Planner() {
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                                            e.currentTarget.style.borderColor = 'var(--border-color)';
                                             e.currentTarget.style.boxShadow = 'none';
                                         }}
                                     >
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
                                             <div style={{ flex: 1 }}>
-                                                <h4 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '8px' }}>
+                                                <h4 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
                                                     {goal.title}
                                                 </h4>
                                                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -1689,7 +1647,7 @@ export default function Planner() {
                                                     }}>
                                                         {goal.type}
                                                     </span>
-                                                    <span style={{ fontSize: '0.75rem', color: '#8892a6', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                         <Calendar size={14} /> {goal.deadline}
                                                     </span>
                                                 </div>
@@ -1699,8 +1657,8 @@ export default function Planner() {
 
                                         <div style={{ marginBottom: '16px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                <span style={{ fontSize: '0.875rem', color: '#8892a6' }}>Progress</span>
-                                                <span style={{ fontSize: '0.875rem', fontWeight: '700', color: 'white' }}>{goal.progress}%</span>
+                                                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Progress</span>
+                                                <span style={{ fontSize: '0.875rem', fontWeight: '700', color: 'var(--text-primary)' }}>{goal.progress}%</span>
                                             </div>
                                             <div style={{ width: '100%', height: '8px', background: 'rgba(6, 182, 212, 0.2)', borderRadius: '999px', overflow: 'hidden' }}>
                                                 <div style={{
@@ -1714,7 +1672,7 @@ export default function Planner() {
                                         </div>
 
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'rgba(6, 182, 212, 0.1)', borderRadius: '10px' }}>
-                                            <span style={{ fontSize: '0.875rem', color: '#8892a6' }}>Milestones</span>
+                                            <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Milestones</span>
                                             <span style={{ fontSize: '1rem', fontWeight: '700', color: '#06b6d4' }}>
                                                 {Math.round((goal.progress / 100) * goal.milestones)}/{goal.milestones}
                                             </span>
@@ -1723,8 +1681,8 @@ export default function Planner() {
                                         <div style={{ marginTop: '16px' }}>
                                             <div style={{ marginBottom: '12px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                                    <span style={{ fontSize: '0.75rem', color: '#8892a6' }}>Update Progress</span>
-                                                    <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'white' }}>{goal.progress}%</span>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Update Progress</span>
+                                                    <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-primary)' }}>{goal.progress}%</span>
                                                 </div>
                                                 <input
                                                     type="range"
@@ -1773,16 +1731,16 @@ export default function Planner() {
                     )}
 
                     {activeTab === 'analytics' && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: '24px' }}>
                             {/* Performance Chart */}
                             <div style={{
-                                background: 'rgba(30, 34, 54, 0.6)',
+                                background: 'var(--bg-secondary)',
                                 backdropFilter: 'blur(20px)',
                                 borderRadius: '20px',
                                 padding: '28px',
-                                border: '1px solid rgba(255, 255, 255, 0.08)'
+                                border: '1px solid var(--border-color)'
                             }}>
-                                <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <TrendingUp size={24} color="#10b981" />
                                     Performance Trends
                                 </h3>
@@ -1805,7 +1763,7 @@ export default function Planner() {
                                                         transition: 'height 1s ease'
                                                     }}
                                                 />
-                                                <div style={{ fontSize: '0.75rem', color: '#8892a6', fontWeight: '600' }}>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
                                                     {day.day}
                                                 </div>
                                             </div>
@@ -1820,9 +1778,9 @@ export default function Planner() {
                                 backdropFilter: 'blur(20px)',
                                 borderRadius: '20px',
                                 padding: '28px',
-                                border: '1px solid rgba(255, 255, 255, 0.08)'
+                                border: '1px solid var(--border-color)'
                             }}>
-                                <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'white', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <Sparkles size={24} color="#a855f7" />
                                     AI Insights
                                 </h3>
@@ -1851,7 +1809,7 @@ export default function Planner() {
                                                 <div style={{ display: 'flex', gap: '12px' }}>
                                                     <div style={{ fontSize: '2rem' }}>{style.icon}</div>
                                                     <div>
-                                                        <div style={{ fontSize: '0.95rem', fontWeight: '700', color: 'white', marginBottom: '4px' }}>
+                                                        <div style={{ fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
                                                             {insight.type.charAt(0).toUpperCase() + insight.type.slice(1)}
                                                         </div>
                                                         <div style={{ fontSize: '0.875rem', color: '#e9d5ff', lineHeight: '1.6' }}>
@@ -1865,7 +1823,7 @@ export default function Planner() {
                                         <div style={{
                                             padding: '24px',
                                             textAlign: 'center',
-                                            color: '#8892a6'
+                                            color: 'var(--text-secondary)'
                                         }}>
                                             <Sparkles size={32} color="#a855f7" style={{ marginBottom: '12px' }} />
                                             <p>Start adding tasks and goals to see personalized AI insights!</p>
@@ -1915,7 +1873,7 @@ export default function Planner() {
                         <div style={{
                             padding: '32px',
                             background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1))',
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderBottom: '1px solid var(--border-color)',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'start'
@@ -1935,10 +1893,10 @@ export default function Planner() {
                                 }}>
                                     {selectedTemplate.difficulty} Difficulty
                                 </div>
-                                <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'white', marginBottom: '8px' }}>
+                                <h2 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px' }}>
                                     {selectedTemplate.name}
                                 </h2>
-                                <p style={{ fontSize: '1rem', color: '#a3b3c7' }}>
+                                <p style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>
                                     {selectedTemplate.description}
                                 </p>
                             </div>
@@ -1947,7 +1905,7 @@ export default function Planner() {
                                 style={{
                                     background: 'rgba(255, 255, 255, 0.1)',
                                     border: 'none',
-                                    color: 'white',
+                                    color: 'var(--text-primary)',
                                     width: '40px',
                                     height: '40px',
                                     borderRadius: '50%',
@@ -1968,24 +1926,24 @@ export default function Planner() {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '32px' }}>
                                 <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '20px', borderRadius: '16px', textAlign: 'center' }}>
                                     <Clock size={24} color="#6366f1" style={{ marginBottom: '8px' }} />
-                                    <div style={{ fontSize: '0.875rem', color: '#8892a6', marginBottom: '4px' }}>Total Duration</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>{selectedTemplate.duration}</div>
+                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Total Duration</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>{selectedTemplate.duration}</div>
                                 </div>
                                 <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '20px', borderRadius: '16px', textAlign: 'center' }}>
                                     <Timer size={24} color="#f59e0b" style={{ marginBottom: '8px' }} />
-                                    <div style={{ fontSize: '0.875rem', color: '#8892a6', marginBottom: '4px' }}>Daily Commitment</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>{selectedTemplate.hoursPerDay} Hours</div>
+                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Daily Commitment</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>{selectedTemplate.hoursPerDay} Hours</div>
                                 </div>
                                 <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '20px', borderRadius: '16px', textAlign: 'center' }}>
                                     <Target size={24} color="#ef4444" style={{ marginBottom: '8px' }} />
-                                    <div style={{ fontSize: '0.875rem', color: '#8892a6', marginBottom: '4px' }}>Topics Covered</div>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>{selectedTemplate.subjects.length} Subjects</div>
+                                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Topics Covered</div>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>{selectedTemplate.subjects.length} Subjects</div>
                                 </div>
                             </div>
 
                             {/* Schedule Preview */}
                             <div style={{ marginBottom: '32px' }}>
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <CalendarDays size={20} color="#10b981" />
                                     Sample Schedule
                                 </h3>
@@ -2004,8 +1962,8 @@ export default function Planner() {
                                                 {day}
                                             </div>
                                             <div style={{ flex: 1 }}>
-                                                <div style={{ color: 'white', fontWeight: '600', marginBottom: '4px' }}>{details.focus}</div>
-                                                <div style={{ fontSize: '0.85rem', color: '#8892a6' }}>
+                                                <div style={{ color: 'var(--text-primary)', fontWeight: '600', marginBottom: '4px' }}>{details.focus}</div>
+                                                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                                     {details.hours} hours study • {details.breaks} breaks
                                                 </div>
                                             </div>
@@ -2016,7 +1974,7 @@ export default function Planner() {
 
                             {/* Recommended Techniques */}
                             <div>
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'white', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <Lightbulb size={20} color="#f59e0b" />
                                     Recommended Techniques
                                 </h3>
@@ -2041,7 +1999,7 @@ export default function Planner() {
                         {/* Footer */}
                         <div style={{
                             padding: '24px 32px',
-                            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderTop: '1px solid var(--border-color)',
                             background: 'rgba(0, 0, 0, 0.2)',
                             display: 'flex',
                             justifyContent: 'flex-end',
@@ -2054,7 +2012,7 @@ export default function Planner() {
                                     background: 'transparent',
                                     border: '1px solid rgba(255, 255, 255, 0.1)',
                                     borderRadius: '12px',
-                                    color: 'white',
+                                    color: 'var(--text-primary)',
                                     fontSize: '1rem',
                                     fontWeight: '600',
                                     cursor: 'pointer'
@@ -2108,7 +2066,7 @@ export default function Planner() {
                                     background: 'linear-gradient(135deg, #10b981, #059669)',
                                     border: 'none',
                                     borderRadius: '12px',
-                                    color: 'white',
+                                    color: 'var(--text-primary)',
                                     fontSize: '1rem',
                                     fontWeight: '700',
                                     cursor: 'pointer',
@@ -2191,7 +2149,7 @@ export default function Planner() {
                             </div>
 
                             <div style={{ flex: 1 }}>
-                                <h2 style={{ fontSize: '2.5rem', fontWeight: '800', color: 'white', marginBottom: '10px' }}>
+                                <h2 style={{ fontSize: window.innerWidth < 768 ? '1.75rem' : '2.5rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '10px' }}>
                                     {selectedTechnique.name}
                                 </h2>
                                 <p style={{ fontSize: '1.2rem', color: '#cbd5e1', marginBottom: '30px', lineHeight: '1.6' }}>
@@ -2223,14 +2181,14 @@ export default function Planner() {
                                 </div>
 
                                 <div style={{ marginBottom: '30px' }}>
-                                    <h3 style={{ color: 'white', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <ListChecks size={20} />
                                         How to apply
                                     </h3>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                         {selectedTechnique.steps.map((step, i) => (
                                             <div key={i} style={{ display: 'flex', gap: '15px', alignItems: 'start', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                                                <div style={{ background: selectedTechnique.color, color: 'white', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.8rem', flexShrink: 0 }}>
+                                                <div style={{ background: selectedTechnique.color, color: 'var(--text-primary)', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.8rem', flexShrink: 0 }}>
                                                     {i + 1}
                                                 </div>
                                                 <div style={{ color: '#cbd5e1' }}>{step}</div>
@@ -2268,7 +2226,7 @@ export default function Planner() {
                                         background: `linear-gradient(135deg, ${selectedTechnique.color}, ${selectedTechnique.color}cc)`,
                                         border: 'none',
                                         borderRadius: '16px',
-                                        color: 'white',
+                                        color: 'var(--text-primary)',
                                         fontSize: '1.2rem',
                                         fontWeight: '800',
                                         cursor: 'pointer',
