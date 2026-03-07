@@ -120,7 +120,8 @@ const userSchema = new mongoose.Schema({
         totalScore: { type: Number, default: 0 },
         quizzesTaken: { type: Number, default: 0 },
         averageScore: { type: Number, default: 0 },
-        highestScore: { type: Number, default: 0 }
+        highestScore: { type: Number, default: 0 },
+        bestTime: { type: Number, default: null } // Best time in seconds (lowest = best)
     },
     lastLoginDate: {
         type: Date,

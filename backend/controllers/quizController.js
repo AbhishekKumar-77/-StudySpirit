@@ -221,6 +221,13 @@ exports.submitResult = async (req, res) => {
         user.quizStats.averageScore = Math.round(user.quizStats.totalScore / user.quizStats.quizzesTaken);
         user.quizStats.highestScore = Math.max(user.quizStats.highestScore, percentage);
 
+        // Track best time (lowest time taken wins for same or better score)
+        if (timeTaken > 0) {
+            if (!user.quizStats.bestTime || timeTaken < user.quizStats.bestTime) {
+                user.quizStats.bestTime = timeTaken;
+            }
+        }
+
         // Update Global Stats (XP, problems)
         if (!user.stats) user.stats = {};
         user.stats.totalProblems = (user.stats.totalProblems || 0) + totalQuestions;
@@ -256,15 +263,25 @@ exports.getLeaderboard = async (req, res) => {
 
         // Transform for frontend
         const formatted = leaderboard.map((u, index) => {
+            // Format best time as mm:ss
+            const bt = u.quizStats.bestTime;
+            let timeStr = 'N/A';
+            if (bt && bt > 0) {
+                const m = Math.floor(bt / 60);
+                const s = bt % 60;
+                timeStr = `${m}m ${s}s`;
+            }
             return {
                 id: u._id,
                 rank: index + 1,
                 name: u.name,
-                score: u.quizStats.highestScore || 0, // Show highest score as main metric
-                time: "10m", // Mock time or store it
+                score: u.quizStats.highestScore || 0,
+                time: timeStr,
                 streak: u.stats?.streak || 0,
                 isYou: req.user ? (u._id.toString() === req.user.id) : false,
-                avatar: u.avatar || '👨‍🎓'
+                avatar: u.avatar || '👨‍🎓',
+                quizzesTaken: u.quizStats.quizzesTaken || 0,
+                averageScore: u.quizStats.averageScore || 0
             };
         });
 
