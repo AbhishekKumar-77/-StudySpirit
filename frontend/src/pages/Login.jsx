@@ -32,7 +32,7 @@ const Login = () => {
 
     const roleConfig = {
         student: { title: "Student Portal", subtitle: "Access your learning dashboard", icon: "📚" },
-        teacher: { title: "Instructor Portal", subtitle: "Manage your courses", icon: "🎓" },
+        teacher: { title: "Teacher Portal", subtitle: "Manage quizzes & track students", icon: "🎓" },
         recruiter: { title: "Recruiter Portal", subtitle: "Discover top talent", icon: "💼" },
         default: { title: "Welcome Back", subtitle: "Sign in to continue", icon: "✨" }
     };
@@ -66,9 +66,11 @@ const Login = () => {
             if (data.token) {
                 localStorage.setItem('token', data.token);
             }
-            const finalRole = role || data.user.role;
+            const finalRole = data.user?.role || role || 'student';
             loginUser({ ...data.user, role: finalRole });
-            navigate(data.user.isAdmin ? '/admin' : '/dashboard');
+            if (data.user.isAdmin) navigate('/admin');
+            else if (finalRole === 'teacher') navigate('/teacher-dashboard');
+            else navigate('/dashboard');
         } catch (err) {
             setError(err.message || (isLogin ? 'Authentication failed' : 'Registration failed'));
         } finally {

@@ -25,6 +25,7 @@ const ProjectLab = lazy(() => import('./pages/ProjectLab'));
 const EventsHub = lazy(() => import('./pages/EventsHub'));
 const Certification = lazy(() => import('./pages/Certification'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard'));
 
 // ============== GAMING LOADING SCREEN ==============
 const PageLoader = () => (
@@ -102,6 +103,7 @@ function App() {
               <Route path="/soft-skills" element={<SoftSkills />} />
               <Route path="/code-editor" element={<CodeEditor />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
             </Routes>
           </Suspense>
         </Router>
