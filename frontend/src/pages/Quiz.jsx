@@ -225,16 +225,16 @@ export default function StudySprintQuiz() {
                 }
             };
 
-                // Cleanup socket room if student leaves the page mid-exam
-                try {
-                    const socket = getSocket();
-                    if (socket) {
-                        socket.emit("quiz:leave", {
-                            quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
-                            studentId: user?._id || user?.id || "guest"
-                        });
-                    }
-                } catch(e) {}
+            // Cleanup socket room if student leaves the page mid-exam
+            try {
+                const socket = getSocket();
+                if (socket) {
+                    socket.emit("quiz:leave", {
+                        quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
+                        studentId: user?._id || user?.id || "guest"
+                    });
+                }
+            } catch (e) { }
         }
     }, [examStarted, joinedQuiz, activeTab, examSubmitted, showResult]);
 
@@ -252,7 +252,7 @@ export default function StudySprintQuiz() {
 
         try {
             // Fetch quiz from backend
-            const res = await fetch(`${API_BASE}/quiz/${studentQuizCodeInput}`);
+            const res = await fetch(`${API_BASE}/quiz/${studentQuizCodeInput.trim().toUpperCase()}`);
             const data = await res.json();
 
             if (data.success) {
@@ -339,6 +339,7 @@ export default function StudySprintQuiz() {
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
+                    quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                     score: correctCount, // Sending correct count as score for backend calculation
                     totalQuestions: quizQs.length,
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft
@@ -354,6 +355,7 @@ export default function StudySprintQuiz() {
                         studentId: user?._id || user?.id || 'guest',
                         studentName: user?.name || 'Student',
                         score: Math.round(finalScore),
+                        correctAnswers: correctCount,
                         timeTaken: taken,
                         totalQuestions: quizQs.length
                     });

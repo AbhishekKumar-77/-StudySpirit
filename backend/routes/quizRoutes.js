@@ -21,6 +21,12 @@ router.get('/leaderboard', quizController.getLeaderboard);
 // Submit Result
 router.post('/submit', quizController.submitResult);
 
+// Delete a Quiz
+router.delete('/:code', auth, quizController.deleteQuiz);
+
+// Get Specific Quiz Leaderboard
+router.get('/:code/leaderboard', quizController.getSpecificLeaderboard);
+
 // Get Quiz by Code
 router.get('/:code', quizController.getQuiz);
 

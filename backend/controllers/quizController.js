@@ -225,8 +225,21 @@ exports.submitResult = async (req, res) => {
             user.quizStats = { totalScore: 0, quizzesTaken: 0, averageScore: 0, highestScore: 0 };
         }
 
-        // Percentage score for this quiz
         const percentage = Math.round((score / totalQuestions) * 100);
+
+        // Save Submission
+        const QuizSubmission = require('../models/QuizSubmission');
+        if (req.body.quizCode) {
+            await QuizSubmission.create({
+                quizCode: req.body.quizCode,
+                studentId: userId,
+                studentName: user.name,
+                score: score,
+                totalQuestions: totalQuestions,
+                percentage: percentage,
+                timeTaken: timeTaken
+            });
+        }
 
         // Update Stats
         user.quizStats.quizzesTaken += 1;
@@ -307,5 +320,60 @@ exports.getLeaderboard = async (req, res) => {
     } catch (error) {
         console.error("Get Leaderboard Error:", error);
         res.status(500).json({ success: false, message: "Failed to fetch leaderboard" });
+    }
+};
+
+// Delete a Quiz
+exports.deleteQuiz = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized." });
+
+        const quiz = await Quiz.findOne({ code: req.params.code });
+        if (!quiz) return res.status(404).json({ success: false, message: "Quiz not found" });
+
+        if (quiz.creatorId && quiz.creatorId.toString() !== req.user.id) {
+            return res.status(403).json({ success: false, message: "Unauthorized to delete this quiz" });
+        }
+
+        await Quiz.deleteOne({ code: req.params.code });
+        await require('../models/QuizSubmission').deleteMany({ quizCode: req.params.code });
+
+        res.json({ success: true, message: "Quiz deleted successfully" });
+    } catch (error) {
+        console.error("Delete Quiz Error:", error);
+        res.status(500).json({ success: false, message: "Failed to delete quiz" });
+    }
+};
+
+// Get Leaderboard for a Specific Quiz
+exports.getSpecificLeaderboard = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const QuizSubmission = require('../models/QuizSubmission');
+
+        const submissions = await QuizSubmission.find({ quizCode: code })
+            .sort({ percentage: -1, timeTaken: 1 });
+
+        const leaderboard = submissions.map((sub, idx) => {
+            let timeStr = 'N/A';
+            if (sub.timeTaken > 0) {
+                timeStr = `${Math.floor(sub.timeTaken / 60)}m ${sub.timeTaken % 60}s`;
+            }
+            return {
+                id: sub._id,
+                rank: idx + 1,
+                name: sub.studentName || 'Student',
+                score: sub.percentage || 0,
+                marks: sub.score || 0,
+                totalMarks: sub.totalQuestions || 0,
+                time: timeStr,
+                isYou: req.user ? (sub.studentId?.toString() === req.user.id) : false
+            };
+        });
+
+        res.json({ success: true, leaderboard });
+    } catch (error) {
+        console.error("Get Specific Leaderboard Error:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch specific leaderboard" });
     }
 };

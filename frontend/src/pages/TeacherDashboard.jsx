@@ -6,7 +6,7 @@ import { connectSocket, getSocket } from '../services/groupAPI';
 import {
     BookOpen, FileQuestion, Trophy, Users, BarChart2, LogOut,
     PlusCircle, Clock, CheckCircle, Copy, Eye, Target,
-    ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X,
+    ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X, Trash2, Download,
     ChevronDown, ChevronUp, Wifi, WifiOff
 } from 'lucide-react';
 
@@ -58,6 +58,25 @@ export default function TeacherDashboard() {
         fetchQuizzes();
     }, []);
 
+    const handleDeleteQuiz = async (code) => {
+        try {
+            const res = await fetch(`${API_BASE}/quiz/${code}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setMyQuizzes(prev => prev.filter(q => q.code !== code));
+                if (monitoringCode === code) stopMonitoring();
+            } else {
+                alert(data.message || 'Failed to delete quiz');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error deleting quiz');
+        }
+    };
+
     // Socket setup for Live Monitor
     useEffect(() => {
         const socket = connectSocket();
@@ -74,9 +93,8 @@ export default function TeacherDashboard() {
         // Teacher receives live student count + list
         const onStudentsUpdate = (data) => {
             console.log('📡 quiz:students:update received:', JSON.stringify(data));
-            console.log('📡 monitoringCode:', monitoringCode, 'received quizCode:', data?.quizCode);
             const code = (data?.quizCode || '').toUpperCase().trim();
-            const myCode = (monitoringCode || '').toUpperCase().trim();
+            const myCode = (prevWatchCode.current || '').toUpperCase().trim();
             if (code === myCode) {
                 console.log('✅ Codes match! Updating students list:', data?.students?.length);
                 setLiveStudents(data?.students || []);
@@ -89,11 +107,18 @@ export default function TeacherDashboard() {
         const onNewSubmission = (data) => {
             console.log('📡 quiz:new:submission received:', JSON.stringify(data));
             const code = (data?.quizCode || '').toUpperCase().trim();
-            const myCode = (monitoringCode || '').toUpperCase().trim();
+            const myCode = (prevWatchCode.current || '').toUpperCase().trim();
             if (code === myCode) {
-                const entry = { studentName: data.studentName, score: data.score, timeTaken: data.timeTaken, submittedAt: Date.now() };
+                const entry = {
+                    studentName: data.studentName,
+                    score: data.score,
+                    correctAnswers: data.correctAnswers,
+                    totalQuestions: data.totalQuestions,
+                    timeTaken: data.timeTaken,
+                    submittedAt: Date.now()
+                };
                 setLiveSubmissions(prev => [entry, ...prev]);
-                setNotifications(prev => [`🎓 ${data.studentName} submitted — ${data.score}%`, ...prev.slice(0, 4)]);
+                setNotifications(prev => [`🎓 ${data.studentName} submitted — ${data.correctAnswers}/${data.totalQuestions} (${data.score}%)`, ...prev.slice(0, 4)]);
             }
         };
 
@@ -320,7 +345,7 @@ export default function TeacherDashboard() {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                     {myQuizzes.slice(0, 6).map(quiz => (
-                                        <QuizCard key={quiz.code} quiz={quiz} onNavigate={navigate} onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
+                                        <QuizCard key={quiz.code} quiz={quiz} onDelete={handleDeleteQuiz} onNavigate={navigate} onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
                                     ))}
                                 </div>
                             )}
@@ -342,7 +367,7 @@ export default function TeacherDashboard() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                                 {myQuizzes.map(quiz => (
-                                    <QuizCard key={quiz.code} quiz={quiz} onNavigate={navigate} showFull onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
+                                    <QuizCard key={quiz.code} quiz={quiz} onDelete={handleDeleteQuiz} onNavigate={navigate} showFull onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
                                 ))}
                             </div>
                         )}
@@ -370,7 +395,7 @@ export default function TeacherDashboard() {
                 )}
 
                 {/* ── LEADERBOARD ── */}
-                {activeTab === 'leaderboard' && <LeaderboardSection />}
+                {activeTab === 'leaderboard' && <LeaderboardSection myQuizzes={myQuizzes} />}
             </div>
         </div>
     );
@@ -536,8 +561,13 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
                                                     {s.timeTaken ? `${Math.floor(s.timeTaken / 60)}m ${s.timeTaken % 60}s` : 'N/A'}
                                                 </div>
                                             </div>
-                                            <div className={`text-lg font-black ${s.score >= 70 ? 'text-emerald-500' : s.score >= 40 ? 'text-amber-500' : 'text-red-500'}`}>
-                                                {s.score}%
+                                            <div className="text-right">
+                                                <div className={`text-lg font-black ${s.score >= 70 ? 'text-emerald-500' : s.score >= 40 ? 'text-amber-500' : 'text-red-500'}`}>
+                                                    {s.score}%
+                                                </div>
+                                                <div className="text-xs font-bold text-[var(--text-secondary)]">
+                                                    {s.correctAnswers !== undefined ? `${s.correctAnswers}/${s.totalQuestions || '?'}` : ''}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -605,13 +635,26 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
 }
 
 // ── Quiz Card ────────────────────────────────────────────────────
-function QuizCard({ quiz, onNavigate, showFull = false, onMonitor }) {
+function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete }) {
     const copyCode = () => { navigator.clipboard.writeText(quiz.code); alert(`Code "${quiz.code}" copied!`); };
 
     return (
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 hover:border-violet-500/30 hover:shadow-lg transition-all group">
-            <div className="flex items-start justify-between mb-3">
-                <h3 className="font-black text-[var(--text-primary)] text-base line-clamp-2 flex-1 pr-2 group-hover:text-violet-500 transition-colors">{quiz.title}</h3>
+        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 hover:border-violet-500/30 hover:shadow-lg transition-all group relative">
+            {onDelete && (
+                <button
+                    onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this quiz?")) {
+                            onDelete(quiz.code);
+                        }
+                    }}
+                    className="absolute top-4 right-4 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-all z-10"
+                    title="Delete Quiz"
+                >
+                    <Trash2 size={16} />
+                </button>
+            )}
+            <div className="flex items-start justify-between mb-3 pr-8">
+                <h3 className="font-black text-[var(--text-primary)] text-base line-clamp-2 flex-1 group-hover:text-violet-500 transition-colors">{quiz.title}</h3>
                 <span className={`shrink-0 text-xs px-2 py-1 rounded-lg font-bold ${quiz.status === 'published' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'}`}>
                     {quiz.status === 'published' ? '✓ Live' : '⏳ Draft'}
                 </span>
@@ -643,57 +686,115 @@ function QuizCard({ quiz, onNavigate, showFull = false, onMonitor }) {
 }
 
 // ── Leaderboard ──────────────────────────────────────────────────
-function LeaderboardSection() {
+function LeaderboardSection({ myQuizzes }) {
     const [leaderboard, setLeaderboard] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [selectedQuiz, setSelectedQuiz] = useState('');
+
+    const publishedQuizzes = myQuizzes.filter(q => q.status === 'published');
 
     useEffect(() => {
+        if (!selectedQuiz) {
+            setLeaderboard([]);
+            return;
+        }
         (async () => {
+            setLoading(true);
             try {
-                const res = await fetch(`${API_BASE}/quiz/leaderboard`, { credentials: 'include' });
+                const res = await fetch(`${API_BASE}/quiz/${selectedQuiz}/leaderboard`, { credentials: 'include' });
                 const data = await res.json();
                 if (data.success) setLeaderboard(data.leaderboard);
             } catch (e) { console.error(e); }
             finally { setLoading(false); }
         })();
-    }, []);
+    }, [selectedQuiz]);
 
-    if (loading) return <div className="text-center py-20 text-[var(--text-muted)]">Loading...</div>;
-    if (leaderboard.length === 0) return (
-        <div className="text-center py-20 bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl">
-            <Trophy size={64} className="mx-auto mb-4 text-amber-400 opacity-40" />
-            <p className="text-xl text-[var(--text-muted)]">No students have taken a quiz yet.</p>
-        </div>
-    );
+    const downloadCSV = () => {
+        if (leaderboard.length === 0) return;
+        const headers = ["Rank", "Student Name", "Marks", "Total Questions", "Percentage", "Time Taken"];
+        const rows = leaderboard.map(p => [
+            p.rank,
+            `"${p.name}"`,
+            p.marks || 0,
+            p.totalMarks || 0,
+            `${p.score}%`,
+            p.time
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `results_quiz_${selectedQuiz}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
-        <div className="space-y-3 max-w-4xl">
-            {leaderboard.map((p, i) => (
-                <div key={p.id || i} className={`flex items-center gap-5 p-5 rounded-2xl border transition-all ${i === 0 ? 'bg-amber-500/5 border-amber-500/25' :
-                    i === 1 ? 'bg-slate-400/5 border-slate-400/20' :
-                        i === 2 ? 'bg-orange-500/5 border-orange-400/20' :
-                            'bg-[var(--bg-secondary)] border-[var(--border-color)]'
-                    }`}>
-                    <div className="w-10 text-center font-black text-xl">
-                        {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span className="text-[var(--text-muted)] text-base">#{i + 1}</span>}
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg">
-                        {p.name?.[0]?.toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                        <div className="font-bold text-[var(--text-primary)]">{p.name}</div>
-                        <div className="flex gap-4 text-xs text-[var(--text-secondary)] mt-0.5">
-                            <span>📝 {p.quizzesTaken || 0} quizzes</span>
-                            <span>⚡ {p.streak || 0} streak</span>
-                            <span>⏱ Best: {p.time}</span>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-2xl font-black text-[var(--text-primary)]">{p.score}%</div>
-                        <div className="text-xs text-[var(--text-secondary)]">Avg: {p.averageScore || 0}%</div>
-                    </div>
+        <div className="space-y-6 max-w-4xl">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
+                <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2 uppercase tracking-wide">Select Quiz to view Results</label>
+                <div className="flex gap-4">
+                    <select
+                        value={selectedQuiz}
+                        onChange={(e) => setSelectedQuiz(e.target.value)}
+                        className="flex-1 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:border-violet-500 outline-none transition-colors"
+                    >
+                        <option value="">-- Choose a published quiz --</option>
+                        {publishedQuizzes.map(q => (
+                            <option key={q.code} value={q.code}>{q.title} ({q.code})</option>
+                        ))}
+                    </select>
+                    <button
+                        onClick={downloadCSV}
+                        disabled={!selectedQuiz || leaderboard.length === 0}
+                        className="px-5 py-3 bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-bold rounded-xl hover:bg-[var(--border-color)] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Download size={18} /> Export CSV
+                    </button>
                 </div>
-            ))}
+            </div>
+
+            {loading ? (
+                <div className="text-center py-20 text-[var(--text-muted)]">Loading scoreboard...</div>
+            ) : selectedQuiz && leaderboard.length === 0 ? (
+                <div className="text-center py-20 bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl">
+                    <Trophy size={64} className="mx-auto mb-4 text-amber-400 opacity-40" />
+                    <p className="text-xl text-[var(--text-muted)]">No students have taken this quiz yet.</p>
+                </div>
+            ) : !selectedQuiz ? (
+                <div className="text-center py-20 bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl">
+                    <BarChart2 size={64} className="mx-auto mb-4 text-[var(--text-muted)] opacity-40" />
+                    <p className="text-xl text-[var(--text-muted)]">Select a quiz to view its results board.</p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {leaderboard.map((p, i) => (
+                        <div key={p.id || i} className={`flex items-center gap-5 p-5 rounded-2xl border transition-all ${i === 0 ? 'bg-amber-500/5 border-amber-500/25' :
+                            i === 1 ? 'bg-slate-400/5 border-slate-400/20' :
+                                i === 2 ? 'bg-orange-500/5 border-orange-400/20' :
+                                    'bg-[var(--bg-secondary)] border-[var(--border-color)]'
+                            }`}>
+                            <div className="w-10 text-center font-black text-xl">
+                                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span className="text-[var(--text-muted)] text-base">#{i + 1}</span>}
+                            </div>
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg">
+                                {p.name?.[0]?.toUpperCase()}
+                            </div>
+                            <div className="flex-1">
+                                <div className="font-bold text-[var(--text-primary)]">{p.name}</div>
+                                <div className="flex gap-4 text-xs text-[var(--text-secondary)] mt-0.5">
+                                    <span>⏱ Time: {p.time}</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-2xl font-black text-[var(--text-primary)]">{p.score}%</div>
+                                <div className="text-xs text-[var(--text-secondary)] font-bold">{p.marks !== undefined ? `${p.marks}/${p.totalMarks}` : ''} Marks</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

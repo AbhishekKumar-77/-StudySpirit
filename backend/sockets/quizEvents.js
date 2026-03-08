@@ -74,7 +74,7 @@ module.exports = function registerQuizEvents(socket, io) {
     // ── STUDENT: submitted exam ───────────────────────────────────
     socket.on('quiz:submitted', (data) => {
         console.log('✅ quiz:submitted received:', JSON.stringify(data));
-        const { studentId, studentName, score, timeTaken, totalQuestions } = data || {};
+        const { studentId, studentName, score, correctAnswers, timeTaken, totalQuestions } = data || {};
         const quizCode = (data?.quizCode || '').toUpperCase().trim();
 
         if (!quizCode || !studentId) return;
@@ -87,12 +87,16 @@ module.exports = function registerQuizEvents(socket, io) {
         if (room.has(studentId)) {
             room.get(studentId).status = 'submitted';
             room.get(studentId).score = score;
+            room.get(studentId).correctAnswers = correctAnswers;
             room.get(studentId).timeTaken = timeTaken;
+            room.get(studentId).totalQuestions = totalQuestions;
         } else {
             room.set(studentId, {
                 name: studentName || 'Student',
                 status: 'submitted',
                 score,
+                correctAnswers,
+                totalQuestions,
                 timeTaken,
                 joinedAt: Date.now()
             });
@@ -110,6 +114,7 @@ module.exports = function registerQuizEvents(socket, io) {
         io.to(`teacher:${quizCode}`).emit('quiz:new:submission', {
             studentName: studentName || 'A student',
             score,
+            correctAnswers,
             timeTaken,
             totalQuestions,
             quizCode
