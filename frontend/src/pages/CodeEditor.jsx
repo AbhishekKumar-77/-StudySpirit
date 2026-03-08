@@ -286,7 +286,7 @@ export default function CodeEditor() {
 
     const runCode = async () => {
         setIsRunning(true);
-        setOutput("⏳ Running via Piston API...\n");
+        setOutput("⏳ Compiling & Running...\n");
 
         try {
             const executeRes = await fetch(`${API_BASE}/codespirit/execute`, {
