@@ -225,7 +225,9 @@ exports.submitResult = async (req, res) => {
             user.quizStats = { totalScore: 0, quizzesTaken: 0, averageScore: 0, highestScore: 0 };
         }
 
-        const percentage = Math.round((score / totalQuestions) * 100);
+        const percentage = req.body.percentage !== undefined
+            ? req.body.percentage
+            : Math.round((score / totalQuestions) * 100);
 
         // Save Submission
         const QuizSubmission = require('../models/QuizSubmission');

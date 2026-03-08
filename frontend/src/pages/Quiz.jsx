@@ -341,6 +341,7 @@ export default function StudySprintQuiz() {
                 body: JSON.stringify({
                     quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                     score: correctCount, // Sending correct count as score for backend calculation
+                    percentage: Math.round(finalScore), // Pass negative-marked final percentage
                     totalQuestions: quizQs.length,
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft
                 })
@@ -1177,7 +1178,7 @@ export default function StudySprintQuiz() {
                             </div>
                         )}
 
-                        {showResult && joinedQuiz && (
+                        {showResult && joinedQuiz && joinedQuiz.settings.showResults && (
                             <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-16 border border-[var(--border-color)] shadow-xl text-center max-w-2xl mx-auto mt-10 animate-fade-in-up">
                                 <Award size={120} className="text-amber-500 mx-auto mb-6 animate-bounce" />
                                 <h2 className="text-6xl font-black text-emerald-400 mb-4">{score}%</h2>
@@ -1201,6 +1202,22 @@ export default function StudySprintQuiz() {
                                         Take Another Quiz
                                     </button>
                                 </div>
+                            </div>
+                        )}
+
+                        {showResult && joinedQuiz && !joinedQuiz.settings.showResults && (
+                            <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-16 border border-[var(--border-color)] shadow-xl text-center max-w-2xl mx-auto mt-10 animate-fade-in-up">
+                                <CheckCircle size={120} className="text-emerald-500 mx-auto mb-6 animate-bounce" />
+                                <h2 className="text-4xl font-black text-[var(--text-primary)] mb-4">Exam Submitted Successfully!</h2>
+                                <p className="text-xl text-[var(--text-secondary)] mb-8">
+                                    Your teacher has disabled instant results for this exam. Your responses have been recorded and saved.
+                                </p>
+                                <button
+                                    onClick={() => { setShowResult(false); setJoinedQuiz(null); setStudentQuizCodeInput(""); setIsReviewingAnswers(false); }}
+                                    className="px-8 py-4 bg-[var(--border-color)] text-[var(--text-primary)] font-bold rounded-xl hover:bg-[var(--bg-secondary)] transition-all hover:scale-105"
+                                >
+                                    Return to Quizzes
+                                </button>
                             </div>
                         )}
 
