@@ -11,7 +11,10 @@ const challengeSchema = new mongoose.Schema({
     difficulty: String,
     userCode: String,
     status: { type: String, enum: ['pending', 'solved'], default: 'pending' },
-    codeOutput: Object
+    codeOutput: Object,
+    solveTime: { type: Number, default: 0 },
+    startedAt: { type: Date, default: null },
+    verificationResults: Array
 });
 
 const codeSessionSchema = new mongoose.Schema({
@@ -21,6 +24,7 @@ const codeSessionSchema = new mongoose.Schema({
     language: String, // Preferred language
     challenges: [challengeSchema],
     completed: { type: Boolean, default: false },
+    isDaily: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

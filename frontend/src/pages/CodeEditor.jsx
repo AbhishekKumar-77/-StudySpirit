@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { API_BASE } from "../config";
@@ -6,7 +6,8 @@ import {
     ArrowLeft, Play, Download, Upload, Copy, Trash2, Terminal,
     Settings, Sun, Moon, Code, FileText, Save, FolderOpen, Zap,
     CheckCircle, Sparkles, RotateCcw, ChevronLeft, ChevronRight,
-    Trophy, Target, Hash
+    Trophy, Target, Hash, AlertCircle, MessageSquare, Clock,
+    Loader, Shield, Star, XCircle
 } from "lucide-react";
 
 const LANGUAGES = [
@@ -103,7 +104,49 @@ export default function CodeEditor() {
     });
     const [currentFileName, setCurrentFileName] = useState("untitled");
     const [stdin, setStdin] = useState("");
+
+    // Timer state
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const [timerActive, setTimerActive] = useState(false);
+    const timerRef = useRef(null);
+
+    // Auto-verification state
+    const [verificationResults, setVerificationResults] = useState(null);
+    const [isVerifying, setIsVerifying] = useState(false);
+
+    // AI Review state
+    const [reviewData, setReviewData] = useState(null);
+    const [isReviewing, setIsReviewing] = useState(false);
+    const [showReview, setShowReview] = useState(false);
     const [showQuestionNav, setShowQuestionNav] = useState(false);
+
+    // Timer effect
+    useEffect(() => {
+        if (isChallengeMode && !completedQuestions[currentIndex]) {
+            setTimerActive(true);
+        } else {
+            setTimerActive(false);
+        }
+    }, [currentIndex, isChallengeMode]);
+
+    useEffect(() => {
+        if (timerActive) {
+            timerRef.current = setInterval(() => {
+                setElapsedTime(prev => prev + 1);
+            }, 1000);
+        } else {
+            if (timerRef.current) clearInterval(timerRef.current);
+        }
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    }, [timerActive]);
+
+    // Reset timer and verification when switching questions
+    useEffect(() => {
+        setElapsedTime(0);
+        setVerificationResults(null);
+        setReviewData(null);
+        setShowReview(false);
+    }, [currentIndex]);
 
     // Sync code/output when switching questions
     useEffect(() => {
@@ -142,7 +185,14 @@ export default function CodeEditor() {
     const goNext = () => goToQuestion(currentIndex + 1);
     const goPrev = () => goToQuestion(currentIndex - 1);
 
+    const formatTimer = (s) => {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+    };
+
     const markCompleted = async () => {
+        setTimerActive(false);
         setCompletedQuestions(prev => {
             const updated = [...prev];
             updated[currentIndex] = true;
@@ -159,7 +209,8 @@ export default function CodeEditor() {
                         sessionId,
                         challengeId: currentProblem.id,
                         code,
-                        status: 'solved'
+                        status: 'solved',
+                        solveTime: elapsedTime
                     })
                 });
             } catch (err) {
@@ -168,45 +219,82 @@ export default function CodeEditor() {
         }
     };
 
+    // Auto-verify against test cases
+    const verifyCode = async () => {
+        if (!sessionId || !currentProblem?.id) return;
+        setIsVerifying(true);
+        setVerificationResults(null);
+        try {
+            const res = await fetch(`${API_BASE}/codespirit/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    sessionId,
+                    challengeId: currentProblem.id,
+                    code,
+                    language: language.id
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setVerificationResults(data);
+                if (data.allPassed) {
+                    markCompleted();
+                }
+            } else {
+                setVerificationResults({ results: [], allPassed: false, message: data.message || 'Verification failed' });
+            }
+        } catch (err) {
+            setVerificationResults({ results: [], allPassed: false, message: 'Network error: ' + err.message });
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
+    // AI Code Review
+    const requestReview = async () => {
+        if (!currentProblem) return;
+        setIsReviewing(true);
+        setShowReview(true);
+        try {
+            const res = await fetch(`${API_BASE}/codespirit/review`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    code,
+                    language: language.id,
+                    problemTitle: currentProblem.title,
+                    problemDescription: currentProblem.description
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setReviewData(data.review);
+            } else {
+                setReviewData({ overallFeedback: data.message || 'Review failed', score: 0 });
+            }
+        } catch (err) {
+            setReviewData({ overallFeedback: 'Network error: ' + err.message, score: 0 });
+        } finally {
+            setIsReviewing(false);
+        }
+    };
+
     const handleEditorMount = (editor) => { editorRef.current = editor; };
 
     const runCode = async () => {
         setIsRunning(true);
-        setOutput("⏳ Running...\n");
-
-        if (language.id === "javascript") {
-            try {
-                const logs = [];
-                const originalLog = console.log;
-                console.log = (...args) => logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(" "));
-                try { eval(code); } catch (e) { logs.push(`Error: ${e.message}`); }
-                console.log = originalLog;
-                const result = logs.join("\n") || "✅ Code executed (no output)";
-                setOutput(result);
-                // Save output for this question
-                setOutputPerQuestion(prev => { const u = [...prev]; u[currentIndex] = result; return u; });
-            } catch (e) {
-                setOutput(`❌ Error: ${e.message}`);
-            }
-            setIsRunning(false);
-            return;
-        }
+        setOutput("⏳ Running via Piston API...\n");
 
         try {
-            const langMap = { python: "python", java: "java", cpp: "cpp", c: "c", typescript: "typescript" };
-            const execLang = langMap[language.id];
-
-            if (!execLang) {
-                setOutput(`⚠️ ${language.name} execution not supported.\nUse JavaScript for live execution or copy code to local IDE.`);
-                setIsRunning(false);
-                return;
-            }
-
             const executeRes = await fetch(`${API_BASE}/codespirit/execute`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: 'include',
                 body: JSON.stringify({
-                    language: execLang,
+                    language: language.id,
                     code: code,
                     stdin: stdin
                 })
@@ -501,17 +589,34 @@ export default function CodeEditor() {
                         {isRunning ? <Zap className="animate-spin" size={18} /> : <Play size={18} />} {isRunning ? "Running..." : "Run Code"}
                     </button>
 
-                    {/* Mark as Completed Button (challenge mode) */}
+                    {/* Verify & Mark Buttons (challenge mode) */}
                     {isChallengeMode && (
-                        <button
-                            onClick={markCompleted}
-                            className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-all ${completedQuestions[currentIndex]
-                                ? (theme === "light" ? "bg-emerald-100 text-emerald-700" : "bg-emerald-500/20 text-emerald-400")
-                                : (theme === "light" ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30")
-                                }`}
-                        >
-                            <CheckCircle size={16} /> {completedQuestions[currentIndex] ? "Completed ✓" : "Mark Done"}
-                        </button>
+                        <>
+                            <button
+                                onClick={verifyCode}
+                                disabled={isVerifying}
+                                className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-all ${theme === "light" ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"} ${isVerifying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {isVerifying ? <Loader size={16} className="animate-spin" /> : <Shield size={16} />}
+                                {isVerifying ? 'Verifying...' : 'Run Tests'}
+                            </button>
+                            <button
+                                onClick={markCompleted}
+                                className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-all ${completedQuestions[currentIndex]
+                                    ? (theme === "light" ? "bg-emerald-100 text-emerald-700" : "bg-emerald-500/20 text-emerald-400")
+                                    : (theme === "light" ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30")
+                                    }`}
+                            >
+                                <CheckCircle size={16} /> {completedQuestions[currentIndex] ? "Completed ✓" : "Mark Done"}
+                            </button>
+                        </>
+                    )}
+                    {/* Timer */}
+                    {isChallengeMode && (
+                        <div className={`px-4 py-2 rounded-lg font-mono font-bold flex items-center gap-2 ${theme === "light" ? "bg-gray-100" : "bg-[var(--bg-secondary)]"}`}>
+                            <Clock size={16} className="text-cyan-500" />
+                            <span className={elapsedTime > 600 ? 'text-amber-500' : elapsedTime > 1200 ? 'text-rose-500' : ''}>{formatTimer(elapsedTime)}</span>
+                        </div>
                     )}
 
                     <button onClick={saveFile} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-[var(--bg-secondary)]lue-100 text-blue-700 hover:bg-[var(--bg-secondary)]lue-200" : "bg-[var(--bg-secondary)]lue-500/20 text-blue-400 hover:bg-[var(--bg-secondary)]lue-500/30"}`}>
@@ -620,6 +725,110 @@ export default function CodeEditor() {
                                     <ul className="list-disc pl-4 text-sm opacity-80">
                                         {currentProblem.hints.map((h, i) => <li key={i}>{h}</li>)}
                                     </ul>
+                                </div>
+                            )}
+
+                            {/* Auto-Verification Results */}
+                            {verificationResults && (
+                                <div className={`mt-4 border rounded-xl p-4 ${verificationResults.allPassed
+                                    ? (theme === 'light' ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/10 border-emerald-500/20')
+                                    : (theme === 'light' ? 'bg-red-50 border-red-200' : 'bg-red-500/10 border-red-500/20')}`}
+                                >
+                                    <div className={`text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2 ${verificationResults.allPassed ? 'text-emerald-500' : 'text-red-500'}`}>
+                                        {verificationResults.allPassed ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+                                        {verificationResults.message}
+                                    </div>
+                                    <div className="space-y-2">
+                                        {verificationResults.results?.map((r, i) => (
+                                            <div key={i} className={`p-3 rounded-lg border text-sm font-mono ${r.passed
+                                                ? (theme === 'light' ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/5 border-emerald-500/20')
+                                                : (theme === 'light' ? 'bg-red-50 border-red-200' : 'bg-red-500/5 border-red-500/20')}`}
+                                            >
+                                                <div className="flex items-center gap-2 mb-1 font-sans">
+                                                    {r.passed ? <CheckCircle size={14} className="text-emerald-500" /> : <XCircle size={14} className="text-red-500" />}
+                                                    <span className="font-bold text-xs">Test Case {r.testCase}</span>
+                                                </div>
+                                                <div className="text-xs opacity-70">Input: <span className="opacity-100">{r.input}</span></div>
+                                                <div className="text-xs opacity-70">Expected: <span className="text-emerald-500">{r.expectedOutput}</span></div>
+                                                {!r.passed && <div className="text-xs opacity-70">Got: <span className="text-red-500">{r.actualOutput || '(empty)'}</span></div>}
+                                                {r.stderr && <div className="text-xs text-red-400 mt-1">{r.stderr}</div>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* AI Code Review */}
+                            {isChallengeMode && (
+                                <div className="mt-4">
+                                    <button
+                                        onClick={requestReview}
+                                        disabled={isReviewing}
+                                        className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${theme === 'light'
+                                            ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                                            : 'bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20'} ${isReviewing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {isReviewing ? <Loader size={16} className="animate-spin" /> : <Star size={16} />}
+                                        {isReviewing ? 'Analyzing Code...' : 'Get AI Code Review'}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Review Results Panel */}
+                            {showReview && reviewData && (
+                                <div className={`mt-4 border rounded-xl p-5 ${theme === 'light' ? 'bg-purple-50 border-purple-200' : 'bg-purple-500/5 border-purple-500/20'}`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-purple-500 flex items-center gap-2"><Star size={14} /> AI Code Review</span>
+                                        <div className={`px-3 py-1 rounded-full text-sm font-bold ${reviewData.score >= 80 ? 'bg-emerald-500/20 text-emerald-500' : reviewData.score >= 50 ? 'bg-amber-500/20 text-amber-500' : 'bg-red-500/20 text-red-500'}`}>
+                                            Score: {reviewData.score}/100
+                                        </div>
+                                    </div>
+
+                                    {reviewData.timeComplexity && (
+                                        <div className="grid grid-cols-2 gap-3 mb-4">
+                                            <div className={`p-3 rounded-lg ${theme === 'light' ? 'bg-white border border-gray-200' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}>
+                                                <div className="text-xs font-bold text-[var(--text-muted)] mb-1">Time Complexity</div>
+                                                <div className="text-sm font-bold">{reviewData.timeComplexity}</div>
+                                            </div>
+                                            <div className={`p-3 rounded-lg ${theme === 'light' ? 'bg-white border border-gray-200' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}>
+                                                <div className="text-xs font-bold text-[var(--text-muted)] mb-1">Space Complexity</div>
+                                                <div className="text-sm font-bold">{reviewData.spaceComplexity}</div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {reviewData.strengths?.length > 0 && (
+                                        <div className="mb-3">
+                                            <div className="text-xs font-bold text-emerald-500 mb-1">✅ Strengths</div>
+                                            <ul className="text-sm space-y-1">{reviewData.strengths.map((s, i) => <li key={i} className="opacity-80">• {s}</li>)}</ul>
+                                        </div>
+                                    )}
+
+                                    {reviewData.improvements?.length > 0 && (
+                                        <div className="mb-3">
+                                            <div className="text-xs font-bold text-amber-500 mb-1">💡 Improvements</div>
+                                            <ul className="text-sm space-y-1">{reviewData.improvements.map((s, i) => <li key={i} className="opacity-80">• {s}</li>)}</ul>
+                                        </div>
+                                    )}
+
+                                    {reviewData.bugs?.length > 0 && (
+                                        <div className="mb-3">
+                                            <div className="text-xs font-bold text-red-500 mb-1">🐛 Bugs Found</div>
+                                            <ul className="text-sm space-y-1">{reviewData.bugs.map((s, i) => <li key={i} className="opacity-80">• {s}</li>)}</ul>
+                                        </div>
+                                    )}
+
+                                    {reviewData.optimizedApproach && (
+                                        <div className="mb-3">
+                                            <div className="text-xs font-bold text-cyan-500 mb-1">🚀 Optimal Approach</div>
+                                            <p className="text-sm opacity-80">{reviewData.optimizedApproach}</p>
+                                        </div>
+                                    )}
+
+                                    <div className={`mt-3 p-3 rounded-lg text-sm ${theme === 'light' ? 'bg-white border border-gray-200' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)]'}`}>
+                                        <div className="text-xs font-bold text-[var(--text-muted)] mb-1">Overall</div>
+                                        <p className="opacity-80">{reviewData.overallFeedback}</p>
+                                    </div>
                                 </div>
                             )}
 
