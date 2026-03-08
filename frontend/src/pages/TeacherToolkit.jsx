@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ClipboardCheck, Home, Shield, ArrowRight } from 'lucide-react';
+import { ClipboardCheck, Home, Shield, ArrowRight, Library } from 'lucide-react';
 import './Dashboard.css';
 
 export default function TeacherToolkit() {
@@ -32,8 +32,15 @@ export default function TeacherToolkit() {
             path: '/teacher-dashboard',
             icon: ClipboardCheck,
             color: '#f59e0b'
+        },
+        {
+            id: 2,
+            name: 'Resources',
+            description: 'Study Vault, AI Notes, and Explainer',
+            path: '/resources',
+            icon: Library,
+            color: '#10b981'
         }
-        // Add more tools here later
     ];
 
     return (

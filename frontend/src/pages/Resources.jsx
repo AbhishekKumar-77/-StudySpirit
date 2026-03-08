@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useApp } from '../context/AppContext';
 import { API_BASE } from '../config';
 import {
     ArrowLeft, Library, FileText, Brain, Sparkles, Folder,
@@ -222,6 +223,7 @@ const RenderedMarkdown = ({ content }) => {
 };
 
 export default function Resources() {
+    const { user } = useApp();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("library");
     const [copied, setCopied] = useState(false);
@@ -600,7 +602,12 @@ export default function Resources() {
                         { id: 'notes', label: 'AI Note Gen', icon: FileText },
                         { id: 'flashcards', label: 'Smart Flashcards', icon: Zap },
                         { id: 'explainer', label: 'Concept Explainer', icon: Brain },
-                    ].map(tab => (
+                    ].filter(tab => {
+                        if (user?.role === 'teacher') {
+                            return ['library', 'notes', 'explainer'].includes(tab.id);
+                        }
+                        return true;
+                    }).map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
