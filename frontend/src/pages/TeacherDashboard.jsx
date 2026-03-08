@@ -7,7 +7,7 @@ import {
     BookOpen, FileQuestion, Trophy, Users, BarChart2, LogOut,
     PlusCircle, Clock, CheckCircle, Copy, Eye, Target,
     ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X, Trash2, Download,
-    ChevronDown, ChevronUp, Wifi, WifiOff
+    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft
 } from 'lucide-react';
 
 export default function TeacherDashboard() {
@@ -260,7 +260,13 @@ export default function TeacherDashboard() {
                     </div>
                 </div>
 
-                <nav className="flex-1 p-3 mt-4 space-y-1">
+                <div className="px-3 mt-4">
+                    <button onClick={() => navigate('/teacher-toolkit')} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm bg-violet-500/10 text-violet-500 hover:bg-violet-500/20 transition-all">
+                        <ArrowLeft size={18} /> Back to Hub
+                    </button>
+                </div>
+
+                <nav className="flex-1 p-3 mt-2 space-y-1">
                     {navItems.map(item => (
                         <button key={item.id}
                             onClick={() => item.external ? navigate('/quiz') : setActiveTab(item.id)}
