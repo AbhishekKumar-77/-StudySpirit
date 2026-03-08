@@ -542,7 +542,7 @@ export default function Resources() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative pb-20 overflow-hidden font-sans text-[var(--text-primary)]">
+        <div className="min-h-screen bg-[var(--bg-primary)] transition-colors duration-300 relative pb-20 overflow-hidden font-sans text-[var(--text-primary)]">
             {/* Folder Modal */}
             {showFolderModal && (
                 <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
@@ -558,8 +558,8 @@ export default function Resources() {
                             autoFocus
                         />
                         <div className="flex gap-4">
-                            <button onClick={() => setShowFolderModal(false)} className="flex-1 py-3 px-4 rounded-xl border border-[var(--border-color)] hover:bg-white/5 transition-all text-[var(--text-secondary)]">Cancel</button>
-                            <button onClick={handleCreateFolder} className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition-all font-bold">Create Folder</button>
+                            <button onClick={() => setShowFolderModal(false)} className="flex-1 py-3 px-4 rounded-xl border border-[var(--border-color)] hover:bg-[var(--border-color)] transition-all text-[var(--text-secondary)]">Cancel</button>
+                            <button onClick={handleCreateFolder} className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition-all font-bold text-white">Create Folder</button>
                         </div>
                     </div>
                 </div>
@@ -950,13 +950,13 @@ export default function Resources() {
                                                 ${flashcardFlipped === 'study' ? "rotate-y-180" : ""}
                                             `}>
                                                 {/* Front */}
-                                                <div className="absolute w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-8 flex flex-col items-center justify-center text-center backface-hidden shadow-2xl shadow-indigo-500/10 group-hover:border-indigo-500/60 transition-colors">
+                                                <div className="absolute w-full h-full bg-[var(--bg-secondary)] backdrop-blur-xl border border-indigo-500/30 rounded-3xl p-8 flex flex-col items-center justify-center text-center backface-hidden shadow-2xl shadow-indigo-500/10 group-hover:border-indigo-500/60 transition-colors">
                                                     <div className="absolute top-5 left-5 px-3 py-1 bg-indigo-500/20 rounded-lg text-indigo-400 text-xs font-bold uppercase tracking-wider">Question</div>
                                                     <h3 className="text-2xl font-bold text-[var(--text-primary)] leading-relaxed px-4">{decks[studyingDeck].cards[studyCardIndex]?.front}</h3>
                                                     <p className="absolute bottom-5 text-xs text-[var(--text-muted)] flex items-center gap-1">Click to reveal answer</p>
                                                 </div>
                                                 {/* Back */}
-                                                <div className="absolute w-full h-full bg-gradient-to-br from-indigo-900/60 to-cyan-900/60 backdrop-blur-xl border border-cyan-500/40 rounded-3xl p-8 flex flex-col items-center justify-center text-center backface-hidden rotate-y-180 shadow-2xl shadow-cyan-500/10">
+                                                <div className="absolute w-full h-full bg-[var(--glass-bg)] backdrop-blur-xl border border-cyan-500/40 rounded-3xl p-8 flex flex-col items-center justify-center text-center backface-hidden rotate-y-180 shadow-2xl shadow-cyan-500/10">
                                                     <div className="absolute top-5 left-5 px-3 py-1 bg-cyan-500/20 rounded-lg text-cyan-400 text-xs font-bold uppercase tracking-wider">Answer</div>
                                                     <p className="text-xl font-medium text-[var(--text-primary)] leading-relaxed px-4">{decks[studyingDeck].cards[studyCardIndex]?.back}</p>
                                                 </div>
@@ -1011,12 +1011,12 @@ export default function Resources() {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {decks.map((deck, deckIdx) => (
-                                        <div key={deck.id} className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl border border-[var(--border-color)] hover:border-indigo-500/40 transition-all group overflow-hidden">
+                                        <div key={deck.id} className="bg-[var(--glass-bg)] rounded-2xl border border-[var(--border-color)] hover:border-indigo-500/40 transition-all group overflow-hidden">
                                             {/* Deck Header */}
                                             <div className="p-5 border-b border-[var(--border-color)]">
                                                 <div className="flex justify-between items-start">
                                                     <div>
-                                                        <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-indigo-300 transition-colors">{deck.name}</h3>
+                                                        <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors">{deck.name}</h3>
                                                         <p className="text-sm text-[var(--text-muted)] mt-1">{deck.cards.length} cards</p>
                                                     </div>
                                                     <button
@@ -1072,8 +1072,8 @@ export default function Resources() {
 
                             {/* CREATE DECK MODAL */}
                             {showCreateDeck && (
-                                <div className="fixed inset-0 z-[100] bg-[var(--bg-secondary)]lack/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => { setShowCreateDeck(false); setEditingDeckIdx(null); setDeckName(''); setDeckCards([]); setNewCardFront(''); setNewCardBack(''); }}>
-                                    <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-indigo-500/20 shadow-2xl shadow-indigo-500/10" onClick={e => e.stopPropagation()}>
+                                <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => { setShowCreateDeck(false); setEditingDeckIdx(null); setDeckName(''); setDeckCards([]); setNewCardFront(''); setNewCardBack(''); }}>
+                                    <div className="bg-[var(--bg-secondary)] rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-indigo-500/20 shadow-2xl shadow-indigo-500/10" onClick={e => e.stopPropagation()}>
                                         <div className="flex justify-between items-center mb-6">
                                             <h2 className="text-2xl font-black text-[var(--text-primary)] flex items-center gap-3">
                                                 <Zap size={28} className="text-amber-500" />
