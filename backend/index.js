@@ -110,7 +110,8 @@ app.use(passport.session());
 
 // Static files for uploads
 const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Use process.cwd() to ensure we look at the 'uploads' folder in the project root
+app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Global rate limiter (applied to all routes)
 app.use('/api/', generalLimiter);

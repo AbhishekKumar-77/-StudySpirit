@@ -13,7 +13,9 @@ const storage = multer.diskStorage({
         cb(null, dir);
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+        // Sanitize the filename by replacing spaces with underscores
+        const sanitizedOrigName = file.originalname.replace(/\s+/g, '_');
+        cb(null, `${Date.now()}-${sanitizedOrigName}`);
     }
 });
 
