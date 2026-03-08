@@ -46,6 +46,7 @@ exports.generateDailyChallenge = async (req, res) => {
             - Each problem should have 2-3 test cases.
             - Each problem should have 1-2 hints.
             - Provide the starterCode in ${langPref}. Make sure it is valid and runnable.
+            - IMPORTANT: Do not minify or compress the starterCode. Preserve proper newlines (\\n) and indentation so it formats correctly in a code editor.
             - Problems should gradually increase in complexity.
             - Return ONLY the JSON array, nothing else.
         `;

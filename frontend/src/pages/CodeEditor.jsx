@@ -47,17 +47,25 @@ export default function CodeEditor() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const currentProblem = allChallenges[currentIndex] || null;
 
-    // Per-question code storage
+    // Per-question code storage mapping language to code
     const [codePerQuestion, setCodePerQuestion] = useState(() => {
         return allChallenges.map(ch => {
-            if (ch.userCode) return ch.userCode;
-            if (ch.starterCode) return ch.starterCode;
-            if (ch.language) {
-                const l = LANGUAGES.find(x => x.id === ch.language);
-                return l ? l.defaultCode : LANGUAGES[0].defaultCode;
-            }
-            return LANGUAGES[0].defaultCode;
+            const langStates = {};
+            LANGUAGES.forEach(l => {
+                langStates[l.id] = l.defaultCode;
+            });
+            const chLang = (LANGUAGES.find(l => l.id === ch.language) || LANGUAGES[0]).id;
+            if (ch.userCode) langStates[chLang] = ch.userCode;
+            else if (ch.starterCode) langStates[chLang] = ch.starterCode;
+            return langStates;
         });
+    });
+
+    // Scratchpad mode per-language code storage
+    const [scratchpadCodes, setScratchpadCodes] = useState(() => {
+        const states = {};
+        LANGUAGES.forEach(l => states[l.id] = l.defaultCode);
+        return states;
     });
 
     // Per-question output storage
@@ -75,7 +83,15 @@ export default function CodeEditor() {
         if (currentProblem?.language) return LANGUAGES.find(l => l.id === currentProblem.language) || LANGUAGES[0];
         return LANGUAGES[0];
     });
-    const [code, setCode] = useState(() => codePerQuestion[0] || LANGUAGES[0].defaultCode);
+    const [code, setCode] = useState(() => {
+        if (totalQuestions > 0) {
+            const langId = currentProblem?.language
+                ? (LANGUAGES.find(l => l.id === currentProblem.language) || LANGUAGES[0]).id
+                : LANGUAGES[0].id;
+            return codePerQuestion[0][langId];
+        }
+        return scratchpadCodes[LANGUAGES[0].id];
+    });
     const [theme, setTheme] = useState("vs-dark");
     const [output, setOutput] = useState("");
     const [isRunning, setIsRunning] = useState(false);
@@ -93,22 +109,23 @@ export default function CodeEditor() {
     useEffect(() => {
         if (totalQuestions > 0 && currentIndex < totalQuestions) {
             const ch = allChallenges[currentIndex];
-            setCode(codePerQuestion[currentIndex] || "");
             setOutput(outputPerQuestion[currentIndex] || "");
             if (ch?.language) {
                 const lang = LANGUAGES.find(l => l.id === ch.language);
-                if (lang) setLanguage(lang);
+                if (lang) {
+                    setLanguage(lang);
+                    setCode(codePerQuestion[currentIndex][lang.id]);
+                } else {
+                    setCode(codePerQuestion[currentIndex][language.id]);
+                }
+            } else {
+                setCode(codePerQuestion[currentIndex][language.id]);
             }
         }
     }, [currentIndex]);
 
     // Save code for current question before switching
     const saveCurrentCode = () => {
-        setCodePerQuestion(prev => {
-            const updated = [...prev];
-            updated[currentIndex] = code;
-            return updated;
-        });
         setOutputPerQuestion(prev => {
             const updated = [...prev];
             updated[currentIndex] = output;
@@ -214,7 +231,15 @@ export default function CodeEditor() {
 
     const changeLanguage = (langId) => {
         const lang = LANGUAGES.find(l => l.id === langId);
-        if (lang) { setLanguage(lang); setCode(lang.defaultCode); setOutput(""); }
+        if (lang) {
+            setLanguage(lang);
+            if (totalQuestions > 0) {
+                setCode(codePerQuestion[currentIndex][lang.id] || lang.defaultCode);
+            } else {
+                setCode(scratchpadCodes[lang.id] || lang.defaultCode);
+            }
+            setOutput("");
+        }
     };
 
     const copyCode = () => { navigator.clipboard.writeText(code); alert("Code copied!"); };
@@ -251,7 +276,7 @@ export default function CodeEditor() {
 
     const clearOutput = () => setOutput("");
     const resetCode = () => {
-        if (currentProblem?.starterCode) {
+        if (currentProblem?.starterCode && currentProblem.language === language.id) {
             setCode(currentProblem.starterCode);
         } else {
             setCode(language.defaultCode);
@@ -658,9 +683,14 @@ export default function CodeEditor() {
                                 theme={theme}
                                 onChange={(val) => {
                                     setCode(val || "");
-                                    // Auto-save code for current question
                                     if (totalQuestions > 0) {
-                                        setCodePerQuestion(prev => { const u = [...prev]; u[currentIndex] = val || ""; return u; });
+                                        setCodePerQuestion(prev => {
+                                            const u = [...prev];
+                                            u[currentIndex] = { ...u[currentIndex], [language.id]: val || "" };
+                                            return u;
+                                        });
+                                    } else {
+                                        setScratchpadCodes(prev => ({ ...prev, [language.id]: val || "" }));
                                     }
                                 }}
                                 onMount={handleEditorMount}
