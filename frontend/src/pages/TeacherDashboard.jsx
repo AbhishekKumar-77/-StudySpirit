@@ -733,15 +733,20 @@ function LeaderboardSection({ myQuizzes }) {
 
     const downloadCSV = () => {
         if (leaderboard.length === 0) return;
-        const headers = ["Rank", "Student Name", "Marks", "Total Questions", "Percentage", "Time Taken"];
-        const rows = leaderboard.map(p => [
-            p.rank,
-            `"${p.name}"`,
-            p.marks || 0,
-            p.totalMarks || 0,
-            `${p.score}%`,
-            p.time
-        ]);
+        const headers = ["Rank", "Student Name", "Correct Answers", "Real Marks", "Total Questions", "Percentage", "Time Taken"];
+        const rows = leaderboard.map(p => {
+            // Calculate real marks exactly based on the final percentage they received
+            const realMarks = ((p.score / 100) * (p.totalMarks || 1)).toFixed(2).replace(/\.00$/, '');
+            return [
+                p.rank,
+                `"${p.name}"`,
+                p.marks || 0,
+                realMarks,
+                p.totalMarks || 0,
+                `${p.score}%`,
+                p.time
+            ];
+        });
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
