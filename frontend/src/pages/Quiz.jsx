@@ -638,7 +638,7 @@ export default function StudySprintQuiz() {
                         </div>
 
                         {activeTab === "teacher" && questions.length > 0 && (
-                            <div className="flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                                 <button onClick={() => saveQuiz("draft")} disabled={isSaving} className="px-6 py-4 bg-[var(--bg-secondary)] text-[var(--text-secondary)] font-bold rounded-xl shadow border border-[var(--border-color)] transition-all duration-300 hover:bg-[var(--border-color)] flex items-center gap-2">
                                     <Edit size={20} /> Save as Draft
                                 </button>
@@ -648,8 +648,8 @@ export default function StudySprintQuiz() {
                             </div>
                         )}
                         {activeTab === "student" && joinedQuiz && showResult && (
-                            <div className="flex gap-3">
-                                <button className="px-8 py-4 bg-gradient-to-br from-cyan-500  to-pink-500 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2">
+                            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-br from-cyan-500  to-pink-500 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center gap-2">
                                     <BookOpen size={20} /> Review Answers
                                 </button>
                                 <button className="px-6 py-3 bg-white/10 text-[var(--text-primary)] rounded-xl hover:bg-white/15 transition-all duration-300 flex items-center gap-2">
@@ -672,7 +672,7 @@ export default function StudySprintQuiz() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`
-                                flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300
+                                flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-[10px] sm:text-sm uppercase tracking-wider transition-all duration-300
                                 ${activeTab === tab.id
                                     ? "bg-gradient-to-br from-cyan-500  to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30 scale-105"
                                     : "bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--border-color)]/80 hover:shadow-md"
@@ -686,7 +686,7 @@ export default function StudySprintQuiz() {
                     <button
                         onClick={() => setActiveTab("drafts")}
                         className={`
-                            flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all duration-300 ml-auto
+                            flex w-full sm:w-auto items-center justify-center gap-2 px-4 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 mt-2 sm:mt-0 sm:ml-auto
                             ${activeTab === "drafts"
                                 ? "bg-gradient-to-br from-amber-500 to-orange-500 text-[var(--text-primary)] shadow-lg shadow-amber-500/30 scale-105"
                                 : "bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--border-color)]/80 hover:shadow-md"
@@ -718,7 +718,7 @@ export default function StudySprintQuiz() {
 
                                 <div className="mb-5">
                                     <label className="text-[var(--text-secondary)] mb-2 block text-sm">Question Type:</label>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-wrap gap-4">
                                         <label className="flex items-center gap-2 cursor-pointer text-[var(--text-primary)] font-medium hover:text-cyan-400  transition-colors">
                                             <input
                                                 type="radio"
@@ -803,7 +803,7 @@ export default function StudySprintQuiz() {
                                     <h3 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2 text-xl">
                                         <Brain size={24} className="text-amber-500" /> Generate AI Questions
                                     </h3>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col md:flex-row gap-4 mb-4">
                                         <input
                                             type="text"
                                             value={aiTeacherTopic}
@@ -818,12 +818,12 @@ export default function StudySprintQuiz() {
                                             value={aiQuestionCount}
                                             onChange={(e) => setAiQuestionCount(parseInt(e.target.value) || 5)}
                                             placeholder="Count"
-                                            className="w-24 p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300 text-center"
+                                            className="w-full md:w-24 p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300 text-center"
                                         />
                                         <button
                                             onClick={handleTeacherAIGeneration}
                                             disabled={isGenerating}
-                                            className="px-6 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center gap-2 whitespace-nowrap disabled:opacity-70"
+                                            className="w-full md:w-auto px-6 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70"
                                         >
                                             <Sparkles size={20} /> {isGenerating ? "Generating..." : "Generate with AI"}
                                         </button>
