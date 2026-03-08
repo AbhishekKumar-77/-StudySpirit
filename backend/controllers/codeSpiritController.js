@@ -1,10 +1,13 @@
 // Using global fetch (Node 18+)
 
+const CodeSession = require('../models/CodeSession');
+const User = require('../models/User');
+
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 exports.generateDailyChallenge = async (req, res) => {
     try {
-        const { topic, difficulty, count } = req.body;
+        const { topic, difficulty, count, language } = req.body;
 
         if (!topic) {
             return res.status(400).json({ success: false, message: "Topic is required" });
@@ -12,6 +15,7 @@ exports.generateDailyChallenge = async (req, res) => {
 
         const diff = difficulty || "medium";
         const questionCount = Math.min(Math.max(parseInt(count) || 1, 1), 15); // Clamp 1-15
+        const langPref = language || "Python";
 
         const apiKey = GROQ_API_KEY;
         if (!apiKey || apiKey === 'your_groq_api_key_here') {
@@ -26,8 +30,8 @@ exports.generateDailyChallenge = async (req, res) => {
                 {
                     "title": "Problem Title",
                     "description": "Detailed problem statement explaining the task clearly...",
-                    "language": "python",
-                    "starterCode": "def solve():\\n    pass",
+                    "language": "${langPref}",
+                    "starterCode": "language specific starter code here",
                     "testCases": [
                         { "input": "...", "output": "..." },
                         { "input": "...", "output": "..." }
@@ -41,8 +45,7 @@ exports.generateDailyChallenge = async (req, res) => {
             - Generate exactly ${questionCount} problems, each different from the others.
             - Each problem should have 2-3 test cases.
             - Each problem should have 1-2 hints.
-            - Choose Python or JavaScript as the language (whichever fits best for the topic).
-            - Make sure each starterCode is valid and runnable.
+            - Provide the starterCode in ${langPref}. Make sure it is valid and runnable.
             - Problems should gradually increase in complexity.
             - Return ONLY the JSON array, nothing else.
         `;
@@ -82,19 +85,31 @@ exports.generateDailyChallenge = async (req, res) => {
             return res.status(500).json({ success: false, message: "AI generated invalid format. Try again." });
         }
 
-        // Ensure it's an array
         if (!Array.isArray(challenges)) {
             challenges = [challenges];
         }
 
-        // Add IDs to each challenge
         challenges = challenges.map((ch, index) => ({
             ...ch,
-            id: `challenge_${Date.now()}_${index}`
+            id: `challenge_${Date.now()}_${index}`,
+            status: 'pending'
         }));
+
+        // DB save session
+        const newSession = new CodeSession({
+            userId: req.user.id,
+            topic,
+            difficulty: diff,
+            language: langPref,
+            challenges,
+            completed: false
+        });
+
+        await newSession.save();
 
         res.json({
             success: true,
+            sessionId: newSession._id,
             challenges,
             totalCount: challenges.length
         });
@@ -102,6 +117,60 @@ exports.generateDailyChallenge = async (req, res) => {
     } catch (error) {
         console.error("Generate Challenge Error:", error);
         res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
+exports.getHistory = async (req, res) => {
+    try {
+        const sessions = await CodeSession.find({ userId: req.user.id }).sort({ createdAt: -1 });
+        res.json({ success: true, sessions });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error fetching history" });
+    }
+};
+
+exports.getSession = async (req, res) => {
+    try {
+        const session = await CodeSession.findOne({ _id: req.params.id, userId: req.user.id });
+        if (!session) return res.status(404).json({ success: false, message: "Session not found" });
+        res.json({ success: true, session });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error fetching session" });
+    }
+};
+
+exports.submitChallenge = async (req, res) => {
+    try {
+        const { sessionId, challengeId, code, status } = req.body;
+        const session = await CodeSession.findOne({ _id: sessionId, userId: req.user.id });
+        if (!session) return res.status(404).json({ success: false, message: "Session not found" });
+
+        const challenge = session.challenges.find(c => c.id === challengeId);
+        if (!challenge) return res.status(404).json({ success: false, message: "Challenge not found in session" });
+
+        // Update challenge
+        challenge.userCode = code;
+        if (status === 'solved' && challenge.status !== 'solved') {
+            challenge.status = 'solved';
+            // Award XP just once for this challenge
+            await User.findByIdAndUpdate(req.user.id, {
+                $inc: { totalXP: 20, problemsSolvedToday: 1 }
+            });
+        }
+
+        session.updatedAt = Date.now();
+
+        // Check if all challenges in session are solved
+        if (session.challenges.every(c => c.status === 'solved') && !session.completed) {
+            session.completed = true;
+            await User.findByIdAndUpdate(req.user.id, { $inc: { totalXP: 50, reputation: 5 } });
+        }
+
+        await session.save();
+
+        res.json({ success: true, session });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error updating progress" });
     }
 };
 

@@ -30,6 +30,7 @@ export default function CodeEditor() {
 
     // Support both old single-problem and new multi-challenge format
     const challenges = location.state?.challenges || [];
+    const sessionId = location.state?.sessionId || null;
     const legacyProblem = location.state?.problem;
     const isChallengeMode = challenges.length > 0 || !!legacyProblem;
 
@@ -49,6 +50,7 @@ export default function CodeEditor() {
     // Per-question code storage
     const [codePerQuestion, setCodePerQuestion] = useState(() => {
         return allChallenges.map(ch => {
+            if (ch.userCode) return ch.userCode;
             if (ch.starterCode) return ch.starterCode;
             if (ch.language) {
                 const l = LANGUAGES.find(x => x.id === ch.language);
@@ -65,7 +67,7 @@ export default function CodeEditor() {
 
     // Track completed questions
     const [completedQuestions, setCompletedQuestions] = useState(() =>
-        allChallenges.map(() => false)
+        allChallenges.map(ch => ch.status === 'solved' || false)
     );
 
     const editorRef = useRef(null);
@@ -123,12 +125,30 @@ export default function CodeEditor() {
     const goNext = () => goToQuestion(currentIndex + 1);
     const goPrev = () => goToQuestion(currentIndex - 1);
 
-    const markCompleted = () => {
+    const markCompleted = async () => {
         setCompletedQuestions(prev => {
             const updated = [...prev];
             updated[currentIndex] = true;
             return updated;
         });
+
+        if (sessionId && currentProblem?.id) {
+            try {
+                const token = localStorage.getItem('token');
+                await fetch(`${API_BASE}/codespirit/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        sessionId,
+                        challengeId: currentProblem.id,
+                        code,
+                        status: 'solved'
+                    })
+                });
+            } catch (err) {
+                console.error("Sync failed", err);
+            }
+        }
     };
 
     const handleEditorMount = (editor) => { editorRef.current = editor; };
