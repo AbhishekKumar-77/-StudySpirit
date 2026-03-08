@@ -1100,7 +1100,25 @@ export default function StudySprintQuiz() {
                                                 <button
                                                     key={i}
                                                     onClick={() => {
-                                                        setUserAnswers({ ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: i });
+                                                        const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: i };
+                                                        setUserAnswers(newAnswers);
+
+                                                        // Calculate score so far and emit progress
+                                                        let correctCount = 0;
+                                                        joinedQuiz.questions.forEach((q) => {
+                                                            if (newAnswers[q.id] === q.correct) correctCount++;
+                                                        });
+                                                        try {
+                                                            const socket = getSocket();
+                                                            if (socket && socket.connected) {
+                                                                socket.emit('quiz:progress', {
+                                                                    quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
+                                                                    studentId: user?._id || user?.id || 'guest',
+                                                                    correctAnswers: correctCount,
+                                                                    totalQuestions: joinedQuiz.questions.length
+                                                                });
+                                                            }
+                                                        } catch (e) { console.error("Socket error on progress:", e); }
                                                     }}
                                                     className={`
                                                         w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group

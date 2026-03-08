@@ -121,6 +121,29 @@ module.exports = function registerQuizEvents(socket, io) {
         });
     });
 
+    // ── STUDENT: updating live progress ───────────────────────────
+    socket.on('quiz:progress', (data) => {
+        const { studentId, correctAnswers, totalQuestions } = data || {};
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+
+        if (!quizCode || !studentId) return;
+
+        if (activeQuizRooms.has(quizCode)) {
+            const room = activeQuizRooms.get(quizCode);
+            if (room.has(studentId)) {
+                room.get(studentId).correctAnswers = correctAnswers;
+                room.get(studentId).totalQuestions = totalQuestions;
+
+                const students = Array.from(room.values());
+                io.to(`teacher:${quizCode}`).emit('quiz:students:update', {
+                    quizCode,
+                    count: students.length,
+                    students
+                });
+            }
+        }
+    });
+
     // ── TEACHER: starts watching a quiz room ─────────────────────
     socket.on('quiz:teacher:watch', (data) => {
         const quizCode = (data?.quizCode || '').toUpperCase().trim();

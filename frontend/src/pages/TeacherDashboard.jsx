@@ -167,6 +167,23 @@ export default function TeacherDashboard() {
         setShowAnswerKey(false);
         prevWatchCode.current = codeToWatch;
 
+        // Fetch existing submissions to persist data across refreshes
+        try {
+            const res = await fetch(`${API_BASE}/quiz/${codeToWatch}/leaderboard`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success && data.leaderboard) {
+                const existing = data.leaderboard.map(sub => ({
+                    studentName: sub.name,
+                    score: sub.score,
+                    correctAnswers: sub.marks,
+                    totalQuestions: sub.totalMarks,
+                    timeTaken: sub.time ? (parseInt(sub.time) * 60 + parseInt(sub.time.split('m ')[1] || '0')) : 0,
+                    submittedAt: Date.now()
+                }));
+                setLiveSubmissions(existing);
+            }
+        } catch (e) { console.error('Error fetching existing submissions:', e); }
+
         // Start watching
         const socket = connectSocket();
         const doWatch = () => {
@@ -530,6 +547,11 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
                                                 {s.name?.[0]?.toUpperCase()}
                                             </div>
                                             <span className="font-semibold text-[var(--text-primary)] text-sm flex-1">{s.name}</span>
+                                            {s.correctAnswers !== undefined && (
+                                                <span className="text-xs font-bold text-amber-500 mr-2">
+                                                    Points: {s.correctAnswers}/{s.totalQuestions || '?'}
+                                                </span>
+                                            )}
                                             <span className="text-xs text-indigo-500 font-bold">✍️ Active</span>
                                         </div>
                                     ))}
