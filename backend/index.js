@@ -108,6 +108,10 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Static files for uploads
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Global rate limiter (applied to all routes)
 app.use('/api/', generalLimiter);
 

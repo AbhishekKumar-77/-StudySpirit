@@ -2,6 +2,9 @@ const Resource = require('../models/Resource');
 const Group = require('../models/Group');
 const Activity = require('../models/Activity');
 const User = require('../models/User');
+const Folder = require('../models/Folder');
+const path = require('path');
+const fs = require('fs');
 // const fetch = require('node-fetch'); // Removed as Node 18+ has global fetch
 
 // Upload/Create a resource
@@ -291,5 +294,129 @@ Generate ${count} flashcards now:`;
     } catch (error) {
         console.error("Flashcard Gen Error:", error);
         res.status(500).json({ success: false, message: 'Failed to generate flashcards.', error: error.message });
+    }
+};
+
+// ================= FOLDER MANAGEMENT =================
+
+exports.createFolder = async (req, res) => {
+    try {
+        const { name, color, icon, parentFolder } = req.body;
+        const userId = req.user._id;
+
+        const folder = new Folder({
+            name,
+            color,
+            icon,
+            parentFolder: parentFolder || null,
+            owner: userId
+        });
+
+        await folder.save();
+        res.status(201).json({ success: true, folder });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getFolders = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const folders = await Folder.find({ owner: userId });
+        res.json({ success: true, folders });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.deleteFolder = async (req, res) => {
+    try {
+        const { folderId } = req.params;
+        const userId = req.user._id;
+
+        const folder = await Folder.findOne({ _id: folderId, owner: userId });
+        if (!folder) return res.status(404).json({ success: false, message: 'Folder not found' });
+
+        // Update all resources in this folder to be uncategorized (null folder)
+        await Resource.updateMany({ folder: folderId }, { folder: null });
+
+        // Also handle subfolders if any (optional for now)
+        await Folder.findByIdAndDelete(folderId);
+
+        res.json({ success: true, message: 'Folder deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// ================= INDIVIDUAL RESOURCE MANAGEMENT =================
+
+exports.savePersonalResource = async (req, res) => {
+    try {
+        const { name, description, resourceType, url, folderId, content, metadata, category, tags } = req.body;
+        const userId = req.user._id;
+
+        const resource = new Resource({
+            name,
+            description,
+            owner: userId,
+            folder: folderId || null,
+            resourceType: resourceType || 'other',
+            url,
+            content,
+            metadata,
+            category: category || 'General',
+            tags: tags || []
+        });
+
+        await resource.save();
+        res.status(201).json({ success: true, resource });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getMyResources = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { folderId } = req.query;
+
+        const query = { owner: userId };
+        if (folderId) query.folder = folderId;
+
+        const resources = await Resource.find(query).sort({ createdAt: -1 });
+        res.json({ success: true, resources });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.uploadFile = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+
+        const { folderId, category } = req.body;
+        const userId = req.user._id;
+
+        // In a real production app, you'd upload to S3/Cloudinary here.
+        // For this project, we'll store local path as URL (if served from static)
+        // or just return success if it's processed.
+
+        const resource = new Resource({
+            name: req.file.originalname,
+            owner: userId,
+            folder: folderId || null,
+            resourceType: req.file.mimetype.includes('pdf') ? 'pdf' : req.file.mimetype.includes('image') ? 'image' : 'other',
+            url: `/uploads/resources/${req.file.filename}`, // Placeholder path
+            fileSize: req.file.size,
+            category: category || 'General'
+        });
+
+        await resource.save();
+        res.status(201).json({ success: true, resource });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };

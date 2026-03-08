@@ -14,21 +14,43 @@ const resourceSchema = new mongoose.Schema({
     group: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Group',
+        required: false // Optional for individual resources
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     uploader: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false // Kept for backwards compatibility with Group resources
+    },
+    folder: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Folder',
+        default: null
     },
     resourceType: {
         type: String,
-        enum: ['pdf', 'doc', 'video', 'image', 'code', 'link', 'other'],
+        enum: ['pdf', 'doc', 'video', 'image', 'code', 'link', 'ai_notes', 'flashcards', 'other'],
         default: 'other'
     },
     url: {
         type: String,
-        required: true
+        required: false // Not always required for AI notes saved locally
+    },
+    content: {
+        type: String, // Store AI notes content here if not a separate file
+    },
+    metadata: {
+        thumbnail: String,
+        author: String,
+        duration: String,
+        flashcards: [{
+            front: String,
+            back: String
+        }]
     },
     fileSize: {
         type: Number, // in bytes

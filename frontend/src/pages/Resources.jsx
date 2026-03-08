@@ -5,8 +5,10 @@ import {
     ArrowLeft, Library, FileText, Brain, Sparkles, Folder,
     Upload, Download, Search, Plus, Trash2, Edit3, BookOpen, Users,
     Zap, Mic, Video, Image as ImageIcon, Link as LinkIcon,
-    Share2, Star, Clock, CheckCircle, X, Copy, Check
+    Share2, Star, Clock, CheckCircle, X, Copy, Check, MoreVertical,
+    FolderPlus, File, Eye
 } from "lucide-react";
+import resourceApi from '../services/resourceApi';
 
 // ========== Markdown Renderer ==========
 const RenderedMarkdown = ({ content }) => {
@@ -278,6 +280,132 @@ export default function Resources() {
     const [studyingDeck, setStudyingDeck] = useState(null);
     const [studyCardIndex, setStudyCardIndex] = useState(0);
 
+    // Repository / Library States
+    const [folders, setFolders] = useState([]);
+    const [myResources, setMyResources] = useState([]);
+    const [currentFolder, setCurrentFolder] = useState(null); // {id, name}
+    const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+    const [showFolderModal, setShowFolderModal] = useState(false);
+    const [newFolderName, setNewFolderName] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
+
+    useEffect(() => {
+        fetchFolders();
+        fetchResources();
+    }, []);
+
+    const fetchFolders = async () => {
+        try {
+            const data = await resourceApi.getFolders();
+            if (data.success) setFolders(data.folders);
+        } catch (e) {
+            console.error("Failed to fetch folders", e);
+        }
+    };
+
+    const fetchResources = async (folderId = null) => {
+        setIsLoadingLibrary(true);
+        try {
+            const data = await resourceApi.getMyResources(folderId);
+            if (data.success) setMyResources(data.resources);
+        } catch (e) {
+            console.error("Failed to fetch resources", e);
+        } finally {
+            setIsLoadingLibrary(false);
+        }
+    };
+
+    const handleCreateFolder = async () => {
+        if (!newFolderName.trim()) return;
+        try {
+            const data = await resourceApi.createFolder({ name: newFolderName });
+            if (data.success) {
+                setFolders([...folders, data.folder]);
+                setNewFolderName("");
+                setShowFolderModal(false);
+            }
+        } catch (e) {
+            alert("Error creating folder");
+        }
+    };
+
+    const handleUploadFile = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        if (currentFolder) formData.append('folderId', currentFolder.id);
+
+        setIsUploading(true);
+        try {
+            const data = await resourceApi.uploadFile(formData);
+            if (data.success) {
+                setMyResources([data.resource, ...myResources]);
+            }
+        } catch (e) {
+            alert("Upload failed");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleSaveAIContent = async (type) => {
+        if (!generatedResult && type === 'notes') return;
+
+        try {
+            const resourceData = {
+                name: aiTopic || (type === 'notes' ? "AI Notes" : "AI Concept"),
+                resourceType: 'ai_notes',
+                content: generatedResult,
+                folderId: currentFolder?.id,
+                category: 'General'
+            };
+            const data = await resourceApi.saveResource(resourceData);
+            if (data.success) {
+                alert("Saved to Library!");
+                fetchResources(currentFolder?.id);
+            }
+        } catch (e) {
+            alert("Failed to save");
+        }
+    };
+
+    const handleSaveVideo = async (video) => {
+        try {
+            const resourceData = {
+                name: video.title,
+                resourceType: 'video',
+                url: video.url,
+                metadata: {
+                    thumbnail: video.bestThumbnail?.url,
+                    author: video.author?.name,
+                    duration: video.duration
+                },
+                folderId: currentFolder?.id
+            };
+            const data = await resourceApi.saveResource(resourceData);
+            if (data.success) {
+                alert("Video bookmarked!");
+                fetchResources(currentFolder?.id);
+            }
+        } catch (e) {
+            alert("Failed to bookmark video");
+        }
+    };
+
+    const handleDeleteResource = async (id) => {
+        if (!window.confirm("Delete this resource?")) return;
+        try {
+            const data = await resourceApi.deleteResource(id);
+            if (data.success) {
+                setMyResources(myResources.filter(r => r._id !== id));
+            }
+        } catch (e) {
+            alert("Delete failed");
+        }
+    };
+
     // AI Flashcard Generation
     const handleGenerateFlashcards = async () => {
         if (!flashcardTopic.trim()) return;
@@ -306,6 +434,24 @@ export default function Resources() {
             alert("Error connecting to AI service.");
         } finally {
             setIsGeneratingCards(false);
+        }
+    };
+
+    const handleSaveFlashcardsToVault = async (name, cards) => {
+        try {
+            const resourceData = {
+                name: name,
+                resourceType: 'flashcards',
+                metadata: { flashcards: cards },
+                folderId: currentFolder?.id
+            };
+            const data = await resourceApi.saveResource(resourceData);
+            if (data.success) {
+                alert("Flashcards saved to vault!");
+                fetchResources(currentFolder?.id);
+            }
+        } catch (e) {
+            alert("Failed to save flashcards");
         }
     };
 
@@ -342,6 +488,11 @@ export default function Resources() {
         }
     };
 
+    const goToFolder = (folder) => {
+        setCurrentFolder(folder);
+        fetchResources(folder?._id);
+    };
+
     const handleCopyNotes = () => {
         navigator.clipboard.writeText(generatedResult);
         setCopied(true);
@@ -360,6 +511,28 @@ export default function Resources() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative pb-20 overflow-hidden font-sans text-[var(--text-primary)]">
+            {/* Folder Modal */}
+            {showFolderModal && (
+                <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+                    <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-8 w-full max-w-md shadow-2xl animate-fade-in">
+                        <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                            <FolderPlus className="text-indigo-400" /> New Subject / Folder
+                        </h3>
+                        <input
+                            value={newFolderName}
+                            onChange={e => setNewFolderName(e.target.value)}
+                            placeholder="e.g. Computer Science 101"
+                            className="w-full bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4 mb-6 text-[var(--text-primary)] focus:border-indigo-500 outline-none"
+                            autoFocus
+                        />
+                        <div className="flex gap-4">
+                            <button onClick={() => setShowFolderModal(false)} className="flex-1 py-3 px-4 rounded-xl border border-[var(--border-color)] hover:bg-white/5 transition-all text-[var(--text-secondary)]">Cancel</button>
+                            <button onClick={handleCreateFolder} className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition-all font-bold">Create Folder</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Background Effects */}
             <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -390,7 +563,8 @@ export default function Resources() {
                 {/* Tabs */}
                 <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
                     {[
-                        { id: 'library', label: 'My Library', icon: Folder },
+                        { id: 'library', label: 'Study Vault', icon: Folder },
+                        { id: 'search', label: 'YouTube Search', icon: Video },
                         { id: 'notes', label: 'AI Note Gen', icon: FileText },
                         { id: 'flashcards', label: 'Smart Flashcards', icon: Zap },
                         { id: 'explainer', label: 'Concept Explainer', icon: Brain },
@@ -413,8 +587,140 @@ export default function Resources() {
                 {/* Content Area */}
                 <div className="min-h-[500px]">
 
-                    {/* VIDEO SEARCH TAB (WAS LIBRARY) */}
+                    {/* STUDY VAULT (MY LIBRARY) */}
                     {activeTab === 'library' && (
+                        <div className="animate-fade-in">
+                            {/* Vault Header Controls */}
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                                <div className="flex items-center gap-3 text-[var(--text-secondary)]">
+                                    <button
+                                        onClick={() => goToFolder(null)}
+                                        className={`px-3 py-1.5 rounded-lg transition-all ${!currentFolder ? "bg-indigo-500/20 text-indigo-300 font-bold" : "hover:bg-white/5"}`}
+                                    >
+                                        Root
+                                    </button>
+                                    {currentFolder && (
+                                        <>
+                                            <span className="opacity-30">/</span>
+                                            <span className="text-indigo-400 font-bold bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20">
+                                                {currentFolder.name}
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="flex gap-3 w-full md:w-auto">
+                                    <button
+                                        onClick={() => setShowFolderModal(true)}
+                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-[var(--glass-bg)] border border-indigo-500/30 rounded-xl text-indigo-300 font-bold hover:bg-indigo-500/10 transition-all"
+                                    >
+                                        <FolderPlus size={18} /> New Subject
+                                    </button>
+                                    <label className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 rounded-xl text-white font-bold hover:bg-indigo-700 transition-all cursor-pointer shadow-lg shadow-indigo-500/20">
+                                        <Upload size={18} /> {isUploading ? "Uploading..." : "Upload PDF"}
+                                        <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleUploadFile} disabled={isUploading} />
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Folders Grid (Root level only for now) */}
+                            {!currentFolder && folders.length > 0 && (
+                                <div className="mb-10">
+                                    <h3 className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Subjects / Folders</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                        {folders.map(folder => (
+                                            <button
+                                                key={folder._id}
+                                                onClick={() => goToFolder({ id: folder._id, name: folder.name })}
+                                                className="group flex flex-col items-center bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)] hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all text-center"
+                                            >
+                                                <Folder size={48} className="text-indigo-400 mb-3 group-hover:scale-110 transition-transform" />
+                                                <span className="font-bold text-sm truncate w-full">{folder.name}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Resources Grid */}
+                            <div>
+                                <h3 className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">
+                                    {currentFolder ? `${currentFolder.name} Resources` : "Individual Resources"}
+                                </h3>
+
+                                {isLoadingLibrary ? (
+                                    <div className="flex items-center justify-center py-20 opacity-50">
+                                        <Sparkles className="animate-spin mr-2" /> Loading Vault...
+                                    </div>
+                                ) : myResources.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {myResources.map(res => (
+                                            <div key={res._id} className="group bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl overflow-hidden hover:border-indigo-500/40 transition-all flex flex-col h-full">
+                                                <div className="p-5 flex-1">
+                                                    <div className="flex items-start justify-between mb-3">
+                                                        <div className={`p-2.5 rounded-xl ${res.resourceType === 'pdf' ? 'bg-red-500/10 text-red-400' :
+                                                            res.resourceType === 'video' ? 'bg-rose-500/10 text-rose-400' :
+                                                                res.resourceType === 'ai_notes' ? 'bg-cyan-500/10 text-cyan-400' :
+                                                                    'bg-indigo-500/10 text-indigo-400'
+                                                            }`}>
+                                                            {res.resourceType === 'pdf' ? <File size={22} /> :
+                                                                res.resourceType === 'video' ? <Video size={22} /> :
+                                                                    <FileText size={22} />}
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteResource(res._id)}
+                                                            className="text-[var(--text-muted)] hover:text-red-400 p-1 rounded-lg hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                    <h4 className="font-bold text-[var(--text-primary)] mb-1 line-clamp-1">{res.name}</h4>
+                                                    <p className="text-xs text-[var(--text-muted)] mb-4">{new Date(res.createdAt).toLocaleDateString()}</p>
+
+                                                    {res.resourceType === 'video' && res.metadata?.thumbnail && (
+                                                        <div className="aspect-video rounded-lg overflow-hidden mb-4 relative">
+                                                            <img src={res.metadata.thumbnail} className="w-full h-full object-cover" />
+                                                            <div className="absolute top-2 right-2 bg-black/70 text-[10px] px-1.5 py-0.5 rounded text-white font-bold">{res.metadata.duration}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="p-4 bg-white/5 border-t border-[var(--border-color)] flex gap-2">
+                                                    {res.url ? (
+                                                        <a
+                                                            href={res.url.startsWith('/') ? `${API_BASE}${res.url}` : res.url}
+                                                            target="_blank"
+                                                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg text-xs font-bold hover:bg-indigo-500/30 transition-all"
+                                                        >
+                                                            <Eye size={14} /> View
+                                                        </a>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => {
+                                                                setAiTopic(res.name);
+                                                                setGeneratedResult(res.content);
+                                                                setActiveTab('notes');
+                                                            }}
+                                                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg text-xs font-bold hover:bg-indigo-500/30 transition-all"
+                                                        >
+                                                            <Eye size={14} /> Open
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-24 bg-[var(--glass-bg)] border-2 border-dashed border-[var(--border-color)] rounded-3xl">
+                                        <Library size={48} className="mx-auto text-[var(--text-muted)] opacity-30 mb-4" />
+                                        <p className="text-[var(--text-secondary)] font-medium">This Subject Vault is empty.</p>
+                                        <p className="text-sm text-[var(--text-muted)] mt-1">Upload files or save AI notes here.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* YOUTUBE SEARCH TAB */}
+                    {activeTab === 'search' && (
                         <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl border border-[var(--border-color)] p-6 animate-fade-in">
                             <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3">
                                 <Video className="text-red-500" /> YouTube Video Search
@@ -447,28 +753,35 @@ export default function Resources() {
                             {videoResults.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {videoResults.map((video, idx) => (
-                                        <a
+                                        <div
                                             key={idx}
-                                            href={video.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="bg-[var(--glass-bg)] rounded-xl overflow-hidden border border-[var(--border-color)] hover:border-red-500/40 hover:scale-105 transition-all group flex flex-col"
+                                            className="bg-[var(--glass-bg)] rounded-xl overflow-hidden border border-[var(--border-color)] hover:border-red-500/40 transition-all group flex flex-col"
                                         >
                                             <div className="relative aspect-video">
                                                 <img src={video.bestThumbnail?.url || video.thumbnails?.[0]?.url} alt={video.title} className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-[var(--bg-secondary)]lack/20 group-hover:bg-[var(--bg-secondary)]lack/0 transition-colors" />
-                                                <div className="absolute bottom-2 right-2 bg-[var(--bg-secondary)]lack/80 text-[var(--text-primary)] text-xs font-bold px-2 py-1 rounded">
+                                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+                                                <div className="absolute bottom-2 right-2 bg-black/80 text-[var(--text-primary)] text-xs font-bold px-2 py-1 rounded">
                                                     {video.duration}
                                                 </div>
                                             </div>
                                             <div className="p-4 flex-1 flex flex-col">
                                                 <h3 className="text-[var(--text-primary)] font-bold text-sm line-clamp-2 mb-2 group-hover:text-red-400 transition-colors" title={video.title}>{video.title}</h3>
-                                                <div className="mt-auto flex justify-between items-center text-xs text-[var(--text-muted)]">
-                                                    <span className="flex items-center gap-1 truncate max-w-[100px]"><Users size={12} /> {video.author?.name}</span>
-                                                    <span>{typeof video.views === 'number' ? video.views.toLocaleString() : video.views} views</span>
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <span className="text-[10px] text-[var(--text-muted)] flex items-center gap-1"><Users size={10} /> {video.author?.name}</span>
+                                                </div>
+                                                <div className="mt-auto flex gap-2">
+                                                    <a href={video.url} target="_blank" className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-red-600/10 text-red-400 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition-all">
+                                                        <Video size={14} /> Watch
+                                                    </a>
+                                                    <button
+                                                        onClick={() => handleSaveVideo(video)}
+                                                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-indigo-600/10 text-indigo-400 rounded-lg text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all"
+                                                    >
+                                                        <FolderPlus size={14} /> Save
+                                                    </button>
                                                 </div>
                                             </div>
-                                        </a>
+                                        </div>
                                     ))}
                                 </div>
                             ) : (
@@ -523,6 +836,12 @@ export default function Resources() {
                                             >
                                                 {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                                                 {copied ? 'Copied!' : 'Copy'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleSaveAIContent('notes')}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg text-xs font-semibold text-emerald-300 hover:text-[var(--text-primary)] transition-all border border-emerald-500/20"
+                                            >
+                                                <FolderPlus size={14} /> Save to Vault
                                             </button>
                                             <button
                                                 onClick={handleDownloadNotes}
@@ -884,6 +1203,8 @@ export default function Resources() {
                                                     // New deck
                                                     setDecks([...decks, { id: Date.now(), name: deckName, cards: deckCards }]);
                                                 }
+                                                // Automatic save to vault if desired, or we can just leave it as local state plus a manual button
+                                                handleSaveFlashcardsToVault(deckName, deckCards);
                                                 setShowCreateDeck(false);
                                                 setEditingDeckIdx(null);
                                                 setDeckName('');
@@ -930,8 +1251,16 @@ export default function Resources() {
 
                             {generatedResult && activeTab === 'explainer' && (
                                 <div className="bg-[var(--glass-bg)] rounded-xl p-6 border border-pink-500/30">
-                                    <div className="flex items-center gap-2 mb-4 text-pink-400 font-bold">
-                                        <Sparkles size={20} /> Explanation
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2 text-pink-400 font-bold">
+                                            <Sparkles size={20} /> Explanation
+                                        </div>
+                                        <button
+                                            onClick={() => handleSaveAIContent('explain')}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500/20 hover:bg-pink-500/30 rounded-lg text-xs font-semibold text-pink-300 hover:text-[var(--text-primary)] transition-all border border-pink-500/20"
+                                        >
+                                            <FolderPlus size={14} /> Save to Vault
+                                        </button>
                                     </div>
                                     <div className="leading-relaxed text-lg">
                                         <RenderedMarkdown content={generatedResult} />
