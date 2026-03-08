@@ -377,7 +377,7 @@ export default function StudySprintQuiz() {
                 credentials: 'include',
                 body: JSON.stringify({
                     quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
-                    score: correctCount, // Sending correct count as score for backend calculation
+                    score: Number(totalScore.toFixed(2)), // Real marks with negative deductions
                     percentage: Math.round(finalScore), // Pass negative-marked final percentage
                     totalQuestions: quizQs.length,
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft,

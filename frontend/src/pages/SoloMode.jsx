@@ -1170,7 +1170,7 @@ export default function SoloMode() {
                             </button>
                             <button
                                 onClick={toggleTimer}
-                                className={`px-12 py-4 rounded-2xl font-black text-xl flex items-center gap-3 transition-all shadow-xl ${isTimerRunning ? 'bg-amber-500 text-[var(--text-primary)] hover:bg-amber-600 shadow-amber-500/30' : 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] hover:opacity-90 shadow-violet-500/30'}`}
+                                className={`px-12 py-4 rounded-2xl font-black text-xl flex items-center gap-3 transition-all shadow-xl ${isTimerRunning ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/30' : 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white hover:opacity-90 shadow-violet-500/30'}`}
                             >
                                 {isTimerRunning ? <><Pause className="w-6 h-6" /> PAUSE</> : <><Play className="w-6 h-6" /> START</>}
                             </button>
@@ -1300,7 +1300,7 @@ export default function SoloMode() {
                                     <span className="text-[var(--text-secondary)]">Auto-start breaks</span>
                                     <button
                                         onClick={() => setAutoStartBreaks(!autoStartBreaks)}
-                                        className={`w-12 h-6 rounded-full transition-all ${autoStartBreaks ? 'bg-cyan-' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
+                                        className={`w-12 h-6 rounded-full transition-all ${autoStartBreaks ? 'bg-cyan-500' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-all ${autoStartBreaks ? 'ml-6' : 'ml-0.5'}`} />
                                     </button>
@@ -1309,7 +1309,7 @@ export default function SoloMode() {
                                     <span className="text-[var(--text-secondary)]">Sound notifications</span>
                                     <button
                                         onClick={() => setSoundEnabled(!soundEnabled)}
-                                        className={`w-12 h-6 rounded-full transition-all ${soundEnabled ? 'bg-cyan-' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
+                                        className={`w-12 h-6 rounded-full transition-all ${soundEnabled ? 'bg-cyan-500' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-all ${soundEnabled ? 'ml-6' : 'ml-0.5'}`} />
                                     </button>
@@ -1445,7 +1445,7 @@ export default function SoloMode() {
                                 <button
                                     onClick={handlePlatformConnect}
                                     disabled={isConnecting || !platformUsername.trim()}
-                                    className="flex-1 py-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl text-[var(--text-primary)] font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="flex-1 py-4 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl text-white font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full"
                                 >
                                     {isConnecting ? (
                                         <>
@@ -1552,7 +1552,7 @@ export default function SoloMode() {
                                 placeholder="What did you learn today? What problems did you solve? What concepts are still unclear?"
                                 className="w-full min-h-[250px] p-4 bg-[var(--border-color)]/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] resize-y focus:outline-none focus:border-cyan-500 mb-4"
                             />
-                            <button onClick={() => { setJournalEntry(''); setShowJournal(false); }} className="w-full py-4 bg-gradient-to-r from-cyan- to-purple-500 rounded-xl text-[var(--text-primary)] font-bold hover:shadow-lg hover:shadow-violet-500/30 transition-all">
+                            <button onClick={() => { setJournalEntry(''); setShowJournal(false); }} className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold hover:shadow-lg hover:shadow-violet-500/30 transition-all">
                                 Save Entry
                             </button>
                         </div>
@@ -1602,7 +1602,7 @@ export default function SoloMode() {
                                     <p className="text-[var(--text-secondary)] text-sm">Weekly Contest 387 in 2 days. Practice medium-level problems to prepare!</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mt-6">
-                                    <button onClick={() => setShowCodingReminder(false)} className="py-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-[var(--text-primary)] font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-500/30 transition-all">
+                                    <button onClick={() => setShowCodingReminder(false)} className="py-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-500/30 transition-all w-full">
                                         <Play className="w-4 h-4" /> Start Solving
                                     </button>
                                     <button onClick={() => setShowCodingReminder(false)} className="py-3 bg-[var(--border-color)]/80 border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--bg-secondary)]/80 transition-all">
@@ -1769,9 +1769,9 @@ export default function SoloMode() {
 
                                         return (
                                             <div key={key} className="p-4 bg-[var(--border-color)] rounded-xl border border-[var(--border-color)] hover:border-[var(--border-color)] transition-all group">
-                                                <div className="flex justify-between items-center mb-4">
+                                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                                                     <div
-                                                        className="flex items-center gap-4 flex-1 cursor-pointer"
+                                                        className="flex items-center gap-3 sm:gap-4 flex-1 w-full cursor-pointer"
                                                         onClick={() => window.open(platformUrl, '_blank')}
                                                         title={`Visit ${key}`}
                                                     >
@@ -1798,11 +1798,11 @@ export default function SoloMode() {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex flex-row items-center justify-end gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                                         {profile.connected ? (
                                                             <>
                                                                 {isCodingPlatform && (
-                                                                    <div className="text-right mr-2">
+                                                                    <div className="text-right mr-2 flex-1 sm:flex-none">
                                                                         <span className={`${colors.text} font-black text-2xl`}>{profile.problemsSolved}</span>
                                                                         <div className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Solved</div>
                                                                     </div>
@@ -1812,7 +1812,7 @@ export default function SoloMode() {
                                                                         e.stopPropagation();
                                                                         disconnectPlatform(key);
                                                                     }}
-                                                                    className="bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-500/20 transition-all"
+                                                                    className="bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-500/20 transition-all shrink-0"
                                                                     title="Disconnect"
                                                                 >
                                                                     <X className="w-4 h-4" />
@@ -1824,7 +1824,7 @@ export default function SoloMode() {
                                                                     e.stopPropagation();
                                                                     connectPlatform(key);
                                                                 }}
-                                                                className={`${colors.bg} text-[var(--text-primary)] px-5 py-2.5 rounded-lg text-sm font-bold hover:brightness-110 shadow-lg shadow-${colors.text}/20 transition-all`}
+                                                                className={`${colors.bg} text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:brightness-110 shadow-lg shadow-${colors.text}/20 transition-all w-full sm:w-auto text-center`}
                                                             >
                                                                 Connect
                                                             </button>
@@ -1959,8 +1959,8 @@ export default function SoloMode() {
                                                             const count = activityHeatmap[dateStr] || 0;
 
                                                             // Color intensity based on activity count (like GitHub)
-                                                            let bgColor = '#1e293b'; // slate-800 - no activity
-                                                            let borderColor = 'rgba(255,255,255,0.03)';
+                                                            let bgColor = 'var(--bg-secondary)'; // default empty
+                                                            let borderColor = 'var(--border-color)';
                                                             if (count >= 1) { bgColor = '#064e3b'; borderColor = '#065f46'; } // emerald-900
                                                             if (count >= 3) { bgColor = '#047857'; borderColor = '#059669'; } // emerald-700
                                                             if (count >= 5) { bgColor = '#10b981'; borderColor = '#34d399'; } // emerald-500
@@ -1993,7 +1993,7 @@ export default function SoloMode() {
                                         </div>
                                         <div className="flex items-center gap-2 mt-4 text-xs text-[var(--text-secondary)]">
                                             <span>Less</span>
-                                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.05)' }} />
+                                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }} />
                                             <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: '#064e3b', border: '1px solid #065f46' }} />
                                             <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: '#047857', border: '1px solid #059669' }} />
                                             <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: '#10b981', border: '1px solid #34d399' }} />
