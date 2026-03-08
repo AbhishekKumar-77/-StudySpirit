@@ -134,10 +134,10 @@ export default function CodeEditor() {
 
         if (sessionId && currentProblem?.id) {
             try {
-                const token = localStorage.getItem('token');
                 await fetch(`${API_BASE}/codespirit/submit`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({
                         sessionId,
                         challengeId: currentProblem.id,

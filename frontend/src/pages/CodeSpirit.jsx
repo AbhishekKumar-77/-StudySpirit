@@ -32,9 +32,8 @@ export default function CodeSpirit() {
     const fetchHistory = async () => {
         setLoadingHistory(true);
         try {
-            const token = localStorage.getItem('token');
             const res = await fetch(`${API_BASE}/codespirit/history`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {
@@ -54,13 +53,12 @@ export default function CodeSpirit() {
         setIsGenerating(true);
 
         try {
-            const token = localStorage.getItem('token');
             const res = await fetch(`${API_BASE}/codespirit/generate`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({ topic, difficulty, count: questionCount, language })
             });
 
@@ -271,8 +269,8 @@ export default function CodeSpirit() {
                                             <div>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${session.difficulty === 'hard' ? 'bg-rose-500/20 text-rose-500' :
-                                                            session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
-                                                                'bg-emerald-500/20 text-emerald-500'
+                                                        session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
+                                                            'bg-emerald-500/20 text-emerald-500'
                                                         }`}>
                                                         {session.difficulty}
                                                     </span>
