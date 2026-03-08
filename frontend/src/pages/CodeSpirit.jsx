@@ -53,7 +53,7 @@ export default function CodeSpirit() {
     const countOptions = [1, 2, 3, 5, 7, 10, 15];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-[var(--text-primary)] font-sans">
+        <div className="min-h-screen bg-[var(--bg-primary)] transition-colors duration-300 text-[var(--text-primary)] font-sans">
             {/* Minimal Navbar */}
             <nav className="border-b border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-4">
@@ -61,7 +61,7 @@ export default function CodeSpirit() {
                         <ArrowLeft size={20} />
                     </button>
                     <div className="text-xl font-bold flex items-center gap-2">
-                        <Terminal className="text-cyan-" />
+                        <Terminal className="text-cyan-500" />
                         CodeSpirit <span className="opacity-50 font-normal">| Daily Practice</span>
                     </div>
                 </div>
@@ -69,8 +69,8 @@ export default function CodeSpirit() {
 
             {/* Main Content */}
             <div className="h-[calc(100vh-73px)] flex flex-col items-center justify-center p-6 animate-fade-in text-center max-w-2xl mx-auto">
-                <div className="w-20 h-20 bg-cyan-/20 rounded-3xl flex items-center justify-center mb-8 ring-4 ring-violet-500/10">
-                    <Sparkles size={40} className="text-cyan-" />
+                <div className="w-20 h-20 bg-cyan-500/20 rounded-3xl flex items-center justify-center mb-8 ring-4 ring-violet-500/10">
+                    <Sparkles size={40} className="text-cyan-500" />
                 </div>
 
                 <h1 className="text-4xl font-black mb-4 bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
@@ -89,7 +89,7 @@ export default function CodeSpirit() {
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
                                 placeholder="e.g. Recursion, Dynamic Programming, Arrays..."
-                                className="w-full bg-[var(--bg-secondary)]lack/40 border border-[var(--border-color)] rounded-xl px-4 py-4 text-lg focus:outline-none focus:border-cyan-500 transition-colors"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl px-4 py-4 text-lg focus:outline-none focus:border-cyan-500 transition-colors"
                             />
                         </div>
 
@@ -102,8 +102,8 @@ export default function CodeSpirit() {
                                         key={lvl}
                                         onClick={() => setDifficulty(lvl)}
                                         className={`py-3 rounded-xl border font-bold capitalize transition-all ${difficulty === lvl
-                                            ? 'bg-cyan- border-cyan-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/25'
-                                            : 'bg-[var(--bg-secondary)]lack/20 border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-white/5'
+                                            ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]'
                                             }`}
                                     >
                                         {lvl}
@@ -123,8 +123,8 @@ export default function CodeSpirit() {
                                         key={num}
                                         onClick={() => setQuestionCount(num)}
                                         className={`w-14 h-12 rounded-xl border font-bold text-lg transition-all ${questionCount === num
-                                            ? 'bg-emerald-500 border-emerald-500 text-[var(--text-primary)] shadow-lg shadow-emerald-500/25'
-                                            : 'bg-[var(--bg-secondary)]lack/20 border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-white/5'
+                                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]'
                                             }`}
                                     >
                                         {num}
@@ -138,7 +138,7 @@ export default function CodeSpirit() {
                         <button
                             onClick={handleGenerate}
                             disabled={isGenerating || !topic}
-                            className="mt-4 w-full bg-gradient-to-r from-cyan- to-indigo-600 hover:from-cyan- hover:to-indigo-500 text-[var(--text-primary)] font-bold py-4 rounded-xl shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 text-lg"
+                            className="mt-4 w-full bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 text-lg"
                         >
                             {isGenerating ? (
                                 <> <Cpu className="animate-spin" /> Generating {questionCount} Challenge{questionCount > 1 ? 's' : ''}... </>
