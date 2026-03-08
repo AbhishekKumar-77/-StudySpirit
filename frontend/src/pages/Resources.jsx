@@ -226,11 +226,16 @@ export default function Resources() {
     const [activeTab, setActiveTab] = useState("library");
     const [copied, setCopied] = useState(false);
 
-    // AI States
+    // AI States (Notes)
     const [aiTopic, setAiTopic] = useState("");
     const [aiContent, setAiContent] = useState(""); // For generating notes
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedResult, setGeneratedResult] = useState(""); // Markdown/Text output
+
+    // Concept Explainer States
+    const [explainerTopic, setExplainerTopic] = useState("");
+    const [isExplaining, setIsExplaining] = useState(false);
+    const [generatedExplainer, setGeneratedExplainer] = useState("");
 
     // Video Search State
     const [searchQuery, setSearchQuery] = useState("");
@@ -455,8 +460,8 @@ export default function Resources() {
         }
     };
 
-    // AI Handlers - Connect to backend
-    const handleGenerate = async (type) => {
+    // AI Handlers - Notes
+    const handleGenerate = async () => {
         if (!aiTopic.trim()) {
             alert("Please enter a topic!");
             return;
@@ -465,13 +470,10 @@ export default function Resources() {
         setGeneratedResult("");
 
         try {
-            const endpoint = type === 'notes' ? 'generate-notes' : 'explain';
-            const body = type === 'notes' ? { topic: aiTopic, content: aiContent } : { topic: aiTopic };
-
-            const res = await fetch(`${API_BASE}/resources/${endpoint}`, {
+            const res = await fetch(`${API_BASE}/resources/generate-notes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                body: JSON.stringify({ topic: aiTopic, content: aiContent })
             });
             const data = await res.json();
 
@@ -485,6 +487,36 @@ export default function Resources() {
             setGeneratedResult("Network error connecting to AI service.");
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    // AI Handlers - Concept Explainer
+    const handleExplain = async () => {
+        if (!explainerTopic.trim()) {
+            alert("Please enter a concept!");
+            return;
+        }
+        setIsExplaining(true);
+        setGeneratedExplainer("");
+
+        try {
+            const res = await fetch(`${API_BASE}/resources/explain`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic: explainerTopic })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                setGeneratedExplainer(data.result);
+            } else {
+                setGeneratedExplainer("Error: " + (data.message || "Failed to explain."));
+            }
+        } catch (err) {
+            console.error("AI Error:", err);
+            setGeneratedExplainer("Network error connecting to AI service.");
+        } finally {
+            setIsExplaining(false);
         }
     };
 
@@ -814,7 +846,7 @@ export default function Resources() {
                                         className="w-full h-[300px] bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-cyan-500 outline-none resize-none"
                                     />
                                     <button
-                                        onClick={() => handleGenerate('notes')}
+                                        onClick={handleGenerate}
                                         disabled={isGenerating}
                                         className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl font-bold text-[var(--text-primary)] hover:opacity-90 transition-all flex justify-center items-center gap-2"
                                     >
@@ -1235,35 +1267,48 @@ export default function Resources() {
 
                             <div className="flex gap-4 mb-8">
                                 <input
-                                    value={aiTopic}
-                                    onChange={(e) => setAiTopic(e.target.value)}
+                                    value={explainerTopic}
+                                    onChange={(e) => setExplainerTopic(e.target.value)}
                                     placeholder="Enter complex concept (e.g. Quantum Entanglement)"
                                     className="flex-1 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl p-4 text-[var(--text-primary)] focus:border-pink-500 outline-none"
                                 />
                                 <button
-                                    onClick={() => handleGenerate('explain')}
-                                    disabled={isGenerating}
+                                    onClick={handleExplain}
+                                    disabled={isExplaining}
                                     className="px-8 bg-pink-600 hover:bg-pink-700 rounded-xl font-bold text-[var(--text-primary)] transition-all disabled:opacity-50"
                                 >
-                                    Explain
+                                    {isExplaining ? <Sparkles className="animate-spin" /> : "Explain"}
                                 </button>
                             </div>
 
-                            {generatedResult && activeTab === 'explainer' && (
+                            {generatedExplainer && activeTab === 'explainer' && (
                                 <div className="bg-[var(--glass-bg)] rounded-xl p-6 border border-pink-500/30">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2 text-pink-400 font-bold">
                                             <Sparkles size={20} /> Explanation
                                         </div>
                                         <button
-                                            onClick={() => handleSaveAIContent('explain')}
+                                            onClick={() => {
+                                                resourceApi.saveResource({
+                                                    name: explainerTopic || "AI Concept",
+                                                    resourceType: 'ai_notes',
+                                                    content: generatedExplainer,
+                                                    folderId: currentFolder?.id,
+                                                    category: 'General'
+                                                }).then(data => {
+                                                    if (data.success) {
+                                                        alert("Saved to Vault!");
+                                                        fetchResources(currentFolder?.id);
+                                                    }
+                                                });
+                                            }}
                                             className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500/20 hover:bg-pink-500/30 rounded-lg text-xs font-semibold text-pink-300 hover:text-[var(--text-primary)] transition-all border border-pink-500/20"
                                         >
                                             <FolderPlus size={14} /> Save to Vault
                                         </button>
                                     </div>
                                     <div className="leading-relaxed text-lg">
-                                        <RenderedMarkdown content={generatedResult} />
+                                        <RenderedMarkdown content={generatedExplainer} />
                                     </div>
                                 </div>
                             )}
