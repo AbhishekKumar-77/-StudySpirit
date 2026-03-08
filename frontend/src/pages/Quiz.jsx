@@ -58,6 +58,7 @@ export default function StudySprintQuiz() {
     const [warnings, setWarnings] = useState(0); // Track security warnings
     const [fullscreenActive, setFullscreenActive] = useState(false);
     const [isReviewingAnswers, setIsReviewingAnswers] = useState(false);
+    const [isTabHidden, setIsTabHidden] = useState(false); // New state to detect if user switched tabs
     const fullscreenRef = useRef(null); // Ref for fullscreen element
 
     // AI Practice Mode
@@ -178,18 +179,43 @@ export default function StudySprintQuiz() {
             if (!document.fullscreenElement) enterFullscreen();
 
             const handleVisibilityChange = () => {
-                if (document.hidden) {
+                const hidden = document.hidden;
+                setIsTabHidden(hidden); // Instantly blocks UI with an overlay
+
+                if (hidden) {
                     setTabChangeDetected(true);
                     setWarnings(prev => {
                         const newCount = prev + 1;
-                        if (newCount >= 2) {
+                        if (newCount >= 3) { // Gave them 3 strikes for flexibility
                             alert("Violation Limit Reached! Exam is auto-submitting...");
                             submitExam();
                         } else {
-                            alert("WARNING: Tab switching is prohibited! Next violation will submit your exam.");
+                            alert("WARNING: Tab switching is strictly prohibited! Return to the exam immediately.");
                         }
                         return newCount;
                     });
+                }
+            };
+
+            // Anti-Cheat: Block right click
+            const handleContextMenu = (e) => { e.preventDefault(); };
+
+            // Anti-Cheat: Block Copy/Paste
+            const handleCopyPaste = (e) => { e.preventDefault(); };
+
+            // Anti-Cheat: Block Keyboard Shortcuts (PrintScreen, F12, Ctrl+C)
+            const handleKeyDown = (e) => {
+                // Prevent F12, Ctrl+Shift+I, Ctrl+C, Ctrl+V, PrintScreen
+                if (
+                    e.key === 'F12' ||
+                    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                    (e.ctrlKey && e.key === 'c') ||
+                    (e.ctrlKey && e.key === 'v') ||
+                    e.key === 'PrintScreen' ||
+                    (e.metaKey && e.shiftKey && e.key === 's') // Windows Snip / Mac screenshot
+                ) {
+                    e.preventDefault();
+                    alert("WARNING: Keyboard shortcuts / Screenshots are disabled during the exam!");
                 }
             };
 
@@ -214,12 +240,20 @@ export default function StudySprintQuiz() {
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('contextmenu', handleContextMenu);
+            document.addEventListener('copy', handleCopyPaste);
+            document.addEventListener('paste', handleCopyPaste);
+            document.addEventListener('keydown', handleKeyDown);
 
             return () => {
                 document.removeEventListener("visibilitychange", handleVisibilityChange);
                 document.removeEventListener('fullscreenchange', handleFullscreenChange);
                 document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
                 document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+                document.removeEventListener('contextmenu', handleContextMenu);
+                document.removeEventListener('copy', handleCopyPaste);
+                document.removeEventListener('paste', handleCopyPaste);
+                document.removeEventListener('keydown', handleKeyDown);
 
                 if (document.fullscreenElement) {
                     document.exitFullscreen().catch(() => { });
@@ -1063,26 +1097,37 @@ export default function StudySprintQuiz() {
                                 <div className="w-full max-w-5xl relative animate-fade-in-up">
 
                                     {/* Warnings Overlay */}
-                                    {warnings > 0 && (
+                                    {warnings > 0 && !isTabHidden && (
                                         <div className="absolute -top-24 left-0 w-full p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-700 dark:text-red-200 flex items-center justify-between gap-4 backdrop-blur-md animate-bounce">
                                             <div className="flex items-center gap-3">
                                                 <AlertCircle size={32} className="text-red-500" />
                                                 <div>
-                                                    <h4 className="font-bold text-lg">Security Warning ({warnings}/2)</h4>
-                                                    <p className="text-sm opacity-80">Do not switch tabs or exit fullscreen. One more violation will auto-submit your exam.</p>
+                                                    <h4 className="font-bold text-lg">Security Warning ({warnings}/3)</h4>
+                                                    <p className="text-sm opacity-80">Do not switch tabs or exit fullscreen. Reaching the limit will auto-submit your exam.</p>
                                                 </div>
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* CHEATING BLOCKER OVERLAY - Shows instantly when they switch tabs/apps */}
+                                    {isTabHidden && (
+                                        <div className="fixed inset-0 z-[999] bg-black/95 flex flex-col items-center justify-center p-6 backdrop-blur-3xl">
+                                            <AlertCircle size={100} className="text-red-500 mb-6 animate-pulse" />
+                                            <h1 className="text-5xl font-black text-red-500 mb-4 text-center">EXAM PAUSED</h1>
+                                            <p className="text-2xl text-white text-center mb-8 max-w-2xl">
+                                                You have navigated away from the exam window. This has been recorded. Tab switching or opening other applications is strictly prohibited.
+                                            </p>
                                         </div>
                                     )}
 
                                     {/* Exam Header */}
                                     <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] shadow-2xl mb-8 flex justify-between items-center">
                                         <div className="flex items-center gap-5">
-                                            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-cyan-500  to-indigo-600 flex items-center justify-center text-[var(--text-primary)] shadow-lg shadow-violet-500/20">
+                                            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-cyan-500  to-indigo-600 flex items-center justify-center text-[var(--text-primary)] shadow-lg shadow-violet-500/20 select-none">
                                                 <Brain size={32} />
                                             </div>
                                             <div>
-                                                <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">{joinedQuiz.title || "Proctored Exam"}</h1>
+                                                <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight select-none">{joinedQuiz.title || "Proctored Exam"}</h1>
                                                 <div className="flex items-center gap-3 text-[var(--text-secondary)] font-medium text-sm mt-1">
                                                     <span className="px-2 py-0.5 bg-[var(--bg-secondary)] rounded border border-[var(--border-color)] uppercase text-xs tracking-wider">{joinedQuiz.settings.difficulty}</span>
                                                     <span>•</span>
@@ -1104,7 +1149,7 @@ export default function StudySprintQuiz() {
                                     <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-10 border border-[var(--border-color)] shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500  via-fuchsia-600 to-cyan-600"></div>
 
-                                        <h3 className="text-3xl font-bold text-[var(--text-primary)] mb-10 leading-relaxed tracking-wide">
+                                        <h3 className="text-3xl font-bold text-[var(--text-primary)] mb-10 leading-relaxed tracking-wide select-none">
                                             {joinedQuiz.questions[currentQuestionIndex].question}
                                         </h3>
 
