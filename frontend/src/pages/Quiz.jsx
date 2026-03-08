@@ -425,7 +425,11 @@ export default function StudySprintQuiz() {
                 body: JSON.stringify({
                     title: quizTitle,
                     questions,
-                    settings,
+                    settings: {
+                        ...settings,
+                        timeLimit: settings.timeLimit || 30,
+                        negativeMarking: settings.negativeMarking || 0
+                    },
                     creatorName: user?.name || "Teacher",
                     status
                 })
@@ -499,7 +503,7 @@ export default function StudySprintQuiz() {
                     topic: aiTeacherTopic,
                     difficulty: settings.difficulty,
                     type: questionType,
-                    count: aiQuestionCount
+                    count: aiQuestionCount || 5
                 })
             });
             const data = await res.json();
@@ -534,7 +538,7 @@ export default function StudySprintQuiz() {
                     topic: studentPracticeTopic,
                     difficulty: studentPracticeDifficulty,
                     type: "mcq",
-                    count: practiceQuestionCount
+                    count: practiceQuestionCount || 5
                 })
             });
             const data = await res.json();
@@ -816,7 +820,7 @@ export default function StudySprintQuiz() {
                                             min="1"
                                             max="20"
                                             value={aiQuestionCount}
-                                            onChange={(e) => setAiQuestionCount(parseInt(e.target.value) || 5)}
+                                            onChange={(e) => setAiQuestionCount(e.target.value === "" ? "" : Number(e.target.value))}
                                             placeholder="Count"
                                             className="w-full md:w-24 p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300 text-center"
                                         />
@@ -842,7 +846,7 @@ export default function StudySprintQuiz() {
                                             <input
                                                 type="number"
                                                 value={settings.timeLimit}
-                                                onChange={(e) => setSettings({ ...settings, timeLimit: parseInt(e.target.value) || 30 })}
+                                                onChange={(e) => setSettings({ ...settings, timeLimit: e.target.value === "" ? "" : Number(e.target.value) })}
                                                 className="w-full p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-cyan-500 outline-none transition-all"
                                             />
                                         </div>
@@ -852,7 +856,7 @@ export default function StudySprintQuiz() {
                                                 type="number"
                                                 step="0.05"
                                                 value={settings.negativeMarking}
-                                                onChange={(e) => setSettings({ ...settings, negativeMarking: parseFloat(e.target.value) || 0 })}
+                                                onChange={(e) => setSettings({ ...settings, negativeMarking: e.target.value === "" ? "" : Number(e.target.value) })}
                                                 className="w-full p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-cyan-500 outline-none transition-all"
                                             />
                                         </div>
@@ -1384,7 +1388,7 @@ export default function StudySprintQuiz() {
                                         min="1"
                                         max="20"
                                         value={practiceQuestionCount}
-                                        onChange={(e) => setPracticeQuestionCount(parseInt(e.target.value) || 5)}
+                                        onChange={(e) => setPracticeQuestionCount(e.target.value === "" ? "" : Number(e.target.value))}
                                         placeholder="Number of Questions"
                                         className="w-full p-4 bg-[var(--bg-secondary)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg focus:border-cyan-500 outline-none transition-all"
                                     />
