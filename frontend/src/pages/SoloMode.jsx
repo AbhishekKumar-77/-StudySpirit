@@ -77,7 +77,7 @@ function FormatAIMessage({ text }) {
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.startsWith('• ')) {
             elements.push(
                 <div key={i} className="flex gap-2.5 ml-2 my-0.5">
-                    <span className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0">•</span>
+                    <span className="text-cyan-500600 dark:text-cyan-500400 mt-0.5 shrink-0">•</span>
                     <span className="text-[var(--text-primary)] text-sm leading-relaxed">{formatInlineText(trimmed.slice(2))}</span>
                 </div>
             );
@@ -89,7 +89,7 @@ function FormatAIMessage({ text }) {
         if (numMatch) {
             elements.push(
                 <div key={i} className="flex gap-2.5 ml-2 my-0.5">
-                    <span className="text-cyan-600 dark:text-cyan-400 font-bold text-sm shrink-0 min-w-[20px]">{numMatch[1]}.</span>
+                    <span className="text-cyan-500600 dark:text-cyan-500400 font-bold text-sm shrink-0 min-w-[20px]">{numMatch[1]}.</span>
                     <span className="text-[var(--text-primary)] text-sm leading-relaxed">{formatInlineText(numMatch[2])}</span>
                 </div>
             );
@@ -180,7 +180,7 @@ function formatInlineText(text) {
         }
 
         if (matchType === 'code') {
-            parts.push(<code key={key++} className="bg-[var(--border-color)]/80 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono">{matchContent}</code>);
+            parts.push(<code key={key++} className="bg-[var(--border-color)]/80 text-cyan-500300 px-1.5 py-0.5 rounded text-xs font-mono">{matchContent}</code>);
         } else if (matchType === 'bold') {
             parts.push(<strong key={key++} className="text-[var(--text-primary)] font-bold">{matchContent}</strong>);
         }
@@ -425,7 +425,7 @@ export default function SoloMode() {
         hackerearth: { bg: 'bg-[#2C3454]', text: 'text-[#2C3454]', border: 'border-[#2C3454]' },
         codechef: { bg: 'bg-[#5B4638]', text: 'text-[#C4A574]', border: 'border-[#C4A574]' },
         linkedin: { bg: 'bg-[#0A66C2]', text: 'text-[#0A66C2]', border: 'border-[#0A66C2]' },
-        github: { bg: 'bg-[#171515]', text: 'text-[var(--text-primary)]', border: 'border-[var(--border-color)]' }
+        github: { bg: 'bg-[#171515]', text: 'text-white', border: 'border-[#171515]' }
     };
 
     const platformIcons = {
@@ -968,9 +968,9 @@ export default function SoloMode() {
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] relative transition-colors duration-300 pb-16 overflow-hidden">
             {/* Animated Background Orbs */}
-            <div className="fixed -top-[10%] -left-[5%] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[80px] animate-float pointer-events-none" />
+            <div className="fixed -top-[10%] -left-[5%] w-[600px] h-[600px] bg-cyan-500500/15 rounded-full blur-[80px] animate-float pointer-events-none" />
             <div className="fixed -bottom-[10%] -right-[5%] w-[700px] h-[700px] bg-pink-500/12 rounded-full blur-[80px] animate-float-reverse pointer-events-none" />
-            <div className="fixed top-[40%] right-[10%] w-full sm:w-[400px] h-[400px] bg-cyan-500/10 dark:bg-cyan-500/20 rounded-full blur-[60px] animate-float pointer-events-none" />
+            <div className="fixed top-[40%] right-[10%] w-full sm:w-[400px] h-[400px] bg-cyan-500500/10 dark:bg-cyan-500500/20 rounded-full blur-[60px] animate-float pointer-events-none" />
 
             {/* Floating Particles */}
             {[...Array(15)].map((_, i) => (
@@ -1038,7 +1038,7 @@ export default function SoloMode() {
                                 <span className="text-[var(--text-primary)] font-bold">{sessionsCompleted} Sessions</span>
                             </div>
                             <div className="flex items-center gap-2 bg-[var(--border-color)] px-4 py-2 rounded-full">
-                                <Clock className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                                <Clock className="w-5 h-5 text-cyan-500600 dark:text-cyan-500400" />
                                 <span className="text-[var(--text-primary)] font-bold">{formatFocusTime(todaysFocusTime)}</span>
                             </div>
                             {distractionCount > 0 && (
@@ -1051,14 +1051,14 @@ export default function SoloMode() {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setShowFullscreenAI(!showFullscreenAI)}
-                                className={`px-4 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${showFullscreenAI ? 'bg-cyan-500 text-[var(--text-primary)]' : 'bg-[var(--border-color)] text-cyan-600 dark:text-cyan-400 hover:bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
+                                className={`px-4 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${showFullscreenAI ? 'bg-cyan-500500 text-[var(--text-primary)]' : 'bg-[var(--border-color)] text-cyan-500600 dark:text-cyan-500400 hover:bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
                             >
                                 <Brain className="w-5 h-5" />
                                 Ask AI
                             </button>
                             <button
                                 onClick={() => setSoundEnabled(!soundEnabled)}
-                                className={`p-3 rounded-xl transition-all ${soundEnabled ? 'bg-cyan-500/20 text-cyan-' : 'bg-[var(--border-color)] text-[var(--text-secondary)]'}`}
+                                className={`p-3 rounded-xl transition-all ${soundEnabled ? 'bg-cyan-500500/20 text-cyan-500' : 'bg-[var(--border-color)] text-[var(--text-secondary)]'}`}
                             >
                                 {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
                             </button>
@@ -1112,7 +1112,7 @@ export default function SoloMode() {
                                             setIsTimerRunning(false);
                                         }}
                                         className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all text-sm ${sessionType === type
-                                            ? type === 'focus' ? 'bg-cyan-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30' : 'bg-emerald-500 text-[var(--text-primary)] shadow-lg shadow-emerald-500/30'
+                                            ? type === 'focus' ? 'bg-cyan-500500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30' : 'bg-emerald-500 text-[var(--text-primary)] shadow-lg shadow-emerald-500/30'
                                             : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]'
                                             }`}
                                     >
@@ -1157,7 +1157,7 @@ export default function SoloMode() {
                                 <span className="text-7xl font-black text-[var(--text-primary)] tracking-wider">
                                     {timerMode === 'countdown' ? formatTime(pomodoroTime) : formatTime(stopwatchTime)}
                                 </span>
-                                <span className={`text-lg font-bold mt-2 ${sessionType === 'focus' ? 'text-cyan-' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                <span className={`text-lg font-bold mt-2 ${sessionType === 'focus' ? 'text-cyan-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
                                     {timerMode === 'stopwatch' ? '⏱️ STOPWATCH' : sessionType === 'focus' ? '🎯 FOCUS TIME' : sessionType === 'shortBreak' ? '☕ SHORT BREAK' : '🌙 LONG BREAK'}
                                 </span>
                             </div>
@@ -1170,7 +1170,7 @@ export default function SoloMode() {
                             </button>
                             <button
                                 onClick={toggleTimer}
-                                className={`px-12 py-4 rounded-2xl font-black text-xl flex items-center gap-3 transition-all shadow-xl ${isTimerRunning ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/30' : 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white hover:opacity-90 shadow-violet-500/30'}`}
+                                className={`px-12 py-4 rounded-2xl font-black text-xl flex items-center gap-3 transition-all shadow-xl ${isTimerRunning ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/30' : 'bg-gradient-to-r from-cyan-500500 to-pink-500 text-white hover:opacity-90 shadow-violet-500/30'}`}
                             >
                                 {isTimerRunning ? <><Pause className="w-6 h-6" /> PAUSE</> : <><Play className="w-6 h-6" /> START</>}
                             </button>
@@ -1184,7 +1184,7 @@ export default function SoloMode() {
                             {[1, 2, 3, 4].map((session) => (
                                 <div
                                     key={session}
-                                    className={`w-3 h-3 rounded-full transition-all ${session <= sessionsCompleted % 4 || (sessionsCompleted % 4 === 0 && sessionsCompleted > 0 && session === 4) ? 'bg-cyan-500 shadow-lg shadow-violet-500/50' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
+                                    className={`w-3 h-3 rounded-full transition-all ${session <= sessionsCompleted % 4 || (sessionsCompleted % 4 === 0 && sessionsCompleted > 0 && session === 4) ? 'bg-cyan-500500 shadow-lg shadow-violet-500/50' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
                                 />
                             ))}
                             <span className="text-[var(--text-secondary)] ml-2 text-sm">
@@ -1203,14 +1203,14 @@ export default function SoloMode() {
                                 </h3>
                                 <button
                                     onClick={() => setShowAddTask(true)}
-                                    className="px-4 py-2 bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 rounded-xl font-bold hover:bg-cyan-500/30 transition-all flex items-center gap-2"
+                                    className="px-4 py-2 bg-cyan-500500/20 text-cyan-500600 dark:text-cyan-500400 rounded-xl font-bold hover:bg-cyan-500500/30 transition-all flex items-center gap-2"
                                 >
                                     <Plus className="w-4 h-4" />
                                     Add Task
                                 </button>
                             </div>
                             {showAddTask && (
-                                <div className="mb-4 p-4 bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/20 rounded-xl animate-fade-in-up">
+                                <div className="mb-4 p-4 bg-cyan-500500/10 dark:bg-cyan-500500/20 border border-cyan-500/20 rounded-xl animate-fade-in-up">
                                     <input
                                         type="text"
                                         value={newTask}
@@ -1221,7 +1221,7 @@ export default function SoloMode() {
                                         autoFocus
                                     />
                                     <div className="flex gap-3">
-                                        <button onClick={addTask} className="flex-1 bg-cyan-500 text-[var(--text-primary)] py-2.5 rounded-lg font-bold hover:bg-cyan-500 transition-all flex items-center justify-center gap-2">
+                                        <button onClick={addTask} className="flex-1 bg-cyan-500500 text-[var(--text-primary)] py-2.5 rounded-lg font-bold hover:bg-cyan-500500 transition-all flex items-center justify-center gap-2">
                                             <Plus className="w-4 h-4" /> Add Task
                                         </button>
                                         <button onClick={() => setShowAddTask(false)} className="flex-1 bg-[var(--border-color)] text-[var(--text-secondary)] py-2.5 rounded-lg font-bold hover:bg-[var(--glass-bg)] border border-[var(--border-color)] transition-all">
@@ -1235,7 +1235,7 @@ export default function SoloMode() {
                                     <div
                                         key={task.id}
                                         onClick={() => toggleTask(task.id)}
-                                        className={`flex-shrink-0 px-5 py-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${focusedTaskId === task.id ? 'bg-cyan-500/20 border-2 border-cyan-500' : 'bg-[var(--border-color)] border-2 border-transparent hover:border-[var(--border-color)]'}`}
+                                        className={`flex-shrink-0 px-5 py-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${focusedTaskId === task.id ? 'bg-cyan-500500/20 border-2 border-cyan-500' : 'bg-[var(--border-color)] border-2 border-transparent hover:border-[var(--border-color)]'}`}
                                     >
                                         <Circle className="w-5 h-5 text-[var(--text-secondary)]" />
                                         <span className="text-[var(--text-primary)]">{task.title}</span>
@@ -1270,7 +1270,7 @@ export default function SoloMode() {
                                                     }
                                                 }}
                                                 className={`flex-1 py-2 rounded-lg font-bold text-sm ${focusDuration === mins
-                                                    ? 'bg-cyan-500 text-[var(--text-primary)]'
+                                                    ? 'bg-cyan-500500 text-[var(--text-primary)]'
                                                     : 'bg-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] border border-[var(--border-color)]'
                                                     }`}
                                             >
@@ -1300,7 +1300,7 @@ export default function SoloMode() {
                                     <span className="text-[var(--text-secondary)]">Auto-start breaks</span>
                                     <button
                                         onClick={() => setAutoStartBreaks(!autoStartBreaks)}
-                                        className={`w-12 h-6 rounded-full transition-all ${autoStartBreaks ? 'bg-cyan-500' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
+                                        className={`w-12 h-6 rounded-full transition-all ${autoStartBreaks ? 'bg-cyan-500500' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-all ${autoStartBreaks ? 'ml-6' : 'ml-0.5'}`} />
                                     </button>
@@ -1309,7 +1309,7 @@ export default function SoloMode() {
                                     <span className="text-[var(--text-secondary)]">Sound notifications</span>
                                     <button
                                         onClick={() => setSoundEnabled(!soundEnabled)}
-                                        className={`w-12 h-6 rounded-full transition-all ${soundEnabled ? 'bg-cyan-500' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
+                                        className={`w-12 h-6 rounded-full transition-all ${soundEnabled ? 'bg-cyan-500500' : 'bg-[var(--glass-bg)] border border-[var(--border-color)]'}`}
                                     >
                                         <div className={`w-5 h-5 bg-white rounded-full transition-all ${soundEnabled ? 'ml-6' : 'ml-0.5'}`} />
                                     </button>
@@ -1323,7 +1323,7 @@ export default function SoloMode() {
                         <div className="absolute right-0 top-[88px] bottom-0 sm:right-4 sm:top-24 sm:bottom-4 h-[calc(100vh-88px)] sm:h-auto rounded-tl-2xl sm:rounded-2xl w-full sm:w-[400px] bg-[var(--glass-bg)] border-l border-[var(--border-color)] backdrop-blur-xl shadow-2xl flex flex-col z-[100]">
                             <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
                                 <h3 className="text-[var(--text-primary)] font-bold flex items-center gap-2">
-                                    <Brain className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                                    <Brain className="w-5 h-5 text-cyan-500600 dark:text-cyan-500400" />
                                     AI Study Companion
                                 </h3>
                                 <button
@@ -1374,7 +1374,7 @@ export default function SoloMode() {
                                     <button
                                         onClick={handleSendMessage}
                                         disabled={!chatMessage.trim() || isSendingMessage}
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-cyan-500 text-[var(--text-primary)] rounded-lg hover:bg-cyan-500 disabled:opacity-50 transition-all"
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-cyan-500500 text-[var(--text-primary)] rounded-lg hover:bg-cyan-500500 disabled:opacity-50 transition-all"
                                     >
                                         <MessageSquare className="w-4 h-4" />
                                     </button>
@@ -1385,7 +1385,7 @@ export default function SoloMode() {
 
                     {/* Animated Background Elements */}
                     <div className="absolute inset-0 pointer-events-none overflow-hidden -z-10">
-                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '4s' }} />
+                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '4s' }} />
                         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
                     </div>
                 </div>
@@ -1492,7 +1492,7 @@ export default function SoloMode() {
                                     </button>
                                 ))}
                             </div>
-                            <div className="p-4 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-xl border border-cyan-500/30">
+                            <div className="p-4 bg-cyan-500500/10 dark:bg-cyan-500500/20 rounded-xl border border-cyan-500/30">
                                 <p className="text-[var(--text-secondary)] text-sm">
                                     {currentMood === 'struggling' && '💡 Try solving an easier problem first to build momentum.'}
                                     {currentMood === 'tired' && '☕ Take a 10-minute break. Fresh mind = better code!'}
@@ -1540,7 +1540,7 @@ export default function SoloMode() {
                         <div className="bg-gradient-to-br from-slate-900/95 to-violet-900/95 rounded-3xl p-8 max-w-2xl w-[90%] border border-cyan-500/30 shadow-2xl" onClick={(e) => e.stopPropagation()}>
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
                                 <h2 className="text-2xl font-black text-[var(--text-primary)] flex items-center gap-3">
-                                    <Edit3 className="w-6 h-6 text-cyan-600 dark:text-cyan-400" /> Study Journal
+                                    <Edit3 className="w-6 h-6 text-cyan-500600 dark:text-cyan-500400" /> Study Journal
                                 </h2>
                                 <button onClick={() => setShowJournal(false)} className="bg-red-500/20 text-red-400 w-9 h-9 rounded-full flex items-center justify-center hover:bg-red-500/30 transition-all">
                                     <X className="w-5 h-5" />
@@ -1552,7 +1552,7 @@ export default function SoloMode() {
                                 placeholder="What did you learn today? What problems did you solve? What concepts are still unclear?"
                                 className="w-full min-h-[250px] p-4 bg-[var(--border-color)]/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] resize-y focus:outline-none focus:border-cyan-500 mb-4"
                             />
-                            <button onClick={() => { setJournalEntry(''); setShowJournal(false); }} className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold hover:shadow-lg hover:shadow-violet-500/30 transition-all">
+                            <button onClick={() => { setJournalEntry(''); setShowJournal(false); }} className="w-full py-4 bg-gradient-to-r from-cyan-500500 to-purple-500 rounded-xl text-white font-bold hover:shadow-lg hover:shadow-violet-500/30 transition-all">
                                 Save Entry
                             </button>
                         </div>
@@ -1594,9 +1594,9 @@ export default function SoloMode() {
                                     <p className="text-[var(--text-secondary)] text-sm">🔥 Current streak: {studyStreak} days | Best: {highestStreak} days</p>
                                     <p className="text-amber-600 dark:text-amber-400 text-xs mt-2">Solve at least 1 problem today to keep your streak alive!</p>
                                 </div>
-                                <div className="p-4 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-xl border border-cyan-500/30">
+                                <div className="p-4 bg-cyan-500500/10 dark:bg-cyan-500500/20 rounded-xl border border-cyan-500/30">
                                     <div className="flex items-center gap-3 mb-2">
-                                        <Trophy className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                                        <Trophy className="w-5 h-5 text-cyan-500600 dark:text-cyan-500400" />
                                         <span className="text-[var(--text-primary)] font-bold">Upcoming Contest</span>
                                     </div>
                                     <p className="text-[var(--text-secondary)] text-sm">Weekly Contest 387 in 2 days. Practice medium-level problems to prepare!</p>
@@ -1632,7 +1632,7 @@ export default function SoloMode() {
                             <button onClick={() => setShowBreathing(true)} className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 p-2.5 rounded-xl hover:bg-emerald-500/25 transition-all" title="Breathing">
                                 <Wind className="w-5 h-5" />
                             </button>
-                            <button onClick={() => setShowJournal(true)} className="bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 p-2.5 rounded-xl hover:bg-cyan-500/25 transition-all" title="Journal">
+                            <button onClick={() => setShowJournal(true)} className="bg-cyan-500500/15 border border-cyan-500/30 text-cyan-500600 dark:text-cyan-500400 p-2.5 rounded-xl hover:bg-cyan-500500/25 transition-all" title="Journal">
                                 <Edit3 className="w-5 h-5" />
                             </button>
                         </div>
@@ -1644,7 +1644,7 @@ export default function SoloMode() {
                 {/* Header */}
                 <header className="bg-gradient-to-r from-indigo-500/15 to-violet-500/15 backdrop-blur-3xl rounded-3xl p-8 mb-8 border border-cyan-500/30 shadow-xl shadow-violet-500/20 relative overflow-hidden">
                     <div className="flex items-center gap-5 mb-6">
-                        <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-5 rounded-2xl shadow-lg shadow-blue-500/40">
+                        <div className="bg-gradient-to-br from-blue-500 to-cyan-500500 p-5 rounded-2xl shadow-lg shadow-blue-500/40">
                             <Code className="w-10 h-10 text-[var(--text-primary)]" />
                         </div>
                         <div>
@@ -1653,10 +1653,10 @@ export default function SoloMode() {
                             <p className="text-[var(--text-secondary)]">Track your coding progress across platforms with AI-powered insights</p>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-r from-cyan-/15 to-purple-500/15 rounded-xl p-5 border border-cyan-500/30">
+                    <div className="bg-gradient-to-r from-cyan-500/15 to-purple-500/15 rounded-xl p-5 border border-cyan-500/30">
                         <div className="flex items-center gap-2 mb-2">
-                            <Sparkles className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                            <span className="text-cyan-600 dark:text-cyan-400 text-xs font-bold uppercase tracking-wider">Daily Inspiration</span>
+                            <Sparkles className="w-4 h-4 text-cyan-500600 dark:text-cyan-500400" />
+                            <span className="text-cyan-500600 dark:text-cyan-500400 text-xs font-bold uppercase tracking-wider">Daily Inspiration</span>
                         </div>
                         <p className="text-purple-200 italic text-lg">"{dailyQuote.text}"</p>
                         <p className="text-[var(--text-secondary)] text-sm mt-1">— {dailyQuote.author}</p>
@@ -1666,12 +1666,12 @@ export default function SoloMode() {
                 {/* Quick Stats Row */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
                     {[
-                        { icon: Code, label: 'Problems Solved', value: getTotalProblemsSolved(), gradient: 'from-blue-500 to-cyan-500' },
+                        { icon: Code, label: 'Problems Solved', value: getTotalProblemsSolved(), gradient: 'from-blue-500 to-cyan-500500' },
                         { icon: Flame, label: 'Current Streak', value: `${studyStreak} Days`, gradient: 'from-amber-500 to-red-500' },
                         {
                             icon: Target, label: 'Daily Goal', value: `${problemsSolvedToday}/${dailyGoal}`, gradient: 'from-emerald-500 to-green-400'
                         },
-                        { icon: Star, label: 'Total XP', value: totalXP, gradient: 'from-cyan- to-purple-500' },
+                        { icon: Star, label: 'Total XP', value: totalXP, gradient: 'from-cyan-500 to-purple-500' },
                         { icon: Clock, label: 'Total Study Time', value: formatFocusTime(totalStudyTime), gradient: 'from-pink-500 to-rose-500' }
                     ].map((stat, idx) => (
                         <div key={idx} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--card-hover)] hover:border-[var(--neon-primary)] hover:shadow-md backdrop-blur-xl transition-all rounded-2xl p-5 hover:scale-105 transition-transform">
@@ -1718,7 +1718,7 @@ export default function SoloMode() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wide transition-all ${activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-[var(--text-primary)] shadow-lg shadow-indigo-500/30 border border-indigo-500/50'
+                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500500 text-[var(--text-primary)] shadow-lg shadow-indigo-500/30 border border-indigo-500/50'
                                     : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:bg-[var(--card-hover)]'
                                     }`}
                             >
@@ -1868,11 +1868,11 @@ export default function SoloMode() {
                                         const heightPercent = data.hours > 0 ? Math.max(8, (data.hours / maxHours) * 100) : 3;
                                         const barGradients = [
                                             'from-blue-500 to-blue-400',
-                                            'from-cyan-500 to-cyan-400',
+                                            'from-cyan-500500 to-cyan-500400',
                                             'from-emerald-500 to-emerald-400',
                                             'from-amber-500 to-amber-400',
                                             'from-pink-500 to-pink-400',
-                                            'from-cyan- to-violet-400',
+                                            'from-cyan-500 to-violet-400',
                                             'from-teal-500 to-teal-400'
                                         ];
                                         const glowColors = [
@@ -1884,7 +1884,7 @@ export default function SoloMode() {
                                             'shadow-violet-500/40',
                                             'shadow-teal-500/40'
                                         ];
-                                        const textColors = ['text-blue-600 dark:text-blue-400', 'text-cyan-600 dark:text-cyan-400', 'text-emerald-600 dark:text-emerald-400', 'text-amber-600 dark:text-amber-400', 'text-pink-600 dark:text-pink-400', 'text-cyan-', 'text-teal-600 dark:text-teal-400'];
+                                        const textColors = ['text-blue-600 dark:text-blue-400', 'text-cyan-500600 dark:text-cyan-500400', 'text-emerald-600 dark:text-emerald-400', 'text-amber-600 dark:text-amber-400', 'text-pink-600 dark:text-pink-400', 'text-cyan-500', 'text-teal-600 dark:text-teal-400'];
                                         return (
                                             <div key={data.day} className="flex-1 flex flex-col items-center group cursor-pointer">
                                                 <div className="relative w-full flex flex-col items-center justify-end" style={{ height: '180px' }}>
@@ -1917,7 +1917,7 @@ export default function SoloMode() {
                                     </div>
                                     <div className="text-center">
                                         <div className="text-xs text-[var(--text-secondary)]">Avg/Day</div>
-                                        <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{(weeklyActivityData.reduce((sum, d) => sum + d.hours, 0) / 7).toFixed(1)}h</div>
+                                        <div className="text-lg font-bold text-cyan-500600 dark:text-cyan-500400">{(weeklyActivityData.reduce((sum, d) => sum + d.hours, 0) / 7).toFixed(1)}h</div>
                                     </div>
                                 </div>
                             </div>
@@ -1926,7 +1926,7 @@ export default function SoloMode() {
                             {/* Yearly Activity / Contribution Graph */}
                             <div className="lg:col-span-2">
                                 <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-3 mb-5">
-                                    <Activity className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                                    <Activity className="w-5 h-5 text-cyan-500600 dark:text-cyan-500400" />
                                     Yearly Activity
                                 </h3>
                                 <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--card-hover)] hover:border-[var(--neon-primary)] hover:shadow-md backdrop-blur-xl transition-all rounded-2xl p-6 overflow-x-auto">
@@ -2029,16 +2029,16 @@ export default function SoloMode() {
                                             style={{ backgroundColor: profile.connected ? `${key === 'leetcode' ? '#FFA116' : key === 'hackerrank' ? '#00EA64' : key === 'codechef' ? '#C4A574' : key === 'linkedin' ? '#0A66C2' : key === 'github' ? '#171515' : '#2C3454'}10` : undefined }}
                                             onClick={() => window.open(platformUrl, '_blank')}
                                         >
-                                            <div className="flex justify-between items-start mb-5">
-                                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                                    <div className={`w-14 h-14 rounded-xl ${colors.bg}/20 flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden`}>
+                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 w-full">
+                                                <div className="flex flex-row items-center gap-4 w-full cursor-pointer" onClick={() => window.open(platformUrl, '_blank')}>
+                                                    <div className={`w-14 h-14 rounded-xl ${colors.bg}/20 flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden shrink-0`}>
                                                         {profile.connected && profile.avatar ? (
                                                             <img src={profile.avatar} alt={profile.username} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <Icon className={`w-7 h-7 ${colors.text}`} />
                                                         )}
                                                     </div>
-                                                    <div>
+                                                    <div className="flex-1">
                                                         <div className="flex items-center gap-2">
                                                             <div className="text-xl font-bold text-[var(--text-primary)] capitalize">{key}</div>
                                                             <ExternalLink className="w-4 h-4 text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -2048,31 +2048,33 @@ export default function SoloMode() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {profile.connected ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-3 py-1 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-md">Connected</span>
+                                                <div className="flex flex-row items-center justify-end gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+                                                    {profile.connected ? (
+                                                        <>
+                                                            <span className="px-3 py-1 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-md">Connected</span>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    disconnectPlatform(key);
+                                                                }}
+                                                                className="bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 text-red-400 p-2 rounded-lg text-xs font-bold hover:bg-red-500/20 transition-all shrink-0"
+                                                                title="Disconnect"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    ) : (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                disconnectPlatform(key);
+                                                                connectPlatform(key);
                                                             }}
-                                                            className="bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 text-red-400 p-2 rounded-lg text-xs font-bold hover:bg-red-500/20 transition-all"
-                                                            title="Disconnect"
+                                                            className={`${colors.bg} hover:opacity-80 !text-white px-6 py-2.5 rounded-lg text-sm font-bold transition-all w-full sm:w-auto text-center shadow-lg`}
                                                         >
-                                                            <X className="w-4 h-4" />
+                                                            Connect
                                                         </button>
-                                                    </div>
-                                                ) : (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            connectPlatform(key);
-                                                        }}
-                                                        className={`${colors.bg} hover:opacity-80 text-[var(--text-primary)] px-4 py-2 rounded-lg text-sm font-bold transition-all`}
-                                                    >
-                                                        Connect
-                                                    </button>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
                                             {profile.connected ? (
                                                 <>
@@ -2183,13 +2185,13 @@ export default function SoloMode() {
                                     Focus Stats
                                 </h3>
                                 <div className="space-y-4">
-                                    <div className="p-4 bg-gradient-to-r from-cyan-/10 to-purple-500/10 rounded-xl border border-cyan-500/20">
+                                    <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl border border-cyan-500/20">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-[var(--text-secondary)] text-sm">Today's Focus Time</span>
-                                            <span className="text-cyan-600 dark:text-cyan-400 font-bold text-lg">{formatFocusTime(todaysFocusTime)}</span>
+                                            <span className="text-cyan-500600 dark:text-cyan-500400 font-bold text-lg">{formatFocusTime(todaysFocusTime)}</span>
                                         </div>
                                         <div className="w-full h-2 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-full overflow-hidden">
-                                            <div className="h-full bg-gradient-to-r from-cyan- to-purple-500 rounded-full transition-all" style={{ width: `${Math.min((todaysFocusTime / 14400) * 100, 100)}%` }} />
+                                            <div className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full transition-all" style={{ width: `${Math.min((todaysFocusTime / 14400) * 100, 100)}%` }} />
                                         </div>
                                         <div className="text-xs text-[var(--text-muted)] mt-1">Goal: 4 hours</div>
                                     </div>
@@ -2248,14 +2250,14 @@ export default function SoloMode() {
                             <div className={`bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--card-hover)] hover:border-[var(--neon-primary)] hover:shadow-md backdrop-blur-xl transition-all rounded-2xl p-6 flex flex-col ${isFullscreenAIMentor ? 'fixed inset-4 z-[9999] h-auto' : 'h-[700px]'}`}>
                                 <div className="flex items-center justify-between mb-5">
                                     <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-3">
-                                        <Brain className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                                        <Brain className="w-5 h-5 text-cyan-500600 dark:text-cyan-500400" />
                                         AI Study Mentor
                                     </h3>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs text-[var(--text-secondary)] hidden sm:block">💡 Ask about DSA, algorithms, problem hints, study tips!</span>
                                         <button
                                             onClick={() => setIsFullscreenAIMentor(!isFullscreenAIMentor)}
-                                            className="p-2 bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 rounded-lg hover:bg-cyan-500/30 transition-all"
+                                            className="p-2 bg-cyan-500500/20 text-cyan-500600 dark:text-cyan-500400 rounded-lg hover:bg-cyan-500500/30 transition-all"
                                             title={isFullscreenAIMentor ? "Exit Fullscreen" : "Fullscreen"}
                                         >
                                             {isFullscreenAIMentor ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -2265,7 +2267,7 @@ export default function SoloMode() {
                                 <div className={`flex-1 overflow-y-auto mb-4 p-5 bg-[var(--glass-bg)] rounded-xl space-y-4 ${isFullscreenAIMentor ? 'max-h-[calc(100vh-280px)]' : ''}`}>
                                     {chatHistory.length === 0 ? (
                                         <div className="text-center py-16">
-                                            <Brain className="w-16 h-16 text-cyan-600 dark:text-cyan-400/30 mx-auto mb-4" />
+                                            <Brain className="w-16 h-16 text-cyan-500600 dark:text-cyan-500400/30 mx-auto mb-4" />
                                             <p className="text-xl font-bold text-[var(--text-primary)] mb-2">Hi! I'm your AI Study Mentor 🎓</p>
                                             <p className="text-[var(--text-secondary)] max-w-md mx-auto">Ask me about DSA, algorithms, coding problems, study strategies, or anything else you need help with!</p>
                                             <div className="flex flex-wrap justify-center gap-2 mt-6">
@@ -2273,7 +2275,7 @@ export default function SoloMode() {
                                                     <button
                                                         key={suggestion}
                                                         onClick={() => { setChatMessage(suggestion); }}
-                                                        className="px-4 py-2 bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/20 rounded-xl text-sm text-violet-300 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all"
+                                                        className="px-4 py-2 bg-cyan-500500/10 dark:bg-cyan-500500/20 border border-cyan-500/20 rounded-xl text-sm text-violet-300 hover:bg-cyan-500500/20 hover:border-cyan-500/40 transition-all"
                                                     >
                                                         {suggestion}
                                                     </button>
@@ -2283,11 +2285,11 @@ export default function SoloMode() {
                                     ) : (
                                         chatHistory.map((msg, idx) => (
                                             <div key={idx} className={`${msg.type === 'user' ? 'self-end ml-auto' : 'self-start'} max-w-[75%]`}>
-                                                <div className={`p-4 rounded-2xl ${msg.type === 'user' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-cyan-500/15 border border-cyan-500/30'} text-[var(--text-primary)]`}>
+                                                <div className={`p-4 rounded-2xl ${msg.type === 'user' ? 'bg-gradient-to-r from-blue-500 to-cyan-500500' : 'bg-cyan-500500/15 border border-cyan-500/30'} text-[var(--text-primary)]`}>
                                                     {msg.type === 'ai' && (
                                                         <div className="flex items-center gap-2 mb-2">
-                                                            <Brain className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                                                            <span className="text-xs text-cyan-600 dark:text-cyan-400 font-bold">AI MENTOR</span>
+                                                            <Brain className="w-4 h-4 text-cyan-500600 dark:text-cyan-500400" />
+                                                            <span className="text-xs text-cyan-500600 dark:text-cyan-500400 font-bold">AI MENTOR</span>
                                                         </div>
                                                     )}
                                                     {msg.type === 'ai' ? (
@@ -2301,10 +2303,10 @@ export default function SoloMode() {
                                     )}
                                     {isSendingMessage && (
                                         <div className="self-start max-w-[75%]">
-                                            <div className="p-4 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-[var(--text-primary)]">
+                                            <div className="p-4 rounded-2xl bg-cyan-500500/15 border border-cyan-500/30 text-[var(--text-primary)]">
                                                 <div className="flex items-center gap-2">
-                                                    <Loader className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-spin" />
-                                                    <span className="text-sm text-cyan-600 dark:text-cyan-400">Thinking...</span>
+                                                    <Loader className="w-4 h-4 text-cyan-500600 dark:text-cyan-500400 animate-spin" />
+                                                    <span className="text-sm text-cyan-500600 dark:text-cyan-500400">Thinking...</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2322,7 +2324,7 @@ export default function SoloMode() {
                                     <button
                                         onClick={handleSendMessage}
                                         disabled={!chatMessage.trim() || isSendingMessage}
-                                        className="bg-gradient-to-r from-cyan- to-purple-500 text-[var(--text-primary)] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50"
+                                        className="bg-gradient-to-r from-cyan-500 to-purple-500 text-[var(--text-primary)] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50"
                                     >
                                         <MessageSquare className="w-4 h-4" /> Send
                                     </button>
@@ -2339,7 +2341,7 @@ export default function SoloMode() {
                             {/* Generator Input Section */}
                             <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--card-hover)] hover:border-[var(--neon-primary)] hover:shadow-md backdrop-blur-xl transition-all rounded-2xl p-8 text-center bg-gradient-to-br from-indigo-500/10 to-violet-500/10">
                                 <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 flex items-center justify-center gap-3">
-                                    <GitBranch className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
+                                    <GitBranch className="w-8 h-8 text-cyan-500600 dark:text-cyan-500400" />
                                     AI Skill Tree Generator
                                 </h3>
                                 <p className="text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
@@ -2358,7 +2360,7 @@ export default function SoloMode() {
                                     <button
                                         onClick={handleGenerateSkillTree}
                                         disabled={isGeneratingTree || !skillTopicInput.trim()}
-                                        className="bg-gradient-to-r from-cyan- to-indigo-600 text-[var(--text-primary)] px-8 py-4 rounded-xl font-bold hover:shadow-lg hover:shadow-violet-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        className="bg-gradient-to-r from-cyan-500 to-indigo-600 text-[var(--text-primary)] px-8 py-4 rounded-xl font-bold hover:shadow-lg hover:shadow-violet-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                     >
                                         {isGeneratingTree ? <Loader className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                                         Generate
@@ -2368,8 +2370,8 @@ export default function SoloMode() {
 
                             {isGeneratingTree && (
                                 <div className="text-center py-12 animate-pulse">
-                                    <div className="inline-block p-4 bg-cyan-500/20 rounded-full mb-4">
-                                        <Brain className="w-8 h-8 text-cyan-600 dark:text-cyan-400 animate-bounce" />
+                                    <div className="inline-block p-4 bg-cyan-500500/20 rounded-full mb-4">
+                                        <Brain className="w-8 h-8 text-cyan-500600 dark:text-cyan-500400 animate-bounce" />
                                     </div>
                                     <h4 className="text-xl font-bold text-[var(--text-primary)] mb-2">Constructing Knowledge Graph...</h4>
                                     <p className="text-[var(--text-secondary)]">Analyzing prerequisites, modules, and learning sequencing.</p>
@@ -2397,9 +2399,9 @@ export default function SoloMode() {
 
                                                 <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--card-hover)] hover:border-[var(--neon-primary)] hover:shadow-md backdrop-blur-xl transition-all rounded-2xl overflow-hidden border border-cyan-500/20">
                                                     {/* Level Header */}
-                                                    <div className="bg-gradient-to-r from-cyan-/20 to-indigo-600/20 p-5 border-b border-[var(--border-color)]">
+                                                    <div className="bg-gradient-to-r from-cyan-500/20 to-indigo-600/20 p-5 border-b border-[var(--border-color)]">
                                                         <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-3">
-                                                            <span className="bg-cyan-500 text-[var(--text-primary)] text-xs px-2 py-1 rounded uppercase tracking-wider">Level {lvlIdx + 1}</span>
+                                                            <span className="bg-cyan-500500 text-[var(--text-primary)] text-xs px-2 py-1 rounded uppercase tracking-wider">Level {lvlIdx + 1}</span>
                                                             {level.name}
                                                         </h3>
                                                     </div>
@@ -2412,7 +2414,7 @@ export default function SoloMode() {
                                                                     <h4 className="text-lg font-bold text-indigo-300">{module.title}</h4>
                                                                     <button
                                                                         onClick={() => handleAddModuleToTasks(module)}
-                                                                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-/20 to-purple-500/20 hover:from-cyan-/40 hover:to-purple-500/40 border border-cyan-500/30 rounded-lg text-xs font-bold text-[var(--text-primary)] transition-all flex items-center gap-1.5 whitespace-nowrap"
+                                                                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/40 hover:to-purple-500/40 border border-cyan-500/30 rounded-lg text-xs font-bold text-[var(--text-primary)] transition-all flex items-center gap-1.5 whitespace-nowrap"
                                                                         title="Add these topics to your daily Planner tasks"
                                                                     >
                                                                         <Plus className="w-3.5 h-3.5" /> Planner

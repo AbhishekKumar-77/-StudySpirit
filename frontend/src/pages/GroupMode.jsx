@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, Users, MessageCircle, TrendingUp,
@@ -122,18 +122,18 @@ export default function GroupMode() {
 
     // Sample data (used as fallback when not connected to backend)
     const sampleGroups = [
-        { id: 1, name: 'DSA Masters', members: 8, progress: 75, avatar: '🧠', activeNow: 3, lastActivity: '5 min ago', goal: 'Complete all DSA topics by Dec 31', streak: 12, color: 'violet', totalPoints: 3450 },
-        { id: 2, name: 'Web Dev Warriors', members: 12, progress: 62, avatar: '💻', activeNow: 5, lastActivity: '12 min ago', goal: 'Build 5 full-stack projects', streak: 8, color: 'cyan', totalPoints: 2890 },
-        { id: 3, name: 'Python Pioneers', members: 6, progress: 88, avatar: '🐍', activeNow: 2, lastActivity: '1 hour ago', goal: 'Master Python for AI/ML', streak: 15, color: 'emerald', totalPoints: 4120 },
-        { id: 4, name: 'AI Enthusiasts', members: 10, progress: 55, avatar: '🤖', activeNow: 4, lastActivity: '30 min ago', goal: 'Build 3 AI projects', streak: 5, color: 'pink', totalPoints: 2100 }
+        { id: 1, name: 'DSA Masters', members: 8, progress: 75, avatar: '??', activeNow: 3, lastActivity: '5 min ago', goal: 'Complete all DSA topics by Dec 31', streak: 12, color: 'violet', totalPoints: 3450 },
+        { id: 2, name: 'Web Dev Warriors', members: 12, progress: 62, avatar: '??', activeNow: 5, lastActivity: '12 min ago', goal: 'Build 5 full-stack projects', streak: 8, color: 'cyan', totalPoints: 2890 },
+        { id: 3, name: 'Python Pioneers', members: 6, progress: 88, avatar: '??', activeNow: 2, lastActivity: '1 hour ago', goal: 'Master Python for AI/ML', streak: 15, color: 'emerald', totalPoints: 4120 },
+        { id: 4, name: 'AI Enthusiasts', members: 10, progress: 55, avatar: '??', activeNow: 4, lastActivity: '30 min ago', goal: 'Build 3 AI projects', streak: 5, color: 'pink', totalPoints: 2100 }
     ];
 
     const sampleRooms = [
-        { id: 1, name: 'DSA Problem Solving', host: 'Sarah Chen', participants: 8, topic: 'Dynamic Programming', duration: '1h 23m', isLive: true, language: 'English', difficulty: 'Intermediate', avatar: '🧠', category: 'DSA' },
-        { id: 2, name: 'React Deep Dive', host: 'Mike Ross', participants: 12, topic: 'Custom Hooks & Context', duration: '45m', isLive: true, language: 'English', difficulty: 'Advanced', avatar: '⚛️', category: 'Web Dev' },
-        { id: 3, name: 'Python ML Workshop', host: 'Emma Watson', participants: 6, topic: 'Neural Networks', duration: '2h 10m', isLive: true, language: 'English', difficulty: 'Advanced', avatar: '🐍', category: 'AI/ML' },
-        { id: 4, name: 'System Design Study', host: 'John Doe', participants: 15, topic: 'Scalable Architecture', duration: '1h 05m', isLive: true, language: 'English', difficulty: 'Expert', avatar: '🏗️', category: 'System Design' },
-        { id: 5, name: 'Competitive Coding', host: 'Alex Johnson', participants: 20, topic: 'Graph Algorithms', duration: '55m', isLive: true, language: 'Hindi', difficulty: 'Intermediate', avatar: '🏆', category: 'DSA' }
+        { id: 1, name: 'DSA Problem Solving', host: 'Sarah Chen', participants: 8, topic: 'Dynamic Programming', duration: '1h 23m', isLive: true, language: 'English', difficulty: 'Intermediate', avatar: '??', category: 'DSA' },
+        { id: 2, name: 'React Deep Dive', host: 'Mike Ross', participants: 12, topic: 'Custom Hooks & Context', duration: '45m', isLive: true, language: 'English', difficulty: 'Advanced', avatar: '??', category: 'Web Dev' },
+        { id: 3, name: 'Python ML Workshop', host: 'Emma Watson', participants: 6, topic: 'Neural Networks', duration: '2h 10m', isLive: true, language: 'English', difficulty: 'Advanced', avatar: '??', category: 'AI/ML' },
+        { id: 4, name: 'System Design Study', host: 'John Doe', participants: 15, topic: 'Scalable Architecture', duration: '1h 05m', isLive: true, language: 'English', difficulty: 'Expert', avatar: '???', category: 'System Design' },
+        { id: 5, name: 'Competitive Coding', host: 'Alex Johnson', participants: 20, topic: 'Graph Algorithms', duration: '55m', isLive: true, language: 'Hindi', difficulty: 'Intermediate', avatar: '??', category: 'DSA' }
     ];
 
     const sampleChallenges = [
@@ -143,19 +143,19 @@ export default function GroupMode() {
     ];
 
     const sampleActivity = [
-        { user: 'Sarah Chen', action: 'completed', item: 'Arrays Chapter', time: '5 min ago', avatar: '👩‍💻', points: 50 },
-        { user: 'Mike Ross', action: 'shared', item: 'Study Notes on Trees', time: '15 min ago', avatar: '👨‍💼', points: 20 },
-        { user: 'Emma Watson', action: 'joined session', item: 'Live Study Room', time: '30 min ago', avatar: '👩‍🔬', points: 10 },
-        { user: 'John Doe', action: 'achieved', item: 'Weekly Goal', time: '1 hour ago', avatar: '👨‍🎓', points: 100 },
-        { user: 'Alice Brown', action: 'uploaded', item: 'React Cheat Sheet', time: '2 hours ago', avatar: '👩‍🎨', points: 30 }
+        { user: 'Sarah Chen', action: 'completed', item: 'Arrays Chapter', time: '5 min ago', avatar: '?????', points: 50 },
+        { user: 'Mike Ross', action: 'shared', item: 'Study Notes on Trees', time: '15 min ago', avatar: '?????', points: 20 },
+        { user: 'Emma Watson', action: 'joined session', item: 'Live Study Room', time: '30 min ago', avatar: '?????', points: 10 },
+        { user: 'John Doe', action: 'achieved', item: 'Weekly Goal', time: '1 hour ago', avatar: '?????', points: 100 },
+        { user: 'Alice Brown', action: 'uploaded', item: 'React Cheat Sheet', time: '2 hours ago', avatar: '?????', points: 30 }
     ];
 
     const sampleLeaderboard = [
-        { rank: 1, name: 'Sarah Chen', points: 2450, avatar: '👩‍💻', streak: 15, badge: '👑' },
-        { rank: 2, name: 'Alex Johnson', points: 2350, avatar: '👨‍🎓', streak: 12, badge: '🥈' },
-        { rank: 3, name: 'Mike Ross', points: 2180, avatar: '👨‍💼', streak: 10, badge: '🥉' },
-        { rank: 4, name: 'Emma Watson', points: 1950, avatar: '👩‍🔬', streak: 8, badge: '⭐' },
-        { rank: 5, name: 'John Doe', points: 1820, avatar: '👨‍🎓', streak: 7, badge: '⭐' }
+        { rank: 1, name: 'Sarah Chen', points: 2450, avatar: '?????', streak: 15, badge: '??' },
+        { rank: 2, name: 'Alex Johnson', points: 2350, avatar: '?????', streak: 12, badge: '??' },
+        { rank: 3, name: 'Mike Ross', points: 2180, avatar: '?????', streak: 10, badge: '??' },
+        { rank: 4, name: 'Emma Watson', points: 1950, avatar: '?????', streak: 8, badge: '?' },
+        { rank: 5, name: 'John Doe', points: 1820, avatar: '?????', streak: 7, badge: '?' }
     ];
 
     const sampleResources = [
@@ -179,7 +179,7 @@ export default function GroupMode() {
         return {
             id: msg._id || msg.id || Date.now() + Math.random(),
             user: sender.name || 'Unknown',
-            avatar: sender.avatar || '👤',
+            avatar: sender.avatar || '??',
             message: msg.content || msg.message || '',
             time: msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isMe: !!isMe
@@ -260,18 +260,18 @@ export default function GroupMode() {
 
     // Create new challenge
     const handleCreateChallenge = async () => {
-        console.log('🎯 Create challenge clicked!', newChallenge);
+        console.log('?? Create challenge clicked!', newChallenge);
 
         if (!newChallenge.title.trim() || !newChallenge.description.trim()) {
             const errorMsg = 'Please fill in all required fields';
-            console.error('❌ Validation error:', errorMsg);
+            console.error('? Validation error:', errorMsg);
             setError(errorMsg);
             setTimeout(() => setError(null), 3000);
             return;
         }
 
         setLoading(true);
-        console.log('⏳ Creating challenge...');
+        console.log('? Creating challenge...');
 
         try {
             // Calculate deadline from days
@@ -290,12 +290,12 @@ export default function GroupMode() {
                 reward: { xp: parseInt(newChallenge.reward) }
             };
 
-            console.log('📤 Sending challenge data:', challengeData);
+            console.log('?? Sending challenge data:', challengeData);
             const res = await challengeAPI.create(challengeData);
-            console.log('📥 Response:', res);
+            console.log('?? Response:', res);
 
             if (res.success) {
-                console.log('✅ Challenge created successfully!');
+                console.log('? Challenge created successfully!');
                 // Refresh challenges list
                 if (newChallenge.visibility === 'public') {
                     fetchPublicChallenges();
@@ -315,18 +315,18 @@ export default function GroupMode() {
                     challengeType: 'problems'
                 });
             } else {
-                console.error('❌ Challenge creation failed:', res);
+                console.error('? Challenge creation failed:', res);
                 setError(res.message || 'Failed to create challenge');
                 setTimeout(() => setError(null), 3000);
             }
         } catch (err) {
-            console.error('❌ Error creating challenge:', err);
+            console.error('? Error creating challenge:', err);
             console.error('Error details:', err.response?.data);
             setError(err.response?.data?.message || err.message || 'Failed to create challenge');
             setTimeout(() => setError(null), 3000);
         } finally {
             setLoading(false);
-            console.log('🏁 Create challenge finished');
+            console.log('?? Create challenge finished');
         }
     };
 
@@ -387,7 +387,7 @@ export default function GroupMode() {
 
         // Listen for room participants update
         socket.on('room:participants', (participantsData) => {
-            console.log('👥 Room participants updated:', participantsData);
+            console.log('?? Room participants updated:', participantsData);
 
             // Backend sends Array.from(map.entries()) => [[userId, {name, avatar, ...}], ...]
             let participants = [];
@@ -423,7 +423,7 @@ export default function GroupMode() {
                 return true;
             });
 
-            console.log('✅ Parsed participants:', uniqueParticipants);
+            console.log('? Parsed participants:', uniqueParticipants);
             setLiveParticipants(uniqueParticipants);
         });
 
@@ -436,7 +436,7 @@ export default function GroupMode() {
 
         // Listen for room messages
         socket.on('room:newMessage', (msg) => {
-            console.log('💬 New message received:', msg);
+            console.log('?? New message received:', msg);
 
             // Handle system commands
             const content = msg.message || msg.content || '';
@@ -540,7 +540,7 @@ export default function GroupMode() {
             left: Math.random() * 100,
             delay: Math.random() * 0.5,
             duration: 2 + Math.random() * 2,
-            color: ['bg-cyan-', 'bg-pink-500', 'bg-cyan-500', 'bg-emerald-500', 'bg-amber-500'][Math.floor(Math.random() * 5)]
+            color: ['bg-cyan-500', 'bg-pink-500', 'bg-cyan-500500', 'bg-emerald-500', 'bg-amber-500'][Math.floor(Math.random() * 5)]
         }));
         setConfetti(pieces);
 
@@ -562,23 +562,23 @@ export default function GroupMode() {
                 privacy: 'public', // Default public
                 inviteCode: customInviteCode.trim() || undefined, // custom code
                 color: newGroupColor,
-                avatar: '📚' // Default avatar for now
+                avatar: '??' // Default avatar for now
             };
 
-            console.log('🔄 Creating group with data:', groupData);
-            console.log('👤 User context:', user);
+            console.log('?? Creating group with data:', groupData);
+            console.log('?? User context:', user);
 
             // Create fallback user if not logged in
             const fallbackUser = {
                 _id: currentUserId,
                 name: 'Test User',
                 email: 'test@example.com',
-                avatar: '👤'
+                avatar: '??'
             };
             const activeUser = user || fallbackUser;
 
             const res = await groupAPI.create(groupData);
-            console.log('✅ Group creation response:', res);
+            console.log('? Group creation response:', res);
 
             if (res.success || res.group) {
                 // Add to my groups immediately with default stats for UI
@@ -614,7 +614,7 @@ export default function GroupMode() {
                 throw new Error('Group creation failed - no success flag');
             }
         } catch (err) {
-            console.error('❌ Group creation error:', err);
+            console.error('? Group creation error:', err);
             console.error('Error response:', err.response);
             const errorMsg = err.response?.data?.message || err.message || 'Failed to create group';
 
@@ -640,9 +640,9 @@ export default function GroupMode() {
 
         setLoading(true);
         try {
-            console.log('🔄 Joining group with code:', inviteCode);
+            console.log('?? Joining group with code:', inviteCode);
             const res = await groupAPI.joinByCode(inviteCode);
-            console.log('✅ Join group response:', res);
+            console.log('? Join group response:', res);
 
             if (res.success) {
                 if (res.requestSent) {
@@ -679,7 +679,7 @@ export default function GroupMode() {
                 throw new Error('Failed to join group - no success flag');
             }
         } catch (err) {
-            console.error('❌ Join group error:', err);
+            console.error('? Join group error:', err);
             const errorMsg = err.response?.data?.message || err.message || 'Invalid invite code';
 
 
@@ -702,7 +702,7 @@ export default function GroupMode() {
             const res = await roomAPI.join(roomId);
             if (res.success) {
                 joinedViaApi = true;
-                console.log('✅ Joined room via API');
+                console.log('? Joined room via API');
             }
         } catch (err) {
             console.error('Failed to join room via API (might be sample room):', err);
@@ -711,13 +711,13 @@ export default function GroupMode() {
         // Connect socket to room regardless of API success (to support demo/sample rooms)
         const socket = getSocket();
         if (socket) {
-            console.log('🔌 Joining socket room:', roomId, 'User:', currentUserId);
+            console.log('?? Joining socket room:', roomId, 'User:', currentUserId);
             console.log('User data:', { name: user?.name, avatar: user?.avatar });
             socket.emit('room:join', {
                 roomId,
                 userId: currentUserId,
                 userName: user?.name || 'Guest User',
-                userAvatar: user?.avatar || '👤'
+                userAvatar: user?.avatar || '??'
             });
         }
         setCurrentRoomId(roomId);
@@ -730,12 +730,12 @@ export default function GroupMode() {
             const msgData = {
                 message: currentMessage,
                 sender: user?.name || 'You',
-                senderAvatar: user?.avatar || '👤',
+                senderAvatar: user?.avatar || '??',
                 roomId: currentRoomId || 'default-room',
                 createdAt: new Date().toISOString()
             };
 
-            console.log('📤 Sending message:', msgData);
+            console.log('?? Sending message:', msgData);
 
             // Emit to room
             if (socket) {
@@ -757,7 +757,7 @@ export default function GroupMode() {
     // Initialize WebRTC and join room
     const initializeWebRTC = async (roomId) => {
         try {
-            console.log('🎥 Initializing WebRTC for room:', roomId);
+            console.log('?? Initializing WebRTC for room:', roomId);
 
             // Initialize local media - Always request video/audio to get the tracks
             const stream = await webrtcService.initializeLocalMedia({
@@ -785,9 +785,9 @@ export default function GroupMode() {
             window.addEventListener('webrtc:remoteTrack', handleRemoteTrack);
             window.addEventListener('webrtc:userLeft', handleUserLeft);
 
-            console.log('✅ WebRTC initialized successfully');
+            console.log('? WebRTC initialized successfully');
         } catch (error) {
-            console.error('❌ Failed to initialize WebRTC:', error);
+            console.error('? Failed to initialize WebRTC:', error);
             alert('Could not access camera/microphone. Please check permissions.');
         }
     };
@@ -795,7 +795,7 @@ export default function GroupMode() {
     // Handle remote stream
     const handleRemoteStream = (event) => {
         const { userId, stream } = event.detail;
-        console.log('📹 Received remote stream from:', userId);
+        console.log('?? Received remote stream from:', userId);
 
         setRemoteStreams(prev => {
             const newStreams = new Map(prev);
@@ -833,7 +833,7 @@ export default function GroupMode() {
     // Handle user left
     const handleUserLeft = (event) => {
         const { userId } = event.detail;
-        console.log('👋 User left:', userId);
+        console.log('?? User left:', userId);
 
         setRemoteStreams(prev => {
             const newStreams = new Map(prev);
@@ -847,13 +847,13 @@ export default function GroupMode() {
         const newState = !isMicOn;
 
         if (newState) {
-            // Turning mic ON — check if tracks are still alive
+            // Turning mic ON � check if tracks are still alive
             const currentStream = webrtcService.getLocalStream();
             const audioTrack = currentStream?.getAudioTracks()[0];
 
             if (!audioTrack || audioTrack.readyState === 'ended') {
                 try {
-                    console.log('🎤 Re-acquiring audio stream...');
+                    console.log('?? Re-acquiring audio stream...');
                     const newStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     const newAudioTrack = newStream.getAudioTracks()[0];
                     if (currentStream) {
@@ -863,7 +863,7 @@ export default function GroupMode() {
                     }
                     setLocalStream(currentStream || newStream);
                 } catch (err) {
-                    console.error('❌ Failed to re-acquire mic:', err);
+                    console.error('? Failed to re-acquire mic:', err);
                     return;
                 }
             } else {
@@ -881,14 +881,14 @@ export default function GroupMode() {
         const newState = !isCameraOn;
 
         if (newState) {
-            // Turning camera ON — check if tracks are still alive
+            // Turning camera ON � check if tracks are still alive
             const currentStream = webrtcService.getLocalStream();
             const videoTrack = currentStream?.getVideoTracks()[0];
 
             if (!videoTrack || videoTrack.readyState === 'ended') {
-                // Track died — re-acquire camera
+                // Track died � re-acquire camera
                 try {
-                    console.log('🎥 Re-acquiring camera stream...');
+                    console.log('?? Re-acquiring camera stream...');
                     const newStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                     const newVideoTrack = newStream.getVideoTracks()[0];
                     const newAudioTrack = newStream.getAudioTracks()[0];
@@ -915,9 +915,9 @@ export default function GroupMode() {
 
                     // Force React to re-render with updated stream
                     setLocalStream(currentStream || newStream);
-                    console.log('✅ Camera re-acquired successfully');
+                    console.log('? Camera re-acquired successfully');
                 } catch (err) {
-                    console.error('❌ Failed to re-acquire camera:', err);
+                    console.error('? Failed to re-acquire camera:', err);
                     alert('Could not access camera. Please check permissions.');
                     return;
                 }
@@ -928,7 +928,7 @@ export default function GroupMode() {
                 setLocalStream(prev => prev);
             }
         } else {
-            // Turning camera OFF — just disable the track (don't stop it)
+            // Turning camera OFF � just disable the track (don't stop it)
             webrtcService.toggleCamera(false);
             // Force re-render
             setLocalStream(prev => prev);
@@ -979,7 +979,7 @@ export default function GroupMode() {
 
     // Leave WebRTC room
     const leaveWebRTCRoom = () => {
-        console.log('🚪 Leaving WebRTC room');
+        console.log('?? Leaving WebRTC room');
 
         // Clean up event listeners
         window.removeEventListener('webrtc:remoteStream', handleRemoteStream);
@@ -1041,7 +1041,7 @@ export default function GroupMode() {
             user: {
                 _id: user?._id || 'local_user',
                 name: user?.name || 'You',
-                avatar: user?.avatar || '👤'
+                avatar: user?.avatar || '??'
             },
             role: 'admin',
             xpContributed: 0,
@@ -1109,14 +1109,14 @@ export default function GroupMode() {
 
     const generateSampleMembers = (count) => {
         const sampleMembers = [
-            { user: { _id: '1', name: 'Sarah Chen', avatar: '👩‍💻' }, role: 'admin', xpContributed: 2450, streak: 15 },
-            { user: { _id: '2', name: 'Mike Ross', avatar: '👨‍💼' }, role: 'moderator', xpContributed: 2180, streak: 10 },
-            { user: { _id: '3', name: 'Emma Watson', avatar: '👩‍🔬' }, role: 'member', xpContributed: 1950, streak: 8 },
-            { user: { _id: '4', name: 'John Doe', avatar: '👨‍🎓' }, role: 'member', xpContributed: 1820, streak: 7 },
-            { user: { _id: '5', name: 'Alice Brown', avatar: '👩‍🎨' }, role: 'member', xpContributed: 1650, streak: 5 },
-            { user: { _id: '6', name: 'Bob Wilson', avatar: '👨‍💻' }, role: 'member', xpContributed: 1420, streak: 4 },
-            { user: { _id: '7', name: 'Clara Smith', avatar: '👩‍🏫' }, role: 'member', xpContributed: 1100, streak: 3 },
-            { user: { _id: '8', name: 'David Lee', avatar: '👨‍🔧' }, role: 'member', xpContributed: 890, streak: 2 },
+            { user: { _id: '1', name: 'Sarah Chen', avatar: '?????' }, role: 'admin', xpContributed: 2450, streak: 15 },
+            { user: { _id: '2', name: 'Mike Ross', avatar: '?????' }, role: 'moderator', xpContributed: 2180, streak: 10 },
+            { user: { _id: '3', name: 'Emma Watson', avatar: '?????' }, role: 'member', xpContributed: 1950, streak: 8 },
+            { user: { _id: '4', name: 'John Doe', avatar: '?????' }, role: 'member', xpContributed: 1820, streak: 7 },
+            { user: { _id: '5', name: 'Alice Brown', avatar: '?????' }, role: 'member', xpContributed: 1650, streak: 5 },
+            { user: { _id: '6', name: 'Bob Wilson', avatar: '?????' }, role: 'member', xpContributed: 1420, streak: 4 },
+            { user: { _id: '7', name: 'Clara Smith', avatar: '?????' }, role: 'member', xpContributed: 1100, streak: 3 },
+            { user: { _id: '8', name: 'David Lee', avatar: '?????' }, role: 'member', xpContributed: 890, streak: 2 },
         ];
         return sampleMembers.slice(0, typeof count === 'number' ? count : 5);
     };
@@ -1157,7 +1157,7 @@ export default function GroupMode() {
         const newMessage = {
             id: Date.now(),
             user: user?.name || 'You',
-            avatar: user?.avatar || '👤',
+            avatar: user?.avatar || '??',
             message: groupMessageInput,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isMe: true
@@ -1167,10 +1167,10 @@ export default function GroupMode() {
 
         // Emit to socket
         const socket = getSocket();
-        console.log('📤 Socket object:', socket ? 'exists' : 'null');
-        console.log('📤 Socket connected:', socket?.connected);
-        console.log('📤 Socket id:', socket?.id);
-        console.log('📤 Group ID:', groupDetailData?._id);
+        console.log('?? Socket object:', socket ? 'exists' : 'null');
+        console.log('?? Socket connected:', socket?.connected);
+        console.log('?? Socket id:', socket?.id);
+        console.log('?? Group ID:', groupDetailData?._id);
 
         if (socket?.connected && groupDetailData?._id) {
             const messagePayload = {
@@ -1180,10 +1180,10 @@ export default function GroupMode() {
                 senderName: user?.name,
                 senderAvatar: user?.avatar
             };
-            console.log('📤 Sending message:', messagePayload);
+            console.log('?? Sending message:', messagePayload);
             socket.emit('message:send', messagePayload);
         } else {
-            console.log('❌ Cannot send - socket not connected or groupId missing');
+            console.log('? Cannot send - socket not connected or groupId missing');
             console.log('  Socket exists:', !!socket);
             console.log('  Socket.connected:', socket?.connected);
             console.log('  GroupId:', groupDetailData?._id);
@@ -1194,90 +1194,90 @@ export default function GroupMode() {
 
     // Listen for real-time group messages
     useEffect(() => {
-        console.log('🔍 GROUP CHAT USEEFFECT TRIGGERED');
-        console.log('🔍 groupDetailData:', groupDetailData);
-        console.log('🔍 groupDetailData._id:', groupDetailData?._id);
+        console.log('?? GROUP CHAT USEEFFECT TRIGGERED');
+        console.log('?? groupDetailData:', groupDetailData);
+        console.log('?? groupDetailData._id:', groupDetailData?._id);
 
         if (!groupDetailData?._id) {
-            console.log('❌ Skipping - no groupDetailData._id');
+            console.log('? Skipping - no groupDetailData._id');
             return;
         }
 
         const socket = getSocket();
-        console.log('🔍 Socket from getSocket():', socket);
-        console.log('🔍 Socket connected:', socket?.connected);
-        console.log('🔍 Socket id:', socket?.id);
+        console.log('?? Socket from getSocket():', socket);
+        console.log('?? Socket connected:', socket?.connected);
+        console.log('?? Socket id:', socket?.id);
 
         if (!socket) {
-            console.log('❌ No socket available - trying to connect...');
+            console.log('? No socket available - trying to connect...');
             const newSocket = connectSocket();
-            console.log('🔍 New socket created:', newSocket);
-            console.log('🔍 New socket connected:', newSocket?.connected);
+            console.log('?? New socket created:', newSocket);
+            console.log('?? New socket connected:', newSocket?.connected);
             if (!newSocket) {
-                console.log('❌ Could not create socket');
+                console.log('? Could not create socket');
                 return;
             }
         }
 
         const currentSocket = getSocket();
         const groupId = groupDetailData._id;
-        console.log('🔍 Using groupId:', groupId);
+        console.log('?? Using groupId:', groupId);
 
         // Helper function to join group room
         const joinGroupRoom = () => {
-            console.log('🔌 ===== JOINING GROUP CHAT ROOM =====');
-            console.log('🔌 GroupId:', groupId);
-            console.log('🔌 Socket ID:', currentSocket?.id);
-            console.log('🔌 Socket connected:', currentSocket?.connected);
+            console.log('?? ===== JOINING GROUP CHAT ROOM =====');
+            console.log('?? GroupId:', groupId);
+            console.log('?? Socket ID:', currentSocket?.id);
+            console.log('?? Socket connected:', currentSocket?.connected);
             currentSocket.emit('group:join', groupId);
             // Track current group for auto-rejoin on reconnect
             setCurrentGroupId(groupId);
-            console.log('🔌 group:join emitted!');
+            console.log('?? group:join emitted!');
         };
 
         // Join immediately if connected, otherwise wait for connection
         if (currentSocket.connected) {
-            console.log('✅ Socket already connected, joining immediately');
+            console.log('? Socket already connected, joining immediately');
             joinGroupRoom();
         } else {
-            console.log('⏳ Socket not connected, waiting for connect event...');
-            console.log('⏳ Socket state:', currentSocket?.readyState);
+            console.log('? Socket not connected, waiting for connect event...');
+            console.log('? Socket state:', currentSocket?.readyState);
             currentSocket.once('connect', () => {
-                console.log('✅ Socket connect event received!');
+                console.log('? Socket connect event received!');
                 joinGroupRoom();
             });
         }
 
         const handleMessage = (msg) => {
-            console.log('📨 Received message via socket:', msg);
+            console.log('?? Received message via socket:', msg);
 
             // Verify this message is for our current group
             if (msg.group && msg.group !== groupId) {
-                console.log('⏭️ Message for different group, skipping');
+                console.log('?? Message for different group, skipping');
                 return;
             }
 
             const transformed = transformMessage(msg);
-            console.log('📝 Transformed message:', transformed);
+            console.log('?? Transformed message:', transformed);
 
             // Skip if transform failed
             if (!transformed) {
-                console.log('❌ Transform failed, skipping');
+                console.log('? Transform failed, skipping');
                 return;
             }
 
             // Skip only if it's from ME (already added optimistically)
             if (transformed.isMe) {
-                console.log('⏭️ Skipping own message (already shown)');
+                console.log('?? Skipping own message (already shown)');
                 return;
             }
 
-            console.log('✅ Adding message from other user:', transformed.user);
+            console.log('? Adding message from other user:', transformed.user);
             setGroupMessages(prev => {
                 // Prevent duplicates by checking both id and content+time
                 if (prev.some(m => m.id === transformed.id ||
                     (m.message === transformed.message && m.user === transformed.user && m.time === transformed.time))) {
-                    console.log('⚠️ Duplicate detected, skipping');
+                    console.log('?? Duplicate detected, skipping');
                     return prev;
                 }
                 return [...prev, transformed];
@@ -1287,7 +1287,7 @@ export default function GroupMode() {
         socket.on('message:receive', handleMessage);
 
         return () => {
-            console.log('🔌 Leaving Group Chat Room:', groupId);
+            console.log('?? Leaving Group Chat Room:', groupId);
             socket.emit('group:leave', groupId);
             socket.off('message:receive', handleMessage);
             socket.off('connect', joinGroupRoom);
@@ -1386,19 +1386,19 @@ export default function GroupMode() {
     const getColorClasses = (color) => {
         const colors = {
             violet: {
-                bg: 'bg-cyan-',
-                bgLight: 'bg-cyan-/20',
-                border: 'border-cyan-500/30',
-                text: 'text-cyan-',
-                gradient: 'from-cyan- to-purple-600',
-                shadow: 'shadow-violet-500/40'
-            },
-            cyan: {
                 bg: 'bg-cyan-500',
                 bgLight: 'bg-cyan-500/20',
                 border: 'border-cyan-500/30',
-                text: 'text-cyan-400',
-                gradient: 'from-cyan-500 to-blue-500',
+                text: 'text-cyan-500',
+                gradient: 'from-cyan-500 to-purple-600',
+                shadow: 'shadow-violet-500/40'
+            },
+            cyan: {
+                bg: 'bg-cyan-500500',
+                bgLight: 'bg-cyan-500500/20',
+                border: 'border-cyan-500/30',
+                text: 'text-cyan-500400',
+                gradient: 'from-cyan-500500 to-blue-500',
                 shadow: 'shadow-cyan-500/40'
             },
             emerald: {
@@ -1431,7 +1431,7 @@ export default function GroupMode() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative pb-16 overflow-hidden">
             {/* Animated Background */}
-            <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-cyan-/15 rounded-full blur-[80px] animate-pulse" />
+            <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[80px] animate-pulse" />
             <div className="absolute bottom-[10%] right-[10%] w-[700px] h-[700px] bg-pink-500/12 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
 
             {/* Grid Background */}
@@ -1494,7 +1494,7 @@ export default function GroupMode() {
                     >
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-3xl font-black text-[var(--text-primary)] flex items-center gap-3">
-                                <Users size={32} className="text-cyan-" /> Create / Join Group
+                                <Users size={32} className="text-cyan-500" /> Create / Join Group
                             </h2>
                             <button
                                 onClick={() => setShowCreateModal(false)}
@@ -1581,7 +1581,7 @@ export default function GroupMode() {
                             <button
                                 onClick={handleCreateGroup}
                                 disabled={loading}
-                                className="flex-1 p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-[var(--text-primary)] font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
+                                className="flex-1 p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
                             >
                                 {loading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
                                 Create Group
@@ -1691,7 +1691,7 @@ export default function GroupMode() {
                                     type="button"
                                     onClick={() => setNewChallenge(prev => ({ ...prev, visibility: 'public' }))}
                                     className={`flex-1 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${newChallenge.visibility === 'public'
-                                        ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-[var(--text-primary)]'
+                                        ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white'
                                         : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-emerald-500/50'
                                         }`}
                                 >
@@ -1702,7 +1702,7 @@ export default function GroupMode() {
                                     type="button"
                                     onClick={() => setNewChallenge(prev => ({ ...prev, visibility: 'private' }))}
                                     className={`flex-1 p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${newChallenge.visibility === 'private'
-                                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-[var(--text-primary)]'
+                                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white'
                                         : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-amber-500/50'
                                         }`}
                                 >
@@ -1712,8 +1712,8 @@ export default function GroupMode() {
                             </div>
                             <p className="text-xs text-[var(--text-muted)] mt-2">
                                 {newChallenge.visibility === 'public'
-                                    ? '🌍 Anyone on the platform can see and join this challenge'
-                                    : '🔒 Only you can see this challenge'}
+                                    ? '?? Anyone on the platform can see and join this challenge'
+                                    : '?? Only you can see this challenge'}
                             </p>
                         </div>
 
@@ -1727,7 +1727,7 @@ export default function GroupMode() {
                                         type="button"
                                         onClick={() => setNewChallenge(prev => ({ ...prev, reward: xp }))}
                                         className={`flex-1 p-3 rounded-xl font-bold transition-all flex items-center justify-center gap-1 ${newChallenge.reward === xp
-                                            ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]'
+                                            ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white'
                                             : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:border-amber-500/50'
                                             }`}
                                     >
@@ -1743,7 +1743,7 @@ export default function GroupMode() {
                             <button
                                 onClick={handleCreateChallenge}
                                 disabled={loading}
-                                className="flex-1 p-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl text-[var(--text-primary)] font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
+                                className="flex-1 p-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
                             >
                                 {loading ? <Loader2 className="animate-spin" size={20} /> : <Target size={20} />}
                                 Create Challenge
@@ -1792,7 +1792,7 @@ export default function GroupMode() {
                                 <div className="text-xs text-[var(--text-secondary)]">{selectedChallenge.unit || 'Target'}</div>
                             </div>
                             <div className="text-center border-l border-r border-[var(--border-color)]">
-                                <div className="text-2xl font-black text-cyan-">{selectedChallenge.participants?.length || 0}</div>
+                                <div className="text-2xl font-black text-cyan-500">{selectedChallenge.participants?.length || 0}</div>
                                 <div className="text-xs text-[var(--text-secondary)]">Participants</div>
                             </div>
                             <div className="text-center">
@@ -1819,9 +1819,9 @@ export default function GroupMode() {
                                             }`}
                                     >
                                         {/* Rank */}
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${index === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]' :
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${index === 0 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white' :
                                             index === 1 ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]' :
-                                                index === 2 ? 'bg-amber-700 text-[var(--text-primary)]' :
+                                                index === 2 ? 'bg-amber-700 text-white' :
                                                     'bg-[var(--border-color)] text-[var(--text-secondary)]'
                                             }`}>
                                             {participant.rank || index + 1}
@@ -1832,7 +1832,7 @@ export default function GroupMode() {
                                             {participant.avatar?.startsWith('http') || participant.avatar?.startsWith('data:') ? (
                                                 <img src={participant.avatar} alt={participant.name} className="w-10 h-10 rounded-full object-cover" />
                                             ) : (
-                                                participant.avatar || '👤'
+                                                participant.avatar || '??'
                                             )}
                                         </div>
 
@@ -1850,7 +1850,7 @@ export default function GroupMode() {
                                         {/* Badge */}
                                         {index < 3 && (
                                             <div className="text-2xl">
-                                                {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                                {index === 0 ? '??' : index === 1 ? '??' : '??'}
                                             </div>
                                         )}
                                     </div>
@@ -1874,7 +1874,7 @@ export default function GroupMode() {
                     >
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-black text-[var(--text-primary)]">
-                                🎥 Live Study Room {isWebRTCInitialized && '- Connected'}
+                                ?? Live Study Room {isWebRTCInitialized && '- Connected'}
                             </h2>
                             <button
                                 onClick={closeStudyRoom}
@@ -1895,7 +1895,7 @@ export default function GroupMode() {
                                         participants={liveParticipants}
                                         currentUserId={currentUserId}
                                         currentUserName={user?.name || 'You'}
-                                        currentUserAvatar={user?.avatar || '👤'}
+                                        currentUserAvatar={user?.avatar || '??'}
                                         spotlightUserId={spotlightUserId}
                                         onSpotlightChange={setSpotlightUserId}
                                         localIsCameraOn={isCameraOn}
@@ -1934,7 +1934,7 @@ export default function GroupMode() {
                                         onClick={isScreenSharing ? stopScreenSharing : startScreenSharing}
                                         disabled={!isWebRTCInitialized}
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isScreenSharing
-                                            ? 'bg-gradient-to-r from-cyan- to-purple-600'
+                                            ? 'bg-gradient-to-r from-cyan-500 to-purple-600'
                                             : 'bg-[var(--glass-bg)] border-cyan-500/30'
                                             } text-[var(--text-primary)] disabled:opacity-50`}
                                     >
@@ -1945,9 +1945,9 @@ export default function GroupMode() {
                                     <button
                                         onClick={() => setShowWhiteboard(!showWhiteboard)}
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showWhiteboard
-                                            ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                                            ? 'bg-gradient-to-r from-cyan-500500 to-blue-500'
                                             : 'bg-[var(--glass-bg)] border-cyan-500/30'
-                                            } text-[var(--text-primary)]`}
+                                            } text-white`}
                                     >
                                         <Edit size={20} />
                                         Whiteboard
@@ -1965,7 +1965,7 @@ export default function GroupMode() {
                                             onClick={() => setIsGroupTimerRunning(!isGroupTimerRunning)}
                                             className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 ${isGroupTimerRunning
                                                 ? 'bg-red-500/30 text-[var(--text-primary)]'
-                                                : 'bg-gradient-to-r from-emerald-500 to-green-600 text-[var(--text-primary)]'
+                                                : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white'
                                                 }`}
                                         >
                                             {isGroupTimerRunning ? <Pause size={16} /> : <Play size={16} />}
@@ -1989,7 +1989,7 @@ export default function GroupMode() {
                                     <div className="mt-6">
                                         <div className="flex items-center justify-between mb-3">
                                             <h4 className="text-[var(--text-primary)] font-bold flex items-center gap-2">
-                                                <PenTool size={20} className="text-cyan-400" />
+                                                <PenTool size={20} className="text-cyan-500400" />
                                                 Interactive Whiteboard
                                             </h4>
                                             <button
@@ -1999,7 +1999,7 @@ export default function GroupMode() {
                                                     const socket = getSocket();
                                                     if (socket && currentRoomId) {
                                                         if (newState) {
-                                                            // Entering fullscreen — notify viewers
+                                                            // Entering fullscreen � notify viewers
                                                             socket.emit('room:message', {
                                                                 roomId: currentRoomId,
                                                                 message: 'SYSTEM:WHITEBOARD_OPEN',
@@ -2008,7 +2008,7 @@ export default function GroupMode() {
                                                                 senderAvatar: user?.avatar
                                                             });
                                                         } else {
-                                                            // Exiting fullscreen — notify viewers to close
+                                                            // Exiting fullscreen � notify viewers to close
                                                             socket.emit('room:message', {
                                                                 roomId: currentRoomId,
                                                                 message: 'SYSTEM:WHITEBOARD_CLOSE',
@@ -2019,7 +2019,7 @@ export default function GroupMode() {
                                                         }
                                                     }
                                                 }}
-                                                className="px-4 py-2 bg-cyan-/20 text-cyan- rounded-lg font-bold flex items-center gap-2 hover:bg-cyan-/30 transition-all text-sm"
+                                                className="px-4 py-2 bg-cyan-500/20 text-cyan-500 rounded-lg font-bold flex items-center gap-2 hover:bg-cyan-500/30 transition-all text-sm"
                                             >
                                                 <Maximize2 size={16} />
                                                 {isWhiteboardFullscreen ? 'Stop Presenting' : 'Present (Fullscreen)'}
@@ -2050,7 +2050,7 @@ export default function GroupMode() {
                                                     {user.avatar && user.avatar.startsWith('http') ? (
                                                         <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
                                                     ) : (
-                                                        <div className="text-3xl">{user.avatar || '👤'}</div>
+                                                        <div className="text-3xl">{user.avatar || '??'}</div>
                                                     )}
                                                     <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[var(--border-color)] ${user.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                                 </div>
@@ -2068,7 +2068,7 @@ export default function GroupMode() {
                                 {/* Quick Chat */}
                                 <div className="bg-[var(--glass-bg)] rounded-2xl p-5 border border-cyan-500/20">
                                     <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2">
-                                        <MessageCircle size={20} className="text-cyan-500" /> Quick Chat
+                                        <MessageCircle size={20} className="text-cyan-500500" /> Quick Chat
                                     </h4>
                                     <div className="h-[200px] bg-[var(--glass-bg)] rounded-xl p-3 mb-3 overflow-y-auto">
                                         {chatMessages.length === 0 ? (
@@ -2079,7 +2079,7 @@ export default function GroupMode() {
                                             chatMessages.map(msg => (
                                                 <div key={msg.id} className="mb-3">
                                                     <div className="text-xs text-[var(--text-secondary)] mb-1">
-                                                        {msg.user} • {msg.time}
+                                                        {msg.user} � {msg.time}
                                                     </div>
                                                     <div className="text-sm text-[var(--text-primary)]">{msg.message}</div>
                                                 </div>
@@ -2097,7 +2097,7 @@ export default function GroupMode() {
                                         />
                                         <button
                                             onClick={sendMessage}
-                                            className="bg-gradient-to-r from-cyan- to-purple-600 px-4 rounded-lg text-[var(--text-primary)]"
+                                            className="bg-gradient-to-r from-cyan-500 to-purple-600 px-4 rounded-lg text-white"
                                         >
                                             <Send size={18} />
                                         </button>
@@ -2128,7 +2128,7 @@ export default function GroupMode() {
                                         {(groupDetailData.avatar && (groupDetailData.avatar.startsWith('http') || groupDetailData.avatar.startsWith('data:'))) ? (
                                             <img src={groupDetailData.avatar} alt={groupDetailData.name} className="w-16 h-16 rounded-2xl object-cover shadow-xl" />
                                         ) : (
-                                            groupDetailData.avatar || '👥'
+                                            groupDetailData.avatar || '??'
                                         )}
                                     </div>
                                     <div>
@@ -2157,8 +2157,8 @@ export default function GroupMode() {
                             </div>
 
                             {/* Invite Code */}
-                            <div className="flex items-center gap-3 p-4 bg-cyan-/10 rounded-xl border border-cyan-500/20">
-                                <Hash size={20} className="text-cyan-" />
+                            <div className="flex items-center gap-3 p-4 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
+                                <Hash size={20} className="text-cyan-500" />
                                 <div className="flex-1">
                                     <div className="text-xs text-[var(--text-secondary)] mb-1">Invite Code</div>
                                     <div className="text-lg font-mono font-bold text-[var(--text-primary)] tracking-wider">
@@ -2169,7 +2169,7 @@ export default function GroupMode() {
                                     onClick={copyInviteCode}
                                     className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all ${copiedInviteCode
                                         ? 'bg-emerald-500 text-[var(--text-primary)]'
-                                        : 'bg-cyan-/20 text-cyan- hover:bg-cyan-/30'
+                                        : 'bg-cyan-500/20 text-cyan-500 hover:bg-cyan-500/30'
                                         }`}
                                 >
                                     {copiedInviteCode ? (
@@ -2193,8 +2193,8 @@ export default function GroupMode() {
                                         key={tab}
                                         onClick={() => setActiveGroupTab(tab)}
                                         className={`px-5 py-2.5 rounded-xl font-bold capitalize transition-all ${activeGroupTab === tab
-                                            ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
-                                            : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
+                                            ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white'
+                                            : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-500/20 hover:text-white'
                                             }`}
                                     >
                                         {tab === 'chat' && <MessageCircle size={18} className="inline mr-2" />}
@@ -2213,8 +2213,8 @@ export default function GroupMode() {
                                             groupAPI.getJoinRequests(groupDetailData._id).then(res => setJoinRequests(res.requests || []));
                                         }}
                                         className={`px-5 py-2.5 rounded-xl font-bold capitalize transition-all ${activeGroupTab === 'requests'
-                                            ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
-                                            : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20 hover:text-[var(--text-primary)]'
+                                            ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white'
+                                            : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-500/20 hover:text-white'
                                             }`}
                                     >
                                         <Bell size={18} className="inline mr-2" />
@@ -2232,7 +2232,7 @@ export default function GroupMode() {
                                     <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20 min-h-[400px] max-h-[500px] overflow-y-auto">
                                         {loadingGroupDetail ? (
                                             <div className="flex items-center justify-center h-full">
-                                                <Loader2 className="animate-spin text-cyan-" size={32} />
+                                                <Loader2 className="animate-spin text-cyan-500" size={32} />
                                             </div>
                                         ) : groupMessages.length === 0 ? (
                                             <div className="text-center text-[var(--text-secondary)] py-20">
@@ -2250,20 +2250,20 @@ export default function GroupMode() {
                                                             {(msg.avatar && (msg.avatar.startsWith('http') || msg.avatar.startsWith('data:'))) ? (
                                                                 <img src={msg.avatar} alt={msg.user} className="w-10 h-10 rounded-full object-cover shadow-sm" />
                                                             ) : (
-                                                                msg.avatar || '👤'
+                                                                msg.avatar || '??'
                                                             )}
                                                         </div>
                                                         <div className={`flex-1 ${msg.isMe ? 'text-right' : ''}`}>
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <span className={`text-sm font-bold ${msg.isMe ? 'text-cyan-' : 'text-[var(--text-primary)]'}`}>
+                                                                <span className={`text-sm font-bold ${msg.isMe ? 'text-cyan-500' : 'text-[var(--text-primary)]'}`}>
                                                                     {msg.user}
                                                                 </span>
                                                                 <span className="text-xs text-[var(--text-muted)]">{msg.time}</span>
                                                             </div>
                                                             <div
                                                                 className={`inline-block px-4 py-2.5 rounded-2xl ${msg.isMe
-                                                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)]'
-                                                                    : 'bg-[var(--border-color)]/80 text-[var(--text-primary)]'
+                                                                    ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white'
+                                                                    : 'bg-[var(--border-color)]/80 text-white'
                                                                     }`}
                                                             >
                                                                 {msg.message}
@@ -2287,7 +2287,7 @@ export default function GroupMode() {
                                         />
                                         <button
                                             onClick={sendGroupMessage}
-                                            className="bg-gradient-to-r from-cyan- to-purple-600 px-8 py-4 rounded-xl text-[var(--text-primary)] font-bold flex items-center gap-2 hover:scale-105 transition-transform"
+                                            className="bg-gradient-to-r from-cyan-500 to-purple-600 px-8 py-4 rounded-xl text-white font-bold flex items-center gap-2 hover:scale-105 transition-transform"
                                         >
                                             <Send size={20} />
                                             Send
@@ -2321,7 +2321,7 @@ export default function GroupMode() {
                                                             {(userData.avatar && (userData.avatar.startsWith('http') || userData.avatar.startsWith('data:'))) ? (
                                                                 <img src={userData.avatar} alt={userData.name} className="w-10 h-10 rounded-full object-cover" />
                                                             ) : (
-                                                                userData.avatar || '👤'
+                                                                userData.avatar || '??'
                                                             )}
                                                         </div>
                                                         <div className="flex-1">
@@ -2333,20 +2333,20 @@ export default function GroupMode() {
                                                                     <Crown size={16} className="text-amber-500" />
                                                                 )}
                                                                 {member.role === 'moderator' && (
-                                                                    <Shield size={16} className="text-cyan-500" />
+                                                                    <Shield size={16} className="text-cyan-500500" />
                                                                 )}
                                                             </div>
                                                             <div className="flex items-center gap-3 text-sm">
                                                                 <span className={`px-2.5 py-1 rounded-lg font-bold ${member.role === 'admin'
                                                                     ? 'bg-amber-500/20 text-amber-400'
                                                                     : member.role === 'moderator'
-                                                                        ? 'bg-cyan-500/20 text-cyan-400'
+                                                                        ? 'bg-cyan-500500/20 text-cyan-500400'
                                                                         : 'bg-[var(--border-color)]/60 text-[var(--text-secondary)]'
                                                                     }`}>
                                                                     {member.role || 'member'}
                                                                 </span>
                                                                 <span className="text-[var(--text-secondary)] flex items-center gap-1">
-                                                                    <Star size={14} className="text-cyan-" />
+                                                                    <Star size={14} className="text-cyan-500" />
                                                                     {member.xpContributed || 0} XP
                                                                 </span>
                                                                 <span className="text-[var(--text-secondary)] flex items-center gap-1">
@@ -2370,21 +2370,21 @@ export default function GroupMode() {
                                                                     <div className="absolute right-0 top-full mt-2 bg-[var(--bg-secondary)] border border-cyan-500/30 rounded-xl overflow-hidden shadow-2xl z-20 min-w-[180px]">
                                                                         <button
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'admin')}
-                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
+                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-500/20 flex items-center gap-2"
                                                                         >
                                                                             <Crown size={16} className="text-amber-500" />
                                                                             Make Admin
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'moderator')}
-                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
+                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-500/20 flex items-center gap-2"
                                                                         >
-                                                                            <Shield size={16} className="text-cyan-500" />
+                                                                            <Shield size={16} className="text-cyan-500500" />
                                                                             Make Moderator
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleUpdateMemberRole(memberId, 'member')}
-                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-/20 flex items-center gap-2"
+                                                                            className="w-full px-4 py-3 text-left text-sm text-[var(--text-primary)] hover:bg-cyan-500/20 flex items-center gap-2"
                                                                         >
                                                                             <Users size={16} className="text-[var(--text-secondary)]" />
                                                                             Make Member
@@ -2413,8 +2413,8 @@ export default function GroupMode() {
                             {activeGroupTab === 'studyroom' && (
                                 <div className="space-y-6">
                                     {/* Study Room Hero */}
-                                    <div className="bg-gradient-to-br from-cyan-/20 via-purple-600/20 to-pink-600/20 rounded-2xl p-8 border border-cyan-500/30 text-center">
-                                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-cyan- to-pink-500 mb-4">
+                                    <div className="bg-gradient-to-br from-cyan-500/20 via-purple-600/20 to-pink-600/20 rounded-2xl p-8 border border-cyan-500/30 text-center">
+                                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-cyan-500 to-pink-500 mb-4">
                                             <Video size={40} className="text-[var(--text-primary)]" />
                                         </div>
                                         <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2">Group Study Room</h3>
@@ -2425,7 +2425,7 @@ export default function GroupMode() {
 
                                         <button
                                             onClick={() => joinStudyRoomWithWebRTC(groupDetailData?._id || groupDetailData?.id || 'default-room')}
-                                            className="px-8 py-4 bg-gradient-to-r from-cyan- via-purple-500 to-pink-500 rounded-xl font-bold text-[var(--text-primary)] text-lg flex items-center gap-3 mx-auto hover:scale-105 transition-transform shadow-lg shadow-violet-500/30"
+                                            className="px-8 py-4 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-xl font-bold text-white text-lg flex items-center gap-3 mx-auto hover:scale-105 transition-transform shadow-lg shadow-violet-500/30"
                                         >
                                             <Video size={24} />
                                             Start Study Session
@@ -2443,8 +2443,8 @@ export default function GroupMode() {
                                         </div>
 
                                         <div className="bg-[var(--glass-bg)] rounded-xl p-5 border border-cyan-500/20">
-                                            <div className="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-3">
-                                                <Monitor size={24} className="text-cyan-400" />
+                                            <div className="w-12 h-12 rounded-lg bg-cyan-500500/20 flex items-center justify-center mb-3">
+                                                <Monitor size={24} className="text-cyan-500400" />
                                             </div>
                                             <h4 className="font-bold text-[var(--text-primary)] mb-1">Screen Sharing</h4>
                                             <p className="text-sm text-[var(--text-secondary)]">Share your screen to explain concepts or solve problems together.</p>
@@ -2463,7 +2463,7 @@ export default function GroupMode() {
                                     <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20">
                                         <div className="flex justify-between items-center mb-4">
                                             <h4 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                                <Users size={20} className="text-cyan-" />
+                                                <Users size={20} className="text-cyan-500" />
                                                 Group Members
                                             </h4>
                                             <span className="text-sm text-emerald-400">
@@ -2482,7 +2482,7 @@ export default function GroupMode() {
                                                             {(memberUser.avatar && (memberUser.avatar.startsWith('http') || memberUser.avatar.startsWith('data:'))) ? (
                                                                 <img src={memberUser.avatar} alt={memberUser.name} className="w-6 h-6 rounded-full object-cover" />
                                                             ) : (
-                                                                memberUser.avatar || '👤'
+                                                                memberUser.avatar || '??'
                                                             )}
                                                         </div>
                                                         <span className="text-sm text-[var(--text-primary)]">{memberUser.name}</span>
@@ -2504,7 +2504,7 @@ export default function GroupMode() {
                                         <div className="space-y-4">
                                             <div>
                                                 <label className="text-sm text-[var(--text-secondary)] mb-2 block">Group Goal</label>
-                                                <div className="p-4 bg-cyan-/10 rounded-xl border border-cyan-500/20">
+                                                <div className="p-4 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
                                                     <p className="text-[var(--text-primary)]">{groupDetailData.goal}</p>
                                                 </div>
                                             </div>
@@ -2532,9 +2532,9 @@ export default function GroupMode() {
                                                         {groupDetailData.stats?.totalXp || groupDetailData.totalPoints || 0}
                                                     </div>
                                                 </div>
-                                                <div className="p-4 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-center">
+                                                <div className="p-4 bg-cyan-500500/10 rounded-xl border border-cyan-500/20 text-center">
                                                     <div className="text-xs text-[var(--text-secondary)] mb-1">Sessions</div>
-                                                    <div className="text-2xl font-black text-cyan-500">
+                                                    <div className="text-2xl font-black text-cyan-500500">
                                                         {groupDetailData.stats?.sessionsCompleted || 0}
                                                     </div>
                                                 </div>
@@ -2551,7 +2551,7 @@ export default function GroupMode() {
                                     {/* Admin Settings */}
                                     <div className="bg-[var(--glass-bg)] rounded-2xl p-6 border border-cyan-500/20">
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                                            <Settings size={20} className="text-cyan-" />
+                                            <Settings size={20} className="text-cyan-500" />
                                             Group Settings (Admin Only)
                                         </h3>
 
@@ -2607,7 +2607,7 @@ export default function GroupMode() {
                                             <button
                                                 onClick={handleUpdateGroupSettings}
                                                 disabled={loading || Object.keys(editGroupData).length === 0}
-                                                className="w-full p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-[var(--text-primary)] font-bold hover:scale-[1.02] transition-transform disabled:opacity-50"
+                                                className="w-full p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-white font-bold hover:scale-[1.02] transition-transform disabled:opacity-50"
                                             >
                                                 {loading ? (
                                                     <Loader2 className="animate-spin inline mr-2" size={20} />
@@ -2648,7 +2648,7 @@ export default function GroupMode() {
                                                                 {(req.user.avatar && (req.user.avatar.startsWith('http') || req.user.avatar.startsWith('data:'))) ? (
                                                                     <img src={req.user.avatar} alt={req.user.name} className="w-10 h-10 rounded-full object-cover" />
                                                                 ) : (
-                                                                    req.user.avatar || '👤'
+                                                                    req.user.avatar || '??'
                                                                 )}
                                                             </div>
                                                             <div>
@@ -2703,7 +2703,7 @@ export default function GroupMode() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <button
                         onClick={closeGroupDetail}
-                        className="flex items-center gap-3 bg-cyan-/10 text-cyan- px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-cyan-/20 hover:-translate-x-1 transition-all"
+                        className="flex items-center gap-3 bg-cyan-500/10 text-cyan-500 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-cyan-500/20 hover:-translate-x-1 transition-all"
                     >
                         <ArrowLeft size={18} />
                         Back to Groups
@@ -2716,7 +2716,7 @@ export default function GroupMode() {
                     <div className="flex gap-3 items-center">
                         <button
                             onClick={() => joinStudyRoomWithWebRTC(groupDetailData?._id || groupDetailData?.id || 'default-room')}
-                            className="bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-3 rounded-xl text-sm font-bold text-[var(--text-primary)] flex items-center gap-2 hover:scale-105 transition-transform"
+                            className="bg-gradient-to-r from-pink-500 to-fuchsia-500 px-5 py-3 rounded-xl text-sm font-bold text-white flex items-center gap-2 hover:scale-105 transition-transform"
                         >
                             <Radio size={18} />
                             Live Room
@@ -2728,17 +2728,17 @@ export default function GroupMode() {
 
             <div className="max-w-7xl mx-auto px-8 py-10 relative z-10">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-cyan-/20 to-pink-500/20 backdrop-blur-xl rounded-3xl p-10 mb-8 border border-cyan-500/20 shadow-2xl shadow-violet-500/20 relative overflow-hidden animate-slideDown">
+                <div className="bg-gradient-to-r from-cyan-500/20 to-pink-500/20 backdrop-blur-xl rounded-3xl p-10 mb-8 border border-cyan-500/20 shadow-2xl shadow-violet-500/20 relative overflow-hidden animate-slideDown">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent" />
 
                     <div className="flex items-center gap-6 flex-wrap justify-between">
                         <div className="flex items-center gap-6">
-                            <div className="bg-gradient-to-r from-cyan- to-pink-500 p-6 rounded-2xl shadow-xl shadow-violet-500/40 animate-bounce">
+                            <div className="bg-gradient-to-r from-cyan-500 to-pink-500 p-6 rounded-2xl shadow-xl shadow-violet-500/40 animate-bounce">
                                 <Users2 size={48} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
-                                <div className="text-sm text-cyan- font-bold tracking-widest mb-2 uppercase">
-                                    🚀 Collaborative Learning Ecosystem
+                                <div className="text-sm text-cyan-500 font-bold tracking-widest mb-2 uppercase">
+                                    ?? Collaborative Learning Ecosystem
                                 </div>
                                 <h1 className="text-4xl font-black text-[var(--text-primary)] mb-3 tracking-tight">
                                     Group Study Hub
@@ -2751,7 +2751,7 @@ export default function GroupMode() {
 
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="bg-gradient-to-r from-emerald-500 to-green-600 px-8 py-4 rounded-xl text-base font-bold text-[var(--text-primary)] flex items-center gap-2 hover:scale-105 transition-transform shadow-xl shadow-emerald-500/30"
+                            className="bg-gradient-to-r from-emerald-500 to-green-600 px-8 py-4 rounded-xl text-base font-bold text-white flex items-center gap-2 hover:scale-105 transition-transform shadow-xl shadow-emerald-500/30"
                         >
                             <Plus size={20} />
                             Create New Group
@@ -2763,12 +2763,12 @@ export default function GroupMode() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
                     <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)] hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group cursor-pointer">
                         <div className="flex items-center gap-4">
-                            <div className="bg-gradient-to-r from-cyan- to-purple-600 p-3.5 rounded-xl shadow-lg">
+                            <div className="bg-gradient-to-r from-cyan-500 to-purple-600 p-3.5 rounded-xl shadow-lg">
                                 <Users size={24} className="text-[var(--text-primary)]" />
                             </div>
                             <div>
                                 <div className="text-xs text-[var(--text-secondary)] font-semibold uppercase">Active Groups</div>
-                                <div className="text-3xl font-black bg-gradient-to-r from-cyan- to-purple-600 bg-clip-text text-transparent">
+                                <div className="text-3xl font-black bg-gradient-to-r from-cyan-500 to-purple-600 bg-clip-text text-transparent">
                                     {myGroups.length}
                                 </div>
                             </div>
@@ -2825,8 +2825,8 @@ export default function GroupMode() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center gap-2 transition-all ${activeTab === tab.id
-                                ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-xl shadow-violet-500/30'
-                                : 'bg-[var(--glass-bg)] text-[var(--text-primary)] hover:bg-cyan-/20 hover:scale-105'
+                                ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white shadow-xl shadow-violet-500/30'
+                                : 'bg-[var(--glass-bg)] text-white hover:bg-cyan-500/20 hover:scale-105'
                                 }`}
                         >
                             <tab.icon size={18} />
@@ -2867,7 +2867,7 @@ export default function GroupMode() {
                                                 {(group.avatar && (group.avatar.startsWith('http') || group.avatar.startsWith('data:'))) ? (
                                                     <img src={group.avatar} alt={group.name} className="w-16 h-16 mx-auto rounded-2xl object-cover shadow-lg" />
                                                 ) : (
-                                                    group.avatar || '👥'
+                                                    group.avatar || '??'
                                                 )}
                                             </div>
                                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{group.name}</h3>
@@ -2888,7 +2888,7 @@ export default function GroupMode() {
                                                 <span className="text-sm text-[var(--text-secondary)] font-semibold">Group Progress</span>
                                                 <span className="text-sm font-bold text-[var(--text-primary)]">{group.progress}%</span>
                                             </div>
-                                            <div className="w-full h-2 bg-cyan-/20 rounded-full overflow-hidden">
+                                            <div className="w-full h-2 bg-cyan-500/20 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full bg-gradient-to-r ${colors.gradient} rounded-full transition-all duration-1000`}
                                                     style={{ width: `${group.progress}%` }}
@@ -2907,14 +2907,14 @@ export default function GroupMode() {
                                                 <div className="text-xl font-black text-amber-500">{group.streak}</div>
                                                 <div className="text-xs text-[var(--text-secondary)]">Day Streak</div>
                                             </div>
-                                            <div className="text-center p-3 bg-cyan-/10 rounded-xl">
-                                                <Star size={20} className="text-cyan- mx-auto mb-1" />
-                                                <div className="text-xl font-black text-cyan-">{group.totalPoints}</div>
+                                            <div className="text-center p-3 bg-cyan-500/10 rounded-xl">
+                                                <Star size={20} className="text-cyan-500 mx-auto mb-1" />
+                                                <div className="text-xl font-black text-cyan-500">{group.totalPoints}</div>
                                                 <div className="text-xs text-[var(--text-secondary)]">Total XP</div>
                                             </div>
                                         </div>
 
-                                        <button className={`w-full bg-gradient-to-r ${colors.gradient} py-3.5 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform`}>
+                                        <button className={`w-full bg-gradient-to-r ${colors.gradient} py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform`}>
                                             <ChevronRight size={18} />
                                             Open Group
                                         </button>
@@ -2971,18 +2971,18 @@ export default function GroupMode() {
                                             {(room.avatar && (room.avatar.startsWith('http') || room.avatar.startsWith('data:'))) ? (
                                                 <img src={room.avatar} alt={room.name} className="w-14 h-14 rounded-xl object-cover" />
                                             ) : (
-                                                room.avatar || '🎥'
+                                                room.avatar || '??'
                                             )}
                                         </div>
                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">{room.name}</h3>
                                         <div className="text-sm text-[var(--text-secondary)] mb-1">Host: {room.host}</div>
-                                        <div className="text-base text-cyan-">{room.topic}</div>
+                                        <div className="text-base text-cyan-500">{room.topic}</div>
                                     </div>
 
                                     <div className="flex gap-2 mb-4 flex-wrap">
-                                        <span className="px-3 py-1.5 bg-cyan-/20 rounded-lg text-xs text-cyan-">{room.category}</span>
+                                        <span className="px-3 py-1.5 bg-cyan-500/20 rounded-lg text-xs text-cyan-500">{room.category}</span>
                                         <span className="px-3 py-1.5 bg-emerald-500/20 rounded-lg text-xs text-emerald-400">{room.difficulty}</span>
-                                        <span className="px-3 py-1.5 bg-cyan-500/20 rounded-lg text-xs text-cyan-400">{room.language}</span>
+                                        <span className="px-3 py-1.5 bg-cyan-500500/20 rounded-lg text-xs text-cyan-500400">{room.language}</span>
                                     </div>
 
                                     <div className="flex justify-between mb-4 text-sm">
@@ -2998,7 +2998,7 @@ export default function GroupMode() {
 
                                     <button
                                         onClick={() => joinStudyRoomWithWebRTC(room.id)}
-                                        className="w-full bg-gradient-to-r from-pink-500 to-fuchsia-500 py-3.5 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                        className="w-full bg-gradient-to-r from-pink-500 to-fuchsia-500 py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                     >
                                         <Video size={18} />
                                         Join Room
@@ -3023,7 +3023,7 @@ export default function GroupMode() {
                             </div>
                             <button
                                 onClick={() => setShowCreateChallengeModal(true)}
-                                className="bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-3.5 rounded-xl text-[var(--text-primary)] font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg shadow-emerald-500/30"
+                                className="bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-3.5 rounded-xl text-white font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-lg shadow-emerald-500/30"
                             >
                                 <Plus size={20} />
                                 Create Challenge
@@ -3035,8 +3035,8 @@ export default function GroupMode() {
                             <button
                                 onClick={() => setChallengeTab('public')}
                                 className={`px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${challengeTab === 'public'
-                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
-                                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20'
+                                    ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white shadow-lg shadow-violet-500/30'
+                                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-500/20'
                                     }`}
                             >
                                 <Globe size={18} />
@@ -3045,8 +3045,8 @@ export default function GroupMode() {
                             <button
                                 onClick={() => setChallengeTab('my')}
                                 className={`px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${challengeTab === 'my'
-                                    ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
-                                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-/20'
+                                    ? 'bg-gradient-to-r from-cyan-500 to-pink-500 text-white shadow-lg shadow-violet-500/30'
+                                    : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-cyan-500/20'
                                     }`}
                             >
                                 <Lock size={18} />
@@ -3073,7 +3073,7 @@ export default function GroupMode() {
                         {/* Loading State */}
                         {loadingChallenges && (
                             <div className="flex items-center justify-center py-20">
-                                <Loader2 className="animate-spin text-cyan-" size={40} />
+                                <Loader2 className="animate-spin text-cyan-500" size={40} />
                             </div>
                         )}
 
@@ -3087,7 +3087,7 @@ export default function GroupMode() {
                                         <p className="text-[var(--text-secondary)] mb-6">Be the first to create a public challenge!</p>
                                         <button
                                             onClick={() => setShowCreateChallengeModal(true)}
-                                            className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-[var(--text-primary)] font-bold hover:scale-105 transition-transform"
+                                            className="bg-gradient-to-r from-cyan-500 to-pink-500 px-6 py-3 rounded-xl text-white font-bold hover:scale-105 transition-transform"
                                         >
                                             Create Public Challenge
                                         </button>
@@ -3117,14 +3117,14 @@ export default function GroupMode() {
 
                                                         {/* Icon & Title */}
                                                         <div className="mb-4">
-                                                            <div className="text-4xl mb-3">{challenge.icon || '🎯'}</div>
+                                                            <div className="text-4xl mb-3">{challenge.icon || '??'}</div>
                                                             <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 pr-16">{challenge.title}</h3>
                                                             <p className="text-sm text-[var(--text-secondary)] line-clamp-2">{challenge.description}</p>
                                                         </div>
 
                                                         {/* Category & Creator */}
                                                         <div className="flex gap-2 mb-4 flex-wrap">
-                                                            <span className="px-3 py-1.5 bg-cyan-/20 rounded-lg text-xs font-semibold text-cyan-">
+                                                            <span className="px-3 py-1.5 bg-cyan-500/20 rounded-lg text-xs font-semibold text-cyan-500">
                                                                 {challenge.category || 'General'}
                                                             </span>
                                                             <span className="px-3 py-1.5 bg-[var(--border-color)]/50 rounded-lg text-xs text-[var(--text-secondary)]">
@@ -3156,7 +3156,7 @@ export default function GroupMode() {
                                                                 <div className="text-xs text-[var(--text-secondary)]">Days Left</div>
                                                             </div>
                                                             <div className="text-center">
-                                                                <div className="text-lg font-black text-cyan-">{challenge.totalViews || 0}</div>
+                                                                <div className="text-lg font-black text-cyan-500">{challenge.totalViews || 0}</div>
                                                                 <div className="text-xs text-[var(--text-secondary)]">Views</div>
                                                             </div>
                                                         </div>
@@ -3166,7 +3166,7 @@ export default function GroupMode() {
                                                             {isParticipant ? (
                                                                 <button
                                                                     onClick={() => handleViewLeaderboard(challenge)}
-                                                                    className="flex-1 bg-gradient-to-r from-cyan- to-purple-600 py-3 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                                                    className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-600 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                                                 >
                                                                     <Trophy size={18} />
                                                                     View Leaderboard
@@ -3174,7 +3174,7 @@ export default function GroupMode() {
                                                             ) : (
                                                                 <button
                                                                     onClick={() => handleJoinChallenge(challenge._id || challenge.id)}
-                                                                    className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 py-3 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                                                    className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                                                 >
                                                                     <Plus size={18} />
                                                                     Join Challenge
@@ -3182,7 +3182,7 @@ export default function GroupMode() {
                                                             )}
                                                             <button
                                                                 onClick={() => handleViewLeaderboard(challenge)}
-                                                                className="p-3 bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:bg-cyan-/30 hover:text-[var(--text-primary)] transition-all"
+                                                                className="p-3 bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:bg-cyan-500/30 hover:text-[var(--text-primary)] transition-all"
                                                                 title="View Leaderboard"
                                                             >
                                                                 <Medal size={18} />
@@ -3206,7 +3206,7 @@ export default function GroupMode() {
                                         <p className="text-[var(--text-secondary)] mb-6">Create your first challenge and invite others to join!</p>
                                         <button
                                             onClick={() => setShowCreateChallengeModal(true)}
-                                            className="bg-gradient-to-r from-cyan- to-pink-500 px-6 py-3 rounded-xl text-[var(--text-primary)] font-bold hover:scale-105 transition-transform"
+                                            className="bg-gradient-to-r from-cyan-500 to-pink-500 px-6 py-3 rounded-xl text-white font-bold hover:scale-105 transition-transform"
                                         >
                                             Create My First Challenge
                                         </button>
@@ -3234,7 +3234,7 @@ export default function GroupMode() {
 
                                                     {/* Icon & Title */}
                                                     <div className="mb-4">
-                                                        <div className="text-4xl mb-3">{challenge.icon || '🎯'}</div>
+                                                        <div className="text-4xl mb-3">{challenge.icon || '??'}</div>
                                                         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 pr-16">{challenge.title}</h3>
                                                         <p className="text-sm text-[var(--text-secondary)] line-clamp-2">{challenge.description}</p>
                                                     </div>
@@ -3260,7 +3260,7 @@ export default function GroupMode() {
                                                     {/* Actions */}
                                                     <button
                                                         onClick={() => handleViewLeaderboard(challenge)}
-                                                        className="w-full bg-gradient-to-r from-cyan- to-pink-500 py-3 rounded-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                                                        className="w-full bg-gradient-to-r from-cyan-500 to-pink-500 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                                                     >
                                                         <Trophy size={18} />
                                                         View Leaderboard
@@ -3295,9 +3295,9 @@ export default function GroupMode() {
                                             member.rank === 3 ? 'border-amber-700/30' : 'border-[var(--border-color)]'
                                         }`}
                                 >
-                                    <div className={`w-10 h-10 flex items-center justify-center rounded-full font-black text-lg ${member.rank === 1 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-[var(--text-primary)]' :
+                                    <div className={`w-10 h-10 flex items-center justify-center rounded-full font-black text-lg ${member.rank === 1 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white' :
                                         member.rank === 2 ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]' :
-                                            member.rank === 3 ? 'bg-amber-700 text-[var(--text-primary)]' : 'bg-[var(--border-color)] text-[var(--text-secondary)]'
+                                            member.rank === 3 ? 'bg-amber-700 text-white' : 'bg-[var(--border-color)] text-[var(--text-secondary)]'
                                         }`}>
                                         {member.rank}
                                     </div>
@@ -3305,7 +3305,7 @@ export default function GroupMode() {
                                         {(member.avatar && (member.avatar.startsWith('http') || member.avatar.startsWith('data:'))) ? (
                                             <img src={member.avatar} alt={member.name} className="w-12 h-12 rounded-full object-cover border-2 border-[var(--border-color)]" />
                                         ) : (
-                                            member.avatar || '👤'
+                                            member.avatar || '??'
                                         )}
                                     </div>
                                     <div className="flex-1">
@@ -3319,7 +3319,7 @@ export default function GroupMode() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-2xl font-black bg-gradient-to-r from-cyan- to-pink-500 bg-clip-text text-transparent">
+                                        <div className="text-2xl font-black bg-gradient-to-r from-cyan-500 to-pink-500 bg-clip-text text-transparent">
                                             {member.points.toLocaleString()}
                                         </div>
                                         <div className="text-xs text-[var(--text-secondary)]">points</div>
@@ -3358,3 +3358,4 @@ export default function GroupMode() {
         </div >
     );
 }
+
