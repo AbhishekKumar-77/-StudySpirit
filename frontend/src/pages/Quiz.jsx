@@ -45,6 +45,7 @@ export default function StudySprintQuiz() {
 
     // Student Exam Mode
     const [studentQuizCodeInput, setStudentQuizCodeInput] = useState(""); // Input for student to join
+    const [studentRegNoInput, setStudentRegNoInput] = useState(""); // Input for student reg no
     const [joinedQuiz, setJoinedQuiz] = useState(null); // Stores quiz data student has joined
     const [examStarted, setExamStarted] = useState(false);
     const [examSubmitted, setExamSubmitted] = useState(false);
@@ -245,8 +246,8 @@ export default function StudySprintQuiz() {
     };
 
     const joinQuiz = async () => {
-        if (!studentQuizCodeInput) {
-            alert("Please enter a quiz code!");
+        if (!studentQuizCodeInput || !studentRegNoInput) {
+            alert("Please enter both the Quiz Code and your Registration Number!");
             return;
         }
 
@@ -273,7 +274,8 @@ export default function StudySprintQuiz() {
                     const doJoin = () => socket.emit('quiz:join', {
                         quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                         studentId: user?._id || user?.id || 'guest',
-                        studentName: user?.name || 'Student'
+                        studentName: user?.name || 'Student',
+                        registrationNumber: studentRegNoInput.trim()
                     });
                     if (socket.connected) { doJoin(); console.log("📡 Socket quiz:join emitted (connected)"); } else { socket.once('connect', () => { doJoin(); console.log("📡 Socket quiz:join emitted (after connect)"); }); }
                 } catch (_e) { console.error("❌ Socket join error:", _e); }
@@ -306,7 +308,8 @@ export default function StudySprintQuiz() {
             const doJoin = () => socket.emit('quiz:join', {
                 quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                 studentId: user?._id || user?.id || 'guest',
-                studentName: user?.name || 'Student'
+                studentName: user?.name || 'Student',
+                registrationNumber: studentRegNoInput.trim()
             });
             if (socket.connected) { doJoin(); console.log("📡 Socket quiz:join emitted from startExam"); } else { socket.once('connect', () => { doJoin(); console.log("📡 Socket quiz:join emitted from startExam (after connect)"); }); }
         } catch (e) { console.error('Socket join error', e); }
@@ -343,7 +346,8 @@ export default function StudySprintQuiz() {
                     score: correctCount, // Sending correct count as score for backend calculation
                     percentage: Math.round(finalScore), // Pass negative-marked final percentage
                     totalQuestions: quizQs.length,
-                    timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft
+                    timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft,
+                    registrationNumber: studentRegNoInput.trim()
                 })
             });
             // Notify teacher: student submitted (real-time)
@@ -355,6 +359,7 @@ export default function StudySprintQuiz() {
                         quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
                         studentId: user?._id || user?.id || 'guest',
                         studentName: user?.name || 'Student',
+                        registrationNumber: studentRegNoInput.trim(),
                         score: Math.round(finalScore),
                         correctAnswers: correctCount,
                         timeTaken: taken,
@@ -994,13 +999,20 @@ export default function StudySprintQuiz() {
                                 <p className="text-xl text-[var(--text-secondary)] mb-8">
                                     Enter the quiz code provided by your teacher to begin your exam.
                                 </p>
-                                <div className="flex gap-3 max-w-md mx-auto">
+                                <div className="flex flex-col gap-4 max-w-md mx-auto">
                                     <input
                                         type="text"
                                         value={studentQuizCodeInput}
                                         onChange={(e) => setStudentQuizCodeInput(e.target.value)}
                                         placeholder="Enter Code (e.g. SP1234)"
-                                        className="flex-1 p-4 bg-[var(--bg-secondary)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-bold text-center focus:border-cyan-500 outline-none uppercase tracking-widest"
+                                        className="w-full p-4 bg-[var(--bg-secondary)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-bold text-center focus:border-cyan-500 outline-none uppercase tracking-widest"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={studentRegNoInput}
+                                        onChange={(e) => setStudentRegNoInput(e.target.value)}
+                                        placeholder="Registration Number (e.g. 122XXXXX)"
+                                        className="w-full p-4 bg-[var(--bg-secondary)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-bold text-center focus:border-cyan-500 outline-none uppercase tracking-widest"
                                     />
                                 </div>
                                 <button
@@ -1196,7 +1208,7 @@ export default function StudySprintQuiz() {
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => { setShowResult(false); setJoinedQuiz(null); setStudentQuizCodeInput(""); setIsReviewingAnswers(false); }}
+                                        onClick={() => { setShowResult(false); setJoinedQuiz(null); setStudentQuizCodeInput(""); setStudentRegNoInput(""); setIsReviewingAnswers(false); }}
                                         className="px-8 py-4 bg-[var(--border-color)] text-[var(--text-primary)] font-bold rounded-xl hover:bg-[var(--bg-secondary)] transition-all hover:scale-105"
                                     >
                                         Take Another Quiz

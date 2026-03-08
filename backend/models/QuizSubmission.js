@@ -4,6 +4,7 @@ const quizSubmissionSchema = new mongoose.Schema({
     quizCode: { type: String, required: true },
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     studentName: { type: String },
+    registrationNumber: { type: String },
     score: { type: Number }, // Absolute marks / correct count
     totalQuestions: { type: Number },
     percentage: { type: Number },

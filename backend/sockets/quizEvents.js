@@ -15,7 +15,7 @@ module.exports = function registerQuizEvents(socket, io) {
     // ── STUDENT: joins exam room ──────────────────────────────────
     socket.on('quiz:join', (data) => {
         console.log('📥 quiz:join received:', JSON.stringify(data));
-        const { studentId, studentName } = data || {};
+        const { studentId, studentName, registrationNumber } = data || {};
         const quizCode = (data?.quizCode || '').toUpperCase().trim();
 
         if (!quizCode || !studentId) {
@@ -31,6 +31,7 @@ module.exports = function registerQuizEvents(socket, io) {
 
         activeQuizRooms.get(quizCode).set(studentId, {
             name: studentName || 'Student',
+            registrationNumber: registrationNumber || '',
             joinedAt: Date.now(),
             status: 'active',
             score: null
@@ -74,7 +75,7 @@ module.exports = function registerQuizEvents(socket, io) {
     // ── STUDENT: submitted exam ───────────────────────────────────
     socket.on('quiz:submitted', (data) => {
         console.log('✅ quiz:submitted received:', JSON.stringify(data));
-        const { studentId, studentName, score, correctAnswers, timeTaken, totalQuestions } = data || {};
+        const { studentId, studentName, registrationNumber, score, correctAnswers, timeTaken, totalQuestions } = data || {};
         const quizCode = (data?.quizCode || '').toUpperCase().trim();
 
         if (!quizCode || !studentId) return;
@@ -93,6 +94,7 @@ module.exports = function registerQuizEvents(socket, io) {
         } else {
             room.set(studentId, {
                 name: studentName || 'Student',
+                registrationNumber: registrationNumber || '',
                 status: 'submitted',
                 score,
                 correctAnswers,
@@ -113,6 +115,7 @@ module.exports = function registerQuizEvents(socket, io) {
 
         io.to(`teacher:${quizCode}`).emit('quiz:new:submission', {
             studentName: studentName || 'A student',
+            registrationNumber: registrationNumber || '',
             score,
             correctAnswers,
             timeTaken,

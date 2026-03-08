@@ -174,6 +174,7 @@ export default function TeacherDashboard() {
             if (data.success && data.leaderboard) {
                 const existing = data.leaderboard.map(sub => ({
                     studentName: sub.name,
+                    registrationNumber: sub.registrationNumber || '',
                     score: sub.score,
                     correctAnswers: sub.marks,
                     totalQuestions: sub.totalMarks,
@@ -546,7 +547,7 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
                                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-sm font-black">
                                                 {s.name?.[0]?.toUpperCase()}
                                             </div>
-                                            <span className="font-semibold text-[var(--text-primary)] text-sm flex-1">{s.name}</span>
+                                            <span className="font-semibold text-[var(--text-primary)] text-sm flex-1">{s.name} {s.registrationNumber ? `(${s.registrationNumber})` : ''}</span>
                                             {s.correctAnswers !== undefined && (
                                                 <span className="text-xs font-bold text-amber-500 mr-2">
                                                     Points: {s.correctAnswers}/{s.totalQuestions || '?'}
@@ -578,7 +579,7 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
                                                 {s.studentName?.[0]?.toUpperCase()}
                                             </div>
                                             <div className="flex-1">
-                                                <div className="font-semibold text-[var(--text-primary)] text-sm">{s.studentName}</div>
+                                                <div className="font-semibold text-[var(--text-primary)] text-sm">{s.studentName} {s.registrationNumber ? `(${s.registrationNumber})` : ''}</div>
                                                 <div className="text-xs text-[var(--text-secondary)]">
                                                     {s.timeTaken ? `${Math.floor(s.timeTaken / 60)}m ${s.timeTaken % 60}s` : 'N/A'}
                                                 </div>
@@ -733,12 +734,13 @@ function LeaderboardSection({ myQuizzes }) {
 
     const downloadCSV = () => {
         if (leaderboard.length === 0) return;
-        const headers = ["Rank", "Student Name", "Correct Answers", "Real Marks", "Total Questions", "Percentage", "Time Taken"];
+        const headers = ["Rank", "Registration No", "Student Name", "Correct Answers", "Real Marks", "Total Questions", "Percentage", "Time Taken"];
         const rows = leaderboard.map(p => {
             // Calculate real marks exactly based on the final percentage they received
             const realMarks = ((p.score / 100) * (p.totalMarks || 1)).toFixed(2).replace(/\.00$/, '');
             return [
                 p.rank,
+                `"${p.registrationNumber || ''}"`,
                 `"${p.name}"`,
                 p.marks || 0,
                 realMarks,
@@ -809,7 +811,7 @@ function LeaderboardSection({ myQuizzes }) {
                                 {p.name?.[0]?.toUpperCase()}
                             </div>
                             <div className="flex-1">
-                                <div className="font-bold text-[var(--text-primary)]">{p.name}</div>
+                                <div className="font-bold text-[var(--text-primary)]">{p.name} {p.registrationNumber ? <span className="text-sm font-normal text-[var(--text-muted)]">({p.registrationNumber})</span> : ''}</div>
                                 <div className="flex gap-4 text-xs text-[var(--text-secondary)] mt-0.5">
                                     <span>⏱ Time: {p.time}</span>
                                 </div>
