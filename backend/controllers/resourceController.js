@@ -102,10 +102,18 @@ exports.deleteResource = async (req, res) => {
         const resource = await Resource.findById(req.params.resourceId);
         if (!resource) return res.status(404).json({ success: false, message: 'Not found' });
 
-        const group = await Group.findById(resource.group);
-        const isAdmin = group.admins.some(a => a.toString() === req.user._id.toString());
-        const isUploader = resource.uploader.toString() === req.user._id.toString();
-        if (!isAdmin && !isUploader) return res.status(403).json({ success: false, message: 'Unauthorized' });
+        if (resource.group) {
+            const group = await Group.findById(resource.group);
+            if (group) {
+                const isAdmin = group.admins.some(a => a.toString() === req.user._id.toString());
+                const isUploader = (resource.uploader && resource.uploader.toString() === req.user._id.toString()) || (resource.owner && resource.owner.toString() === req.user._id.toString());
+                if (!isAdmin && !isUploader) return res.status(403).json({ success: false, message: 'Unauthorized' });
+            }
+        } else {
+            // It's a personal resource
+            const isOwner = (resource.owner && resource.owner.toString() === req.user._id.toString()) || (resource.uploader && resource.uploader.toString() === req.user._id.toString());
+            if (!isOwner) return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
 
         await Resource.findByIdAndDelete(req.params.resourceId);
         res.json({ success: true, message: 'Deleted' });
