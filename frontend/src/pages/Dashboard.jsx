@@ -5,7 +5,7 @@ import * as soloApi from '../services/soloApi';
 import confetti from 'canvas-confetti';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
-    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight
+    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -149,6 +149,7 @@ export default function Dashboard() {
         { id: 2, name: 'Group Mode', description: 'Collaborate with peers', path: '/group-mode', icon: Users, color: '#8b5cf6' },
         { id: 3, name: 'Planner', description: 'Organize your schedule', path: '/planner', icon: Calendar, color: '#ec4899' },
         { id: 4, name: 'Quizzes', description: 'Test your knowledge', path: '/quiz', icon: ClipboardCheck, color: '#f59e0b' },
+        { id: 13, name: 'Exams', description: 'Quiz & coding exams', path: '/exams', icon: FileCheck, color: '#ef4444' },
         { id: 5, name: 'Resources', description: 'Curated study materials', path: '/resources', icon: Library, color: '#10b981' },
         { id: 6, name: 'CodeSpirit', description: 'Practice coding challenges', path: '/codespirit', icon: Code, color: '#06b6d4' },
         { id: 7, name: 'Interview Prep', description: 'AI-powered mock interviews', path: '/interview', icon: Mic, color: '#f43f5e' },
