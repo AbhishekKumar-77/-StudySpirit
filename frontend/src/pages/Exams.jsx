@@ -6,9 +6,10 @@ import {
     ArrowLeft, FileCheck, ClipboardCheck, Code, Clock, Users, Trophy,
     ChevronRight, Calendar, Shield, Star, Zap, BookOpen, BarChart3,
     Lock, Unlock, Timer, Brain, CheckCircle, Award, Target, PlayCircle,
-    AlertCircle, XCircle, Send
+    AlertCircle, XCircle, Send, Play, Check, X
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import Editor from "@monaco-editor/react";
 
 export default function Exams() {
     const navigate = useNavigate();
@@ -33,6 +34,11 @@ export default function Exams() {
     const [isReviewingAnswers, setIsReviewingAnswers] = useState(false);
     const [isTabHidden, setIsTabHidden] = useState(false);
     const fullscreenRef = useRef(null);
+
+    // Coding Exam State
+    const [codeLanguage, setCodeLanguage] = useState("javascript");
+    const [codeTestResults, setCodeTestResults] = useState({});
+    const [isRunningCode, setIsRunningCode] = useState(false);
 
     // ---------- TIMER ----------
     useEffect(() => {
@@ -139,6 +145,46 @@ export default function Exams() {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    // ---------- RUN CODE ----------
+    const runCodeForQuestion = async () => {
+        const currentQ = joinedQuiz.questions[currentQuestionIndex];
+        if (!currentQ || currentQ.type !== "coding") return;
+
+        const code = userAnswers[currentQ.id] || "";
+        if (!code.trim()) return alert("Please write some code before running!");
+
+        setIsRunningCode(true);
+        const results = [];
+        // Support testCases or default to an empty run
+        const tcs = currentQ.testCases && currentQ.testCases.length > 0 ? currentQ.testCases : [{ input: "", expectedOutput: "" }];
+
+        for (let i = 0; i < tcs.length; i++) {
+            const tc = tcs[i];
+            try {
+                const executeRes = await fetch(`${API_BASE}/codespirit/execute`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ language: codeLanguage, code: code, stdin: tc.input })
+                });
+                const result = await executeRes.json();
+                const out = (result.run?.stdout || "").trim();
+                const passed = tc.expectedOutput ? (out === (tc.expectedOutput || "").trim() && result.success && result.run?.code === 0) : true;
+                results.push({
+                    pass: passed,
+                    actual: out,
+                    expected: tc.expectedOutput || "N/A",
+                    input: tc.input || "None",
+                    error: result.run?.stderr || ""
+                });
+            } catch (e) {
+                results.push({ pass: false, error: e.message });
+            }
+        }
+        setCodeTestResults(prev => ({ ...prev, [currentQ.id]: results }));
+        setIsRunningCode(false);
     };
 
     // ---------- JOIN QUIZ ----------
@@ -346,11 +392,22 @@ export default function Exams() {
 
                             <div className="grid gap-4">
                                 {joinedQuiz.questions[currentQuestionIndex].type === "coding" ? (
-                                    <div className="w-full">
-                                        <div className="mb-4 flex items-center justify-between">
-                                            <span className="font-bold text-cyan-400 uppercase tracking-wider text-sm flex items-center gap-2">
-                                                <Code size={16} /> Code Editor
-                                            </span>
+                                    <div className="w-full text-left">
+                                        <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-bold text-cyan-400 uppercase tracking-wider text-sm flex items-center gap-2">
+                                                    <Code size={16} /> Code Editor
+                                                </span>
+                                                <select value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)} className="bg-[var(--bg-secondary)] text-[var(--text-primary)] px-3 py-1.5 rounded-lg border border-[var(--border-color)] outline-none text-sm font-bold">
+                                                    <option value="javascript">JavaScript</option>
+                                                    <option value="python">Python</option>
+                                                    <option value="cpp">C++</option>
+                                                    <option value="java">Java</option>
+                                                </select>
+                                                <button onClick={runCodeForQuestion} disabled={isRunningCode} className="px-5 py-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-sm rounded-lg font-bold hover:bg-emerald-600/30 transition-colors flex items-center gap-2">
+                                                    <Play size={14} /> {isRunningCode ? "Running..." : "Run Test Cases"}
+                                                </button>
+                                            </div>
                                             {joinedQuiz.questions[currentQuestionIndex].starterCode && !userAnswers[joinedQuiz.questions[currentQuestionIndex].id] && (
                                                 <button
                                                     onClick={() => {
@@ -363,17 +420,42 @@ export default function Exams() {
                                                 </button>
                                             )}
                                         </div>
-                                        <textarea
-                                            value={userAnswers[joinedQuiz.questions[currentQuestionIndex].id] || ''}
-                                            onChange={(e) => {
-                                                const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: e.target.value };
-                                                setUserAnswers(newAnswers);
-                                                // We don't necessarily need to emit socket progress on every keystroke
-                                            }}
-                                            className="w-full h-[350px] p-6 bg-[#0d1117] font-mono text-sm text-green-400 rounded-xl resize-none outline-none border border-[var(--border-color)] focus:border-cyan-500 transition-colors leading-relaxed"
-                                            placeholder="Write your code solution here..."
-                                            spellCheck="false"
-                                        />
+
+                                        <div className="h-[400px] border border-[var(--border-color)] rounded-xl overflow-hidden mb-6 bg-[#1e1e1e]">
+                                            <Editor
+                                                height="100%"
+                                                language={codeLanguage}
+                                                theme="vs-dark"
+                                                value={userAnswers[joinedQuiz.questions[currentQuestionIndex].id] || ''}
+                                                onChange={(val) => {
+                                                    const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: val };
+                                                    setUserAnswers(newAnswers);
+                                                }}
+                                                options={{ fontSize: 16, minimap: { enabled: false } }}
+                                            />
+                                        </div>
+
+                                        {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id] && (
+                                            <div className="bg-[#121212] rounded-xl border border-[var(--border-color)] p-5 mt-4 max-h-[400px] overflow-y-auto">
+                                                <h3 className="text-white/80 font-bold mb-4 flex items-center gap-2"><Target size={18} className="text-cyan-400" /> Test Case Results:</h3>
+                                                <div className="space-y-4">
+                                                    {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id].map((r, i) => (
+                                                        <div key={i} className={`p-4 rounded border ${r.pass ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                {r.pass ? <Check size={18} className="text-emerald-500" /> : <X size={18} className="text-red-500" />}
+                                                                <span className={`font-bold text-sm ${r.pass ? 'text-emerald-500' : 'text-red-500'}`}>Test Case {i + 1}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-white/70">
+                                                                <div><span className="opacity-50 block mb-1">Input:</span><div className="bg-black/40 p-2 rounded whitespace-pre-wrap">{r.input}</div></div>
+                                                                <div><span className="opacity-50 block mb-1">Expected:</span><div className="bg-black/40 p-2 rounded whitespace-pre-wrap">{r.expected}</div></div>
+                                                                <div className="sm:col-span-2"><span className="opacity-50 block mb-1">Your Output:</span><div className="bg-black/40 p-2 rounded whitespace-pre-wrap">{r.actual || "No output"}</div></div>
+                                                                {r.error && <div className="sm:col-span-2"><span className="text-red-400 block mb-1">Error:</span><div className="bg-red-900/20 p-3 rounded overflow-x-auto text-red-300 text-sm whitespace-pre-wrap">{r.error}</div></div>}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ) : (
                                     <>
