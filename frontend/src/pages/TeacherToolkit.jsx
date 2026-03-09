@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ClipboardCheck, Home, Shield, ArrowRight, Library } from 'lucide-react';
+import { ClipboardCheck, Home, Shield, ArrowRight, Library, Target } from 'lucide-react';
 import './Dashboard.css';
 
 export default function TeacherToolkit() {
@@ -40,6 +40,14 @@ export default function TeacherToolkit() {
             path: '/resources',
             icon: Library,
             color: '#10b981'
+        },
+        {
+            id: 3,
+            name: 'CodeSpirit Exam',
+            description: 'Create and manage coding and mcq exams',
+            path: '/codespirit-creator',
+            icon: Target,
+            color: '#8b5cf6'
         }
     ];
 

@@ -226,7 +226,6 @@ export default function TeacherDashboard() {
         { id: 'quizzes', label: 'My Quizzes', icon: FileQuestion },
         { id: 'live', label: 'Live Monitor', icon: Radio, badge: monitoringCode ? liveStudents.filter(s => s.status === 'active').length : null },
         { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz' },
-        { id: 'codespirit', label: 'CodeSpirit Exam', icon: Target, external: true, path: '/codespirit-creator' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     ];
 
