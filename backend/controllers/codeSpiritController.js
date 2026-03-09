@@ -163,7 +163,7 @@ exports.generateDailyChallenge = async (req, res) => {
                     "title": "Problem Title",
                     "description": "Detailed problem statement explaining the task clearly. Include input format, output format, and constraints.",
                     "language": "${langPref}",
-                    "starterCode": "language specific starter code that reads from stdin and prints to stdout",
+                    "starterCode": "starter code here",
                     "testCases": [
                         { "input": "sample input for stdin", "output": "expected stdout output" },
                         { "input": "another input", "output": "another expected output" }
@@ -176,16 +176,27 @@ exports.generateDailyChallenge = async (req, res) => {
             Rules:
             - Generate exactly ${questionCount} problems, each different from the others.
             - Each problem MUST follow competitive programming format:
-              * The starterCode MUST read input from stdin (input() in Python, Scanner in Java, cin in C++, readline in JS)
-              * The starterCode MUST print output to stdout (print in Python, System.out.println in Java, cout in C++, console.log in JS)
+              * The starterCode MUST read input from stdin and print output to stdout
+              * Python: use input() and print()
+              * Java: use Scanner and System.out.println()
+              * C++: use cin and cout with #include <iostream>
+              * C: use scanf/printf with #include <stdio.h>
+              * JavaScript: use readline or process.stdin and console.log()
               * Test case "input" is what will be provided as stdin
               * Test case "output" is the exact stdout the correct program should produce
             - Each problem should have 2-3 test cases.
             - Each problem should have 1-2 hints.
             - Provide the starterCode in ${langPref}. Make sure it is valid and runnable.
-            - IMPORTANT: Preserve proper newlines (\\n) and indentation in starterCode.
+            - CRITICAL JSON RULES:
+              * All newlines inside string values MUST be written as \\n (escaped)
+              * All double quotes inside string values MUST be written as \\" (escaped)
+              * All backslashes inside string values MUST be written as \\\\ (escaped)
+              * Tab characters MUST be written as \\t
+              * For C/C++ code: #include <iostream> must be: #include <iostream>
+              * For C/C++ code: cout << must be: cout <<
+              * Make sure the starterCode is a single-line JSON string with \\n for newlines
             - Problems should gradually increase in complexity.
-            - Return ONLY the JSON array, nothing else.
+            - Return ONLY the JSON array, nothing else. No markdown fences.
         `;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -197,7 +208,7 @@ exports.generateDailyChallenge = async (req, res) => {
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [
-                    { role: "system", content: "You are a coding contest platform generator. You output purely valid JSON arrays of coding problems in competitive programming format (stdin/stdout). Never output markdown or extra text." },
+                    { role: "system", content: "You are a coding contest platform generator. You output ONLY valid JSON arrays of coding problems. CRITICAL: All string values in JSON must properly escape newlines as \\n, tabs as \\t, quotes as \\\", and backslashes as \\\\. The starterCode must be a properly escaped single-line JSON string. Never output markdown code fences. Never add explanatory text. Output ONLY the JSON array." },
                     { role: "user", content: prompt }
                 ],
                 temperature: 0.7,
@@ -212,14 +223,47 @@ exports.generateDailyChallenge = async (req, res) => {
             throw new Error("No content from AI");
         }
 
+        // Clean up AI response
         content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        // Attempt JSON repair for common AI mistakes
+        function repairJSON(str) {
+            // Remove any leading/trailing non-JSON text
+            const firstBracket = str.indexOf('[');
+            const lastBracket = str.lastIndexOf(']');
+            if (firstBracket !== -1 && lastBracket !== -1) {
+                str = str.substring(firstBracket, lastBracket + 1);
+            }
+
+            // Fix unescaped newlines inside JSON string values
+            // This regex finds content between quotes and escapes real newlines
+            str = str.replace(/("(?:[^"\\]|\\.)*")|(\n)/g, (match, quoted, newline) => {
+                if (quoted) return quoted; // leave properly quoted strings alone
+                return '\\n'; // escape bare newlines
+            });
+
+            // Fix trailing commas before ] or }
+            str = str.replace(/,\s*([}\]])/g, '$1');
+
+            // Fix single quotes used instead of double quotes for keys
+            str = str.replace(/([{,]\s*)'([^']+)'\s*:/g, '$1"$2":');
+
+            return str;
+        }
 
         let challenges;
         try {
             challenges = JSON.parse(content);
         } catch (e) {
-            console.error("JSON Parse Error:", content);
-            return res.status(500).json({ success: false, message: "AI generated invalid format. Try again." });
+            // Try repairing the JSON
+            try {
+                const repaired = repairJSON(content);
+                challenges = JSON.parse(repaired);
+                console.log("JSON repaired successfully for", langPref);
+            } catch (e2) {
+                console.error("JSON Parse Error (even after repair):", content.substring(0, 500));
+                return res.status(500).json({ success: false, message: "AI generated invalid format. Try again." });
+            }
         }
 
         if (!Array.isArray(challenges)) {

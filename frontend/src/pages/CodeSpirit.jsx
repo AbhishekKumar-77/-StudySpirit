@@ -152,6 +152,7 @@ export default function CodeSpirit() {
         { id: "python", name: "Python 3", icon: "🐍" },
         { id: "javascript", name: "JavaScript", icon: "⚡" },
         { id: "cpp", name: "C++", icon: "⚙️" },
+        { id: "c", name: "C", icon: "🔧" },
         { id: "java", name: "Java", icon: "☕" }
     ];
 
@@ -206,8 +207,8 @@ export default function CodeSpirit() {
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="text-xs font-bold uppercase tracking-wider text-amber-500">Daily Challenge</span>
                                                 <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${dailyChallenge.difficulty === 'hard' ? 'bg-rose-500/20 text-rose-500' :
-                                                        dailyChallenge.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
-                                                            'bg-emerald-500/20 text-emerald-500'
+                                                    dailyChallenge.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
+                                                        'bg-emerald-500/20 text-emerald-500'
                                                     }`}>{dailyChallenge.difficulty}</span>
                                             </div>
                                             <h3 className="text-lg font-bold">{dailyChallenge.topic}</h3>
@@ -239,8 +240,8 @@ export default function CodeSpirit() {
                                         key={name}
                                         onClick={() => { setTopic(name); setShowCustomTopic(false); }}
                                         className={`p-4 rounded-xl border text-left transition-all hover:scale-[1.02] ${topic === name
-                                                ? 'border-cyan-500 bg-cyan-500/10 shadow-lg shadow-cyan-500/10'
-                                                : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
+                                            ? 'border-cyan-500 bg-cyan-500/10 shadow-lg shadow-cyan-500/10'
+                                            : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
                                             }`}
                                     >
                                         <span className="text-2xl mb-2 block">{config.icon}</span>
@@ -251,8 +252,8 @@ export default function CodeSpirit() {
                                 <button
                                     onClick={() => { setShowCustomTopic(true); setTopic(''); }}
                                     className={`p-4 rounded-xl border text-left transition-all hover:scale-[1.02] border-dashed ${showCustomTopic
-                                            ? 'border-cyan-500 bg-cyan-500/10'
-                                            : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
+                                        ? 'border-cyan-500 bg-cyan-500/10'
+                                        : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
                                         }`}
                                 >
                                     <span className="text-2xl mb-2 block">✏️</span>
@@ -289,8 +290,8 @@ export default function CodeSpirit() {
                                                 key={l.id}
                                                 onClick={() => setLanguage(l.id)}
                                                 className={`py-2.5 px-3 rounded-xl border font-bold text-sm transition-all flex items-center gap-2 ${language === l.id
-                                                        ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                                                        : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                    ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
                                                     }`}
                                             >
                                                 <span>{l.icon}</span> {l.name}
@@ -314,8 +315,8 @@ export default function CodeSpirit() {
                                                 key={d.id}
                                                 onClick={() => setDifficulty(d.id)}
                                                 className={`py-2.5 rounded-xl border font-bold capitalize text-sm transition-all ${difficulty === d.id
-                                                        ? `bg-${d.color}-500 border-${d.color}-500 text-white shadow-lg shadow-${d.color}-500/25`
-                                                        : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                    ? `bg-${d.color}-500 border-${d.color}-500 text-white shadow-lg shadow-${d.color}-500/25`
+                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
                                                     }`}
                                                 style={difficulty === d.id ? {
                                                     background: d.color === 'emerald' ? '#10b981' : d.color === 'amber' ? '#f59e0b' : '#f43f5e',
@@ -340,8 +341,8 @@ export default function CodeSpirit() {
                                                 key={num}
                                                 onClick={() => setQuestionCount(num)}
                                                 className={`h-11 rounded-xl border font-bold text-sm transition-all ${questionCount === num
-                                                        ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                                                        : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                    ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
                                                     }`}
                                             >
                                                 {num}
@@ -415,6 +416,7 @@ export default function CodeSpirit() {
                                 <option value="python">Python</option>
                                 <option value="javascript">JavaScript</option>
                                 <option value="cpp">C++</option>
+                                <option value="c">C</option>
                                 <option value="java">Java</option>
                             </select>
                             <select
@@ -462,8 +464,8 @@ export default function CodeSpirit() {
                                                             </span>
                                                         )}
                                                         <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${session.difficulty === 'hard' ? 'bg-rose-500/20 text-rose-500' :
-                                                                session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
-                                                                    'bg-emerald-500/20 text-emerald-500'
+                                                            session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
+                                                                'bg-emerald-500/20 text-emerald-500'
                                                             }`}>
                                                             {session.difficulty}
                                                         </span>
