@@ -68,21 +68,26 @@ const SUBJECTS = [
         gradient: 'from-violet-600 to-purple-500',
         lang: 'cpp',
         topics: [
-            'Variables & Data Types',
-            'OOP — Classes & Objects',
-            'Constructors & Destructors',
-            'Inheritance & Polymorphism',
-            'Operator Overloading',
-            'Templates',
-            'STL Vectors & Arrays',
-            'STL Maps & Sets',
-            'STL Stacks, Queues & Deque',
-            'Strings in C++',
-            'Pointers & References',
-            'File Handling',
-            'Exception Handling',
-            'Lambda Expressions',
-            'Iterators & Algorithms'
+            '🌱 Level 0 — Developer Setup (First Program, Compilation Process)',
+            '🧠 Level 1 — C++ Foundations (Syntax, cin/cout, I/O Streams)',
+            '📦 Level 2 — Variables & Data Types (Constants, Type Casting, auto, Enums)',
+            '⚙️ Level 3 — Operators & Expressions (Arithmetic, Logical, Bitwise, Precedence)',
+            '🔀 Level 4 — Control Flow (if/else, switch, Ternary Operator)',
+            '🔁 Level 5 — Loops (for, while, do-while, break, continue, Nested Loops)',
+            '🧩 Level 6 — Functions (Overloading, Default Args, Inline, Recursion)',
+            '📚 Level 7 — Arrays & Strings (Multidimensional, char[], string class)',
+            '🧭 Level 8 — Pointers & Memory (Pointer Arithmetic, this, Dangling/Null Ptr)',
+            '🏗 Level 9 — OOP Basics (Classes, Objects, Access Specifiers, Static Members)',
+            '🧱 Level 10 — Constructors & Destructors (Copy, Parameterized, Initializer List)',
+            '🧠 Level 11 — Operator Overloading (Unary, Binary, Friend Functions)',
+            '🔄 Level 12 — Type Conversion (Basic↔Class, Conversion Constructors)',
+            '🧬 Level 13 — Inheritance (Single, Multiple, Multilevel, Virtual Base Class)',
+            '🎭 Level 14 — Polymorphism (Virtual Functions, Abstract Classes, Binding)',
+            '🧠 Level 15 — Dynamic Memory (new/delete, Memory Leak, Self-Referential)',
+            '📂 Level 16 — File Handling (File Streams, Binary Files, Random Access)',
+            '⚠️ Level 17 — Exception Handling (try/catch/throw, Rethrowing)',
+            '🧬 Level 18 — Templates (Function & Class Templates, Specialization)',
+            '📦 Level 19 — STL (Vector, List, Stack, Queue, Map, Set, Iterators, Algorithms)'
         ]
     },
     {
@@ -383,8 +388,8 @@ export default function CodeSpirit() {
                                     key={subject.id}
                                     onClick={() => handleSubjectClick(subject)}
                                     className={`relative p-5 rounded-2xl border-2 text-left transition-all duration-300 group hover:scale-[1.03] ${selectedSubject?.id === subject.id
-                                            ? 'border-cyan-500 shadow-lg shadow-cyan-500/20 bg-cyan-500/5'
-                                            : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
+                                        ? 'border-cyan-500 shadow-lg shadow-cyan-500/20 bg-cyan-500/5'
+                                        : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
                                         }`}
                                 >
                                     {/* Active Indicator */}
@@ -429,13 +434,13 @@ export default function CodeSpirit() {
                                                     key={t}
                                                     onClick={() => handleTopicClick(t)}
                                                     className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all hover:scale-[1.01] ${topic === t
-                                                            ? 'border-cyan-500 bg-cyan-500/10 text-[var(--text-primary)] shadow-md shadow-cyan-500/10'
-                                                            : 'border-[var(--border-color)] bg-[var(--bg-secondary)]/50 text-[var(--text-secondary)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                                        ? 'border-cyan-500 bg-cyan-500/10 text-[var(--text-primary)] shadow-md shadow-cyan-500/10'
+                                                        : 'border-[var(--border-color)] bg-[var(--bg-secondary)]/50 text-[var(--text-secondary)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)]'
                                                         }`}
                                                 >
                                                     <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${topic === t
-                                                            ? 'bg-cyan-500 text-white'
-                                                            : 'bg-[var(--border-color)] text-[var(--text-muted)]'
+                                                        ? 'bg-cyan-500 text-white'
+                                                        : 'bg-[var(--border-color)] text-[var(--text-muted)]'
                                                         }`}>
                                                         {idx + 1}
                                                     </span>
@@ -477,8 +482,8 @@ export default function CodeSpirit() {
                                                             key={l.id}
                                                             onClick={() => setLanguage(l.id)}
                                                             className={`py-2.5 px-3 rounded-xl border font-bold text-sm transition-all flex items-center gap-2 ${language === l.id
-                                                                    ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                                ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                                                                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
                                                                 }`}
                                                         >
                                                             <span>{l.icon}</span> {l.name}
@@ -503,8 +508,8 @@ export default function CodeSpirit() {
                                                         key={d.id}
                                                         onClick={() => setDifficulty(d.id)}
                                                         className={`py-2.5 rounded-xl border font-bold capitalize text-sm transition-all ${difficulty === d.id
-                                                                ? 'border-transparent text-white shadow-lg'
-                                                                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                            ? 'border-transparent text-white shadow-lg'
+                                                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
                                                             }`}
                                                         style={difficulty === d.id ? { background: d.bg, borderColor: d.bg } : {}}
                                                     >
@@ -525,8 +530,8 @@ export default function CodeSpirit() {
                                                         key={num}
                                                         onClick={() => setQuestionCount(num)}
                                                         className={`h-11 rounded-xl border font-bold text-sm transition-all ${questionCount === num
-                                                                ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                                                                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                            ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                                                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
                                                             }`}
                                                     >
                                                         {num}
@@ -647,8 +652,8 @@ export default function CodeSpirit() {
                                                             </span>
                                                         )}
                                                         <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${session.difficulty === 'hard' ? 'bg-rose-500/20 text-rose-500' :
-                                                                session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
-                                                                    'bg-emerald-500/20 text-emerald-500'}`}>
+                                                            session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
+                                                                'bg-emerald-500/20 text-emerald-500'}`}>
                                                             {session.difficulty}
                                                         </span>
                                                         <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-500 text-xs font-bold uppercase tracking-wider">
