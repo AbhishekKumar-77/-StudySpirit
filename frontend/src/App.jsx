@@ -28,6 +28,7 @@ const Exams = lazy(() => import('./pages/Exams'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const TeacherDashboard = lazy(() => import('./pages/TeacherDashboard'));
 const TeacherToolkit = lazy(() => import('./pages/TeacherToolkit'));
+const CodeSpiritCreator = lazy(() => import('./pages/CodeSpiritCreator'));
 
 // ============== GAMING LOADING SCREEN ==============
 const PageLoader = () => (
@@ -108,6 +109,7 @@ function App() {
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/teacher-toolkit" element={<TeacherToolkit />} />
               <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+              <Route path="/codespirit-creator" element={<CodeSpiritCreator />} />
             </Routes>
           </Suspense>
         </Router>

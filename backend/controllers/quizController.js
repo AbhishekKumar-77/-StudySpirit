@@ -4,22 +4,35 @@ const User = require('../models/User');
 // AI Question Generation
 exports.generateAIQuestions = async (req, res) => {
     try {
-        const { topic, difficulty, type, count } = req.body;
+        const { topic, difficulty, mcqCount = 5, codingCount = 0 } = req.body;
         const apiKey = "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"; // User provided key
 
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
 
-        const prompt = `Generate ${count || 5} multiple choice questions about "${topic}" for ${difficulty || 'medium'} level students.
-        Each question must have exactly 4 options.
-        IMPORTANT: Vary the correct answer position randomly and evenly — spread the "correct" index evenly across 0, 1, 2, and 3. Do NOT always set "correct" to 2 (option C). Make each question's correct answer a different index.
-        Return a strictly valid JSON array of objects.
-        Do not output any markdown code blocks, just the raw JSON.
-        Structure per object:
+        const prompt = `Generate an exam about "${topic}" for ${difficulty || 'medium'} level students.
+        Include exactly ${mcqCount} multiple choice questions and ${codingCount} coding problems.
+        Return a strictly valid JSON array of objects combining both types.
+        IMPORTANT: For MCQ questions, vary the correct answer position randomly across 0, 1, 2, and 3.
+        Do not output any markdown, just raw JSON array.
+
+        Structure for MCQ questions:
         {
+            "type": "mcq",
             "question": "Question text",
-            "options": ["Option A", "Option B", "Option C", "Option D"],
-            "correct": 0, // Index of correct answer (0-3), vary this across questions
-            "type": "${type || 'mcq'}",
+            "options": ["A", "B", "C", "D"],
+            "correct": 0,
+            "difficulty": "${difficulty || 'medium'}"
+        }
+
+        Structure for coding questions (output these only if coding problems requested):
+        {
+            "type": "coding",
+            "question": "Detailed problem statement (e.g., Return the sum of two numbers)",
+            "starterCode": "function solve() { \\n\\n}",
+            "testCases": [
+                { "input": "1 2", "expectedOutput": "3" },
+                { "input": "5 5", "expectedOutput": "10" }
+            ],
             "difficulty": "${difficulty || 'medium'}"
         }`;
 
@@ -32,7 +45,7 @@ exports.generateAIQuestions = async (req, res) => {
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [
-                    { role: 'system', content: 'You are an educational AI assistant. Output strictly valid JSON arrays only. No markdown.' },
+                    { role: 'system', content: 'You are an educational AI assistant. Output strictly valid JSON arrays only. No markdown formatting.' },
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.7,

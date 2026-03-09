@@ -216,11 +216,18 @@ export default function Exams() {
         const quizQs = joinedQuiz.questions;
 
         quizQs.forEach(q => {
-            if (userAnswers[q.id] === q.correct) {
-                correctCount++;
-                totalScore += 1;
-            } else if (userAnswers[q.id] !== undefined) {
-                totalScore -= joinedQuiz.settings.negativeMarking;
+            if (q.type === "coding") {
+                if (userAnswers[q.id] && userAnswers[q.id].trim() !== "") {
+                    correctCount++;
+                    totalScore += 1;
+                }
+            } else {
+                if (userAnswers[q.id] === q.correct) {
+                    correctCount++;
+                    totalScore += 1;
+                } else if (userAnswers[q.id] !== undefined) {
+                    totalScore -= joinedQuiz.settings.negativeMarking;
+                }
             }
         });
 
@@ -338,45 +345,79 @@ export default function Exams() {
                             </h3>
 
                             <div className="grid gap-4">
-                                {joinedQuiz.questions[currentQuestionIndex].options.map((opt, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => {
-                                            const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: i };
-                                            setUserAnswers(newAnswers);
-                                            try {
-                                                const socket = getSocket();
-                                                if (socket?.connected) {
-                                                    let correctCount = 0;
-                                                    joinedQuiz.questions.forEach(q => { if (newAnswers[q.id] === q.correct) correctCount++; });
-                                                    socket.emit('quiz:progress', {
-                                                        quizCode: quizCodeInput.toUpperCase().trim(),
-                                                        studentId: user?._id || user?.id || 'guest',
-                                                        correctAnswers: correctCount,
-                                                        totalQuestions: joinedQuiz.questions.length
-                                                    });
-                                                }
-                                            } catch (e) { }
-                                        }}
-                                        className={`w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
-                                                ? "bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500 text-[var(--text-primary)] shadow-lg transform scale-[1.01]"
-                                                : "bg-[var(--glass-bg)] border-transparent hover:bg-[var(--bg-secondary)] hover:border-red-500/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                                            }`}
-                                    >
-                                        <span className={`inline-flex items-center justify-center w-10 h-10 rounded-lg font-black mr-4 text-lg transition-colors ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
-                                                ? "bg-red-500 text-white"
-                                                : "bg-[var(--bg-secondary)] text-[var(--text-muted)] group-hover:bg-[var(--border-color)]"
-                                            }`}>
-                                            {String.fromCharCode(65 + i)}
-                                        </span>
-                                        {opt}
-                                        {userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i && (
-                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 text-red-400">
-                                                <CheckCircle size={28} />
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
+                                {joinedQuiz.questions[currentQuestionIndex].type === "coding" ? (
+                                    <div className="w-full">
+                                        <div className="mb-4 flex items-center justify-between">
+                                            <span className="font-bold text-cyan-400 uppercase tracking-wider text-sm flex items-center gap-2">
+                                                <Code size={16} /> Code Editor
+                                            </span>
+                                            {joinedQuiz.questions[currentQuestionIndex].starterCode && !userAnswers[joinedQuiz.questions[currentQuestionIndex].id] && (
+                                                <button
+                                                    onClick={() => {
+                                                        const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: joinedQuiz.questions[currentQuestionIndex].starterCode };
+                                                        setUserAnswers(newAnswers);
+                                                    }}
+                                                    className="px-4 py-1.5 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs rounded-lg font-bold hover:bg-cyan-500/30 transition-colors"
+                                                >
+                                                    Load Starter Code
+                                                </button>
+                                            )}
+                                        </div>
+                                        <textarea
+                                            value={userAnswers[joinedQuiz.questions[currentQuestionIndex].id] || ''}
+                                            onChange={(e) => {
+                                                const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: e.target.value };
+                                                setUserAnswers(newAnswers);
+                                                // We don't necessarily need to emit socket progress on every keystroke
+                                            }}
+                                            className="w-full h-[350px] p-6 bg-[#0d1117] font-mono text-sm text-green-400 rounded-xl resize-none outline-none border border-[var(--border-color)] focus:border-cyan-500 transition-colors leading-relaxed"
+                                            placeholder="Write your code solution here..."
+                                            spellCheck="false"
+                                        />
+                                    </div>
+                                ) : (
+                                    <>
+                                        {joinedQuiz.questions[currentQuestionIndex].options.map((opt, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => {
+                                                    const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: i };
+                                                    setUserAnswers(newAnswers);
+                                                    try {
+                                                        const socket = getSocket();
+                                                        if (socket?.connected) {
+                                                            let correctCount = 0;
+                                                            joinedQuiz.questions.forEach(q => { if (newAnswers[q.id] === q.correct) correctCount++; });
+                                                            socket.emit('quiz:progress', {
+                                                                quizCode: quizCodeInput.toUpperCase().trim(),
+                                                                studentId: user?._id || user?.id || 'guest',
+                                                                correctAnswers: correctCount,
+                                                                totalQuestions: joinedQuiz.questions.length
+                                                            });
+                                                        }
+                                                    } catch (e) { }
+                                                }}
+                                                className={`w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
+                                                    ? "bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500 text-[var(--text-primary)] shadow-lg transform scale-[1.01]"
+                                                    : "bg-[var(--glass-bg)] border-transparent hover:bg-[var(--bg-secondary)] hover:border-red-500/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                                    }`}
+                                            >
+                                                <span className={`inline-flex items-center justify-center w-10 h-10 rounded-lg font-black mr-4 text-lg transition-colors ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
+                                                    ? "bg-red-500 text-white"
+                                                    : "bg-[var(--bg-secondary)] text-[var(--text-muted)] group-hover:bg-[var(--border-color)]"
+                                                    }`}>
+                                                    {String.fromCharCode(65 + i)}
+                                                </span>
+                                                {opt}
+                                                {userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i && (
+                                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-red-400">
+                                                        <CheckCircle size={28} />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </>
+                                )}
                             </div>
 
                             <div className="flex justify-between mt-12 pt-8 border-t border-[var(--border-color)]">
@@ -584,9 +625,10 @@ export default function Exams() {
 
                                 <div className="space-y-8 text-left">
                                     {joinedQuiz.questions.map((q, idx) => {
-                                        const userAnswerIdx = userAnswers[q.id];
-                                        const isCorrect = userAnswerIdx === q.correct;
-                                        const isSkipped = userAnswerIdx === undefined;
+                                        const userAnswer = userAnswers[q.id];
+                                        const isCoding = q.type === "coding";
+                                        const isCorrect = isCoding ? !!(userAnswer && userAnswer.trim() !== "") : userAnswer === q.correct;
+                                        const isSkipped = userAnswer === undefined || (isCoding && userAnswer.trim() === "");
 
                                         return (
                                             <div key={q.id} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" : isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"}`}>
@@ -596,31 +638,42 @@ export default function Exams() {
                                                     </span>
                                                     {q.question}
                                                 </h4>
-                                                <div className="grid gap-3 ml-12">
-                                                    {q.options.map((opt, optIdx) => {
-                                                        const isThisUserAnswer = userAnswerIdx === optIdx;
-                                                        const isThisCorrectAnswer = q.correct === optIdx;
 
-                                                        let style = "bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-secondary)]";
-                                                        let icon = null;
+                                                {isCoding ? (
+                                                    <div className="ml-12">
+                                                        <h5 className="font-bold mb-2 text-cyan-400">Your Code Submission:</h5>
+                                                        <pre className="p-4 bg-[#0d1117] rounded-xl font-mono text-sm text-green-400 overflow-x-auto border border-[var(--border-color)]">
+                                                            {userAnswer || "No code submitted."}
+                                                        </pre>
+                                                    </div>
+                                                ) : (
+                                                    <div className="grid gap-3 ml-12">
+                                                        {q.options.map((opt, optIdx) => {
+                                                            const isThisUserAnswer = userAnswer === optIdx;
+                                                            const isThisCorrectAnswer = q.correct === optIdx;
 
-                                                        if (isThisCorrectAnswer) {
-                                                            style = "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold";
-                                                            icon = <CheckCircle size={20} className="text-emerald-400 absolute right-4" />;
-                                                        } else if (isThisUserAnswer && !isThisCorrectAnswer) {
-                                                            style = "bg-red-500/20 border-red-500 text-red-300 font-bold";
-                                                            icon = <XCircle size={20} className="text-red-400 absolute right-4" />;
-                                                        }
+                                                            let style = "bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-secondary)]";
+                                                            let icon = null;
 
-                                                        return (
-                                                            <div key={optIdx} className={`p-4 rounded-xl border relative flex items-center transition-all ${style}`}>
-                                                                <span className="font-bold mr-4 opacity-60 w-6">{String.fromCharCode(65 + optIdx)}.</span>
-                                                                {opt}
-                                                                {icon}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                            if (isThisCorrectAnswer) {
+                                                                style = "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold";
+                                                                icon = <CheckCircle size={20} className="text-emerald-400 absolute right-4" />;
+                                                            } else if (isThisUserAnswer && !isThisCorrectAnswer) {
+                                                                style = "bg-red-500/20 border-red-500 text-red-300 font-bold";
+                                                                icon = <XCircle size={20} className="text-red-400 absolute right-4" />;
+                                                            }
+
+                                                            return (
+                                                                <div key={optIdx} className={`p-4 rounded-xl border relative flex items-center transition-all ${style}`}>
+                                                                    <span className="font-bold mr-4 opacity-60 w-6">{String.fromCharCode(65 + optIdx)}.</span>
+                                                                    {opt}
+                                                                    {icon}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+
                                                 {isSkipped && (
                                                     <div className="ml-12 mt-4 text-amber-500 font-bold flex items-center gap-2">
                                                         <AlertCircle size={18} /> You skipped this question.

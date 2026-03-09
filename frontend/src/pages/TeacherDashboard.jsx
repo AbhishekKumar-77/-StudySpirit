@@ -225,7 +225,8 @@ export default function TeacherDashboard() {
         { id: 'overview', label: 'Overview', icon: BarChart2 },
         { id: 'quizzes', label: 'My Quizzes', icon: FileQuestion },
         { id: 'live', label: 'Live Monitor', icon: Radio, badge: monitoringCode ? liveStudents.filter(s => s.status === 'active').length : null },
-        { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true },
+        { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz' },
+        { id: 'codespirit', label: 'CodeSpirit Exam', icon: Target, external: true, path: '/codespirit-creator' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     ];
 
@@ -269,7 +270,7 @@ export default function TeacherDashboard() {
                 <nav className="flex-1 p-3 mt-2 space-y-1">
                     {navItems.map(item => (
                         <button key={item.id}
-                            onClick={() => item.external ? navigate('/quiz') : setActiveTab(item.id)}
+                            onClick={() => item.external ? navigate(item.path) : setActiveTab(item.id)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${activeTab === item.id && !item.external
                                 ? 'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30'
                                 : 'text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]'
