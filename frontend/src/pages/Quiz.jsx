@@ -668,7 +668,6 @@ export default function StudySprintQuiz() {
                 <div className="flex gap-3 mb-10 flex-wrap">
                     {[
                         { id: "teacher", label: "Create Quiz", icon: "FilePlus" },
-                        { id: "student", label: "Student Exam", icon: "Target" },
                         { id: "practice", label: "AI Practice", icon: "Bot" },
                         { id: "leaderboard", label: "Leaderboard", icon: "Trophy" }
                     ].map(tab => (
