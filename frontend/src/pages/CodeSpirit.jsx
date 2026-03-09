@@ -4,28 +4,164 @@ import { API_BASE } from "../config";
 import {
     ArrowLeft, Send, Sparkles, Terminal, Cpu, Hash, History, CheckCircle, Code,
     Flame, Star, Clock, Trash2, Filter, Search, ChevronRight, Zap, Trophy,
-    Calendar, RefreshCw, X, BookOpen, BarChart3
+    Calendar, RefreshCw, X, BookOpen, BarChart3, ChevronDown, ArrowRight
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
-const TOPIC_PRESETS = {
-    'Arrays & Hashing': { icon: '📦', color: '#6366f1' },
-    'Strings': { icon: '🔤', color: '#ec4899' },
-    'Two Pointers': { icon: '👆', color: '#f59e0b' },
-    'Sliding Window': { icon: '🪟', color: '#10b981' },
-    'Stacks & Queues': { icon: '📚', color: '#8b5cf6' },
-    'Linked Lists': { icon: '🔗', color: '#06b6d4' },
-    'Binary Search': { icon: '🔍', color: '#f43f5e' },
-    'Trees': { icon: '🌳', color: '#84cc16' },
-    'Graphs': { icon: '🕸️', color: '#f97316' },
-    'Dynamic Programming': { icon: '🧩', color: '#14b8a6' },
-    'Recursion & Backtracking': { icon: '🔄', color: '#a855f7' },
-    'Sorting Algorithms': { icon: '📊', color: '#64748b' },
-    'Greedy Algorithms': { icon: '💰', color: '#eab308' },
-    'Bit Manipulation': { icon: '🔢', color: '#ef4444' },
-    'Math & Number Theory': { icon: '🔬', color: '#0ea5e9' },
-    'Heap / Priority Queue': { icon: '⛰️', color: '#d946ef' }
-};
+// ============== SUBJECTS WITH SYLLABUS ==============
+const SUBJECTS = [
+    {
+        id: 'python',
+        name: 'Python',
+        icon: '🐍',
+        color: '#3b82f6',
+        gradient: 'from-blue-600 to-cyan-500',
+        lang: 'python',
+        topics: [
+            'Variables & Data Types',
+            'Strings & String Methods',
+            'Lists, Tuples & Sets',
+            'Dictionaries',
+            'Loops & Control Flow',
+            'Functions & Lambda',
+            'List Comprehensions',
+            'File Handling',
+            'OOP — Classes & Objects',
+            'Inheritance & Polymorphism',
+            'Exception Handling',
+            'Modules & Packages',
+            'Decorators & Generators',
+            'Regular Expressions',
+            'Recursion in Python'
+        ]
+    },
+    {
+        id: 'c',
+        name: 'C',
+        icon: '🔧',
+        color: '#64748b',
+        gradient: 'from-slate-600 to-gray-500',
+        lang: 'c',
+        topics: [
+            'Variables & Data Types',
+            'Operators & Expressions',
+            'Control Flow (if/else, switch)',
+            'Loops (for, while, do-while)',
+            'Functions',
+            'Arrays',
+            'Strings (char arrays)',
+            'Pointers',
+            'Pointer Arithmetic',
+            'Structures & Unions',
+            'Dynamic Memory Allocation',
+            'File I/O',
+            'Preprocessor Directives',
+            'Recursion',
+            'Bitwise Operators'
+        ]
+    },
+    {
+        id: 'cpp',
+        name: 'C++',
+        icon: '⚙️',
+        color: '#8b5cf6',
+        gradient: 'from-violet-600 to-purple-500',
+        lang: 'cpp',
+        topics: [
+            'Variables & Data Types',
+            'OOP — Classes & Objects',
+            'Constructors & Destructors',
+            'Inheritance & Polymorphism',
+            'Operator Overloading',
+            'Templates',
+            'STL Vectors & Arrays',
+            'STL Maps & Sets',
+            'STL Stacks, Queues & Deque',
+            'Strings in C++',
+            'Pointers & References',
+            'File Handling',
+            'Exception Handling',
+            'Lambda Expressions',
+            'Iterators & Algorithms'
+        ]
+    },
+    {
+        id: 'java',
+        name: 'Java',
+        icon: '☕',
+        color: '#f97316',
+        gradient: 'from-orange-500 to-amber-500',
+        lang: 'java',
+        topics: [
+            'Variables & Data Types',
+            'Control Flow & Loops',
+            'Arrays & ArrayLists',
+            'Strings & StringBuilder',
+            'OOP — Classes & Objects',
+            'Inheritance & Interfaces',
+            'Abstract Classes',
+            'Exception Handling',
+            'Collections Framework',
+            'Generics',
+            'File I/O',
+            'Multithreading Basics',
+            'Lambda Expressions',
+            'Streams API',
+            'HashMap & HashSet'
+        ]
+    },
+    {
+        id: 'dsa',
+        name: 'DSA',
+        icon: '🧠',
+        color: '#10b981',
+        gradient: 'from-emerald-500 to-teal-500',
+        lang: null, // user chooses language
+        topics: [
+            'Arrays & Hashing',
+            'Strings',
+            'Two Pointers',
+            'Sliding Window',
+            'Stacks & Queues',
+            'Linked Lists',
+            'Binary Search',
+            'Trees & BST',
+            'Graphs — BFS & DFS',
+            'Dynamic Programming',
+            'Recursion & Backtracking',
+            'Sorting Algorithms',
+            'Greedy Algorithms',
+            'Heap / Priority Queue',
+            'Bit Manipulation',
+            'Math & Number Theory'
+        ]
+    },
+    {
+        id: 'javascript',
+        name: 'JavaScript',
+        icon: '⚡',
+        color: '#eab308',
+        gradient: 'from-yellow-500 to-orange-400',
+        lang: 'javascript',
+        topics: [
+            'Variables (let, const, var)',
+            'Data Types & Type Coercion',
+            'Functions & Closures',
+            'Arrays & Array Methods',
+            'Objects & Prototypes',
+            'ES6+ Features',
+            'Destructuring & Spread',
+            'Promises & Async/Await',
+            'Error Handling',
+            'Classes & Modules',
+            'Map, Set & WeakMap',
+            'Regular Expressions',
+            'Higher Order Functions',
+            'Event Loop & Callbacks',
+            'Recursion in JS'
+        ]
+    }
+];
 
 export default function CodeSpirit() {
     const navigate = useNavigate();
@@ -34,12 +170,12 @@ export default function CodeSpirit() {
     const [activeTab, setActiveTab] = useState("generate");
 
     // Generation State
+    const [selectedSubject, setSelectedSubject] = useState(null);
     const [topic, setTopic] = useState("");
     const [difficulty, setDifficulty] = useState("medium");
     const [questionCount, setQuestionCount] = useState(5);
     const [language, setLanguage] = useState("python");
     const [isGenerating, setIsGenerating] = useState(false);
-    const [showCustomTopic, setShowCustomTopic] = useState(false);
 
     // History State
     const [history, setHistory] = useState([]);
@@ -55,9 +191,7 @@ export default function CodeSpirit() {
         if (activeTab === 'history') fetchHistory();
     }, [activeTab, historyFilter]);
 
-    useEffect(() => {
-        fetchDailyChallenge();
-    }, []);
+    useEffect(() => { fetchDailyChallenge(); }, []);
 
     const fetchDailyChallenge = async () => {
         setLoadingDaily(true);
@@ -79,7 +213,6 @@ export default function CodeSpirit() {
             if (historyFilter.difficulty !== 'all') params.set('difficulty', historyFilter.difficulty);
             if (historyFilter.language !== 'all') params.set('language', historyFilter.language);
             if (historyFilter.completed !== 'all') params.set('completed', historyFilter.completed);
-
             const res = await fetch(`${API_BASE}/codespirit/history?${params}`, { credentials: 'include' });
             const data = await res.json();
             if (data.success) setHistory(data.sessions);
@@ -90,20 +223,43 @@ export default function CodeSpirit() {
         }
     };
 
+    const handleSubjectClick = (subject) => {
+        if (selectedSubject?.id === subject.id) {
+            setSelectedSubject(null);
+            return;
+        }
+        setSelectedSubject(subject);
+        setTopic("");
+        // Auto-set language for language-specific subjects
+        if (subject.lang) {
+            setLanguage(subject.lang);
+        }
+    };
+
+    const handleTopicClick = (topicName) => {
+        setTopic(topicName);
+    };
+
     const handleGenerate = async () => {
-        if (!topic.trim()) return alert("Please enter or select a topic!");
+        if (!topic.trim()) return alert("Please select a topic first!");
         setIsGenerating(true);
+
+        // Build the full topic context
+        const fullTopic = selectedSubject
+            ? `${topic} (${selectedSubject.name})`
+            : topic;
+
         try {
             const res = await fetch(`${API_BASE}/codespirit/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ topic, difficulty, count: questionCount, language })
+                body: JSON.stringify({ topic: fullTopic, difficulty, count: questionCount, language })
             });
             const data = await res.json();
             if (data.success && data.challenges?.length > 0) {
                 navigate('/code-editor', {
-                    state: { sessionId: data.sessionId, challenges: data.challenges, totalCount: data.totalCount, topic, difficulty }
+                    state: { sessionId: data.sessionId, challenges: data.challenges, totalCount: data.totalCount, topic: fullTopic, difficulty }
                 });
             } else {
                 alert("Failed to generate: " + (data.message || "Unknown error"));
@@ -120,13 +276,9 @@ export default function CodeSpirit() {
         e.stopPropagation();
         if (!confirm('Delete this session? This cannot be undone.')) return;
         try {
-            await fetch(`${API_BASE}/codespirit/session/${sessionId}`, {
-                method: 'DELETE', credentials: 'include'
-            });
+            await fetch(`${API_BASE}/codespirit/session/${sessionId}`, { method: 'DELETE', credentials: 'include' });
             setHistory(prev => prev.filter(s => s._id !== sessionId));
-        } catch (err) {
-            console.error(err);
-        }
+        } catch (err) { console.error(err); }
     };
 
     const resumeSession = (session) => {
@@ -148,8 +300,8 @@ export default function CodeSpirit() {
     };
 
     const countOptions = [1, 2, 3, 5, 7, 10, 15];
-    const languages = [
-        { id: "python", name: "Python 3", icon: "🐍" },
+    const dsaLanguages = [
+        { id: "python", name: "Python", icon: "🐍" },
         { id: "javascript", name: "JavaScript", icon: "⚡" },
         { id: "cpp", name: "C++", icon: "⚙️" },
         { id: "c", name: "C", icon: "🔧" },
@@ -179,7 +331,7 @@ export default function CodeSpirit() {
                         onClick={() => setActiveTab('generate')}
                         className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'generate' ? 'bg-cyan-500 text-white shadow' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                     >
-                        <Sparkles size={16} /> Generate
+                        <Sparkles size={16} /> Practice
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
@@ -190,190 +342,232 @@ export default function CodeSpirit() {
                 </div>
             </nav>
 
-            <div className="max-w-5xl mx-auto p-6 animate-fade-in">
+            <div className="max-w-6xl mx-auto p-6 animate-fade-in">
 
                 {activeTab === 'generate' && (
                     <>
                         {/* Daily Challenge Banner */}
                         {dailyChallenge && (
-                            <div className="mb-8 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl p-6 cursor-pointer hover:border-amber-500/40 transition-all"
+                            <div className="mb-8 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl p-5 cursor-pointer hover:border-amber-500/40 transition-all"
                                 onClick={() => resumeSession(dailyChallenge)}>
                                 <div className="flex items-center justify-between flex-wrap gap-4">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 bg-amber-500/20 rounded-2xl flex items-center justify-center text-2xl">
-                                            <Flame className="text-amber-500" size={28} />
+                                        <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center">
+                                            <Flame className="text-amber-500" size={24} />
                                         </div>
                                         <div>
-                                            <div className="flex items-center gap-2 mb-1">
+                                            <div className="flex items-center gap-2 mb-0.5">
                                                 <span className="text-xs font-bold uppercase tracking-wider text-amber-500">Daily Challenge</span>
-                                                <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${dailyChallenge.difficulty === 'hard' ? 'bg-rose-500/20 text-rose-500' :
-                                                    dailyChallenge.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
-                                                        'bg-emerald-500/20 text-emerald-500'
-                                                    }`}>{dailyChallenge.difficulty}</span>
+                                                <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${dailyChallenge.difficulty === 'hard' ? 'bg-rose-500/20 text-rose-500' : dailyChallenge.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/20 text-emerald-500'}`}>{dailyChallenge.difficulty}</span>
                                             </div>
                                             <h3 className="text-lg font-bold">{dailyChallenge.topic}</h3>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        {dailyChallenge.completed ? (
-                                            <span className="flex items-center gap-2 text-emerald-500 font-bold"><CheckCircle size={18} /> Completed!</span>
-                                        ) : (
-                                            <span className="flex items-center gap-2 text-amber-500 font-bold">
-                                                {dailyChallenge.challenges?.filter(c => c.status === 'solved').length || 0}/{dailyChallenge.challenges?.length || 0} solved
-                                            </span>
-                                        )}
-                                        <button className="bg-amber-500 hover:bg-amber-400 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-amber-500/25 flex items-center gap-2">
-                                            {dailyChallenge.completed ? 'Review' : 'Solve Now'} <ChevronRight size={16} />
-                                        </button>
-                                    </div>
+                                    <button className="bg-amber-500 hover:bg-amber-400 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-amber-500/25 flex items-center gap-2">
+                                        {dailyChallenge.completed ? 'Review' : 'Solve Now'} <ChevronRight size={16} />
+                                    </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* Topic Categories Grid */}
-                        <div className="mb-8">
-                            <h2 className="text-2xl font-black mb-2">Choose a Topic</h2>
-                            <p className="text-[var(--text-secondary)] mb-5">Select a category or type your own custom topic below.</p>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                                {Object.entries(TOPIC_PRESETS).map(([name, config]) => (
-                                    <button
-                                        key={name}
-                                        onClick={() => { setTopic(name); setShowCustomTopic(false); }}
-                                        className={`p-4 rounded-xl border text-left transition-all hover:scale-[1.02] ${topic === name
-                                            ? 'border-cyan-500 bg-cyan-500/10 shadow-lg shadow-cyan-500/10'
-                                            : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
-                                            }`}
-                                    >
-                                        <span className="text-2xl mb-2 block">{config.icon}</span>
-                                        <span className="text-sm font-bold leading-tight block">{name}</span>
-                                    </button>
-                                ))}
-                                {/* Custom Topic Button */}
+                        {/* Section Header */}
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-black mb-1">Choose a Subject</h2>
+                            <p className="text-[var(--text-secondary)] text-sm">Select a subject to explore topics, then generate coding challenges.</p>
+                        </div>
+
+                        {/* ============ SUBJECT CARDS GRID ============ */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                            {SUBJECTS.map(subject => (
                                 <button
-                                    onClick={() => { setShowCustomTopic(true); setTopic(''); }}
-                                    className={`p-4 rounded-xl border text-left transition-all hover:scale-[1.02] border-dashed ${showCustomTopic
-                                        ? 'border-cyan-500 bg-cyan-500/10'
-                                        : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
+                                    key={subject.id}
+                                    onClick={() => handleSubjectClick(subject)}
+                                    className={`relative p-5 rounded-2xl border-2 text-left transition-all duration-300 group hover:scale-[1.03] ${selectedSubject?.id === subject.id
+                                            ? 'border-cyan-500 shadow-lg shadow-cyan-500/20 bg-cyan-500/5'
+                                            : 'border-[var(--border-color)] bg-[var(--glass-bg)] hover:border-[var(--text-muted)]'
                                         }`}
                                 >
-                                    <span className="text-2xl mb-2 block">✏️</span>
-                                    <span className="text-sm font-bold leading-tight block">Custom Topic</span>
+                                    {/* Active Indicator */}
+                                    {selectedSubject?.id === subject.id && (
+                                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-cyan-500 rounded-full border-2 border-[var(--bg-primary)] animate-pulse" />
+                                    )}
+                                    <div className="text-3xl mb-3">{subject.icon}</div>
+                                    <div className="font-bold text-sm">{subject.name}</div>
+                                    <div className="text-xs text-[var(--text-muted)] mt-1">{subject.topics.length} topics</div>
+                                    {/* Subtle gradient overlay on hover */}
+                                    <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity bg-gradient-to-br ${subject.gradient}`} />
                                 </button>
-                            </div>
+                            ))}
                         </div>
 
-                        {/* Custom Topic Input (only if custom selected or typed) */}
-                        {(showCustomTopic || (!Object.keys(TOPIC_PRESETS).includes(topic) && topic)) && (
-                            <div className="mb-6">
-                                <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2 block">Custom Topic</label>
-                                <input
-                                    value={topic}
-                                    onChange={(e) => setTopic(e.target.value)}
-                                    placeholder="e.g. Recursion, Dynamic Programming, Trie..."
-                                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl px-4 py-4 text-lg focus:outline-none focus:border-cyan-500 transition-colors"
-                                    autoFocus
-                                />
+                        {/* ============ SYLLABUS / TOPICS PANEL ============ */}
+                        {selectedSubject && (
+                            <div className="mb-8 animate-slide-down">
+                                <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-2xl overflow-hidden">
+                                    {/* Subject Header */}
+                                    <div className={`bg-gradient-to-r ${selectedSubject.gradient} p-5 flex items-center justify-between`}>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-3xl">{selectedSubject.icon}</span>
+                                            <div>
+                                                <h3 className="text-xl font-black text-white">{selectedSubject.name} Syllabus</h3>
+                                                <p className="text-white/70 text-sm">Pick a topic to generate practice questions</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setSelectedSubject(null)}
+                                            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition"
+                                        >
+                                            <X size={18} />
+                                        </button>
+                                    </div>
+
+                                    {/* Topic Grid */}
+                                    <div className="p-5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                            {selectedSubject.topics.map((t, idx) => (
+                                                <button
+                                                    key={t}
+                                                    onClick={() => handleTopicClick(t)}
+                                                    className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all hover:scale-[1.01] ${topic === t
+                                                            ? 'border-cyan-500 bg-cyan-500/10 text-[var(--text-primary)] shadow-md shadow-cyan-500/10'
+                                                            : 'border-[var(--border-color)] bg-[var(--bg-secondary)]/50 text-[var(--text-secondary)] hover:border-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                                        }`}
+                                                >
+                                                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${topic === t
+                                                            ? 'bg-cyan-500 text-white'
+                                                            : 'bg-[var(--border-color)] text-[var(--text-muted)]'
+                                                        }`}>
+                                                        {idx + 1}
+                                                    </span>
+                                                    <span className="text-sm font-semibold">{t}</span>
+                                                    {topic === t && <CheckCircle size={16} className="ml-auto text-cyan-500 shrink-0" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
-                        {/* Configuration Card */}
-                        <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] p-6 rounded-2xl backdrop-blur-sm mb-8">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* Language */}
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 block flex items-center gap-2">
-                                        <Code size={14} /> Language
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {languages.map(l => (
-                                            <button
-                                                key={l.id}
-                                                onClick={() => setLanguage(l.id)}
-                                                className={`py-2.5 px-3 rounded-xl border font-bold text-sm transition-all flex items-center gap-2 ${language === l.id
-                                                    ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
-                                                    }`}
-                                            >
-                                                <span>{l.icon}</span> {l.name}
-                                            </button>
-                                        ))}
+                        {/* ============ CONFIGURATION PANEL (shown when topic is selected) ============ */}
+                        {topic && (
+                            <div className="mb-8 animate-slide-down">
+                                <div className="bg-[var(--glass-bg)] border border-[var(--border-color)] p-6 rounded-2xl backdrop-blur-sm">
+                                    {/* Selected topic display */}
+                                    <div className="flex items-center gap-3 mb-5 pb-4 border-b border-[var(--border-color)]">
+                                        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                                            <BookOpen size={20} className="text-cyan-500" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider">Selected Topic</div>
+                                            <div className="font-bold text-lg">{topic} <span className="text-[var(--text-muted)] font-normal text-sm">— {selectedSubject?.name || 'Custom'}</span></div>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Difficulty */}
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 block flex items-center gap-2">
-                                        <BarChart3 size={14} /> Difficulty
-                                    </label>
-                                    <div className="flex flex-col gap-2">
-                                        {[
-                                            { id: 'easy', label: 'Easy', color: 'emerald' },
-                                            { id: 'medium', label: 'Medium', color: 'amber' },
-                                            { id: 'hard', label: 'Hard', color: 'rose' }
-                                        ].map(d => (
-                                            <button
-                                                key={d.id}
-                                                onClick={() => setDifficulty(d.id)}
-                                                className={`py-2.5 rounded-xl border font-bold capitalize text-sm transition-all ${difficulty === d.id
-                                                    ? `bg-${d.color}-500 border-${d.color}-500 text-white shadow-lg shadow-${d.color}-500/25`
-                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
-                                                    }`}
-                                                style={difficulty === d.id ? {
-                                                    background: d.color === 'emerald' ? '#10b981' : d.color === 'amber' ? '#f59e0b' : '#f43f5e',
-                                                    borderColor: d.color === 'emerald' ? '#10b981' : d.color === 'amber' ? '#f59e0b' : '#f43f5e',
-                                                    color: 'white'
-                                                } : {}}
-                                            >
-                                                {d.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {/* Language (only for DSA which is lang-agnostic) */}
+                                        {selectedSubject?.lang === null && (
+                                            <div>
+                                                <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 block flex items-center gap-2">
+                                                    <Code size={14} /> Language
+                                                </label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {dsaLanguages.map(l => (
+                                                        <button
+                                                            key={l.id}
+                                                            onClick={() => setLanguage(l.id)}
+                                                            className={`py-2.5 px-3 rounded-xl border font-bold text-sm transition-all flex items-center gap-2 ${language === l.id
+                                                                    ? 'bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                                }`}
+                                                        >
+                                                            <span>{l.icon}</span> {l.name}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
 
-                                {/* Question Count */}
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 block flex items-center gap-2">
-                                        <Hash size={14} /> Questions
-                                    </label>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {countOptions.map(num => (
-                                            <button
-                                                key={num}
-                                                onClick={() => setQuestionCount(num)}
-                                                className={`h-11 rounded-xl border font-bold text-sm transition-all ${questionCount === num
-                                                    ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/25'
-                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
-                                                    }`}
-                                            >
-                                                {num}
-                                            </button>
-                                        ))}
+                                        {/* Difficulty */}
+                                        <div>
+                                            <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 block flex items-center gap-2">
+                                                <BarChart3 size={14} /> Difficulty
+                                            </label>
+                                            <div className="flex flex-col gap-2">
+                                                {[
+                                                    { id: 'easy', label: 'Easy', bg: '#10b981' },
+                                                    { id: 'medium', label: 'Medium', bg: '#f59e0b' },
+                                                    { id: 'hard', label: 'Hard', bg: '#f43f5e' }
+                                                ].map(d => (
+                                                    <button
+                                                        key={d.id}
+                                                        onClick={() => setDifficulty(d.id)}
+                                                        className={`py-2.5 rounded-xl border font-bold capitalize text-sm transition-all ${difficulty === d.id
+                                                                ? 'border-transparent text-white shadow-lg'
+                                                                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                            }`}
+                                                        style={difficulty === d.id ? { background: d.bg, borderColor: d.bg } : {}}
+                                                    >
+                                                        {d.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Question Count */}
+                                        <div>
+                                            <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 block flex items-center gap-2">
+                                                <Hash size={14} /> Questions
+                                            </label>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {countOptions.map(num => (
+                                                    <button
+                                                        key={num}
+                                                        onClick={() => setQuestionCount(num)}
+                                                        className={`h-11 rounded-xl border font-bold text-sm transition-all ${questionCount === num
+                                                                ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg shadow-cyan-500/25'
+                                                                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                                                            }`}
+                                                    >
+                                                        {num}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    {/* Generate Button */}
+                                    <button
+                                        onClick={handleGenerate}
+                                        disabled={isGenerating}
+                                        className="mt-6 w-full bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 text-lg"
+                                    >
+                                        {isGenerating ? (
+                                            <> <Cpu className="animate-spin" /> Generating {questionCount} Challenge{questionCount > 1 ? 's' : ''}... </>
+                                        ) : (
+                                            <> <Zap size={20} /> Generate {questionCount} Challenge{questionCount > 1 ? 's' : ''} </>
+                                        )}
+                                    </button>
+
+                                    <p className="text-center text-sm text-[var(--text-secondary)] mt-3">
+                                        <span className="font-bold text-cyan-500">{topic}</span> • {difficulty} • {questionCount} question{questionCount > 1 ? 's' : ''} • {dsaLanguages.find(l => l.id === language)?.name || language}
+                                    </p>
                                 </div>
                             </div>
+                        )}
 
-                            {/* Generate Button */}
-                            <button
-                                onClick={handleGenerate}
-                                disabled={isGenerating || !topic}
-                                className="mt-6 w-full bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 text-lg"
-                            >
-                                {isGenerating ? (
-                                    <> <Cpu className="animate-spin" /> Generating {questionCount} Challenge{questionCount > 1 ? 's' : ''}... </>
-                                ) : (
-                                    <> <Zap size={20} /> Generate {questionCount} Challenge{questionCount > 1 ? 's' : ''} </>
-                                )}
-                            </button>
-
-                            {topic && (
-                                <p className="text-center text-sm text-[var(--text-secondary)] mt-3">
-                                    <span className="font-bold text-cyan-500">{topic}</span> • {difficulty} • {questionCount} question{questionCount > 1 ? 's' : ''} • {languages.find(l => l.id === language)?.name}
-                                </p>
-                            )}
-                        </div>
+                        {/* Empty State (no subject selected) */}
+                        {!selectedSubject && !topic && (
+                            <div className="text-center py-12 opacity-60">
+                                <Code size={48} className="mx-auto mb-4 text-[var(--text-muted)]" />
+                                <p className="text-lg font-semibold mb-1">Pick a subject to get started</p>
+                                <p className="text-sm text-[var(--text-muted)]">Select from Python, C, C++, Java, DSA, or JavaScript above</p>
+                            </div>
+                        )}
                     </>
                 )}
 
+                {/* ============ HISTORY TAB ============ */}
                 {activeTab === 'history' && (
                     <div className="pt-4 pb-12">
                         <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
@@ -397,21 +591,15 @@ export default function CodeSpirit() {
                                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm focus:outline-none focus:border-cyan-500"
                                 />
                             </div>
-                            <select
-                                value={historyFilter.difficulty}
-                                onChange={e => setHistoryFilter(p => ({ ...p, difficulty: e.target.value }))}
-                                className="px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm font-semibold"
-                            >
+                            <select value={historyFilter.difficulty} onChange={e => setHistoryFilter(p => ({ ...p, difficulty: e.target.value }))}
+                                className="px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm font-semibold">
                                 <option value="all">All Difficulties</option>
                                 <option value="easy">Easy</option>
                                 <option value="medium">Medium</option>
                                 <option value="hard">Hard</option>
                             </select>
-                            <select
-                                value={historyFilter.language}
-                                onChange={e => setHistoryFilter(p => ({ ...p, language: e.target.value }))}
-                                className="px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm font-semibold"
-                            >
+                            <select value={historyFilter.language} onChange={e => setHistoryFilter(p => ({ ...p, language: e.target.value }))}
+                                className="px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm font-semibold">
                                 <option value="all">All Languages</option>
                                 <option value="python">Python</option>
                                 <option value="javascript">JavaScript</option>
@@ -419,11 +607,8 @@ export default function CodeSpirit() {
                                 <option value="c">C</option>
                                 <option value="java">Java</option>
                             </select>
-                            <select
-                                value={historyFilter.completed}
-                                onChange={e => setHistoryFilter(p => ({ ...p, completed: e.target.value }))}
-                                className="px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm font-semibold"
-                            >
+                            <select value={historyFilter.completed} onChange={e => setHistoryFilter(p => ({ ...p, completed: e.target.value }))}
+                                className="px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm font-semibold">
                                 <option value="all">All Status</option>
                                 <option value="true">Completed</option>
                                 <option value="false">In Progress</option>
@@ -439,8 +624,7 @@ export default function CodeSpirit() {
                                 <p className="text-[var(--text-secondary)]">
                                     {searchQuery || historyFilter.difficulty !== 'all' || historyFilter.language !== 'all' || historyFilter.completed !== 'all'
                                         ? 'No sessions match your filters. Try adjusting them.'
-                                        : 'Generate your first session to see it here.'
-                                    }
+                                        : 'Generate your first session to see it here.'}
                                 </p>
                             </div>
                         ) : (
@@ -453,8 +637,7 @@ export default function CodeSpirit() {
                                     return (
                                         <div key={session._id}
                                             className="bg-[var(--glass-bg)] border border-[var(--border-color)] p-5 rounded-2xl hover:border-cyan-500/50 transition-all group cursor-pointer"
-                                            onClick={() => resumeSession(session)}
-                                        >
+                                            onClick={() => resumeSession(session)}>
                                             <div className="flex items-center justify-between flex-wrap gap-4">
                                                 <div className="flex-1 min-w-[200px]">
                                                     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -464,9 +647,8 @@ export default function CodeSpirit() {
                                                             </span>
                                                         )}
                                                         <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${session.difficulty === 'hard' ? 'bg-rose-500/20 text-rose-500' :
-                                                            session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
-                                                                'bg-emerald-500/20 text-emerald-500'
-                                                            }`}>
+                                                                session.difficulty === 'medium' ? 'bg-amber-500/20 text-amber-500' :
+                                                                    'bg-emerald-500/20 text-emerald-500'}`}>
                                                             {session.difficulty}
                                                         </span>
                                                         <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-500 text-xs font-bold uppercase tracking-wider">
@@ -474,38 +656,26 @@ export default function CodeSpirit() {
                                                         </span>
                                                     </div>
                                                     <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">{session.topic}</h3>
-                                                    <p className="text-xs text-[var(--text-muted)] flex items-center gap-1">
-                                                        <Clock size={12} /> {timeAgo(session.createdAt)}
-                                                    </p>
+                                                    <p className="text-xs text-[var(--text-muted)] flex items-center gap-1"><Clock size={12} /> {timeAgo(session.createdAt)}</p>
                                                 </div>
-
                                                 <div className="flex items-center gap-5">
-                                                    {/* Progress */}
                                                     <div className="text-center min-w-[80px]">
                                                         <div className="text-xs text-[var(--text-muted)] mb-1">Progress</div>
                                                         <div className="text-lg font-bold">
                                                             <span className={solvedCount === totalCount ? 'text-emerald-500' : 'text-cyan-500'}>{solvedCount}</span>
                                                             <span className="text-[var(--text-muted)]">/{totalCount}</span>
                                                         </div>
-                                                        {/* Mini progress bar */}
                                                         <div className="w-full h-1.5 bg-[var(--bg-secondary)] rounded-full mt-1">
                                                             <div className={`h-full rounded-full transition-all ${solvedCount === totalCount ? 'bg-emerald-500' : 'bg-cyan-500'}`}
                                                                 style={{ width: `${progress}%` }} />
                                                         </div>
                                                     </div>
-
-                                                    <button
-                                                        onClick={(e) => deleteSession(session._id, e)}
-                                                        className="p-2 rounded-lg text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition opacity-0 group-hover:opacity-100"
-                                                        title="Delete session"
-                                                    >
+                                                    <button onClick={(e) => deleteSession(session._id, e)}
+                                                        className="p-2 rounded-lg text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition opacity-0 group-hover:opacity-100" title="Delete session">
                                                         <Trash2 size={16} />
                                                     </button>
-
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); resumeSession(session); }}
-                                                        className="bg-cyan-500 hover:bg-cyan-400 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/25 flex items-center gap-2"
-                                                    >
+                                                    <button onClick={(e) => { e.stopPropagation(); resumeSession(session); }}
+                                                        className="bg-cyan-500 hover:bg-cyan-400 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/25 flex items-center gap-2">
                                                         {solvedCount === totalCount ? 'Review' : 'Resume'} <ChevronRight size={14} />
                                                     </button>
                                                 </div>
@@ -521,7 +691,9 @@ export default function CodeSpirit() {
 
             <style>{`
                 @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-                .animate-fade-in { animation: fade-in 0.5s ease-out; }
+                @keyframes slide-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-fade-in { animation: fade-in 0.4s ease-out; }
+                .animate-slide-down { animation: slide-down 0.35s ease-out; }
             `}</style>
         </div>
     );
