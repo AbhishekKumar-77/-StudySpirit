@@ -9,7 +9,7 @@ import {
     Settings, Play, ArrowLeft, Loader,
     Volume2, VolumeX, UploadCloud, Camera, CameraOff,
     Trophy, History, BarChart2, CheckCircle, AlertCircle, X,
-    ChevronRight, Star, Sparkles, Clock, Activity, Type
+    ChevronRight, Star, Sparkles, Clock, Activity, Type, Printer
 } from 'lucide-react';
 
 const ResumeTemplate = ({ data, template }) => {
@@ -775,7 +775,7 @@ export default function AIInterview() {
             </div>
 
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[var(--bg-primary)]/90 backdrop-blur-xl border-b border-[var(--border-color)] px-6 py-4 flex justify-between items-center">
+            <nav className="sticky top-0 z-50 bg-[var(--bg-primary)]/90 backdrop-blur-xl border-b border-[var(--border-color)] px-6 py-4 flex justify-between items-center print:hidden">
                 <div className="flex items-center gap-4">
                     <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/10 rounded-lg">
                         <ArrowLeft className="w-6 h-6 text-[var(--text-secondary)]" />
@@ -1170,7 +1170,7 @@ export default function AIInterview() {
                 {view === 'resume-builder' && (
                     <div className="w-full h-full flex flex-col md:flex-row gap-6 animate-fade-in-up">
                         {/* Left: Input Form */}
-                        <div className="w-full md:w-1/2 bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] overflow-y-auto">
+                        <div className="w-full md:w-1/2 bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] overflow-y-auto print:hidden">
                             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                                 <FileText className="text-cyan-400" /> Build Your Resume
                             </h2>
@@ -1277,24 +1277,32 @@ export default function AIInterview() {
                         </div>
 
                         {/* Right: Preview */}
-                        <div className="hidden md:flex w-1/2 bg-white text-[var(--text-primary)] rounded-2xl overflow-hidden flex-col shadow-2xl relative">
-                            <div className="bg-[var(--bg-secondary)] p-4 border-b flex justify-between items-center z-10">
+                        <div className="hidden md:flex w-1/2 bg-white text-[var(--text-primary)] rounded-2xl overflow-hidden flex-col shadow-2xl relative print:flex print:w-full print:absolute print:inset-0 print:border-none print:shadow-none print:z-50 print:bg-white print:m-0 print:p-0">
+                            <div className="bg-[var(--bg-secondary)] p-4 border-b flex justify-between items-center z-10 print:hidden">
                                 <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
                                     <FileText size={18} /> Live Preview
                                 </h3>
                                 {generatedResume && (
-                                    <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(JSON.stringify(generatedResume, null, 2));
-                                            alert("Raw Resume JSON data copied to clipboard!");
-                                        }}
-                                        className="text-xs font-bold text-cyan-600 hover:text-cyan-700 hover:underline px-3 py-1 rounded border border-cyan-200 bg-white"
-                                    >
-                                        Copy Raw JSON
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => window.print()}
+                                            className="text-xs flex items-center gap-1 font-bold text-violet-600 hover:text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded border border-violet-200 bg-white transition-colors"
+                                        >
+                                            <Printer size={14} /> Export PDF
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(JSON.stringify(generatedResume, null, 2));
+                                                alert("Raw Resume JSON data copied to clipboard!");
+                                            }}
+                                            className="text-xs font-bold text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 px-3 py-1.5 rounded border border-cyan-200 bg-white transition-colors"
+                                        >
+                                            Copy JSON
+                                        </button>
+                                    </div>
                                 )}
                             </div>
-                            <div className="flex-1 p-0 overflow-y-auto bg-[var(--bg-secondary)]/50">
+                            <div className="flex-1 p-0 overflow-y-auto bg-[var(--bg-secondary)]/50 print:overflow-visible print:bg-white">
                                 {generatedResume ? (
                                     <ResumeTemplate data={generatedResume} template={resumeForm.template} />
                                 ) : (
