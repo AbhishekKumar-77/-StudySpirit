@@ -149,7 +149,7 @@ const ResumeTemplate = ({ data, template }) => {
                 <div className="md:text-right text-sm text-[var(--text-muted)] space-y-1 font-medium">
                     {data.personalInfo.email && <div>{data.personalInfo.email}</div>}
                     {data.personalInfo.phone && <div>{data.personalInfo.phone}</div>}
-                    {data.personalInfo.links && <div className="text-cyan-">{data.personalInfo.links}</div>}
+                    {data.personalInfo.links && <div className="text-cyan-500">{data.personalInfo.links}</div>}
                 </div>
             </div>
 
@@ -164,7 +164,7 @@ const ResumeTemplate = ({ data, template }) => {
                         <ul className="space-y-2">
                             {data.skills?.map((skill, i) => (
                                 <li key={i} className="text-sm text-[var(--text-primary)] flex items-center gap-2 font-medium">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-/80"></span> {skill}
+                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/80"></span> {skill}
                                 </li>
                             ))}
                         </ul>
@@ -707,9 +707,24 @@ export default function AIInterview() {
         }
     };
 
-    const viewTranscript = (session) => {
-        // Simple alert or modal for now
-        alert("Transcript view coming soon! ID: " + session._id);
+    const viewTranscript = async (sessionParam) => {
+        try {
+            setIsLoading(true);
+            const { session } = await soloApi.getInterviewSession(sessionParam._id);
+            // Re-create the structure that endInterview returns to use the 'report' view
+            setSessionReport({
+                ...session,
+                mode: session.mode,
+                totalQuestions: session.exchanges ? session.exchanges.length : 0,
+                duration: session.duration || 0,
+            });
+            setView('report');
+        } catch (error) {
+            console.error("Failed to load transcript:", error);
+            alert("Could not load full transcript. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleGenerateResume = async () => {
@@ -755,7 +770,7 @@ export default function AIInterview() {
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans relative overflow-y-auto overflow-x-hidden">
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-cyan-/10 rounded-full blur-[100px]" />
+                <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[100px]" />
             </div>
 
@@ -785,7 +800,7 @@ export default function AIInterview() {
                                 setView('history');
                             }
                         }}
-                        className={`p-2 rounded-lg transition-all ${view === 'history' ? 'bg-cyan-/20 text-cyan-' : 'hover:bg-white/5 text-[var(--text-secondary)]'}`}
+                        className={`p-2 rounded-lg transition-all ${view === 'history' ? 'bg-cyan-500/20 text-cyan-500' : 'hover:bg-white/5 text-[var(--text-secondary)]'}`}
                     >
                         <History className="w-5 h-5" />
                     </button>
@@ -799,7 +814,7 @@ export default function AIInterview() {
                     )}
                     <button
                         onClick={() => setAutoSpeak(!autoSpeak)}
-                        className={`p-2 rounded-lg transition-all ${autoSpeak ? 'bg-cyan-/20 text-cyan-' : 'bg-white/5 text-[var(--text-muted)]'}`}
+                        className={`p-2 rounded-lg transition-all ${autoSpeak ? 'bg-cyan-500/20 text-cyan-500' : 'bg-white/5 text-[var(--text-muted)]'}`}
                     >
                         {autoSpeak ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
                     </button>
@@ -835,8 +850,8 @@ export default function AIInterview() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'technical' ? 'bg-cyan-/10 border-cyan-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setMode('technical')}>
-                                    <Cpu className={`w-8 h-8 mb-4 ${mode === 'technical' ? 'text-cyan-' : 'text-[var(--text-muted)]'}`} />
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'technical' ? 'bg-cyan-500/10 border-cyan-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setMode('technical')}>
+                                    <Cpu className={`w-8 h-8 mb-4 ${mode === 'technical' ? 'text-cyan-500' : 'text-[var(--text-muted)]'}`} />
                                     <h3 className="text-xl font-bold mb-2">Technical Round</h3>
                                     <p className="text-sm text-[var(--text-secondary)]">DSA, System Design, and coding concepts. Strict and focused.</p>
                                 </div>
@@ -905,7 +920,7 @@ export default function AIInterview() {
                             <button
                                 onClick={startInterview}
                                 disabled={isLoading}
-                                className="w-full py-4 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-bold text-lg shadow-lg hover:shadow-violet-500/25 transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                                className="w-full py-4 bg-gradient-to-r from-cyan-500 to-pink-600 rounded-xl font-bold text-lg shadow-lg hover:shadow-violet-500/25 transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"
                             >
                                 {isLoading ? <Loader className="animate-spin" /> : <Play />} Start Interview
                             </button>
@@ -931,7 +946,7 @@ export default function AIInterview() {
                         <div className="flex-1 flex flex-col bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] overflow-hidden relative">
                             {/* Header / Question Progress */}
                             <div className="p-4 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-primary)]">
-                                <span className="font-mono text-cyan- font-bold">Question {currentQuestionNum}</span>
+                                <span className="font-mono text-cyan-500 font-bold">Question {currentQuestionNum}</span>
                                 <div className="text-xs text-[var(--text-muted)]">Click "End Session" when done</div>
                             </div>
 
@@ -939,7 +954,7 @@ export default function AIInterview() {
                             <div className="flex-1 overflow-y-auto p-6 space-y-6">
                                 {messages.map((msg, idx) => (
                                     <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`p-4 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-lg ${msg.role === 'user' ? 'bg-cyan-/90 text-[var(--text-primary)] rounded-tr-sm' : 'bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-tl-sm'}`}>
+                                        <div className={`p-4 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-lg ${msg.role === 'user' ? 'bg-cyan-500/90 text-white rounded-tr-sm' : 'bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-tl-sm'}`}>
                                             {msg.content}
                                             {msg.role === 'ai' && msg.feedback && (
                                                 <div className="mt-3 pt-3 border-t border-[var(--border-color)] text-xs text-yellow-500/80 italic">
@@ -962,7 +977,7 @@ export default function AIInterview() {
                                 <div className="flex items-center gap-4">
                                     <button
                                         onClick={toggleListening}
-                                        className={`p-4 rounded-full shadow-lg transition-all ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gradient-to-r from-cyan- to-pink-600 hover:scale-105'}`}
+                                        className={`p-4 rounded-full shadow-lg transition-all ${isListening ? 'bg-red-500 animate-pulse' : 'bg-gradient-to-r from-cyan-500 to-pink-600 hover:scale-105'}`}
                                     >
                                         {isListening ? <MicOff className="w-6 h-6 text-[var(--text-primary)]" /> : <Mic className="w-6 h-6 text-[var(--text-primary)]" />}
                                     </button>
@@ -978,7 +993,7 @@ export default function AIInterview() {
                                         <button
                                             onClick={sendMessage}
                                             disabled={!input.trim() || isLoading}
-                                            className="absolute right-2 top-2 p-2 bg-white/10 hover:bg-cyan- rounded-lg transition-colors text-[var(--text-primary)] disabled:opacity-50"
+                                            className="absolute right-2 top-2 p-2 bg-white/10 hover:bg-cyan-500 rounded-lg transition-colors text-[var(--text-primary)] disabled:opacity-50"
                                         >
                                             <Send className="w-5 h-5" />
                                         </button>
@@ -1048,10 +1063,10 @@ export default function AIInterview() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             {/* Score Card */}
                             <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] relative overflow-hidden text-center flex flex-col items-center justify-center">
-                                <div className="absolute inset-0 bg-cyan-/10 blur-xl" />
+                                <div className="absolute inset-0 bg-cyan-500/10 blur-xl" />
                                 <div className="relative">
                                     <div className="text-5xl font-black text-[var(--text-primary)] mb-2">{sessionReport.overallScore}<span className="text-xl text-[var(--text-muted)]">/10</span></div>
-                                    <div className="text-sm px-3 py-1 rounded-full bg-cyan-/20 text-violet-300 inline-block font-semibold">Overall Score</div>
+                                    <div className="text-sm px-3 py-1 rounded-full bg-cyan-500/20 text-violet-300 inline-block font-semibold">Overall Score</div>
                                 </div>
                             </div>
 
@@ -1083,7 +1098,7 @@ export default function AIInterview() {
 
                             {/* Final Feedback */}
                             <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] relative">
-                                <h3 className="flex items-center gap-2 font-bold mb-4 text-cyan-"><Trophy className="w-5 h-5" /> Coach's Feedback</h3>
+                                <h3 className="flex items-center gap-2 font-bold mb-4 text-cyan-500"><Trophy className="w-5 h-5" /> Coach's Feedback</h3>
                                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed italic">
                                     "{sessionReport.finalFeedback}"
                                 </p>
@@ -1094,10 +1109,60 @@ export default function AIInterview() {
                             <button onClick={() => setView('setup')} className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">
                                 Back to Menu
                             </button>
-                            <button onClick={() => { setMode(sessionReport.mode); setView('setup'); }} className="px-8 py-3 bg-cyan- hover:bg-violet-700 rounded-xl font-bold transition-all shadow-lg shadow-violet-500/20">
+                            <button onClick={() => { setMode(sessionReport.mode); setView('setup'); }} className="px-8 py-3 bg-cyan-500 hover:bg-violet-700 rounded-xl font-bold transition-all shadow-lg shadow-violet-500/20">
                                 Try Again
                             </button>
                         </div>
+
+                        {/* DETAILED TRANSCRIPT */}
+                        {sessionReport.exchanges && sessionReport.exchanges.length > 0 && (
+                            <div className="mt-12 bg-[var(--bg-primary)] p-8 rounded-2xl border border-[var(--border-color)]">
+                                <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                                    <FileText className="text-cyan-500" /> Detailed Transcript Log
+                                </h3>
+                                <div className="space-y-8">
+                                    {sessionReport.exchanges.map((exchange, idx) => (
+                                        <div key={idx} className="pb-6 border-b border-[var(--border-color)] last:border-0 last:pb-0">
+                                            <div className="flex gap-4 mb-4">
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shrink-0">
+                                                    <Mic className="w-4 h-4 text-white" />
+                                                </div>
+                                                <div className="w-full">
+                                                    <div className="text-sm font-bold text-[var(--text-secondary)] mb-1">Aria (Question {exchange.questionNumber})</div>
+                                                    <div className="text-[var(--text-primary)] font-medium bg-[var(--bg-secondary)]lack/20 p-4 rounded-lg border border-[var(--border-color)]">
+                                                        {exchange.question}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-4 ml-8">
+                                                <div className="w-full">
+                                                    <div className="text-sm font-bold text-[var(--text-secondary)] mb-1 text-right">You</div>
+                                                    <div className="bg-cyan-500/10 text-[var(--text-primary)] p-4 rounded-lg border border-cyan-500/20">
+                                                        {exchange.answer}
+                                                    </div>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(6,182,212,0.5)]">
+                                                    <User className="w-4 h-4 text-white" />
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 flex gap-4 bg-yellow-500/10 p-4 rounded-lg border border-yellow-500/20 ml-12">
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-yellow-500 text-sm flex items-center gap-1"><AlertCircle className="w-4 h-4" /> AI Evaluation</h4>
+                                                    <p className="text-sm text-[var(--text-secondary)] mt-1">{exchange.feedback}</p>
+                                                </div>
+                                                <div className="flex flex-col items-center justify-center shrink-0 pr-4">
+                                                    <div className="text-2xl font-black text-yellow-500">{exchange.score}</div>
+                                                    <div className="text-[10px] text-yellow-500/70 font-bold uppercase tracking-widest">Score</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                 )}
 
@@ -1270,7 +1335,7 @@ export default function AIInterview() {
                                             </div>
                                         </div>
                                     </div>
-                                    <button onClick={() => viewTranscript(session)} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-opacity opacity-0 group-hover:opacity-100 flex items-center gap-2 text-cyan-">
+                                    <button onClick={() => viewTranscript(session)} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-opacity opacity-0 group-hover:opacity-100 flex items-center gap-2 text-cyan-500">
                                         View Details <ChevronRight className="w-4 h-4" />
                                     </button>
                                 </div>
