@@ -163,7 +163,7 @@ exports.generateDailyChallenge = async (req, res) => {
                     "title": "Problem Title",
                     "description": "Detailed problem statement explaining the task clearly. Include input format, output format, and constraints.",
                     "language": "${langPref}",
-                    "starterCode": "starter code here",
+                    "starterCode": "SKELETON code only — see rules below",
                     "testCases": [
                         { "input": "sample input for stdin", "output": "expected stdout output" },
                         { "input": "another input", "output": "another expected output" }
@@ -176,7 +176,6 @@ exports.generateDailyChallenge = async (req, res) => {
             Rules:
             - Generate exactly ${questionCount} problems, each different from the others.
             - Each problem MUST follow competitive programming format:
-              * The starterCode MUST read input from stdin and print output to stdout
               * Python: use input() and print()
               * Java: use Scanner and System.out.println()
               * C++: use cin and cout with #include <iostream>
@@ -184,16 +183,28 @@ exports.generateDailyChallenge = async (req, res) => {
               * JavaScript: use readline or process.stdin and console.log()
               * Test case "input" is what will be provided as stdin
               * Test case "output" is the exact stdout the correct program should produce
-            - Each problem should have 2-3 test cases.
+            - Each problem should have 2-3 test cases with DISTINCT inputs and outputs.
             - Each problem should have 1-2 hints.
-            - Provide the starterCode in ${langPref}. Make sure it is valid and runnable.
+            
+            *** CRITICAL STARTER CODE RULES ***
+            - The starterCode must be a SKELETON / TEMPLATE only.
+            - It must include: necessary imports, main function/boilerplate, input reading, and a TODO comment where the student writes their logic.
+            - It must NOT contain the solution logic. Do NOT include the answer.
+            - Do NOT hardcode any output values.
+            - Do NOT include the algorithm implementation.
+            - Example for C++ (if the problem is "print sum of two numbers"):
+              GOOD: "#include <iostream>\nusing namespace std;\nint main() {\n    int a, b;\n    cin >> a >> b;\n    // TODO: Calculate and print the sum\n    return 0;\n}"
+              BAD: "#include <iostream>\nusing namespace std;\nint main() {\n    int a, b;\n    cin >> a >> b;\n    cout << a + b;\n    return 0;\n}"
+            - Example for Python:
+              GOOD: "n = int(input())\n# TODO: Write your solution here\n"
+              BAD: "n = int(input())\nprint(n * 2)\n"
+            - The student must write the logic themselves.
+            
             - CRITICAL JSON RULES:
               * All newlines inside string values MUST be written as \\n (escaped)
               * All double quotes inside string values MUST be written as \\" (escaped)
               * All backslashes inside string values MUST be written as \\\\ (escaped)
               * Tab characters MUST be written as \\t
-              * For C/C++ code: #include <iostream> must be: #include <iostream>
-              * For C/C++ code: cout << must be: cout <<
               * Make sure the starterCode is a single-line JSON string with \\n for newlines
             - Problems should gradually increase in complexity.
             - Return ONLY the JSON array, nothing else. No markdown fences.
@@ -208,7 +219,7 @@ exports.generateDailyChallenge = async (req, res) => {
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [
-                    { role: "system", content: "You are a coding contest platform generator. You output ONLY valid JSON arrays of coding problems. CRITICAL: All string values in JSON must properly escape newlines as \\n, tabs as \\t, quotes as \\\", and backslashes as \\\\. The starterCode must be a properly escaped single-line JSON string. Never output markdown code fences. Never add explanatory text. Output ONLY the JSON array." },
+                    { role: "system", content: "You are a coding contest platform generator. You output ONLY valid JSON arrays of coding problems. CRITICAL RULES: 1) The starterCode must be SKELETON ONLY — include imports, main function, input reading, and a TODO comment. NEVER include the solution or algorithm. The student must write the logic themselves. 2) All string values in JSON must properly escape newlines as \\n, tabs as \\t, quotes as \\\", and backslashes as \\\\. 3) Never output markdown code fences. Output ONLY the JSON array." },
                     { role: "user", content: prompt }
                 ],
                 temperature: 0.7,
@@ -421,14 +432,31 @@ exports.verifyCode = async (req, res) => {
             return res.json({ success: true, results: [], allPassed: false, message: "No test cases available" });
         }
 
+        // Normalize output for comparison (trim, normalize line endings, remove trailing newlines)
+        const normalizeOutput = (str) => {
+            return (str || '')
+                .replace(/\r\n/g, '\n')  // Windows line endings
+                .replace(/\r/g, '\n')    // Old Mac line endings
+                .trim()                   // Remove leading/trailing whitespace
+                .split('\n')             // Split into lines
+                .map(line => line.trim()) // Trim each line
+                .join('\n');             // Rejoin
+        };
+
         // Run code against each test case in parallel
         const results = await Promise.all(testCases.map(async (tc, index) => {
             try {
                 const result = await executeViaWandbox(language || challenge.language || 'python', code, tc.input || '');
                 const run = result.run || {};
-                const actualOutput = (run.stdout || '').trim();
-                const expectedOutput = (tc.output || '').trim();
-                const passed = actualOutput === expectedOutput;
+                const actualOutput = normalizeOutput(run.stdout);
+                const expectedOutput = normalizeOutput(tc.output);
+
+                // Strict comparison: must have actual output AND match expected
+                const hasOutput = actualOutput.length > 0;
+                const noErrors = !run.stderr || run.stderr.trim().length === 0;
+                const exitedCleanly = (run.code === 0 || run.code === null || run.code === undefined);
+                const outputMatches = actualOutput === expectedOutput;
+                const passed = hasOutput && outputMatches && exitedCleanly;
 
                 return {
                     testCase: index + 1,
