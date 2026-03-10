@@ -4,7 +4,7 @@ const User = require('../models/User');
 // AI Question Generation
 exports.generateAIQuestions = async (req, res) => {
     try {
-        const { topic, difficulty, mcqCount = 5, codingCount = 0 } = req.body;
+        const { topic, difficulty, count, mcqCount = count || 5, codingCount = 0 } = req.body;
         const apiKey = "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"; // User provided key
 
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
