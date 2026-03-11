@@ -263,15 +263,15 @@ export default function Exams() {
 
         quizQs.forEach(q => {
             if (q.type === "coding") {
-                if (userAnswers[q.id] && userAnswers[q.id].trim() !== "") {
+                if (userAnswers[(q._id || q.id)] && userAnswers[(q._id || q.id)].trim() !== "") {
                     correctCount++;
                     totalScore += 1;
                 }
             } else {
-                if (userAnswers[q.id] === q.correct) {
+                if (userAnswers[(q._id || q.id)] === q.correct) {
                     correctCount++;
                     totalScore += 1;
-                } else if (userAnswers[q.id] !== undefined) {
+                } else if (userAnswers[(q._id || q.id)] !== undefined) {
                     totalScore -= joinedQuiz.settings.negativeMarking;
                 }
             }
@@ -294,7 +294,9 @@ export default function Exams() {
                     percentage: Math.round(finalScore),
                     totalQuestions: quizQs.length,
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft,
-                    registrationNumber: regNoInput.trim()
+                    registrationNumber: regNoInput.trim(),
+                    studentName: user?.name || "Guest",
+                    userAnswers: userAnswers
                 })
             });
             try {
@@ -413,7 +415,7 @@ export default function Exams() {
                                             <div className="absolute top-0 right-0 p-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                                  <button
                                                     onClick={() => {
-                                                        const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: joinedQuiz.questions[currentQuestionIndex].starterCode || '' };
+                                                        const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: joinedQuiz.questions[currentQuestionIndex].starterCode || '' };
                                                         setUserAnswers(newAnswers);
                                                     }}
                                                     className="px-3 py-1.5 bg-[var(--bg-secondary)]/80 backdrop-blur-md text-[var(--text-secondary)] hover:text-cyan-400 border border-[var(--border-color)] text-xs rounded-lg font-bold transition-colors"
@@ -426,9 +428,9 @@ export default function Exams() {
                                                 height="450px"
                                                 language={codeLanguage}
                                                 theme="vs-dark"
-                                                value={userAnswers[joinedQuiz.questions[currentQuestionIndex].id] ?? joinedQuiz.questions[currentQuestionIndex].starterCode ?? ''}
+                                                value={userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] ?? joinedQuiz.questions[currentQuestionIndex].starterCode ?? ''}
                                                 onChange={(val) => {
-                                                    const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: val };
+                                                    const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: val };
                                                     setUserAnswers(newAnswers);
                                                 }}
                                                 options={{ 
@@ -450,13 +452,13 @@ export default function Exams() {
                                                 <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-500 to-blue-600"></div>
                                                 <h3 className="text-white font-black mb-5 flex items-center justify-between">
                                                     <span className="flex items-center gap-3"><Target size={22} className="text-cyan-400" /> Test Cases</span>
-                                                    {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id] && (
+                                                    {codeTestResults[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] && (
                                                         <div className="flex gap-2">
                                                             <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/30">
-                                                                {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id].filter(r => r.pass).length} Passed
+                                                                {codeTestResults[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)].filter(r => r.pass).length} Passed
                                                             </span>
                                                             <span className="bg-red-500/20 text-red-500 px-3 py-1 rounded-full text-xs font-bold border border-red-500/30">
-                                                                {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id].filter(r => !r.pass).length} Failed
+                                                                {codeTestResults[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)].filter(r => !r.pass).length} Failed
                                                             </span>
                                                         </div>
                                                     )}
@@ -464,7 +466,7 @@ export default function Exams() {
                                                 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {joinedQuiz.questions[currentQuestionIndex].testCases.map((tc, i) => {
-                                                        const result = codeTestResults[joinedQuiz.questions[currentQuestionIndex].id]?.[i];
+                                                        const result = codeTestResults[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]?.[i];
                                                         
                                                         // Determine card border based on execution state
                                                         let borderClass = "border-[var(--border-color)]";
@@ -533,13 +535,13 @@ export default function Exams() {
                                             <button
                                                 key={i}
                                                 onClick={() => {
-                                                    const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: i };
+                                                    const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: i };
                                                     setUserAnswers(newAnswers);
                                                     try {
                                                         const socket = getSocket();
                                                         if (socket?.connected) {
                                                             let correctCount = 0;
-                                                            joinedQuiz.questions.forEach(q => { if (newAnswers[q.id] === q.correct) correctCount++; });
+                                                            joinedQuiz.questions.forEach(q => { if (newAnswers[(q._id || q.id)] === q.correct) correctCount++; });
                                                             socket.emit('quiz:progress', {
                                                                 quizCode: quizCodeInput.toUpperCase().trim(),
                                                                 studentId: user?._id || user?.id || 'guest',
@@ -549,19 +551,19 @@ export default function Exams() {
                                                         }
                                                     } catch (e) { }
                                                 }}
-                                                className={`w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
+                                                className={`w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
                                                     ? "bg-gradient-to-r from-red-500/20 to-orange-500/20 border-red-500 text-[var(--text-primary)] shadow-lg transform scale-[1.01]"
                                                     : "bg-[var(--glass-bg)] border-transparent hover:bg-[var(--bg-secondary)] hover:border-red-500/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                                     }`}
                                             >
-                                                <span className={`inline-flex items-center justify-center w-10 h-10 rounded-lg font-black mr-4 text-lg transition-colors ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
+                                                <span className={`inline-flex items-center justify-center w-10 h-10 rounded-lg font-black mr-4 text-lg transition-colors ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
                                                     ? "bg-red-500 text-white"
                                                     : "bg-[var(--bg-secondary)] text-[var(--text-muted)] group-hover:bg-[var(--border-color)]"
                                                     }`}>
                                                     {String.fromCharCode(65 + i)}
                                                 </span>
                                                 {opt}
-                                                {userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i && (
+                                                {userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i && (
                                                     <div className="absolute right-6 top-1/2 -translate-y-1/2 text-red-400">
                                                         <CheckCircle size={28} />
                                                     </div>
@@ -777,13 +779,13 @@ export default function Exams() {
 
                                 <div className="space-y-8 text-left">
                                     {joinedQuiz.questions.map((q, idx) => {
-                                        const userAnswer = userAnswers[q.id];
+                                        const userAnswer = userAnswers[(q._id || q.id)];
                                         const isCoding = q.type === "coding";
                                         const isCorrect = isCoding ? !!(userAnswer && userAnswer.trim() !== "") : userAnswer === q.correct;
                                         const isSkipped = userAnswer === undefined || (isCoding && userAnswer.trim() === "");
 
                                         return (
-                                            <div key={q.id} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" : isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"}`}>
+                                            <div key={(q._id || q.id)} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" : isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"}`}>
                                                 <h4 className="text-xl font-bold mb-6 flex items-start gap-3">
                                                     <span className={`px-3 py-1 rounded text-sm font-black text-white ${isCorrect ? "bg-emerald-500" : isSkipped ? "bg-amber-500" : "bg-red-500"}`}>
                                                         Q{idx + 1}

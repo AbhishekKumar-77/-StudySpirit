@@ -400,6 +400,8 @@ exports.checkReAttempt = async (req, res) => {
 exports.submitResult = async (req, res) => {
     try {
         const { score, totalQuestions, timeTaken, userAnswers, studentName } = req.body;
+        console.log("RECEIVING USER ANSWERS:", userAnswers);
+        
         const percentage = req.body.percentage !== undefined
             ? req.body.percentage
             : Math.round((score / totalQuestions) * 100);
