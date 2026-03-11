@@ -8,7 +8,8 @@ import {
     Trash2, Brain, Users, Send, BarChart, Target, Trophy, Zap,
     Timer, PlayCircle, PauseCircle, RotateCcw, Crown, Star,
     Flame, TrendingUp, Download, Copy, Share2, Settings, Bot,
-    BookOpen, Lightbulb, AlertCircle, ChevronRight, Hash, XCircle, Pause
+    BookOpen, Lightbulb, AlertCircle, ChevronRight, Hash, XCircle, Pause,
+    Image, Calendar, BarChart2, TrendingDown
 } from "lucide-react";
 
 export default function StudySprintQuiz() {
@@ -28,14 +29,19 @@ export default function StudySprintQuiz() {
     const [questionType, setQuestionType] = useState("mcq"); // 'mcq' or 'true-false'
 
     const [settings, setSettings] = useState({
-        timeLimit: 30, // minutes
-        difficulty: "medium", // overall quiz difficulty for AI gen
+        timeLimit: 30,
+        difficulty: "medium",
         negativeMarking: 0.25,
         allowReview: true,
         showResults: true,
         randomizeQuestions: false,
-        secureMode: true, // Default to secure mode as requested
+        secureMode: true,
+        scheduledStart: "",  // ISO datetime string (empty = no schedule)
+        scheduledEnd: "",
     });
+
+    // Image URL for the question being built
+    const [newQImageUrl, setNewQImageUrl] = useState("");
 
     const [aiTeacherTopic, setAiTeacherTopic] = useState("");
     const [aiQuestionCount, setAiQuestionCount] = useState(10); // Default to 10 questions
@@ -58,8 +64,9 @@ export default function StudySprintQuiz() {
     const [warnings, setWarnings] = useState(0); // Track security warnings
     const [fullscreenActive, setFullscreenActive] = useState(false);
     const [isReviewingAnswers, setIsReviewingAnswers] = useState(false);
-    const [isTabHidden, setIsTabHidden] = useState(false); // New state to detect if user switched tabs
-    const fullscreenRef = useRef(null); // Ref for fullscreen element
+    const [isTabHidden, setIsTabHidden] = useState(false);
+    const [alreadySubmittedError, setAlreadySubmittedError] = useState(""); // Re-attempt block message
+    const fullscreenRef = useRef(null);
 
     // AI Practice Mode
     const [aiQuestions, setAiQuestions] = useState([]);
@@ -119,17 +126,19 @@ export default function StudySprintQuiz() {
             {
                 id: Date.now(),
                 question: newQ,
+                imageUrl: newQImageUrl.trim(), // Optional image URL
                 options,
                 correct,
                 type: questionType,
-                difficulty: settings.difficulty // Default difficulty for manually added questions
+                difficulty: settings.difficulty
             }
         ]);
 
         setNewQ("");
+        setNewQImageUrl("");
         setOptions(["", "", "", ""]);
         setCorrect(null);
-        setQuestionType("mcq"); // Reset to default
+        setQuestionType("mcq");
     };
 
     const deleteQuestion = (id) => {
@@ -284,25 +293,34 @@ export default function StudySprintQuiz() {
             alert("Please enter both the Quiz Code and your Registration Number!");
             return;
         }
-
+        setAlreadySubmittedError("");
         try {
-            // Fetch quiz from backend
+            // ── Step 1: Check re-attempt ──────────────────────────
+            const attemptRes = await fetch(
+                `${API_BASE}/quiz/${studentQuizCodeInput.trim().toUpperCase()}/check-attempt?registrationNumber=${encodeURIComponent(studentRegNoInput.trim().toUpperCase())}`
+            );
+            const attemptData = await attemptRes.json();
+            if (attemptData.success && attemptData.alreadySubmitted) {
+                setAlreadySubmittedError(
+                    `Registration number "${studentRegNoInput.trim().toUpperCase()}" has already submitted this quiz. Re-attempts are not allowed.`
+                );
+                return;
+            }
+            // ── Step 2: Load quiz ─────────────────────────────────
             const res = await fetch(`${API_BASE}/quiz/${studentQuizCodeInput.trim().toUpperCase()}`);
             const data = await res.json();
-
             if (data.success) {
-                setJoinedQuiz({
-                    questions: settings.randomizeQuestions ? [...data.quiz.questions].sort(() => Math.random() - 0.5) : data.quiz.questions,
-                    settings: data.quiz.settings
-                });
+                const quizSettings = data.quiz.settings;
+                const qs = quizSettings.randomizeQuestions
+                    ? [...data.quiz.questions].sort(() => Math.random() - 0.5)
+                    : data.quiz.questions;
+                setJoinedQuiz({ ...data.quiz, questions: qs, settings: quizSettings });
                 setExamSubmitted(false);
                 setUserAnswers({});
                 setCurrentQuestionIndex(0);
                 setShowResult(false);
                 setIsReviewingAnswers(false);
                 setWarnings(0);
-
-                // Pre-connect socket so teacher sees student joining
                 try {
                     const socket = connectSocket();
                     const doJoin = () => socket.emit('quiz:join', {
@@ -311,11 +329,10 @@ export default function StudySprintQuiz() {
                         studentName: user?.name || 'Student',
                         registrationNumber: studentRegNoInput.trim()
                     });
-                    if (socket.connected) { doJoin(); console.log("📡 Socket quiz:join emitted (connected)"); } else { socket.once('connect', () => { doJoin(); console.log("📡 Socket quiz:join emitted (after connect)"); }); }
+                    if (socket.connected) { doJoin(); } else { socket.once('connect', doJoin); }
                 } catch (_e) { console.error("❌ Socket join error:", _e); }
-                // Also update local quiz code display if needed, or just keep input
             } else {
-                alert(data.message || "Invalid Quiz Code!");
+                setAlreadySubmittedError(data.message || "Invalid Quiz Code!");
                 setJoinedQuiz(null);
             }
         } catch (err) {
@@ -377,11 +394,12 @@ export default function StudySprintQuiz() {
                 credentials: 'include',
                 body: JSON.stringify({
                     quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
-                    score: Number(totalScore.toFixed(2)), // Real marks with negative deductions
-                    percentage: Math.round(finalScore), // Pass negative-marked final percentage
+                    score: Number(totalScore.toFixed(2)),
+                    percentage: Math.round(finalScore),
                     totalQuestions: quizQs.length,
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft,
-                    registrationNumber: studentRegNoInput.trim()
+                    registrationNumber: studentRegNoInput.trim(),
+                    userAnswers: userAnswers // 🆕 for question-level analytics
                 })
             });
             // Notify teacher: student submitted (real-time)
@@ -750,8 +768,28 @@ export default function StudySprintQuiz() {
                                     value={newQ}
                                     onChange={(e) => setNewQ(e.target.value)}
                                     placeholder="Enter your question here..."
-                                    className="w-full p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-semibold mb-5 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300 resize-y"
+                                    className="w-full p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-semibold mb-3 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300 resize-y"
                                 />
+
+                                {/* Image URL for question */}
+                                <div className="mb-5">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Image size={16} className="text-cyan-400" />
+                                        <label className="text-[var(--text-secondary)] text-sm">Question Image URL (optional)</label>
+                                    </div>
+                                    <input
+                                        type="url"
+                                        value={newQImageUrl}
+                                        onChange={(e) => setNewQImageUrl(e.target.value)}
+                                        placeholder="https://... (paste any image URL)"
+                                        className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] text-sm focus:border-cyan-500 outline-none transition-all"
+                                    />
+                                    {newQImageUrl && (
+                                        <div className="mt-2 rounded-xl overflow-hidden border border-cyan-500/20 max-h-48">
+                                            <img src={newQImageUrl} alt="Question preview" className="w-full object-contain max-h-48 bg-black/10" onError={(e) => e.target.style.display='none'} />
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                                     {options.map((opt, i) => (
@@ -913,6 +951,37 @@ export default function StudySprintQuiz() {
                                                 className="w-5 h-5 accent-violet-500 cursor-pointer"
                                             />
                                         </div>
+
+                                        {/* Schedule Section */}
+                                        <div className="pt-3 border-t border-[var(--border-color)] mt-1">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <Calendar size={16} className="text-violet-400" />
+                                                <span className="text-[var(--text-secondary)] text-sm font-semibold">Schedule Quiz (optional)</span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <label className="text-[var(--text-muted)] text-xs mb-1 block">Opens at</label>
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={settings.scheduledStart}
+                                                        onChange={(e) => setSettings({ ...settings, scheduledStart: e.target.value })}
+                                                        className="w-full p-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] text-sm focus:border-violet-500 outline-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[var(--text-muted)] text-xs mb-1 block">Closes at</label>
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={settings.scheduledEnd}
+                                                        onChange={(e) => setSettings({ ...settings, scheduledEnd: e.target.value })}
+                                                        className="w-full p-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] text-sm focus:border-violet-500 outline-none"
+                                                    />
+                                                </div>
+                                                {(settings.scheduledStart || settings.scheduledEnd) && (
+                                                    <button onClick={() => setSettings({ ...settings, scheduledStart: '', scheduledEnd: '' })} className="text-xs text-red-400 hover:text-red-300 underline">Clear schedule</button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -951,6 +1020,11 @@ export default function StudySprintQuiz() {
                                                 <p className="text-lg font-medium text-[var(--text-primary)] mb-3">
                                                     {q.question}
                                                 </p>
+                                                {q.imageUrl && (
+                                                    <div className="mb-3 rounded-xl overflow-hidden border border-cyan-500/20 max-h-32">
+                                                        <img src={q.imageUrl} alt="Q" className="object-contain max-h-32 w-full" onError={(e) => e.target.style.display='none'} />
+                                                    </div>
+                                                )}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                     {q.options.map((opt, i) => (
                                                         <span key={i} className={`
@@ -1084,6 +1158,14 @@ export default function StudySprintQuiz() {
                                 >
                                     <ChevronRight size={24} /> Join Quiz
                                 </button>
+
+                                {/* Re-attempt block error */}
+                                {alreadySubmittedError && (
+                                    <div className="mt-6 p-4 bg-red-500/15 border border-red-500/40 rounded-xl text-red-400 font-semibold text-sm flex items-center gap-3 max-w-md mx-auto">
+                                        <AlertCircle size={20} className="shrink-0" />
+                                        {alreadySubmittedError}
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -1178,9 +1260,21 @@ export default function StudySprintQuiz() {
                                     <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-10 border border-[var(--border-color)] shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
                                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-cyan-500  via-fuchsia-600 to-cyan-600"></div>
 
-                                        <h3 className="text-3xl font-bold text-[var(--text-primary)] mb-10 leading-relaxed tracking-wide select-none">
+                                        <h3 className="text-3xl font-bold text-[var(--text-primary)] mb-6 leading-relaxed tracking-wide select-none">
                                             {joinedQuiz.questions[currentQuestionIndex].question}
                                         </h3>
+
+                                        {/* Question Image */}
+                                        {joinedQuiz.questions[currentQuestionIndex].imageUrl && (
+                                            <div className="mb-8 rounded-2xl overflow-hidden border border-cyan-500/20 bg-black/10">
+                                                <img
+                                                    src={joinedQuiz.questions[currentQuestionIndex].imageUrl}
+                                                    alt="Question"
+                                                    className="w-full object-contain max-h-72"
+                                                    onError={(e) => e.target.style.display='none'}
+                                                />
+                                            </div>
+                                        )}
 
                                         <div className="grid gap-4">
                                             {joinedQuiz.questions[currentQuestionIndex].options.map((opt, i) => (

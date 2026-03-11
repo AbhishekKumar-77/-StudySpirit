@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const questionSchema = new mongoose.Schema({
     id: mongoose.Schema.Types.Mixed,
     question: { type: String, required: true },
+    imageUrl: { type: String, default: '' }, // Optional image attached to question
     options: [{ type: String }],
-    correct: { type: Number }, // Index of correct option (optional for coding)
+    correct: { type: Number }, // Index of correct option
     type: { type: String, default: 'mcq' },
     difficulty: { type: String, default: 'medium' },
     starterCode: { type: String },
@@ -22,7 +23,10 @@ const quizSchema = new mongoose.Schema({
         allowReview: { type: Boolean, default: true },
         showResults: { type: Boolean, default: true },
         randomizeQuestions: { type: Boolean, default: false },
-        secureMode: { type: Boolean, default: false }
+        secureMode: { type: Boolean, default: false },
+        // Scheduling: quiz is only joinable between these timestamps
+        scheduledStart: { type: Date, default: null },
+        scheduledEnd: { type: Date, default: null }
     },
     creatorName: { type: String, default: 'Anonymous' },
     creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

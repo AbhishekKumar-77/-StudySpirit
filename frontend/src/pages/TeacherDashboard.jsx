@@ -7,7 +7,7 @@ import {
     BookOpen, FileQuestion, Trophy, Users, BarChart2, LogOut,
     PlusCircle, Clock, CheckCircle, Copy, Eye, Target,
     ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X, Trash2, Download,
-    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft
+    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft, BarChart, TrendingDown, TrendingUp
 } from 'lucide-react';
 
 export default function TeacherDashboard() {
@@ -30,6 +30,11 @@ export default function TeacherDashboard() {
     const [socketConnected, setSocketConnected] = useState(false);
 
     const prevWatchCode = useRef(null);
+
+    // Analytics state
+    const [analyticsData, setAnalyticsData] = useState(null);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
+    const [analyticsQuiz, setAnalyticsQuiz] = useState('');
 
     // Theme detection
     useEffect(() => {
@@ -228,6 +233,7 @@ export default function TeacherDashboard() {
         { id: 'overview', label: 'Overview', icon: BarChart2 },
         { id: 'quizzes', label: 'My Quizzes', icon: FileQuestion },
         { id: 'live', label: 'Live Monitor', icon: Radio, badge: monitoringCode ? liveStudents.filter(s => s.status === 'active').length : null },
+        { id: 'analytics', label: 'Q-Analytics', icon: BarChart },
         { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     ];
@@ -311,12 +317,14 @@ export default function TeacherDashboard() {
                             {activeTab === 'quizzes' && 'My Quizzes'}
                             {activeTab === 'live' && '🔴 Live Exam Monitor'}
                             {activeTab === 'leaderboard' && 'Student Leaderboard'}
+                            {activeTab === 'analytics' && '📊 Question Analytics'}
                         </h1>
                         <p className="text-[var(--text-secondary)] mt-1">
                             {activeTab === 'overview' && "Here's your teaching dashboard at a glance."}
                             {activeTab === 'quizzes' && 'Manage all your created quizzes and view answer keys.'}
                             {activeTab === 'live' && 'Real-time view of who is taking your exam right now.'}
                             {activeTab === 'leaderboard' && 'See how students are performing across all quizzes.'}
+                            {activeTab === 'analytics' && 'See which questions students struggled with the most.'}
                         </p>
                     </div>
                     <button onClick={() => navigate('/quiz')} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 hover:scale-105 transition-all duration-200">
@@ -423,6 +431,19 @@ export default function TeacherDashboard() {
 
                 {/* ── LEADERBOARD ── */}
                 {activeTab === 'leaderboard' && <LeaderboardSection myQuizzes={myQuizzes} />}
+
+                {/* ── ANALYTICS ── */}
+                {activeTab === 'analytics' && (
+                    <AnalyticsSection
+                        myQuizzes={myQuizzes}
+                        analyticsData={analyticsData}
+                        setAnalyticsData={setAnalyticsData}
+                        analyticsLoading={analyticsLoading}
+                        setAnalyticsLoading={setAnalyticsLoading}
+                        analyticsQuiz={analyticsQuiz}
+                        setAnalyticsQuiz={setAnalyticsQuiz}
+                    />
+                )}
             </div>
         </div>
     );
@@ -831,6 +852,165 @@ function LeaderboardSection({ myQuizzes }) {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ── Analytics Section ───────────────────────────────────────────────
+function AnalyticsSection({ myQuizzes, analyticsData, setAnalyticsData, analyticsLoading, setAnalyticsLoading, analyticsQuiz, setAnalyticsQuiz }) {
+
+    const loadAnalytics = async (code) => {
+        if (!code) return;
+        setAnalyticsLoading(true);
+        setAnalyticsData(null);
+        try {
+            const res = await fetch(`${API_BASE}/quiz/${code}/analytics`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) setAnalyticsData(data);
+            else alert(data.message || 'Failed to load analytics');
+        } catch (e) {
+            console.error(e);
+        }
+        setAnalyticsLoading(false);
+    };
+
+    const getSuccessColor = (rate) => {
+        if (rate >= 70) return 'from-emerald-500 to-emerald-400';
+        if (rate >= 40) return 'from-amber-500 to-yellow-400';
+        return 'from-red-500 to-rose-400';
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* Quiz Selector */}
+            <div className="bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-color)]">
+                <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">Select a Quiz to Analyse</label>
+                <div className="flex gap-3">
+                    <select
+                        value={analyticsQuiz}
+                        onChange={(e) => setAnalyticsQuiz(e.target.value)}
+                        className="flex-1 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:border-violet-500 outline-none"
+                    >
+                        <option value="">-- Select a quiz --</option>
+                        {myQuizzes.filter(q => q.status === 'published').map(q => (
+                            <option key={q.code} value={q.code}>{q.title} ({q.code})</option>
+                        ))}
+                    </select>
+                    <button
+                        onClick={() => loadAnalytics(analyticsQuiz)}
+                        disabled={!analyticsQuiz || analyticsLoading}
+                        className="px-6 py-3 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl hover:scale-105 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        {analyticsLoading ? 'Loading...' : 'Load Analytics'}
+                    </button>
+                </div>
+            </div>
+
+            {analyticsData && !analyticsLoading && (
+                <>
+                    {/* Summary bar */}
+                    <div className="grid grid-cols-3 gap-4">
+                        {[{ label: 'Total Submissions', val: analyticsData.totalSubmissions, color: 'text-cyan-400' },
+                          { label: 'Total Questions', val: analyticsData.analytics.length, color: 'text-violet-400' },
+                          { label: 'Avg Pass Rate', val: `${Math.round(analyticsData.analytics.reduce((s, q) => s + q.successRate, 0) / (analyticsData.analytics.length || 1))}%`, color: 'text-emerald-400' }
+                        ].map(item => (
+                            <div key={item.label} className="bg-[var(--bg-secondary)] rounded-2xl p-5 border border-[var(--border-color)] text-center">
+                                <div className={`text-3xl font-black ${item.color}`}>{item.val}</div>
+                                <div className="text-[var(--text-secondary)] text-sm mt-1">{item.label}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Hardest questions callout */}
+                    {analyticsData.hardestQuestions?.length > 0 && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5">
+                            <h3 className="text-red-400 font-bold mb-3 flex items-center gap-2">
+                                <TrendingDown size={18} /> Top Hardest Questions (lowest pass rate)
+                            </h3>
+                            <div className="space-y-2">
+                                {analyticsData.hardestQuestions.map((q, i) => (
+                                    <div key={i} className="flex items-center gap-3 text-sm">
+                                        <span className="w-6 h-6 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-xs">{q.questionIndex + 1}</span>
+                                        <span className="flex-1 text-[var(--text-primary)] truncate">{q.question}</span>
+                                        <span className="text-red-400 font-bold">{q.successRate}% passed</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Per-question breakdown */}
+                    <div className="space-y-4">
+                        {analyticsData.analytics.map((q) => (
+                            <div key={q.questionId} className="bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-color)]">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-xs font-black px-2 py-0.5 bg-[var(--border-color)] rounded text-[var(--text-secondary)]">Q{q.questionIndex + 1}</span>
+                                            <span className={`text-xs px-2 py-0.5 rounded font-bold ${
+                                                q.difficulty === 'easy' ? 'bg-emerald-500/20 text-emerald-400' :
+                                                q.difficulty === 'hard' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                                            }`}>{q.difficulty}</span>
+                                        </div>
+                                        <p className="text-[var(--text-primary)] font-semibold">{q.question}</p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <div className={`text-2xl font-black ${
+                                            q.successRate >= 70 ? 'text-emerald-400' : q.successRate >= 40 ? 'text-amber-400' : 'text-red-400'
+                                        }`}>{q.successRate}%</div>
+                                        <div className="text-xs text-[var(--text-secondary)]">pass rate</div>
+                                    </div>
+                                </div>
+
+                                {/* Pass rate bar */}
+                                <div className="h-2.5 bg-[var(--border-color)] rounded-full overflow-hidden mb-4">
+                                    <div
+                                        className={`h-full rounded-full bg-gradient-to-r ${getSuccessColor(q.successRate)} transition-all duration-700`}
+                                        style={{ width: `${q.successRate}%` }}
+                                    />
+                                </div>
+
+                                {/* Stats row */}
+                                <div className="flex gap-4 text-sm mb-4">
+                                    <span className="flex items-center gap-1.5 text-emerald-400"><CheckCircle size={14} /> {q.correctCount} correct</span>
+                                    <span className="flex items-center gap-1.5 text-red-400"><X size={14} className="opacity-70" /> {q.wrongCount} wrong</span>
+                                    <span className="flex items-center gap-1.5 text-[var(--text-muted)]"><Clock size={14} /> {q.skippedCount} skipped</span>
+                                </div>
+
+                                {/* Option breakdown */}
+                                <div className="space-y-2">
+                                    {q.options.map((opt, oi) => {
+                                        const count = q.optionCounts[oi] || 0;
+                                        const pct = q.totalAttempts > 0 ? Math.round((count / q.totalAttempts) * 100) : 0;
+                                        const isCorrect = oi === q.correctOptionIndex;
+                                        return (
+                                            <div key={oi} className={`flex items-center gap-3 p-2.5 rounded-xl ${
+                                                isCorrect ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-[var(--bg-primary)]/50'
+                                            }`}>
+                                                <span className={`w-7 h-7 rounded-lg font-bold text-sm flex items-center justify-center shrink-0 ${
+                                                    isCorrect ? 'bg-emerald-500 text-white' : 'bg-[var(--border-color)] text-[var(--text-muted)]'
+                                                }`}>{String.fromCharCode(65 + oi)}</span>
+                                                <span className="flex-1 text-sm text-[var(--text-primary)] truncate">{opt}</span>
+                                                <div className="w-24 h-1.5 bg-[var(--border-color)] rounded-full overflow-hidden">
+                                                    <div className={`h-full rounded-full ${ isCorrect ? 'bg-emerald-500' : 'bg-[var(--text-muted)]' }`} style={{ width: `${pct}%` }} />
+                                                </div>
+                                                <span className="text-xs text-[var(--text-secondary)] w-12 text-right font-bold">{count} ({pct}%)</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {!analyticsData && !analyticsLoading && (
+                <div className="text-center py-20 text-[var(--text-muted)]">
+                    <BarChart size={60} className="mx-auto mb-4 opacity-30" />
+                    <p className="text-lg">Select a quiz above to see question analytics.</p>
                 </div>
             )}
         </div>

@@ -5,11 +5,10 @@ const User = require('../models/User');
 exports.generateAIQuestions = async (req, res) => {
     try {
         const { topic, difficulty, count, mcqCount = count || 5, codingCount = 0 } = req.body;
-        const apiKey = "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"; // User provided key
+        const apiKey = "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";
 
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
 
-        // Build difficulty-specific instructions
         const difficultyInstructions = {
             easy: `DIFFICULTY: EASY — Questions must be basic and beginner-friendly.
         - Focus on definitions, simple recall, fundamental concepts, and basic terminology.
@@ -96,62 +95,41 @@ exports.generateAIQuestions = async (req, res) => {
         try {
             questions = JSON.parse(content);
         } catch (e) {
-            // Fallback cleaning and repair
             let cleaned = content.replace(/```json/g, '').replace(/```/g, '').trim();
-
             try {
                 questions = JSON.parse(cleaned);
             } catch (e2) {
-                // If parsing fails (e.g. truncation), try to extract complete objects
-                // Regex to find JSON objects: starts with { and ends with } 
-                // This simple regex assumes no nested braces in question text, which is risky but often works for this structure
-                // Better: rely on the fact that these are specific question objects
                 const objectMatches = cleaned.match(/\{[\s\S]*?\}(?=\s*,|\s*\])/g);
-
                 if (objectMatches) {
                     questions = objectMatches.map(str => {
                         try { return JSON.parse(str); } catch { return null; }
                     }).filter(q => q !== null);
                 } else {
-                    // Try to find the last valid closing brace and append ]
                     const lastBrace = cleaned.lastIndexOf('}');
                     if (lastBrace !== -1) {
                         const repaired = cleaned.substring(0, lastBrace + 1) + ']';
-                        try {
-                            questions = JSON.parse(repaired);
-                        } catch (e3) {
-                            throw new Error("Failed to parse AI response. Try reducing the question count.");
-                        }
-                    } else {
-                        throw e;
-                    }
+                        try { questions = JSON.parse(repaired); }
+                        catch (e3) { throw new Error("Failed to parse AI response. Try reducing the question count."); }
+                    } else { throw e; }
                 }
             }
         }
 
-        // Must be array
         if (!Array.isArray(questions)) {
-            // If object returned wrapped in something?
             if (questions.questions) questions = questions.questions;
             else throw new Error("AI did not return an array");
         }
 
-        // Add IDs + shuffle options to prevent AI bias (LLMs tend to put correct answer at C)
         questions = questions.map((q, i) => {
             const opts = q.options || ["True", "False"];
             const correctIdx = typeof q.correct === 'number' ? q.correct : 0;
-            const correctAnswer = opts[correctIdx]; // Save the correct answer text
-
-            // Fisher-Yates shuffle
+            const correctAnswer = opts[correctIdx];
             const shuffled = [...opts];
             for (let j = shuffled.length - 1; j > 0; j--) {
                 const k = Math.floor(Math.random() * (j + 1));
                 [shuffled[j], shuffled[k]] = [shuffled[k], shuffled[j]];
             }
-
-            // Find new position of the correct answer after shuffle
             const newCorrectIdx = shuffled.indexOf(correctAnswer);
-
             return {
                 ...q,
                 id: Date.now() + i,
@@ -173,8 +151,6 @@ exports.createQuiz = async (req, res) => {
     try {
         const { title, questions, settings, creatorName, status } = req.body;
         const creatorId = req.user ? req.user.id : null;
-
-        // Generate simple code: e.g. SPZ9X2
         const code = "SP" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
         const quiz = await Quiz.create({
@@ -229,7 +205,7 @@ exports.publishDraft = async (req, res) => {
     }
 };
 
-// Get Quiz by Code
+// Get Quiz by Code (with schedule enforcement)
 exports.getQuiz = async (req, res) => {
     try {
         const { code } = req.params;
@@ -240,9 +216,22 @@ exports.getQuiz = async (req, res) => {
         }
 
         if (quiz.status === 'draft') {
-            // Only creator can get draft details directly
             if (!req.user || req.user.id.toString() !== (quiz.creatorId ? quiz.creatorId.toString() : '')) {
                 return res.status(403).json({ success: false, message: "This quiz is not published yet." });
+            }
+        }
+
+        // Schedule enforcement: check if quiz is within the allowed time window
+        const now = new Date();
+        const isTeacher = req.user && quiz.creatorId && req.user.id.toString() === quiz.creatorId.toString();
+
+        if (!isTeacher) {
+            if (quiz.settings.scheduledStart && now < new Date(quiz.settings.scheduledStart)) {
+                const startTime = new Date(quiz.settings.scheduledStart).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+                return res.status(403).json({ success: false, message: `This quiz hasn't started yet. It opens at ${startTime} IST.` });
+            }
+            if (quiz.settings.scheduledEnd && now > new Date(quiz.settings.scheduledEnd)) {
+                return res.status(403).json({ success: false, message: "This quiz has ended and is no longer accepting submissions." });
             }
         }
 
@@ -253,18 +242,40 @@ exports.getQuiz = async (req, res) => {
     }
 };
 
-// Submit Quiz Result (Update User Stats)
+// Check Re-Attempt: returns whether a reg number already submitted this quiz
+exports.checkReAttempt = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const { registrationNumber } = req.query;
+
+        if (!registrationNumber) {
+            return res.json({ success: true, alreadySubmitted: false });
+        }
+
+        const QuizSubmission = require('../models/QuizSubmission');
+        const existing = await QuizSubmission.findOne({
+            quizCode: code.toUpperCase(),
+            registrationNumber: registrationNumber.trim().toUpperCase()
+        });
+
+        res.json({ success: true, alreadySubmitted: !!existing });
+    } catch (error) {
+        console.error("Check Re-Attempt Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// Submit Quiz Result
 exports.submitResult = async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
 
-        const { score, totalQuestions, timeTaken } = req.body;
-        const userId = req.user.id; // Or req.user._id
+        const { score, totalQuestions, timeTaken, userAnswers } = req.body;
+        const userId = req.user.id;
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        // Initialize quizStats if missing (migration)
         if (!user.quizStats) {
             user.quizStats = { totalScore: 0, quizzesTaken: 0, averageScore: 0, highestScore: 0 };
         }
@@ -273,50 +284,57 @@ exports.submitResult = async (req, res) => {
             ? req.body.percentage
             : Math.round((score / totalQuestions) * 100);
 
-        // Save Submission
+        // Save Submission (with re-attempt prevention)
         const QuizSubmission = require('../models/QuizSubmission');
         if (req.body.quizCode) {
+            const regNo = (req.body.registrationNumber || '').trim().toUpperCase();
+
+            // Block re-attempt: if same regNo already submitted this quiz
+            if (regNo) {
+                const existing = await QuizSubmission.findOne({
+                    quizCode: req.body.quizCode.toUpperCase(),
+                    registrationNumber: regNo
+                });
+                if (existing) {
+                    return res.status(409).json({
+                        success: false,
+                        message: "You have already submitted this quiz.",
+                        alreadySubmitted: true
+                    });
+                }
+            }
+
             await QuizSubmission.create({
                 quizCode: req.body.quizCode,
                 studentId: userId,
                 studentName: user.name,
-                registrationNumber: req.body.registrationNumber || '',
+                registrationNumber: regNo,
                 score: score,
                 totalQuestions: totalQuestions,
                 percentage: percentage,
-                timeTaken: timeTaken
+                timeTaken: timeTaken,
+                userAnswers: userAnswers || {} // Save per-question answers for analytics
             });
         }
 
         // Update Stats
         user.quizStats.quizzesTaken += 1;
-        user.quizStats.totalScore += percentage; // Sum of percentages? Or raw points? Let's use avg percentage.
-        // Actually, let's track total XP or points.
-        // But for leaderboard "score%" is common.
-        // Let's store sum of percentages to calculate average easily.
-
+        user.quizStats.totalScore += percentage;
         user.quizStats.averageScore = Math.round(user.quizStats.totalScore / user.quizStats.quizzesTaken);
         user.quizStats.highestScore = Math.max(user.quizStats.highestScore, percentage);
 
-        // Track best time (lowest time taken wins for same or better score)
         if (timeTaken > 0) {
             if (!user.quizStats.bestTime || timeTaken < user.quizStats.bestTime) {
                 user.quizStats.bestTime = timeTaken;
             }
         }
 
-        // Update Global Stats (XP, problems)
         if (!user.stats) user.stats = {};
         user.stats.totalProblems = (user.stats.totalProblems || 0) + totalQuestions;
-        user.stats.completionRate = (user.stats.completionRate || 0) + percentage; // Rough approximation
-        user.stats.xp = (user.stats.xp || 0) + (score * 10) + 50; // 10 XP per correct + 50 bonus
-
-        // Streak logic (simplified)
-        // If last login was yesterday/today, maintain streak. logic elsewhere.
-        // Just increment for activity.
+        user.stats.completionRate = (user.stats.completionRate || 0) + percentage;
+        user.stats.xp = (user.stats.xp || 0) + (score * 10) + 50;
 
         await user.save();
-
         res.json({ success: true, message: "Result submitted successfully!", newStats: user.quizStats });
 
     } catch (error) {
@@ -328,19 +346,12 @@ exports.submitResult = async (req, res) => {
 // Get Global Leaderboard
 exports.getLeaderboard = async (req, res) => {
     try {
-        // Fetch top 50 users by highest score or average score?
-        // Let's sort by XP (overall engagement) or Highest Quiz Score.
-        // User wants "Leaderboard" for quizzes.
-        // Let's use `quizStats.highestScore` primarily, then `quizStats.averageScore`.
-
         const leaderboard = await User.find({ 'quizStats.quizzesTaken': { $gt: 0 } })
             .sort({ 'quizStats.highestScore': -1, 'quizStats.averageScore': -1 })
             .limit(50)
             .select('name avatar quizStats stats');
 
-        // Transform for frontend
         const formatted = leaderboard.map((u, index) => {
-            // Format best time as mm:ss
             const bt = u.quizStats.bestTime;
             let timeStr = 'N/A';
             if (bt && bt > 0) {
@@ -363,7 +374,6 @@ exports.getLeaderboard = async (req, res) => {
         });
 
         res.json({ success: true, leaderboard: formatted });
-
     } catch (error) {
         console.error("Get Leaderboard Error:", error);
         res.status(500).json({ success: false, message: "Failed to fetch leaderboard" });
@@ -423,5 +433,83 @@ exports.getSpecificLeaderboard = async (req, res) => {
     } catch (error) {
         console.error("Get Specific Leaderboard Error:", error);
         res.status(500).json({ success: false, message: "Failed to fetch specific leaderboard" });
+    }
+};
+
+// Get Question-Level Analytics for a Quiz (Teacher Only)
+exports.getQuizAnalytics = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const QuizSubmission = require('../models/QuizSubmission');
+
+        // Fetch quiz to get correct answers
+        const quiz = await Quiz.findOne({ code });
+        if (!quiz) {
+            return res.status(404).json({ success: false, message: "Quiz not found" });
+        }
+
+        // Fetch all submissions for this quiz
+        const submissions = await QuizSubmission.find({ quizCode: code });
+
+        if (submissions.length === 0) {
+            return res.json({ success: true, analytics: [], totalSubmissions: 0 });
+        }
+
+        // Build analytics per question
+        const analytics = quiz.questions.map((q, idx) => {
+            const qId = String(q.id);
+            let correctCount = 0;
+            let wrongCount = 0;
+            let skippedCount = 0;
+            const optionCounts = new Array(q.options.length).fill(0);
+
+            submissions.forEach(sub => {
+                const answered = sub.userAnswers ? sub.userAnswers[qId] : undefined;
+                if (answered === undefined || answered === null) {
+                    skippedCount++;
+                } else {
+                    const answerIdx = Number(answered);
+                    if (answerIdx === q.correct) {
+                        correctCount++;
+                    } else {
+                        wrongCount++;
+                    }
+                    if (answerIdx >= 0 && answerIdx < optionCounts.length) {
+                        optionCounts[answerIdx]++;
+                    }
+                }
+            });
+
+            const total = submissions.length;
+            return {
+                questionIndex: idx,
+                questionId: qId,
+                question: q.question,
+                imageUrl: q.imageUrl || '',
+                options: q.options,
+                correctOptionIndex: q.correct,
+                correctCount,
+                wrongCount,
+                skippedCount,
+                totalAttempts: total,
+                successRate: total > 0 ? Math.round((correctCount / total) * 100) : 0,
+                optionCounts, // How many students picked each option
+                difficulty: q.difficulty || 'medium'
+            };
+        });
+
+        // Sort by successRate ascending (hardest questions first)
+        const sortedByDifficulty = [...analytics].sort((a, b) => a.successRate - b.successRate);
+
+        res.json({
+            success: true,
+            quizTitle: quiz.title,
+            totalSubmissions: submissions.length,
+            analytics,
+            hardestQuestions: sortedByDifficulty.slice(0, 5) // Top 5 hardest
+        });
+    } catch (error) {
+        console.error("Quiz Analytics Error:", error);
+        res.status(500).json({ success: false, message: "Failed to fetch quiz analytics" });
     }
 };
