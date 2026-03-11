@@ -144,7 +144,7 @@ export default function StudySprintQuiz() {
     };
 
     const deleteQuestion = (id) => {
-        setQuestions(questions.filter(q => q.id !== id));
+        setQuestions(questions.filter(q => (q._id || q.id) !== id));
     };
 
     const generateQuizCode = () => {
@@ -388,10 +388,10 @@ export default function StudySprintQuiz() {
         const quizQs = joinedQuiz.questions;
 
         quizQs.forEach(q => {
-            if (userAnswers[q.id] === q.correct) {
+            if (userAnswers[(q._id || q.id)] === q.correct) {
                 correctCount++;
                 totalScore += 1;
-            } else if (userAnswers[q.id] !== undefined) {
+            } else if (userAnswers[(q._id || q.id)] !== undefined) {
                 totalScore -= joinedQuiz.settings.negativeMarking;
             }
         });
@@ -1123,7 +1123,7 @@ export default function StudySprintQuiz() {
                             )}
                             <div className="space-y-3">
                                 {questions.map((q, idx) => (
-                                    <div key={q.id} className="bg-[var(--glass-bg)] p-5 rounded-xl border border-[var(--border-color)] hover:border-cyan-500/50 transition-colors group">
+                                    <div key={(q._id || q.id)} className="bg-[var(--glass-bg)] p-5 rounded-xl border border-[var(--border-color)] hover:border-cyan-500/50 transition-colors group">
                                         <div className="flex justify-between items-start gap-4">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-2">
@@ -1164,7 +1164,7 @@ export default function StudySprintQuiz() {
                                                 </div>
                                             </div>
                                             <button
-                                                onClick={() => deleteQuestion(q.id)}
+                                                onClick={() => deleteQuestion((q._id || q.id))}
                                                 className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors"
                                             >
                                                 <Trash2 size={18} />
@@ -1405,13 +1405,13 @@ export default function StudySprintQuiz() {
                                                 <button
                                                     key={i}
                                                     onClick={() => {
-                                                        const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: i };
+                                                        const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: i };
                                                         setUserAnswers(newAnswers);
 
                                                         // Calculate score so far and emit progress
                                                         let correctCount = 0;
                                                         joinedQuiz.questions.forEach((q) => {
-                                                            if (newAnswers[q.id] === q.correct) correctCount++;
+                                                            if (newAnswers[(q._id || q.id)] === q.correct) correctCount++;
                                                         });
                                                         try {
                                                             const socket = getSocket();
@@ -1427,7 +1427,7 @@ export default function StudySprintQuiz() {
                                                     }}
                                                     className={`
                                                         w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group
-                                                        ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
+                                                        ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
                                                             ? "bg-gradient-to-r from-cyan-500 /20 to-cyan-600/20 border-cyan-500 text-[var(--text-primary)] shadow-[0_0_30px_rgba(34,211,238,0.15)] transform scale-[1.01]"
                                                             : "bg-[var(--glass-bg)] border-transparent hover:bg-[var(--bg-secondary)] hover:border-cyan-500/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                                         }
@@ -1435,7 +1435,7 @@ export default function StudySprintQuiz() {
                                                 >
                                                     <span className={`
                                                         inline-flex items-center justify-center w-10 h-10 rounded-lg font-black mr-4 text-lg transition-colors
-                                                        ${userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i
+                                                        ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
                                                             ? "bg-cyan-500 text-[var(--text-primary)]"
                                                             : "bg-[var(--bg-secondary)] text-[var(--text-muted)] group-hover:bg-[var(--border-color)] group-hover:text-[var(--text-secondary)]"}
                                                     `}>
@@ -1443,7 +1443,7 @@ export default function StudySprintQuiz() {
                                                     </span>
                                                     {opt}
 
-                                                    {userAnswers[joinedQuiz.questions[currentQuestionIndex].id] === i && (
+                                                    {userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i && (
                                                         <div className="absolute right-6 top-1/2 -translate-y-1/2 text-cyan-400 animate-fade-in">
                                                             <CheckCircle size={28} />
                                                         </div>
@@ -1542,12 +1542,12 @@ export default function StudySprintQuiz() {
 
                                 <div className="space-y-8 text-left">
                                     {joinedQuiz.questions.map((q, idx) => {
-                                        const userAnswerIdx = userAnswers[q.id];
+                                        const userAnswerIdx = userAnswers[(q._id || q.id)];
                                         const isCorrect = userAnswerIdx === q.correct;
                                         const isSkipped = userAnswerIdx === undefined;
 
                                         return (
-                                            <div key={q.id} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" :
+                                            <div key={(q._id || q.id)} className={`p-8 rounded-2xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" :
                                                 isSkipped ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30"
                                                 }`}>
                                                 <h4 className="text-xl text-[var(--text-primary)] font-bold mb-6 flex items-start gap-3">
@@ -1731,10 +1731,10 @@ export default function StudySprintQuiz() {
 
                                         <div className="space-y-6 text-left max-w-3xl mx-auto mb-10">
                                             {aiQuestions.map((q, idx) => {
-                                                const userAnswerIdx = userAnswers[q.id];
+                                                const userAnswerIdx = userAnswers[(q._id || q.id)];
                                                 const isCorrect = userAnswerIdx === q.correct;
                                                 return (
-                                                    <div key={q.id} className={`p-6 rounded-xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" : "bg-red-500/10 border-red-500/30"}`}>
+                                                    <div key={(q._id || q.id)} className={`p-6 rounded-xl border ${isCorrect ? "bg-emerald-500/10 border-emerald-500/30" : "bg-red-500/10 border-red-500/30"}`}>
                                                         <h4 className="text-[var(--text-primary)] font-bold mb-3 flex items-start gap-2">
                                                             <span className="opacity-50">Q{idx + 1}.</span> {q.question}
                                                         </h4>

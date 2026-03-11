@@ -601,7 +601,7 @@ exports.getQuizAnalytics = async (req, res) => {
 
         // Build analytics per question
         const analytics = quiz.questions.map((q, idx) => {
-            const qId = String(q.id);
+            const qId = String(q._id || q.id);
             let correctCount = 0;
             let wrongCount = 0;
             let skippedCount = 0;
