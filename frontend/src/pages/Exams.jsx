@@ -171,7 +171,8 @@ export default function Exams() {
                 });
                 const result = await executeRes.json();
                 const out = (result.run?.stdout || "").trim();
-                const passed = tc.expectedOutput ? (out === (tc.expectedOutput || "").trim() && result.success && result.run?.code === 0) : true;
+                const expected = (tc.expectedOutput || tc.output || "").trim();
+                const passed = expected ? (out === expected && result.success) : (result.success && !result.run?.stderr);
                 results.push({
                     pass: passed,
                     actual: out,
@@ -183,7 +184,7 @@ export default function Exams() {
                 results.push({ pass: false, error: e.message });
             }
         }
-        setCodeTestResults(prev => ({ ...prev, [currentQ.id]: results }));
+        setCodeTestResults(prev => ({ ...prev, [(currentQ._id || currentQ.id)]: results }));
         setIsRunningCode(false);
     };
 
@@ -262,10 +263,17 @@ export default function Exams() {
         const quizQs = joinedQuiz.questions;
 
         quizQs.forEach(q => {
+            const qKey = q._id || q.id;
             if (q.type === "coding") {
-                if (userAnswers[(q._id || q.id)] && userAnswers[(q._id || q.id)].trim() !== "") {
+                // Check actual test case results for coding questions
+                const testResults = codeTestResults[qKey];
+                if (testResults && testResults.length > 0 && testResults.every(r => r.pass)) {
                     correctCount++;
                     totalScore += 1;
+                } else if (testResults && testResults.length > 0) {
+                    // Partial credit: count fraction of passed tests
+                    const passedCount = testResults.filter(r => r.pass).length;
+                    totalScore += passedCount / testResults.length;
                 }
             } else {
                 if (userAnswers[(q._id || q.id)] === q.correct) {
@@ -339,7 +347,7 @@ export default function Exams() {
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" ref={fullscreenRef}>
             {/* ===== EXAM IN PROGRESS (full screen takeover) ===== */}
             {examStarted && joinedQuiz && joinedQuiz.questions[currentQuestionIndex] && (
-                <div className="fixed inset-0 z-[200] bg-[var(--bg-secondary)] flex flex-col items-center justify-center p-6 overflow-y-auto">
+                <div className="fixed inset-0 z-[200] bg-[var(--bg-secondary)] flex flex-col items-center p-6 overflow-y-auto pt-8">
                     <div className="w-full max-w-6xl relative animate-fade-in">
                         {/* Warnings */}
                         {warnings > 0 && !isTabHidden && (
