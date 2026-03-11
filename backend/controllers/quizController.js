@@ -1,6 +1,137 @@
 const Quiz = require('../models/Quiz');
 const User = require('../models/User');
 
+// ── Generate MCQ Questions FROM an Image (Vision AI) ──────────────────────────
+exports.generateFromImage = async (req, res) => {
+    try {
+        const { imageBase64, mimeType = 'image/jpeg', count = 5, difficulty = 'medium' } = req.body;
+        const apiKey = "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";
+
+        if (!imageBase64) {
+            return res.status(400).json({ success: false, message: "Image data is required" });
+        }
+
+        const difficultyGuide = {
+            easy: "Generate EASY questions — basic recall, definitions, simple facts visible in the image.",
+            medium: "Generate MEDIUM questions — require understanding of the content, not just recall.",
+            hard: "Generate HARD questions — require deep analysis, application, or inference from the content."
+        }[difficulty] || "Generate MEDIUM difficulty questions.";
+
+        const prompt = `You are an expert teacher. Look at this image carefully — it may be a textbook page, diagram, handwritten notes, or any educational content.
+
+${difficultyGuide}
+
+Generate EXACTLY ${count} multiple choice questions (MCQs) based ONLY on the content visible in this image.
+
+CRITICAL RULES:
+- Return ONLY a raw JSON array. No markdown, no explanation, no extra text.
+- Each question must be directly answerable from the image content.
+- Vary the correct answer position randomly (don't always put correct at index 0).
+- Each question must have exactly 4 options.
+
+JSON structure:
+[
+  {
+    "question": "Question text here",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correct": 0,
+    "difficulty": "${difficulty}"
+  }
+]
+
+Output the JSON array now:`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+                messages: [
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image_url',
+                                image_url: {
+                                    url: `data:${mimeType};base64,${imageBase64}`
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: prompt
+                            }
+                        ]
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 4000
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.choices || !data.choices[0]?.message?.content) {
+            console.error("Vision AI raw response:", JSON.stringify(data));
+            throw new Error("Invalid response from Vision AI. The model may not support this image type.");
+        }
+
+        let questions = [];
+        const content = data.choices[0].message.content;
+
+        try {
+            questions = JSON.parse(content);
+        } catch {
+            let cleaned = content.replace(/```json/g, '').replace(/```/g, '').trim();
+            try {
+                questions = JSON.parse(cleaned);
+            } catch {
+                const lastBrace = cleaned.lastIndexOf('}');
+                if (lastBrace !== -1) {
+                    try { questions = JSON.parse(cleaned.substring(0, lastBrace + 1) + ']'); }
+                    catch { throw new Error("Failed to parse AI response from image."); }
+                } else {
+                    throw new Error("AI returned no parseable questions from the image.");
+                }
+            }
+        }
+
+        if (!Array.isArray(questions)) {
+            if (questions.questions) questions = questions.questions;
+            else throw new Error("AI did not return a valid question array.");
+        }
+
+        // Add IDs and shuffle options
+        questions = questions.map((q, i) => {
+            const opts = q.options || [];
+            const correctIdx = typeof q.correct === 'number' ? q.correct : 0;
+            const correctAnswer = opts[correctIdx];
+            const shuffled = [...opts];
+            for (let j = shuffled.length - 1; j > 0; j--) {
+                const k = Math.floor(Math.random() * (j + 1));
+                [shuffled[j], shuffled[k]] = [shuffled[k], shuffled[j]];
+            }
+            const newCorrectIdx = shuffled.indexOf(correctAnswer);
+            return {
+                ...q,
+                id: Date.now() + i,
+                type: 'mcq',
+                options: shuffled,
+                correct: newCorrectIdx >= 0 ? newCorrectIdx : 0
+            };
+        });
+
+        res.json({ success: true, questions });
+
+    } catch (error) {
+        console.error("Vision AI Error:", error);
+        res.status(500).json({ success: false, message: "Failed to generate questions from image: " + error.message });
+    }
+};
+
+
 // AI Question Generation
 exports.generateAIQuestions = async (req, res) => {
     try {

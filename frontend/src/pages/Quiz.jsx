@@ -9,7 +9,7 @@ import {
     Timer, PlayCircle, PauseCircle, RotateCcw, Crown, Star,
     Flame, TrendingUp, Download, Copy, Share2, Settings, Bot,
     BookOpen, Lightbulb, AlertCircle, ChevronRight, Hash, XCircle, Pause,
-    Image, Calendar, BarChart2, TrendingDown
+    Image, Calendar, BarChart2, TrendingDown, Upload
 } from "lucide-react";
 
 export default function StudySprintQuiz() {
@@ -47,6 +47,8 @@ export default function StudySprintQuiz() {
     const [aiQuestionCount, setAiQuestionCount] = useState(10); // Default to 10 questions
     const [isSaving, setIsSaving] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [aiImageBase64, setAiImageBase64] = useState(""); // Image uploaded by teacher
+    const [isParsingImage, setIsParsingImage] = useState(false);
     const [drafts, setDrafts] = useState([]);
 
     // Student Exam Mode
@@ -541,6 +543,55 @@ export default function StudySprintQuiz() {
         }
     };
 
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload a valid image file');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result.split(',')[1];
+            generateFromImage(base64String, file.type);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const generateFromImage = async (base64, mimeType) => {
+        setIsParsingImage(true);
+        try {
+            const res = await fetch(`${API_BASE}/quiz/generate-from-image`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageBase64: base64,
+                    mimeType: mimeType,
+                    difficulty: settings.difficulty,
+                    count: aiQuestionCount || 5
+                })
+            });
+            const data = await res.json();
+
+            if (data.success && data.questions) {
+                setQuestions(prev => [...prev, ...data.questions]);
+                alert(`${data.questions.length} questions generated from image!`);
+            } else {
+                alert("Failed to generate questions from image: " + (data.message || "Unknown error"));
+            }
+        } catch (err) {
+            console.error("Vision AI Gen Error:", err);
+            alert("Error connecting to Vision AI service.");
+        } finally {
+            setIsParsingImage(false);
+            if (document.getElementById('ai-image-upload')) {
+                document.getElementById('ai-image-upload').value = '';
+            }
+        }
+    };
+
 
     const generateAIQuestionsForPractice = async () => {
         if (!studentPracticeTopic.trim()) {
@@ -861,8 +912,8 @@ export default function StudySprintQuiz() {
                                             type="text"
                                             value={aiTeacherTopic}
                                             onChange={(e) => setAiTeacherTopic(e.target.value)}
-                                            placeholder="Topic for AI questions (e.g., 'React Hooks', 'Data Structures')"
-                                            className="flex-1 p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300"
+                                            placeholder="Topic for AI questions (e.g., 'React Hooks')"
+                                            className="flex-1 p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 outline-none transition-all duration-300"
                                         />
                                         <input
                                             type="number"
@@ -871,15 +922,50 @@ export default function StudySprintQuiz() {
                                             value={aiQuestionCount}
                                             onChange={(e) => setAiQuestionCount(e.target.value === "" ? "" : Number(e.target.value))}
                                             placeholder="Count"
-                                            className="w-full md:w-24 p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all duration-300 text-center"
+                                            className="w-full md:w-24 p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:border-amber-500 outline-none text-center"
                                         />
                                         <button
                                             onClick={handleTeacherAIGeneration}
-                                            disabled={isGenerating}
-                                            className="w-full md:w-auto px-6 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70"
+                                            disabled={isGenerating || isParsingImage}
+                                            className="w-full md:w-auto px-6 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg transition-all hover:opacity-90 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70"
                                         >
-                                            <Sparkles size={20} /> {isGenerating ? `Generating ${settings.difficulty}...` : "Generate with AI"}
+                                            <Sparkles size={20} /> {isGenerating ? `Generating...` : "Generate with AI"}
                                         </button>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex-1 h-px bg-cyan-500/20"></div>
+                                        <span className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">OR</span>
+                                        <div className="flex-1 h-px bg-cyan-500/20"></div>
+                                    </div>
+
+                                    <div className="mt-4">
+                                        <label className={`
+                                            w-full flex flex-col items-center justify-center py-6 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300
+                                            ${isParsingImage ? 'border-amber-500/50 bg-amber-500/10' : 'border-cyan-500/30 bg-[var(--glass-bg)] hover:border-amber-500/50 hover:bg-black/20'}
+                                        `}>
+                                            <div className="flex flex-col items-center justify-center text-[var(--text-secondary)]">
+                                                {isParsingImage ? (
+                                                    <Sparkles size={32} className="mb-2 text-amber-500 animate-pulse" />
+                                                ) : (
+                                                    <Upload size={32} className="mb-2 text-cyan-400 group-hover:text-amber-500" />
+                                                )}
+                                                <p className="text-sm font-semibold text-[var(--text-primary)]">
+                                                    {isParsingImage ? 'Reading Image & Generating...' : 'Upload an Image to Generate Questions'}
+                                                </p>
+                                                <p className="text-xs opacity-70 mt-1">
+                                                    (Textbook page, handwritten notes, diagram, etc.)
+                                                </p>
+                                            </div>
+                                            <input 
+                                                id="ai-image-upload" 
+                                                type="file" 
+                                                accept="image/*" 
+                                                className="hidden" 
+                                                onChange={handleImageUpload} 
+                                                disabled={isParsingImage || isGenerating} 
+                                            />
+                                        </label>
                                     </div>
                                 </div>
                             </div>

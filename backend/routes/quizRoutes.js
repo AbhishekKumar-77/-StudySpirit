@@ -6,6 +6,9 @@ const auth = require('../middleware/auth');
 // Generate AI Questions
 router.post('/generate-ai', quizController.generateAIQuestions);
 
+// Generate questions from Image
+router.post('/generate-from-image', quizController.generateFromImage);
+
 // Create Quiz (Save) - allow drafts, optionally track auth
 router.post('/create', quizController.createQuiz);
 
