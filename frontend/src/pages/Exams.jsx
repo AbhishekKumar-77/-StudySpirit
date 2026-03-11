@@ -91,13 +91,29 @@ export default function Exams() {
             };
 
             const handleContextMenu = (e) => e.preventDefault();
-            const handleCopyPaste = (e) => e.preventDefault();
+            const handleCopyPaste = (e) => {
+                // Allow copy/paste INSIDE the Monaco code editor (coding questions need it)
+                const target = e.target;
+                if (target && (target.closest('.monaco-editor') || target.closest('[class*="monaco"]'))) {
+                    return; // Don't block paste inside the code editor
+                }
+                e.preventDefault();
+            };
             const handleKeyDown = (e) => {
+                // Allow Ctrl+C / Ctrl+V inside Monaco editor for coding questions
+                const target = e.target;
+                const isInEditor = target && (target.closest('.monaco-editor') || target.closest('[class*="monaco"]'));
+                
                 if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-                    (e.ctrlKey && e.key === 'c') || (e.ctrlKey && e.key === 'v') ||
                     e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && e.key === 's')) {
                     e.preventDefault();
-                    alert("WARNING: Keyboard shortcuts / Screenshots are disabled during the exam!");
+                    alert("WARNING: This shortcut is disabled during the exam!");
+                } else if ((e.ctrlKey && e.key === 'c') || (e.ctrlKey && e.key === 'v')) {
+                    if (!isInEditor) {
+                        e.preventDefault();
+                        alert("WARNING: Copy/Paste outside the code editor is disabled!");
+                    }
+                    // If inside editor, allow it (don't prevent)
                 }
             };
 
@@ -152,12 +168,13 @@ export default function Exams() {
         const currentQ = joinedQuiz.questions[currentQuestionIndex];
         if (!currentQ || currentQ.type !== "coding") return;
 
-        const code = userAnswers[(currentQ._id || currentQ.id)] || "";
+        const qKey = currentQ._id || currentQ.id;
+        // Get code exactly how editor displays it: userAnswers first, then starterCode fallback
+        const code = userAnswers[qKey] ?? currentQ.starterCode ?? "";
         if (!code.trim()) return alert("Please write some code before running!");
 
         setIsRunningCode(true);
         const results = [];
-        // Support testCases or default to an empty run
         const tcs = currentQ.testCases && currentQ.testCases.length > 0 ? currentQ.testCases : [{ input: "", expectedOutput: "" }];
 
         for (let i = 0; i < tcs.length; i++) {
@@ -167,24 +184,37 @@ export default function Exams() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     credentials: "include",
-                    body: JSON.stringify({ language: codeLanguage, code: code, stdin: tc.input })
+                    body: JSON.stringify({ language: codeLanguage, code: code, stdin: tc.input || "" })
                 });
                 const result = await executeRes.json();
+                
+                if (!result.success) {
+                    results.push({
+                        pass: false,
+                        actual: "",
+                        expected: tc.expectedOutput || tc.output || "N/A",
+                        input: tc.input || "None",
+                        error: result.message || "Execution failed on server"
+                    });
+                    continue;
+                }
+
                 const out = (result.run?.stdout || "").trim();
+                const errOut = (result.run?.stderr || "").trim();
                 const expected = (tc.expectedOutput || tc.output || "").trim();
-                const passed = expected ? (out === expected && result.success) : (result.success && !result.run?.stderr);
+                const passed = expected ? (out === expected && !errOut) : (out.length > 0 && !errOut);
                 results.push({
                     pass: passed,
-                    actual: out,
-                    expected: tc.expectedOutput || "N/A",
+                    actual: out || (errOut ? "(see error below)" : "No output generated"),
+                    expected: tc.expectedOutput || tc.output || "N/A",
                     input: tc.input || "None",
-                    error: result.run?.stderr || ""
+                    error: errOut
                 });
             } catch (e) {
-                results.push({ pass: false, error: e.message });
+                results.push({ pass: false, actual: "", expected: tc.expectedOutput || tc.output || "N/A", input: tc.input || "None", error: "Network error: " + e.message });
             }
         }
-        setCodeTestResults(prev => ({ ...prev, [(currentQ._id || currentQ.id)]: results }));
+        setCodeTestResults(prev => ({ ...prev, [qKey]: results }));
         setIsRunningCode(false);
     };
 
@@ -239,7 +269,17 @@ export default function Exams() {
         setTimeLeft(joinedQuiz.settings.timeLimit * 60);
         setExamStarted(true);
         setExamSubmitted(false);
-        setUserAnswers({});
+        
+        // Pre-populate coding question answers with their starterCode
+        // so userAnswers always matches what the editor displays
+        const initialAnswers = {};
+        joinedQuiz.questions.forEach(q => {
+            if (q.type === 'coding' && q.starterCode) {
+                initialAnswers[q._id || q.id] = q.starterCode;
+            }
+        });
+        setUserAnswers(initialAnswers);
+        
         setCurrentQuestionIndex(0);
         setShowResult(false);
 
