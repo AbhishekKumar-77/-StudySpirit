@@ -692,7 +692,7 @@ function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete }) {
                 </span>
             </div>
             <div className="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)] mb-4">
-                <span className="flex items-center gap-1 bg-[var(--border-color)] px-2 py-1 rounded-lg"><FileQuestion size={12} /> {quiz.questions?.length || 0} Qs</span>
+                <span className="flex items-center gap-1 bg-[var(--border-color)] px-2 py-1 rounded-lg"><Code size={12} /> {quiz.questions?.length || 0} Qs</span>
                 <span className="flex items-center gap-1 bg-[var(--border-color)] px-2 py-1 rounded-lg"><Clock size={12} /> {quiz.settings?.timeLimit || 30}m</span>
                 <span className="flex items-center gap-1 bg-[var(--border-color)] px-2 py-1 rounded-lg"><Target size={12} /> {quiz.settings?.difficulty || 'medium'}</span>
             </div>
