@@ -438,6 +438,15 @@ export default function StudySprintQuiz() {
 
         setIsSaving(true);
         try {
+            // Convert local datetime strings to strict UTC ISO strings before saving
+            const formattedSettings = {
+                ...settings,
+                timeLimit: settings.timeLimit || 30,
+                negativeMarking: settings.negativeMarking || 0,
+                scheduledStart: settings.scheduledStart ? new Date(settings.scheduledStart).toISOString() : null,
+                scheduledEnd: settings.scheduledEnd ? new Date(settings.scheduledEnd).toISOString() : null
+            };
+
             const res = await fetch(`${API_BASE}/quiz/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -445,11 +454,7 @@ export default function StudySprintQuiz() {
                 body: JSON.stringify({
                     title: quizTitle,
                     questions,
-                    settings: {
-                        ...settings,
-                        timeLimit: settings.timeLimit || 30,
-                        negativeMarking: settings.negativeMarking || 0
-                    },
+                    settings: formattedSettings,
                     creatorName: user?.name || "Teacher",
                     status
                 })
@@ -482,7 +487,20 @@ export default function StudySprintQuiz() {
         setQuestions(quiz.questions || []);
         setQuizTitle(quiz.title);
         setQuizCode(quiz.code);
-        setSettings(quiz.settings);
+
+        const loadedSettings = { ...quiz.settings };
+        if (loadedSettings.scheduledStart) {
+            const d = new Date(loadedSettings.scheduledStart);
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            loadedSettings.scheduledStart = d.toISOString().slice(0, 16);
+        }
+        if (loadedSettings.scheduledEnd) {
+            const d = new Date(loadedSettings.scheduledEnd);
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            loadedSettings.scheduledEnd = d.toISOString().slice(0, 16);
+        }
+
+        setSettings(loadedSettings);
         setActiveTab("teacher");
     };
 
