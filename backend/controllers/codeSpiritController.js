@@ -60,17 +60,31 @@ async function executeViaWandbox(language, code, stdin = '') {
         options = '-lm'; // Link math library for C
     }
 
-    const response = await fetch(WANDBOX_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            code: finalCode,
-            compiler: compiler,
-            stdin: stdin || '',
-            options: options,
-            'compiler-option-raw': langKey === 'c' ? '-std=c17' : (langKey === 'cpp' || langKey === 'c++') ? '-std=c++20' : ''
-        })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second execution timeout limit
+
+    let response;
+    try {
+        response = await fetch(WANDBOX_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+                code: finalCode,
+                compiler: compiler,
+                stdin: stdin || '',
+                options: options,
+                'compiler-option-raw': langKey === 'c' ? '-std=c17' : (langKey === 'cpp' || langKey === 'c++') ? '-std=c++20' : ''
+            })
+        });
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            throw new Error("Execution Time Limit Exceeded (8s timeout) - Possible Infinite Loop.");
+        }
+        throw err;
+    } finally {
+        clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
         const errText = await response.text().catch(() => '');

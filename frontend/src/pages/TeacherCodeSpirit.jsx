@@ -743,6 +743,20 @@ function LeaderboardSection({ myQuizzes }) {
 
     const downloadCSV = () => {
         if (leaderboard.length === 0) return;
+        
+        const formatTimeForExcel = (timeStr) => {
+            if (!timeStr) return "00:00";
+            if (typeof timeStr === 'number') return `${Math.floor(timeStr / 60).toString().padStart(2, '0')}:${(timeStr % 60).toString().padStart(2, '0')}`;
+            if (typeof timeStr === 'string' && timeStr.includes('m')) {
+                const mMatch = timeStr.match(/(\d+)\s*m/);
+                const sMatch = timeStr.match(/(\d+)\s*s/);
+                const m = mMatch ? parseInt(mMatch[1]) : 0;
+                const s = sMatch ? parseInt(sMatch[1]) : 0;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+            return String(timeStr);
+        };
+
         const headers = ["Rank", "Registration No", "Student Name", "Correct Answers", "Real Marks", "Total Questions", "Percentage", "Time Taken"];
         const rows = leaderboard.map(p => {
             // Calculate real marks exactly based on the final percentage they received
@@ -755,7 +769,7 @@ function LeaderboardSection({ myQuizzes }) {
                 realMarks,
                 p.totalMarks || 0,
                 `${p.score}%`,
-                p.time
+                formatTimeForExcel(p.time)
             ];
         });
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");

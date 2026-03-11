@@ -120,6 +120,12 @@ export default function CodeEditor() {
     const [showReview, setShowReview] = useState(false);
     const [showQuestionNav, setShowQuestionNav] = useState(false);
 
+    // Secure Mode state
+    const isSecureMode = location.state?.secureMode || false;
+    const [warnings, setWarnings] = useState(0);
+    const [isTabHidden, setIsTabHidden] = useState(false);
+    const [fullscreenActive, setFullscreenActive] = useState(false);
+
     // Timer effect
     useEffect(() => {
         if (isChallengeMode && !completedQuestions[currentIndex]) {
@@ -139,6 +145,70 @@ export default function CodeEditor() {
         }
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }, [timerActive]);
+
+    // Secure browser mode hooks
+    useEffect(() => {
+        if (isSecureMode && isChallengeMode) {
+            const enterFullscreen = async () => {
+                try {
+                    if (document.documentElement.requestFullscreen) {
+                        await document.documentElement.requestFullscreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        await document.documentElement.webkitRequestFullscreen();
+                    }
+                    setFullscreenActive(true);
+                } catch (err) {
+                    console.error("Fullscreen err:", err);
+                    alert("Secure Mode: Fullscreen access is recommended.");
+                }
+            };
+            if (!document.fullscreenElement) enterFullscreen();
+
+            const handleVisibilityChange = () => {
+                const hidden = document.hidden;
+                setIsTabHidden(hidden);
+                if (hidden) {
+                    setWarnings(prev => {
+                        const newCount = prev + 1;
+                        if (newCount >= 3) {
+                            alert("Violation Limit Reached! Suspicious activity detected.");
+                        } else {
+                            alert("WARNING: Tab switching is strictly prohibited in Secure Mode! Please return to your editor.");
+                        }
+                        return newCount;
+                    });
+                }
+            };
+
+            const handleContextMenu = (e) => e.preventDefault();
+            const handleCopyPaste = (e) => {
+                e.preventDefault();
+                alert("Copy/Paste is disabled in Secure Mode.");
+            };
+            const handleKeyDown = (e) => {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                    (e.ctrlKey && e.key === 'c') || (e.ctrlKey && e.key === 'v') ||
+                    e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && e.key === 's')) {
+                    e.preventDefault();
+                    alert("Keyboard shortcuts and screenshots are disabled in Secure Mode!");
+                }
+            };
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            document.addEventListener('contextmenu', handleContextMenu);
+            document.addEventListener('copy', handleCopyPaste);
+            document.addEventListener('paste', handleCopyPaste);
+            window.addEventListener('keydown', handleKeyDown);
+
+            return () => {
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                document.removeEventListener('contextmenu', handleContextMenu);
+                document.removeEventListener('copy', handleCopyPaste);
+                document.removeEventListener('paste', handleCopyPaste);
+                window.removeEventListener('keydown', handleKeyDown);
+            };
+        }
+    }, [isSecureMode, isChallengeMode]);
 
     // Reset timer and verification when switching questions
     useEffect(() => {
@@ -493,6 +563,19 @@ export default function CodeEditor() {
 
     return (
         <div className={`min-h-screen font-sans ${theme === "light" ? "bg-gray-100 text-gray-900" : "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-[var(--text-primary)]"}`}>
+            
+            {/* Tab switch blocker */}
+            {isTabHidden && isSecureMode && (
+                <div className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center p-6 backdrop-blur-3xl">
+                    <AlertCircle size={100} className="text-red-500 mb-6 animate-pulse" />
+                    <h1 className="text-5xl font-black text-red-500 mb-4 text-center">SESSION PAUSED</h1>
+                    <p className="text-2xl text-white text-center mb-4 max-w-2xl">
+                        You have navigated away from the secure editor window. This action has been recorded.
+                    </p>
+                    <p className="text-xl text-amber-400 font-bold">Warnings: {warnings} / 3</p>
+                </div>
+            )}
+
             {/* Navbar */}
             <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 ${theme === "light" ? "bg-white/80 border-gray-200" : "bg-[var(--glass-bg)] border-cyan-500/10"}`}>
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between">
