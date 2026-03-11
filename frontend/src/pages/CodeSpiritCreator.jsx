@@ -113,7 +113,10 @@ export default function CodeSpiritCreator() {
                 });
                 const result = await executeRes.json();
                 const out = (result.run?.stdout || "").trim();
-                const passed = out === (tc.expectedOutput || "").trim() && result.success && result.run?.code === 0;
+                const outNormalized = out.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n').map(l => l.trim()).join('\n');
+                const expNormalized = (tc.expectedOutput || "").replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n').map(l => l.trim()).join('\n');
+
+                const passed = outNormalized === expNormalized && result.success && (result.run?.exitCode === 0 || result.run?.code === 0);
                 results.push({
                     pass: passed,
                     actual: out,
@@ -356,7 +359,18 @@ export default function CodeSpiritCreator() {
 
                             <h3 className="text-white/80 font-bold mb-4">Test Cases Executed:</h3>
                             {verifyResults.length === 0 ? (
-                                <div className="text-white/30 text-sm italic">Run code to see test results</div>
+                                <div className="space-y-4">
+                                    {verifyingQ.testCases && verifyingQ.testCases.map((tc, idx) => (
+                                        <div key={idx} className="p-4 rounded border border-white/10 bg-white/5">
+                                            <div className="font-bold text-sm text-cyan-500 mb-2">Test Case {idx + 1} (Pending)</div>
+                                            <div className="text-xs text-white/50 space-y-1">
+                                                <div><span className="opacity-60">Input:</span> {tc.input}</div>
+                                                <div><span className="opacity-60">Expected:</span> {tc.expectedOutput}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className="text-white/30 text-sm italic mt-4">Run code to see test results</div>
+                                </div>
                             ) : (
                                 <div className="space-y-4">
                                     {verifyResults.map((r, i) => (
