@@ -152,7 +152,7 @@ export default function Exams() {
         const currentQ = joinedQuiz.questions[currentQuestionIndex];
         if (!currentQ || currentQ.type !== "coding") return;
 
-        const code = userAnswers[currentQ.id] || "";
+        const code = userAnswers[(currentQ._id || currentQ.id)] || "";
         if (!code.trim()) return alert("Please write some code before running!");
 
         setIsRunningCode(true);
@@ -340,7 +340,7 @@ export default function Exams() {
             {/* ===== EXAM IN PROGRESS (full screen takeover) ===== */}
             {examStarted && joinedQuiz && joinedQuiz.questions[currentQuestionIndex] && (
                 <div className="fixed inset-0 z-[200] bg-[var(--bg-secondary)] flex flex-col items-center justify-center p-6 overflow-y-auto">
-                    <div className="w-full max-w-5xl relative animate-fade-in">
+                    <div className="w-full max-w-6xl relative animate-fade-in">
                         {/* Warnings */}
                         {warnings > 0 && !isTabHidden && (
                             <div className="absolute -top-24 left-0 w-full p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 flex items-center gap-3 backdrop-blur-md animate-bounce">
@@ -385,54 +385,55 @@ export default function Exams() {
                         </div>
 
                         {/* Question Card */}
-                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-10 border border-[var(--border-color)] shadow-xl relative overflow-hidden">
+                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-[var(--border-color)] shadow-xl relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-500 via-orange-500 to-amber-500"></div>
 
-                            <h3 className="text-3xl font-bold mb-10 leading-relaxed tracking-wide select-none">
-                                {joinedQuiz.questions[currentQuestionIndex].question}
-                            </h3>
+                            {joinedQuiz.questions[currentQuestionIndex].type === "coding" ? (
+                                /* ── CODING QUESTION LAYOUT ── */
+                                <div>
+                                    <h3 className="text-xl md:text-2xl font-bold mb-6 leading-relaxed select-none">
+                                        {joinedQuiz.questions[currentQuestionIndex].question}
+                                    </h3>
 
-                            <div className="grid gap-4">
-                                {joinedQuiz.questions[currentQuestionIndex].type === "coding" ? (
-                                    <div className="w-full text-left">
-                                        <div className="mb-4 flex items-center gap-4 flex-wrap">
-                                            <div className="flex items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-2 rounded-xl text-sm font-bold w-full md:w-auto">
-                                                <Code size={18} className="text-cyan-400" /> 
-                                                <span className="text-[var(--text-secondary)]">Language:</span>
-                                                <select value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)} className="bg-transparent text-[var(--text-primary)] outline-none cursor-pointer">
-                                                    <option value="javascript">JavaScript</option>
-                                                    <option value="python">Python</option>
-                                                    <option value="cpp">C++</option>
-                                                    <option value="java">Java</option>
-                                                </select>
-                                            </div>
-                                            <button onClick={runCodeForQuestion} disabled={isRunningCode} className="px-6 py-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 text-sm rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/10 active:scale-95 ml-auto">
-                                                <Play size={16} /> {isRunningCode ? "Running Tests..." : "Run Test Cases"}
-                                            </button>
+                                    <div className="mb-4 flex items-center gap-4 flex-wrap">
+                                        <div className="flex items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-2 rounded-xl text-sm font-bold">
+                                            <Code size={18} className="text-cyan-400" />
+                                            <span className="text-[var(--text-secondary)]">Language:</span>
+                                            <select value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)} className="bg-transparent text-[var(--text-primary)] outline-none cursor-pointer">
+                                                <option value="javascript">JavaScript</option>
+                                                <option value="python">Python</option>
+                                                <option value="cpp">C++</option>
+                                                <option value="java">Java</option>
+                                                <option value="c">C</option>
+                                            </select>
                                         </div>
+                                        <button onClick={runCodeForQuestion} disabled={isRunningCode} className="px-6 py-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 text-sm rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/10 active:scale-95 ml-auto">
+                                            <Play size={16} /> {isRunningCode ? "Running Tests..." : "Run Test Cases"}
+                                        </button>
+                                    </div>
 
-                                        <div className="border border-[var(--border-color)] rounded-2xl overflow-hidden mb-6 bg-[#0d1117] shadow-inner relative group">
-                                            <div className="absolute top-0 right-0 p-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                 <button
-                                                    onClick={() => {
-                                                        const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: joinedQuiz.questions[currentQuestionIndex].starterCode || '' };
-                                                        setUserAnswers(newAnswers);
-                                                    }}
-                                                    className="px-3 py-1.5 bg-[var(--bg-secondary)]/80 backdrop-blur-md text-[var(--text-secondary)] hover:text-cyan-400 border border-[var(--border-color)] text-xs rounded-lg font-bold transition-colors"
-                                                    title="Reset to Starter Code"
-                                                >
-                                                    Reset Code
-                                                </button>
-                                            </div>
-                                            <Editor
-                                                height="450px"
-                                                language={codeLanguage}
-                                                theme="vs-dark"
-                                                value={userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] ?? joinedQuiz.questions[currentQuestionIndex].starterCode ?? ''}
-                                                onChange={(val) => {
-                                                    const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: val };
+                                    <div className="border border-[var(--border-color)] rounded-2xl overflow-hidden mb-4 bg-[#0d1117] shadow-inner relative group">
+                                        <div className="absolute top-0 right-0 p-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                             <button
+                                                onClick={() => {
+                                                    const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: joinedQuiz.questions[currentQuestionIndex].starterCode || '' };
                                                     setUserAnswers(newAnswers);
                                                 }}
+                                                className="px-3 py-1.5 bg-[var(--bg-secondary)]/80 backdrop-blur-md text-[var(--text-secondary)] hover:text-cyan-400 border border-[var(--border-color)] text-xs rounded-lg font-bold transition-colors"
+                                                title="Reset to Starter Code"
+                                            >
+                                                Reset Code
+                                            </button>
+                                        </div>
+                                        <Editor
+                                            height="400px"
+                                            language={codeLanguage}
+                                            theme="vs-dark"
+                                            value={userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] ?? joinedQuiz.questions[currentQuestionIndex].starterCode ?? ''}
+                                            onChange={(val) => {
+                                                const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: val };
+                                                setUserAnswers(newAnswers);
+                                            }}
                                                 options={{ 
                                                     fontSize: 15, 
                                                     minimap: { enabled: false },
@@ -444,10 +445,10 @@ export default function Exams() {
                                                     cursorBlinking: "smooth",
                                                 }}
                                             />
-                                        </div>
+                                    </div>
 
-                                        {/* Test Cases display *always* visible if they exist */}
-                                        {joinedQuiz.questions[currentQuestionIndex].testCases && joinedQuiz.questions[currentQuestionIndex].testCases.length > 0 && (
+                                    {/* Test Cases display *always* visible if they exist */}
+                                    {joinedQuiz.questions[currentQuestionIndex].testCases && joinedQuiz.questions[currentQuestionIndex].testCases.length > 0 && (
                                             <div className="bg-[#0a0a0a] rounded-2xl border border-[var(--border-color)] p-6 mt-6 shadow-lg relative overflow-hidden">
                                                 <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-500 to-blue-600"></div>
                                                 <h3 className="text-white font-black mb-5 flex items-center justify-between">
@@ -527,10 +528,15 @@ export default function Exams() {
                                                     })}
                                                 </div>
                                             </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <>
+                                    )}
+                                </div>
+                            ) : (
+                                /* ── MCQ QUESTION LAYOUT ── */
+                                <div>
+                                    <h3 className="text-3xl font-bold mb-10 leading-relaxed tracking-wide select-none">
+                                        {joinedQuiz.questions[currentQuestionIndex].question}
+                                    </h3>
+                                    <div className="grid gap-4">
                                         {joinedQuiz.questions[currentQuestionIndex].options.map((opt, i) => (
                                             <button
                                                 key={i}
@@ -570,9 +576,9 @@ export default function Exams() {
                                                 )}
                                             </button>
                                         ))}
-                                    </>
-                                )}
-                            </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="flex justify-between mt-12 pt-8 border-t border-[var(--border-color)]">
                                 <button

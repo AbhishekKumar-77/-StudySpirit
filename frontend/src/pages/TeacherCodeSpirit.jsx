@@ -637,23 +637,53 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
                                         <div key={idx} className="border border-[var(--border-color)] rounded-xl p-4">
                                             <div className="font-semibold text-[var(--text-primary)] mb-3 text-sm">
                                                 <span className="text-violet-500 font-black mr-2">Q{idx + 1}.</span>
+                                                <span className={`text-xs px-2 py-0.5 rounded-full font-bold mr-2 ${q.type === 'coding' ? 'bg-pink-500/15 text-pink-500' : 'bg-cyan-500/15 text-cyan-500'}`}>
+                                                    {q.type === 'coding' ? 'CODING' : 'MCQ'}
+                                                </span>
                                                 {q.question}
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                {q.options?.map((opt, oi) => (
-                                                    <div key={oi} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${oi === q.correct
-                                                        ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-bold'
-                                                        : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)]'
-                                                        }`}>
-                                                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black ${oi === q.correct ? 'bg-emerald-500 text-white' : 'bg-[var(--border-color)] text-[var(--text-muted)]'
+                                            {q.type === 'coding' ? (
+                                                /* Coding question answer key */
+                                                <div className="space-y-3">
+                                                    {q.starterCode && (
+                                                        <div>
+                                                            <div className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider mb-1">Starter Code</div>
+                                                            <pre className="bg-[#0d1117] text-emerald-300 p-3 rounded-lg text-xs font-mono overflow-x-auto whitespace-pre-wrap max-h-40">{q.starterCode}</pre>
+                                                        </div>
+                                                    )}
+                                                    {q.testCases && q.testCases.length > 0 && (
+                                                        <div>
+                                                            <div className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider mb-2">Test Cases ({q.testCases.length})</div>
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                {q.testCases.map((tc, ti) => (
+                                                                    <div key={ti} className="bg-[var(--bg-primary)] border border-[var(--border-color)] p-3 rounded-lg text-xs font-mono">
+                                                                        <div className="text-amber-500 font-bold mb-1">Case {ti + 1}</div>
+                                                                        <div className="text-[var(--text-secondary)]">Input: <span className="text-[var(--text-primary)]">{tc.input || 'None'}</span></div>
+                                                                        <div className="text-[var(--text-secondary)]">Output: <span className="text-emerald-400 font-bold">{tc.expectedOutput || tc.output || 'N/A'}</span></div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                /* MCQ question answer key */
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                    {q.options?.map((opt, oi) => (
+                                                        <div key={oi} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${oi === q.correct
+                                                            ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-emerald-400 font-bold'
+                                                            : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-secondary)]'
                                                             }`}>
-                                                            {['A', 'B', 'C', 'D'][oi]}
-                                                        </span>
-                                                        {opt}
-                                                        {oi === q.correct && <CheckCircle size={14} className="ml-auto text-emerald-500" />}
-                                                    </div>
-                                                ))}
-                                            </div>
+                                                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black ${oi === q.correct ? 'bg-emerald-500 text-white' : 'bg-[var(--border-color)] text-[var(--text-muted)]'
+                                                                }`}>
+                                                                {['A', 'B', 'C', 'D'][oi]}
+                                                            </span>
+                                                            {opt}
+                                                            {oi === q.correct && <CheckCircle size={14} className="ml-auto text-emerald-500" />}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
