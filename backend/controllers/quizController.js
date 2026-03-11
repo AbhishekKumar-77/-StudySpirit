@@ -9,32 +9,63 @@ exports.generateAIQuestions = async (req, res) => {
 
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
 
-        const prompt = `Generate an exam about "${topic}" for ${difficulty || 'medium'} level students.
-        Include exactly ${mcqCount} multiple choice questions and ${codingCount} coding problems.
-        Return a strictly valid JSON array of objects combining both types.
-        IMPORTANT: For MCQ questions, vary the correct answer position randomly across 0, 1, 2, and 3.
-        Do not output any markdown, just raw JSON array.
+        // Build difficulty-specific instructions
+        const difficultyInstructions = {
+            easy: `DIFFICULTY: EASY — Questions must be basic and beginner-friendly.
+        - Focus on definitions, simple recall, fundamental concepts, and basic terminology.
+        - Questions should be answerable by someone who just started learning the topic.
+        - Use straightforward language. No tricks, no edge cases.
+        - Wrong answer options should be clearly distinct from the correct answer.
+        - Example style: "What does HTML stand for?", "Which keyword is used to declare a variable in JavaScript?"`,
+            medium: `DIFFICULTY: MEDIUM — Questions must require understanding and application of concepts.
+        - Focus on applying knowledge, understanding how things work, and basic problem-solving.
+        - Questions should test comprehension beyond simple recall — the student must understand the "why" and "how".
+        - Include some plausible-but-wrong distractors.
+        - Example style: "What is the output of this code snippet?", "Which of the following correctly implements X pattern?"`,
+            hard: `DIFFICULTY: HARD — Questions must be challenging and require deep knowledge or analysis.
+        - Focus on complex scenarios, edge cases, advanced concepts, performance trade-offs, and tricky gotchas.
+        - Questions should challenge even experienced practitioners.
+        - All 4 options should be plausible — the differences between right and wrong should be subtle.
+        - Example style: "What happens when...", "In which scenario would X fail?", "What is the time complexity and why?"`
+        };
+
+        const selectedDifficultyGuide = difficultyInstructions[difficulty] || difficultyInstructions.medium;
+
+        const prompt = `You are generating quiz questions about "${topic}".
+
+        ${selectedDifficultyGuide}
+
+        Generate EXACTLY ${mcqCount} multiple choice questions${codingCount > 0 ? ` and ${codingCount} coding problems` : ''}.
+        ALL questions MUST match the ${(difficulty || 'medium').toUpperCase()} difficulty level described above.
+        
+        CRITICAL RULES:
+        - Return ONLY a raw JSON array. No markdown, no explanation, no extra text.
+        - For MCQ questions: vary the correct answer position randomly — do NOT always put the correct answer at index 0 or 2.
+        - Each question MUST be strongly relevant to the topic "${topic}".
+        - Difficulty MUST be strictly enforced as described above.
 
         Structure for MCQ questions:
         {
             "type": "mcq",
-            "question": "Question text",
-            "options": ["A", "B", "C", "D"],
+            "question": "Question text here",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
             "correct": 0,
             "difficulty": "${difficulty || 'medium'}"
         }
-
-        Structure for coding questions (output these only if coding problems requested):
+        ${codingCount > 0 ? `
+        Structure for coding questions:
         {
             "type": "coding",
-            "question": "Detailed problem statement (e.g., Return the sum of two numbers)",
+            "question": "Detailed problem statement",
             "starterCode": "function solve() { \\n\\n}",
             "testCases": [
                 { "input": "1 2", "expectedOutput": "3" },
                 { "input": "5 5", "expectedOutput": "10" }
             ],
             "difficulty": "${difficulty || 'medium'}"
-        }`;
+        }` : ''}
+        
+        Output the JSON array now:`;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',

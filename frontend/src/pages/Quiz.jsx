@@ -803,9 +803,21 @@ export default function StudySprintQuiz() {
                                 </button>
 
                                 <div className="mt-10 border-t border-cyan-500/20 pt-8">
-                                    <h3 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2 text-xl">
+                                    <h3 className="text-[var(--text-primary)] font-bold mb-2 flex items-center gap-2 text-xl">
                                         <Brain size={24} className="text-amber-500" /> Generate AI Questions
                                     </h3>
+                                    {/* Difficulty indicator for AI generation */}
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span className="text-sm text-[var(--text-secondary)]">AI will generate</span>
+                                        <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider border ${
+                                            settings.difficulty === 'easy' ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30' :
+                                            settings.difficulty === 'hard' ? 'bg-red-500/15 text-red-500 border-red-500/30' :
+                                            'bg-amber-500/15 text-amber-500 border-amber-500/30'
+                                        }`}>
+                                            {settings.difficulty === 'easy' ? '🟢 Easy' : settings.difficulty === 'hard' ? '🔴 Hard' : '🟡 Medium'} questions
+                                        </span>
+                                        <span className="text-xs text-[var(--text-secondary)]">(Change in Quiz Settings →)</span>
+                                    </div>
                                     <div className="flex flex-col md:flex-row gap-4 mb-4">
                                         <input
                                             type="text"
@@ -828,7 +840,7 @@ export default function StudySprintQuiz() {
                                             disabled={isGenerating}
                                             className="w-full md:w-auto px-6 py-4 bg-gradient-to-br from-amber-500 to-orange-600 text-[var(--text-primary)] font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70"
                                         >
-                                            <Sparkles size={20} /> {isGenerating ? "Generating..." : "Generate with AI"}
+                                            <Sparkles size={20} /> {isGenerating ? `Generating ${settings.difficulty}...` : "Generate with AI"}
                                         </button>
                                     </div>
                                 </div>
@@ -921,8 +933,22 @@ export default function StudySprintQuiz() {
                                     <div key={q.id} className="bg-[var(--glass-bg)] p-5 rounded-xl border border-[var(--border-color)] hover:border-cyan-500/50 transition-colors group">
                                         <div className="flex justify-between items-start gap-4">
                                             <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-cyan-400 font-bold">Q{idx + 1}:</span>
+                                                    {q.difficulty && (
+                                                        <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase border ${
+                                                            q.difficulty === 'easy' ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30' :
+                                                            q.difficulty === 'hard' ? 'bg-red-500/15 text-red-500 border-red-500/30' :
+                                                            'bg-amber-500/15 text-amber-500 border-amber-500/30'
+                                                        }`}>
+                                                            {q.difficulty}
+                                                        </span>
+                                                    )}
+                                                    {q.type === 'true-false' && (
+                                                        <span className="text-xs px-2 py-0.5 rounded-md font-bold uppercase bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">T/F</span>
+                                                    )}
+                                                </div>
                                                 <p className="text-lg font-medium text-[var(--text-primary)] mb-3">
-                                                    <span className="text-cyan-400  font-bold mr-2">Q{idx + 1}:</span>
                                                     {q.question}
                                                 </p>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -934,7 +960,7 @@ export default function StudySprintQuiz() {
                                                                 : "bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-secondary)]"
                                                             }
                                                         `}>
-                                                            {opt}
+                                                            {i === q.correct && '✓ '}{opt}
                                                         </span>
                                                     ))}
                                                 </div>
