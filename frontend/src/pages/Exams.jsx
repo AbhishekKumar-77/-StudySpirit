@@ -393,66 +393,136 @@ export default function Exams() {
                             <div className="grid gap-4">
                                 {joinedQuiz.questions[currentQuestionIndex].type === "coding" ? (
                                     <div className="w-full text-left">
-                                        <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
-                                            <div className="flex items-center gap-3">
-                                                <span className="font-bold text-cyan-400 uppercase tracking-wider text-sm flex items-center gap-2">
-                                                    <Code size={16} /> Code Editor
-                                                </span>
-                                                <select value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)} className="bg-[var(--bg-secondary)] text-[var(--text-primary)] px-3 py-1.5 rounded-lg border border-[var(--border-color)] outline-none text-sm font-bold">
+                                        <div className="mb-4 flex items-center gap-4 flex-wrap">
+                                            <div className="flex items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-2 rounded-xl text-sm font-bold w-full md:w-auto">
+                                                <Code size={18} className="text-cyan-400" /> 
+                                                <span className="text-[var(--text-secondary)]">Language:</span>
+                                                <select value={codeLanguage} onChange={e => setCodeLanguage(e.target.value)} className="bg-transparent text-[var(--text-primary)] outline-none cursor-pointer">
                                                     <option value="javascript">JavaScript</option>
                                                     <option value="python">Python</option>
                                                     <option value="cpp">C++</option>
                                                     <option value="java">Java</option>
                                                 </select>
-                                                <button onClick={runCodeForQuestion} disabled={isRunningCode} className="px-5 py-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-sm rounded-lg font-bold hover:bg-emerald-600/30 transition-colors flex items-center gap-2">
-                                                    <Play size={14} /> {isRunningCode ? "Running..." : "Run Test Cases"}
-                                                </button>
                                             </div>
-                                            {joinedQuiz.questions[currentQuestionIndex].starterCode && !userAnswers[joinedQuiz.questions[currentQuestionIndex].id] && (
-                                                <button
-                                                    onClick={() => {
-                                                        const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: joinedQuiz.questions[currentQuestionIndex].starterCode };
-                                                        setUserAnswers(newAnswers);
-                                                    }}
-                                                    className="px-4 py-1.5 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs rounded-lg font-bold hover:bg-cyan-500/30 transition-colors"
-                                                >
-                                                    Load Starter Code
-                                                </button>
-                                            )}
+                                            <button onClick={runCodeForQuestion} disabled={isRunningCode} className="px-6 py-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 text-sm rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/10 active:scale-95 ml-auto">
+                                                <Play size={16} /> {isRunningCode ? "Running Tests..." : "Run Test Cases"}
+                                            </button>
                                         </div>
 
-                                        <div className="h-[400px] border border-[var(--border-color)] rounded-xl overflow-hidden mb-6 bg-[#1e1e1e]">
+                                        <div className="border border-[var(--border-color)] rounded-2xl overflow-hidden mb-6 bg-[#0d1117] shadow-inner relative group">
+                                            <div className="absolute top-0 right-0 p-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                 <button
+                                                    onClick={() => {
+                                                        const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: joinedQuiz.questions[currentQuestionIndex].starterCode || '' };
+                                                        setUserAnswers(newAnswers);
+                                                    }}
+                                                    className="px-3 py-1.5 bg-[var(--bg-secondary)]/80 backdrop-blur-md text-[var(--text-secondary)] hover:text-cyan-400 border border-[var(--border-color)] text-xs rounded-lg font-bold transition-colors"
+                                                    title="Reset to Starter Code"
+                                                >
+                                                    Reset Code
+                                                </button>
+                                            </div>
                                             <Editor
-                                                height="100%"
+                                                height="450px"
                                                 language={codeLanguage}
                                                 theme="vs-dark"
-                                                value={userAnswers[joinedQuiz.questions[currentQuestionIndex].id] || ''}
+                                                value={userAnswers[joinedQuiz.questions[currentQuestionIndex].id] ?? joinedQuiz.questions[currentQuestionIndex].starterCode ?? ''}
                                                 onChange={(val) => {
                                                     const newAnswers = { ...userAnswers, [joinedQuiz.questions[currentQuestionIndex].id]: val };
                                                     setUserAnswers(newAnswers);
                                                 }}
-                                                options={{ fontSize: 16, minimap: { enabled: false } }}
+                                                options={{ 
+                                                    fontSize: 15, 
+                                                    minimap: { enabled: false },
+                                                    fontFamily: "'Fira Code', 'Cascadia Code', Consolas, monospace",
+                                                    lineHeight: 1.6,
+                                                    padding: { top: 20 },
+                                                    scrollBeyondLastLine: false,
+                                                    smoothScrolling: true,
+                                                    cursorBlinking: "smooth",
+                                                }}
                                             />
                                         </div>
 
-                                        {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id] && (
-                                            <div className="bg-[#121212] rounded-xl border border-[var(--border-color)] p-5 mt-4 max-h-[400px] overflow-y-auto">
-                                                <h3 className="text-white/80 font-bold mb-4 flex items-center gap-2"><Target size={18} className="text-cyan-400" /> Test Case Results:</h3>
-                                                <div className="space-y-4">
-                                                    {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id].map((r, i) => (
-                                                        <div key={i} className={`p-4 rounded border ${r.pass ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                {r.pass ? <Check size={18} className="text-emerald-500" /> : <X size={18} className="text-red-500" />}
-                                                                <span className={`font-bold text-sm ${r.pass ? 'text-emerald-500' : 'text-red-500'}`}>Test Case {i + 1}</span>
-                                                            </div>
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-white/70">
-                                                                <div><span className="opacity-50 block mb-1">Input:</span><div className="bg-black/40 p-2 rounded whitespace-pre-wrap">{r.input}</div></div>
-                                                                <div><span className="opacity-50 block mb-1">Expected:</span><div className="bg-black/40 p-2 rounded whitespace-pre-wrap">{r.expected}</div></div>
-                                                                <div className="sm:col-span-2"><span className="opacity-50 block mb-1">Your Output:</span><div className="bg-black/40 p-2 rounded whitespace-pre-wrap">{r.actual || "No output"}</div></div>
-                                                                {r.error && <div className="sm:col-span-2"><span className="text-red-400 block mb-1">Error:</span><div className="bg-red-900/20 p-3 rounded overflow-x-auto text-red-300 text-sm whitespace-pre-wrap">{r.error}</div></div>}
-                                                            </div>
+                                        {/* Test Cases display *always* visible if they exist */}
+                                        {joinedQuiz.questions[currentQuestionIndex].testCases && joinedQuiz.questions[currentQuestionIndex].testCases.length > 0 && (
+                                            <div className="bg-[#0a0a0a] rounded-2xl border border-[var(--border-color)] p-6 mt-6 shadow-lg relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyan-500 to-blue-600"></div>
+                                                <h3 className="text-white font-black mb-5 flex items-center justify-between">
+                                                    <span className="flex items-center gap-3"><Target size={22} className="text-cyan-400" /> Test Cases</span>
+                                                    {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id] && (
+                                                        <div className="flex gap-2">
+                                                            <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/30">
+                                                                {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id].filter(r => r.pass).length} Passed
+                                                            </span>
+                                                            <span className="bg-red-500/20 text-red-500 px-3 py-1 rounded-full text-xs font-bold border border-red-500/30">
+                                                                {codeTestResults[joinedQuiz.questions[currentQuestionIndex].id].filter(r => !r.pass).length} Failed
+                                                            </span>
                                                         </div>
-                                                    ))}
+                                                    )}
+                                                </h3>
+                                                
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {joinedQuiz.questions[currentQuestionIndex].testCases.map((tc, i) => {
+                                                        const result = codeTestResults[joinedQuiz.questions[currentQuestionIndex].id]?.[i];
+                                                        
+                                                        // Determine card border based on execution state
+                                                        let borderClass = "border-[var(--border-color)]";
+                                                        let bgClass = "bg-[#111]";
+                                                        let headerColor = "text-[var(--text-secondary)]";
+                                                        let icon = null;
+
+                                                        if (result) {
+                                                            if (result.pass) {
+                                                                borderClass = "border-emerald-500/40";
+                                                                bgClass = "bg-emerald-500/5";
+                                                                headerColor = "text-emerald-400";
+                                                                icon = <CheckCircle size={18} className="text-emerald-500" />;
+                                                            } else {
+                                                                borderClass = "border-red-500/40";
+                                                                bgClass = "bg-red-500/5";
+                                                                headerColor = "text-red-400";
+                                                                icon = <XCircle size={18} className="text-red-500" />;
+                                                            }
+                                                        }
+
+                                                        return (
+                                                            <div key={i} className={`p-5 rounded-xl border ${borderClass} ${bgClass} transition-all duration-300`}>
+                                                                <div className={`flex items-center justify-between mb-4 font-black ${headerColor}`}>
+                                                                    <div className="flex items-center gap-2">
+                                                                        {icon} Test Case {i + 1}
+                                                                    </div>
+                                                                    {!result && <span className="text-xs px-2 py-0.5 rounded bg-white/5 text-white/40">Pending</span>}
+                                                                </div>
+
+                                                                <div className="space-y-3 font-mono text-sm">
+                                                                    <div>
+                                                                        <span className="text-[var(--text-muted)] text-xs uppercase tracking-wider block mb-1">Input:</span>
+                                                                        <div className="bg-black/50 border border-white/5 p-3 rounded-lg text-white/80 break-all">{tc.input || "No input"}</div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[var(--text-muted)] text-xs uppercase tracking-wider block mb-1">Expected Output:</span>
+                                                                        <div className="bg-black/50 border border-white/5 p-3 rounded-lg text-white/80 break-all">{tc.expectedOutput || "None"}</div>
+                                                                    </div>
+
+                                                                    {result && (
+                                                                        <div className="pt-3 border-t border-white/5 mt-3 animate-fade-in">
+                                                                            <span className={`text-xs uppercase tracking-wider block mb-1 font-bold ${result.pass ? 'text-emerald-500/70' : 'text-red-500/70'}`}>Your Output:</span>
+                                                                            <div className={`bg-black/50 border p-3 rounded-lg break-all ${result.pass ? 'border-emerald-500/20 text-emerald-100' : 'border-red-500/20 text-red-100'}`}>
+                                                                                {result.actual || "No output generated"}
+                                                                            </div>
+                                                                            {result.error && (
+                                                                                <div className="mt-2 bg-red-500/10 border border-red-500/30 p-3 rounded-lg text-red-300 text-xs overflow-x-auto whitespace-pre-wrap">
+                                                                                    <span className="font-bold flex items-center gap-1 mb-1"><AlertCircle size={12}/> Error:</span>
+                                                                                    {result.error}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         )}
