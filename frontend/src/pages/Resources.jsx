@@ -314,7 +314,19 @@ export default function Resources() {
         setIsLoadingLibrary(true);
         try {
             const data = await resourceApi.getMyResources(folderId);
-            if (data.success) setMyResources(data.resources);
+            if (data.success) {
+                setMyResources(data.resources);
+                
+                // Populate flashcard decks from fetched resources
+                const loadedDecks = data.resources
+                    .filter(r => r.resourceType === 'flashcards')
+                    .map(r => ({
+                        id: r._id,
+                        name: r.name,
+                        cards: r.metadata?.flashcards || []
+                    }));
+                setDecks(loadedDecks);
+            }
         } catch (e) {
             console.error("Failed to fetch resources", e);
         } finally {
@@ -1027,9 +1039,18 @@ export default function Resources() {
                                                         <p className="text-sm text-[var(--text-muted)] mt-1">{deck.cards.length} cards</p>
                                                     </div>
                                                     <button
-                                                        onClick={() => {
+                                                        onClick={async () => {
                                                             if (confirm('Delete this deck?')) {
-                                                                setDecks(decks.filter((_, i) => i !== deckIdx));
+                                                                try {
+                                                                    // We use deck.id which is the resource _id
+                                                                    const res = await resourceApi.deleteResource(deck.id);
+                                                                    if (res.success) {
+                                                                        setDecks(decks.filter(d => d.id !== deck.id));
+                                                                        setMyResources(myResources.filter(r => r._id !== deck.id));
+                                                                    }
+                                                                } catch(err) {
+                                                                    alert("Failed to delete deck");
+                                                                }
                                                             }
                                                         }}
                                                         className="p-2 text-[var(--text-primary)] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
@@ -1224,7 +1245,7 @@ export default function Resources() {
 
                                         {/* Save Deck Button */}
                                         <button
-                                            onClick={() => {
+                                            onClick={async () => {
                                                 if (!deckName.trim()) {
                                                     alert("Please enter a deck name!");
                                                     return;
@@ -1233,17 +1254,17 @@ export default function Resources() {
                                                     alert("Add at least one card!");
                                                     return;
                                                 }
+
+                                                // Save to Vault - this handles creation and update if we had an update route,
+                                                // but since we only have save, we'll save it. (For full update, we'd delete old one first if editing)
                                                 if (editingDeckIdx !== null) {
-                                                    // Update existing deck
-                                                    const updatedDecks = [...decks];
-                                                    updatedDecks[editingDeckIdx] = { ...updatedDecks[editingDeckIdx], name: deckName, cards: deckCards };
-                                                    setDecks(updatedDecks);
-                                                } else {
-                                                    // New deck
-                                                    setDecks([...decks, { id: Date.now(), name: deckName, cards: deckCards }]);
+                                                    // Soft-update for now: just delete old resource and create new
+                                                    const oldDeckId = decks[editingDeckIdx].id;
+                                                    await resourceApi.deleteResource(oldDeckId);
                                                 }
-                                                // Automatic save to vault if desired, or we can just leave it as local state plus a manual button
-                                                handleSaveFlashcardsToVault(deckName, deckCards);
+                                                
+                                                await handleSaveFlashcardsToVault(deckName, deckCards);
+
                                                 setShowCreateDeck(false);
                                                 setEditingDeckIdx(null);
                                                 setDeckName('');

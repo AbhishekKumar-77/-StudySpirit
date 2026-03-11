@@ -2021,45 +2021,94 @@ export default function Planner() {
                                 Cancel
                             </button>
                             <button
-                                onClick={() => {
-                                    // Generate tasks from the template schedule
-                                    const newTasks = [];
-                                    const schedule = selectedTemplate.schedule || {};
-                                    let idCounter = Date.now();
+                                onClick={async () => {
+                                    try {
+                                        // Generate tasks from the template schedule
+                                        const tasksToCreate = [];
+                                        const schedule = selectedTemplate.schedule || {};
+                                        
+                                        const today = new Date();
+                                        let dayIndex = 0;
+                                        
+                                        // Needed for UI mapping
+                                        const todayStr = new Date().toLocaleDateString();
+                                        const tomorrow = new Date();
+                                        tomorrow.setDate(tomorrow.getDate() + 1);
+                                        const tomorrowStr = tomorrow.toLocaleDateString();
 
-                                    Object.entries(schedule).forEach(([day, details]) => {
-                                        // Create a main focus task
-                                        newTasks.push({
-                                            id: idCounter++,
-                                            title: `${day}: ${details.focus}`,
-                                            completed: false,
-                                            priority: 'high',
-                                            type: 'study',
-                                            time: `${details.hours}h`, // Use the hours from the template
-                                            subject: selectedTemplate.subjects[0] || 'General' // Pick the first subject or General
-                                        });
+                                        for (const [day, details] of Object.entries(schedule)) {
+                                            const taskDate = new Date(today);
+                                            taskDate.setDate(today.getDate() + dayIndex);
 
-                                        // Create a review task using a recommended technique
-                                        if (selectedTemplate.techniques && selectedTemplate.techniques.length > 0) {
-                                            newTasks.push({
-                                                id: idCounter++,
-                                                title: `${day}: Review using ${selectedTemplate.techniques[0]}`,
-                                                completed: false,
-                                                priority: 'medium',
-                                                type: 'review',
-                                                time: '30m',
-                                                subject: selectedTemplate.subjects[0] || 'General'
-                                            });
+                                            // Create a main focus task
+                                            const mainTaskData = {
+                                                title: `${day}: ${details.focus}`,
+                                                priority: 'high',
+                                                dueDate: taskDate.toISOString(),
+                                                subject: selectedTemplate.subjects[0] || 'General',
+                                                estimatedTime: (parseFloat(details.hours) || 1) * 60
+                                            };
+                                            
+                                            // Review task using recommended technique
+                                            let reviewTaskData = null;
+                                            if (selectedTemplate.techniques && selectedTemplate.techniques.length > 0) {
+                                                reviewTaskData = {
+                                                    title: `${day}: Review using ${selectedTemplate.techniques[0]}`,
+                                                    priority: 'medium',
+                                                    dueDate: taskDate.toISOString(),
+                                                    subject: selectedTemplate.subjects[0] || 'General',
+                                                    estimatedTime: 30
+                                                };
+                                            }
+
+                                            // Create main task in DB
+                                            const mainRes = await taskAPI.create(mainTaskData);
+                                            if (mainRes.success && mainRes.task) {
+                                                let dateLabel = new Date(mainRes.task.dueDate).toLocaleDateString();
+                                                if (dateLabel === todayStr) dateLabel = 'Today';
+                                                else if (dateLabel === tomorrowStr) dateLabel = 'Tomorrow';
+
+                                                tasksToCreate.push({
+                                                    ...mainRes.task,
+                                                    id: mainRes.task._id,
+                                                    completed: mainRes.task.status === 'completed',
+                                                    date: dateLabel,
+                                                    time: `${Math.floor((mainRes.task.estimatedTime || 60) / 60)}h ${(mainRes.task.estimatedTime || 60) % 60}m`
+                                                });
+                                            }
+
+                                            // Create review task in DB
+                                            if (reviewTaskData) {
+                                                const revRes = await taskAPI.create(reviewTaskData);
+                                                if (revRes.success && revRes.task) {
+                                                    let dateLabel = new Date(revRes.task.dueDate).toLocaleDateString();
+                                                    if (dateLabel === todayStr) dateLabel = 'Today';
+                                                    else if (dateLabel === tomorrowStr) dateLabel = 'Tomorrow';
+
+                                                    tasksToCreate.push({
+                                                        ...revRes.task,
+                                                        id: revRes.task._id,
+                                                        completed: revRes.task.status === 'completed',
+                                                        date: dateLabel,
+                                                        time: `0h 30m`
+                                                    });
+                                                }
+                                            }
+
+                                            dayIndex++;
                                         }
-                                    });
 
-                                    // Add the new tasks to the existing tasks state
-                                    setTasks([...tasks, ...newTasks]);
+                                        // Add the new tasks to the existing tasks state
+                                        setTasks(prev => [...prev, ...tasksToCreate]);
 
-                                    // Show success message and navigate
-                                    alert(`Successfully added ${newTasks.length} tasks from "${selectedTemplate.name}" to your To-Do List!`);
-                                    setSelectedTemplate(null);
-                                    setActiveTab('tasks');
+                                        // Show success message and navigate
+                                        alert(`Successfully added ${tasksToCreate.length} tasks from "${selectedTemplate.name}" to your To-Do List!`);
+                                        setSelectedTemplate(null);
+                                        setActiveTab('tasks');
+                                    } catch (err) {
+                                        console.error("Failed to add template tasks:", err);
+                                        alert("Failed to save template tasks to database.");
+                                    }
                                 }}
                                 style={{
                                     padding: '14px 28px',
@@ -2198,25 +2247,42 @@ export default function Planner() {
                                 </div>
 
                                 <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                         setShowTechniqueModal(false);
                                         if (selectedTechnique.name.toLowerCase().includes('pomodoro')) {
                                             setShowPomodoro(true);
                                             setActiveTab('techniques');
                                         } else {
-                                            // Add an active session or task
-                                            setTasks(prev => [{
-                                                id: Date.now(),
-                                                title: `Practice ${selectedTechnique.name}`,
-                                                priority: 'high',
-                                                completed: false,
-                                                date: 'Today',
-                                                time: '45m',
-                                                subject: 'Study Skills',
-                                                progress: 0
-                                            }, ...prev]);
+                                            try {
+                                                const taskData = {
+                                                    title: `Practice ${selectedTechnique.name}`,
+                                                    priority: 'high',
+                                                    dueDate: new Date().toISOString(),
+                                                    subject: 'Study Skills',
+                                                    estimatedTime: 45
+                                                };
+                                                
+                                                const res = await taskAPI.create(taskData);
+                                                if (res.success && res.task) {
+                                                    const todayStr = new Date().toLocaleDateString();
+                                                    let dateLabel = new Date(res.task.dueDate).toLocaleDateString();
+                                                    if (dateLabel === todayStr) dateLabel = 'Today';
+                                                    
+                                                    setTasks(prev => [{
+                                                        ...res.task,
+                                                        id: res.task._id,
+                                                        completed: res.task.status === 'completed',
+                                                        date: dateLabel,
+                                                        time: `0h 45m`
+                                                    }, ...prev]);
+                                                    
+                                                    alert(`Added "${selectedTechnique.name}" practice to your To-Do List!`);
+                                                }
+                                            } catch (err) {
+                                                console.error("Failed to add technique task:", err);
+                                                alert("Failed to save technique task to database.");
+                                            }
                                             setActiveTab('tasks');
-                                            alert(`Added "${selectedTechnique.name}" practice to your To-Do List!`);
                                         }
                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
