@@ -399,21 +399,23 @@ exports.checkReAttempt = async (req, res) => {
 // Submit Quiz Result
 exports.submitResult = async (req, res) => {
     try {
-        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
-
-        const { score, totalQuestions, timeTaken, userAnswers } = req.body;
-        const userId = req.user.id;
-
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-        if (!user.quizStats) {
-            user.quizStats = { totalScore: 0, quizzesTaken: 0, averageScore: 0, highestScore: 0 };
-        }
-
+        const { score, totalQuestions, timeTaken, userAnswers, studentName } = req.body;
         const percentage = req.body.percentage !== undefined
             ? req.body.percentage
             : Math.round((score / totalQuestions) * 100);
+
+        let user = null;
+        let userId = null;
+        let displayName = studentName || "Guest Student";
+
+        // If user is logged in, fetch their details to update their stats
+        if (req.user) {
+            userId = req.user.id;
+            user = await User.findById(userId);
+            if (user) {
+                displayName = user.name;
+            }
+        }
 
         // Save Submission (with re-attempt prevention)
         const QuizSubmission = require('../models/QuizSubmission');
@@ -437,8 +439,8 @@ exports.submitResult = async (req, res) => {
 
             await QuizSubmission.create({
                 quizCode: req.body.quizCode,
-                studentId: userId,
-                studentName: user.name,
+                studentId: userId, // Can be null for guests
+                studentName: displayName,
                 registrationNumber: regNo,
                 score: score,
                 totalQuestions: totalQuestions,
@@ -448,25 +450,36 @@ exports.submitResult = async (req, res) => {
             });
         }
 
-        // Update Stats
-        user.quizStats.quizzesTaken += 1;
-        user.quizStats.totalScore += percentage;
-        user.quizStats.averageScore = Math.round(user.quizStats.totalScore / user.quizStats.quizzesTaken);
-        user.quizStats.highestScore = Math.max(user.quizStats.highestScore, percentage);
-
-        if (timeTaken > 0) {
-            if (!user.quizStats.bestTime || timeTaken < user.quizStats.bestTime) {
-                user.quizStats.bestTime = timeTaken;
+        // Update Stats ONLY if the student is logged in
+        if (user) {
+            if (!user.quizStats) {
+                user.quizStats = { totalScore: 0, quizzesTaken: 0, averageScore: 0, highestScore: 0 };
             }
+
+            user.quizStats.quizzesTaken += 1;
+            user.quizStats.totalScore += percentage;
+            user.quizStats.averageScore = Math.round(user.quizStats.totalScore / user.quizStats.quizzesTaken);
+            user.quizStats.highestScore = Math.max(user.quizStats.highestScore, percentage);
+
+            if (timeTaken > 0) {
+                if (!user.quizStats.bestTime || timeTaken < user.quizStats.bestTime) {
+                    user.quizStats.bestTime = timeTaken;
+                }
+            }
+
+            if (!user.stats) user.stats = {};
+            user.stats.totalProblems = (user.stats.totalProblems || 0) + totalQuestions;
+            user.stats.completionRate = (user.stats.completionRate || 0) + percentage;
+            user.stats.xp = (user.stats.xp || 0) + (score * 10) + 50;
+
+            await user.save();
         }
 
-        if (!user.stats) user.stats = {};
-        user.stats.totalProblems = (user.stats.totalProblems || 0) + totalQuestions;
-        user.stats.completionRate = (user.stats.completionRate || 0) + percentage;
-        user.stats.xp = (user.stats.xp || 0) + (score * 10) + 50;
-
-        await user.save();
-        res.json({ success: true, message: "Result submitted successfully!", newStats: user.quizStats });
+        res.json({ 
+            success: true, 
+            message: "Result submitted successfully!", 
+            newStats: user ? user.quizStats : null 
+        });
 
     } catch (error) {
         console.error("Submit Result Error:", error);

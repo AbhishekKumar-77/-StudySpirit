@@ -165,6 +165,19 @@ export default function StudySprintQuiz() {
         }
     }, [examStarted, timeLeft, examSubmitted, practiceStarted, activeTab]);
 
+    // PREVENT ACCIDENTAL REFRESH IF UNSAVED QUESTIONS EXIST
+    useEffect(() => {
+        if (activeTab !== "teacher" || questions.length === 0 || isSaving) return;
+        
+        const handleBeforeUnload = (e) => {
+            e.preventDefault();
+            e.returnValue = "You have unsaved questions. Are you sure you want to leave?";
+        };
+        
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [questions.length, activeTab, isSaving]);
+
     // SECURE MODE EFFECTS
     // SECURE MODE EFFECTS
     useEffect(() => {
@@ -401,6 +414,7 @@ export default function StudySprintQuiz() {
                     totalQuestions: quizQs.length,
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft,
                     registrationNumber: studentRegNoInput.trim(),
+                    studentName: user?.name || "Guest", // Pass name in case of guest
                     userAnswers: userAnswers // 🆕 for question-level analytics
                 })
             });
