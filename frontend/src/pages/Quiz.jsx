@@ -438,13 +438,19 @@ export default function StudySprintQuiz() {
 
         setIsSaving(true);
         try {
-            // Convert local datetime strings to strict UTC ISO strings before saving
+            // Force IST (+05:30) timezone handling
+            const formatToIST = (dateStr) => {
+                if (!dateStr) return null;
+                // dateStr from datetime-local is e.g. "2026-03-11T23:50"
+                return new Date(`${dateStr}+05:30`).toISOString();
+            };
+
             const formattedSettings = {
                 ...settings,
                 timeLimit: settings.timeLimit || 30,
                 negativeMarking: settings.negativeMarking || 0,
-                scheduledStart: settings.scheduledStart ? new Date(settings.scheduledStart).toISOString() : null,
-                scheduledEnd: settings.scheduledEnd ? new Date(settings.scheduledEnd).toISOString() : null
+                scheduledStart: formatToIST(settings.scheduledStart),
+                scheduledEnd: formatToIST(settings.scheduledEnd)
             };
 
             const res = await fetch(`${API_BASE}/quiz/create`, {
@@ -489,16 +495,16 @@ export default function StudySprintQuiz() {
         setQuizCode(quiz.code);
 
         const loadedSettings = { ...quiz.settings };
-        if (loadedSettings.scheduledStart) {
-            const d = new Date(loadedSettings.scheduledStart);
-            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-            loadedSettings.scheduledStart = d.toISOString().slice(0, 16);
-        }
-        if (loadedSettings.scheduledEnd) {
-            const d = new Date(loadedSettings.scheduledEnd);
-            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-            loadedSettings.scheduledEnd = d.toISOString().slice(0, 16);
-        }
+        // Safely parse the stored UTC timestamp back into IST local format for the input
+        const formatFromIST = (isoString) => {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            d.setMinutes(d.getMinutes() + 330); // Explicitly shift to IST (+05:30)
+            return d.toISOString().slice(0, 16);
+        };
+
+        loadedSettings.scheduledStart = formatFromIST(loadedSettings.scheduledStart);
+        loadedSettings.scheduledEnd = formatFromIST(loadedSettings.scheduledEnd);
 
         setSettings(loadedSettings);
         setActiveTab("teacher");
