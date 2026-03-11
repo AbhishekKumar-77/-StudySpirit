@@ -44,8 +44,8 @@ export default function TeacherToolkit() {
         {
             id: 3,
             name: 'CodeSpirit Exam',
-            description: 'Create and manage coding and mcq exams',
-            path: '/codespirit-creator',
+            description: 'Manage coding exams and view leaderboards',
+            path: '/teacher-codespirit',
             icon: Target,
             color: '#8b5cf6'
         }

@@ -51,7 +51,10 @@ export default function TeacherDashboard() {
             try {
                 const res = await fetch(`${API_BASE}/quiz/my-quizzes`, { credentials: 'include' });
                 const data = await res.json();
-                if (data.success) setMyQuizzes(data.quizzes || []);
+                if (data.success) {
+                    const onlyQuizzes = (data.quizzes || []).filter(q => !q.questions?.some(qu => qu.type === 'coding'));
+                    setMyQuizzes(onlyQuizzes);
+                }
             } catch (e) { console.error('Failed to fetch quizzes', e); }
             finally { setLoadingQuizzes(false); }
         };

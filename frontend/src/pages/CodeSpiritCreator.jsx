@@ -152,7 +152,7 @@ export default function CodeSpiritCreator() {
             if (data.success) {
                 alert(`Exam ${status} successfully! Code: ${data.quizCode}`);
                 if (status === "draft") fetchDrafts();
-                setStep(4);
+                navigate('/teacher-codespirit');
             } else { alert("Failed: " + data.message); }
         } catch (e) { }
         setIsSaving(false);
@@ -168,8 +168,8 @@ export default function CodeSpiritCreator() {
 
             <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-[var(--border-color)] px-8 py-4">
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-                    <button onClick={() => navigate("/teacher-toolkit")} className="flex items-center gap-3 bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] px-5 py-2.5 rounded-xl text-sm font-semibold hover:border-cyan-500/50 hover:-translate-x-1 transition-all">
-                        <ArrowLeft size={18} /> Back to Toolkit
+                    <button onClick={() => navigate("/teacher-codespirit")} className="flex items-center gap-3 bg-[var(--glass-bg)] border border-[var(--border-color)] text-[var(--text-primary)] px-5 py-2.5 rounded-xl text-sm font-semibold hover:border-cyan-500/50 hover:-translate-x-1 transition-all">
+                        <ArrowLeft size={18} /> Back to CodeSpirit Dashboard
                     </button>
                     <div className="text-xl font-black bg-gradient-to-r from-cyan-400 to-pink-500 text-transparent bg-clip-text">CodeSpirit Creator</div>
                 </div>

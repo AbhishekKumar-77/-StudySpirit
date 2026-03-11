@@ -4,10 +4,12 @@ const questionSchema = new mongoose.Schema({
     id: mongoose.Schema.Types.Mixed,
     question: { type: String, required: true },
     options: [{ type: String }],
-    correct: { type: Number, required: true }, // Index of correct option
+    correct: { type: Number }, // Index of correct option (optional for coding)
     type: { type: String, default: 'mcq' },
-    difficulty: { type: String, default: 'medium' }
-});
+    difficulty: { type: String, default: 'medium' },
+    starterCode: { type: String },
+    testCases: [{ input: String, expectedOutput: String, output: String }]
+}, { strict: false });
 
 const quizSchema = new mongoose.Schema({
     title: { type: String, required: true },
