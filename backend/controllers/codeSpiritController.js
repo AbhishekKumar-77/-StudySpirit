@@ -425,6 +425,44 @@ exports.executeCode = async (req, res) => {
     }
 };
 
+// ============== EXECUTE CODE FOR EXAM (NO AUTH — validates via quizCode) ==============
+exports.executeCodeExam = async (req, res) => {
+    try {
+        const { language, code, stdin, quizCode } = req.body;
+
+        if (!quizCode || !quizCode.trim()) {
+            return res.status(400).json({ success: false, message: "Quiz code is required for exam execution" });
+        }
+
+        if (!code || !code.trim()) {
+            return res.status(400).json({ success: false, message: "Code is required" });
+        }
+
+        // Validate that the quiz exists and is published
+        const Quiz = require('../models/Quiz');
+        const quiz = await Quiz.findOne({ code: quizCode.toUpperCase().trim() });
+        if (!quiz || quiz.status !== 'published') {
+            return res.status(403).json({ success: false, message: "Invalid or unpublished exam code" });
+        }
+
+        const result = await executeViaWandbox(language || 'python', code, stdin);
+
+        const run = result.run || {};
+        res.json({
+            success: true,
+            run: {
+                stdout: run.stdout || '',
+                stderr: run.stderr || '',
+                exitCode: run.code != null ? run.code : (run.signal ? 1 : 0),
+                signal: run.signal || null
+            }
+        });
+    } catch (error) {
+        console.error("Exam Code Execution Error:", error);
+        res.status(500).json({ success: false, message: error.message || "Execution failed" });
+    }
+};
+
 // ============== VERIFY CODE AGAINST TEST CASES ==============
 exports.verifyCode = async (req, res) => {
     try {

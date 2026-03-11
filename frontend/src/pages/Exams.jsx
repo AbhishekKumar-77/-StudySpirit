@@ -180,11 +180,16 @@ export default function Exams() {
         for (let i = 0; i < tcs.length; i++) {
             const tc = tcs[i];
             try {
-                const executeRes = await fetch(`${API_BASE}/codespirit/execute`, {
+                const executeRes = await fetch(`${API_BASE}/codespirit/execute-exam`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     credentials: "include",
-                    body: JSON.stringify({ language: codeLanguage, code: code, stdin: tc.input || "" })
+                    body: JSON.stringify({ 
+                        language: codeLanguage, 
+                        code: code, 
+                        stdin: tc.input || "",
+                        quizCode: quizCodeInput.toUpperCase().trim()
+                    })
                 });
                 const result = await executeRes.json();
                 

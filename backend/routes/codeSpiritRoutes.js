@@ -25,6 +25,9 @@ router.post('/submit', auth, codeSpiritController.submitChallenge);
 // Execute code via Piston (REAL execution) — auth protected
 router.post('/execute', auth, codeSpiritController.executeCode);
 
+// Execute code for EXAMS — validates via quizCode instead of session auth
+router.post('/execute-exam', codeSpiritController.executeCodeExam);
+
 // Verify code against test cases
 router.post('/verify', auth, codeSpiritController.verifyCode);
 
