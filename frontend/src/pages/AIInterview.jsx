@@ -9,7 +9,8 @@ import {
     Settings, Play, ArrowLeft, Loader,
     Volume2, VolumeX, UploadCloud, Camera, CameraOff,
     Trophy, History, BarChart2, CheckCircle, AlertCircle, X,
-    ChevronRight, Star, Sparkles, Clock, Activity, Type, Printer
+    ChevronRight, Star, Sparkles, Clock, Activity, Type, Printer,
+    Brain, MessageSquare, Zap, Users
 } from 'lucide-react';
 
 const ResumeTemplate = ({ data, template }) => {
@@ -1143,7 +1144,43 @@ export default function AIInterview() {
 
                 {/* INTERVIEW VIEW */}
                 {view === 'interview' && (
-                    <div className="w-full flex gap-6">
+                    <div className="w-full h-full flex gap-6 overflow-hidden">
+                        {/* Participants Sidebar (GD Mode Only) */}
+                        {mode === 'gd' && (
+                            <div className="hidden lg:flex w-72 flex-col gap-4 h-full animate-fade-in-right">
+                                <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] flex-1 overflow-y-auto">
+                                    <h4 className="text-sm font-bold text-cyan-400 mb-6 flex items-center gap-2">
+                                        <Users className="w-5 h-5"/> Group Participants
+                                    </h4>
+                                    <div className="space-y-4">
+                                        {[
+                                            { name: 'Aria', role: 'Moderator', color: 'text-cyan-400', border: 'border-cyan-500/50', bg: 'bg-cyan-500/5' },
+                                            { name: 'Alex', role: 'Analytical Peer', color: 'text-blue-400', border: 'border-blue-500/50', bg: 'bg-blue-500/5' },
+                                            { name: 'Sarah', role: 'Creative Peer', color: 'text-pink-400', border: 'border-pink-500/50', bg: 'bg-pink-500/5' },
+                                            { name: 'You', role: 'Candidate', color: 'text-emerald-400', border: 'border-emerald-500/50', bg: 'bg-emerald-500/5' }
+                                        ].map(p => (
+                                            <div key={p.name} className={`p-4 rounded-xl border transition-all duration-500 ${currentSpeaker === p.name || (p.name === 'You' && !isSpeaking) ? `${p.border} ${p.bg} scale-105 shadow-xl` : 'border-transparent opacity-60'}`}>
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-2 h-2 rounded-full ${currentSpeaker === p.name ? 'bg-emerald-500 animate-pulse' : 'bg-gray-500'}`} />
+                                                    <div>
+                                                        <div className={`text-sm font-bold ${p.color}`}>{p.name}</div>
+                                                        <div className="text-[10px] text-[var(--text-muted)] uppercase font-black tracking-widest">{p.role}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-8 pt-8 border-t border-[var(--border-color)]">
+                                        <div className="text-[10px] font-black uppercase text-[var(--text-muted)] mb-4 tracking-[0.2em]">Discussion Topic</div>
+                                        <div className="p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] text-xs font-medium text-[var(--text-primary)] leading-relaxed italic">
+                                            "{targetRole || 'Software Engineer'}"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        
                         {/* Left Main Interface */}
                         <div className="flex-1 flex flex-col bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] overflow-hidden relative">
                             {/* Header / Question Progress */}
@@ -1279,11 +1316,14 @@ export default function AIInterview() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             {/* Score Card */}
-                            <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] relative overflow-hidden text-center flex flex-col items-center justify-center">
+                            <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] relative overflow-hidden text-center flex flex-col items-center justify-center min-h-[160px]">
                                 <div className="absolute inset-0 bg-cyan-500/10 blur-xl" />
                                 <div className="relative">
-                                    <div className="text-5xl font-black text-[var(--text-primary)] mb-2">{sessionReport.overallScore}<span className="text-xl text-[var(--text-muted)]">/10</span></div>
-                                    <div className="text-sm px-3 py-1 rounded-full bg-cyan-500/20 text-violet-300 inline-block font-semibold">Overall Score</div>
+                                    <div className="text-5xl font-black text-[var(--text-primary)] mb-2">
+                                        {sessionReport.overallScore}
+                                        <span className="text-xl text-[var(--text-muted)]">/10</span>
+                                    </div>
+                                    <div className="text-sm px-3 py-1 rounded-full bg-cyan-500/20 text-violet-300 inline-block font-semibold">Overall Readiness</div>
                                 </div>
                             </div>
 
@@ -1315,12 +1355,41 @@ export default function AIInterview() {
 
                             {/* Final Feedback */}
                             <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] relative">
-                                <h3 className="flex items-center gap-2 font-bold mb-4 text-cyan-500"><Trophy className="w-5 h-5" /> Coach's Feedback</h3>
+                                <h3 className="flex items-center gap-2 font-bold mb-4 text-cyan-500"><Trophy className="w-5 h-5" /> Executive Assessment</h3>
                                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed italic">
                                     "{sessionReport.finalFeedback}"
                                 </p>
                             </div>
                         </div>
+
+                        {/* GD SPECIFIC METRICS */}
+                        {sessionReport.mode === 'gd' && sessionReport.gdMetrics && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+                                {[
+                                    { label: 'Logic & Reasoning', key: 'logic', icon: <Brain className="w-5 h-5 text-blue-400" /> },
+                                    { label: 'Communication', key: 'communication', icon: <MessageSquare className="w-5 h-5 text-cyan-400" /> },
+                                    { label: 'Team Collaboration', key: 'teamwork', icon: <Users className="w-5 h-5 text-emerald-400" /> },
+                                    { label: 'Confidence', key: 'confidence', icon: <Zap className="w-5 h-5 text-amber-400" /> }
+                                ].map(metric => (
+                                    <div key={metric.key} className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] relative group overflow-hidden">
+                                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="relative z-10">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="p-2 rounded-lg bg-black/30">{metric.icon}</div>
+                                                <div className="text-2xl font-black text-[var(--text-primary)]">{sessionReport.gdMetrics[metric.key]}/10</div>
+                                            </div>
+                                            <div className="text-[10px] uppercase font-black tracking-widest text-[var(--text-muted)] mb-2">{metric.label}</div>
+                                            <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
+                                                <div 
+                                                    className={`h-full transition-all duration-1000 ${sessionReport.gdMetrics[metric.key] >= 8 ? 'bg-emerald-500' : sessionReport.gdMetrics[metric.key] >= 5 ? 'bg-cyan-500' : 'bg-red-500'}`} 
+                                                    style={{ width: `${sessionReport.gdMetrics[metric.key] * 10}%` }} 
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="flex justify-center gap-4">
                             <button onClick={() => setView('setup')} className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">
@@ -1345,8 +1414,10 @@ export default function AIInterview() {
                                                     <Mic className="w-4 h-4 text-white" />
                                                 </div>
                                                 <div className="w-full">
-                                                    <div className="text-sm font-bold text-[var(--text-secondary)] mb-1">Aria (Question {exchange.questionNumber})</div>
-                                                    <div className="text-[var(--text-primary)] font-medium bg-[var(--bg-secondary)]lack/20 p-4 rounded-lg border border-[var(--border-color)]">
+                                                    <div className="text-sm font-bold text-[var(--text-secondary)] mb-1">
+                                                        {sessionReport.mode === 'gd' ? 'AI Discussion' : 'Aria'} (Turn {exchange.questionNumber})
+                                                    </div>
+                                                    <div className="text-[var(--text-primary)] font-medium bg-[var(--bg-secondary)]/20 p-4 rounded-lg border border-[var(--border-color)]">
                                                         {exchange.question}
                                                     </div>
                                                 </div>

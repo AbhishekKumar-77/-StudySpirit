@@ -220,16 +220,41 @@ exports.endInterview = async (req, res) => {
 
         if (GROQ_API_KEY && session.exchanges.length > 0) {
             try {
-                const evalFocus = session.mode === 'gd' ? "Evaluate leadership and collaboration." : "Evaluate communication and technical skills.";
-                const prompt = `Report for ${session.mode} session. Focus: ${evalFocus}\n\n${exchangeSummary}`;
+                const evalFocus = session.mode === 'gd' 
+                    ? "Evaluate leadership, debate quality, logical reasoning, and collaborative engagement. Also check if the candidate stayed on topic." 
+                    : "Evaluate technical accuracy, communication, and professional confidence.";
+
+                const reportPrompt = `You are a Senior Executive Talent Evaluator. 
+Analyze the following ${session.mode} session performance and generate a PREMIUM, HIGHLY CRITICAL feedback report.
+
+MODE: ${session.mode}
+USER ROLE: ${session.targetRole}
+COMPANY: ${session.targetCompany}
+
+INTERVIEW EXCHANGES:
+${exchangeSummary}
+
+Return ONLY valid JSON with this structure:
+{
+    "overallScore": <number 1-10>,
+    "strengths": ["string", "string", "string"],
+    "improvements": ["string", "string", "string"],
+    "overallFeedback": "Professional assessment (3-4 sentences)",
+    "gdMetrics": {
+        "logic": 0-10,
+        "communication": 0-10,
+        "teamwork": 0-10,
+        "confidence": 0-10
+    }
+}`;
                 const gRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: 'llama-3.3-70b-versatile',
                         messages: [
-                            { role: 'system', content: 'Generate JSON report: {overallScore, strengths:[], improvements:[], overallFeedback}' },
-                            { role: 'user', content: prompt }
+                            { role: 'system', content: 'You are an interview performance evaluator. Return ONLY valid JSON.' },
+                            { role: 'user', content: reportPrompt }
                         ],
                         response_format: { type: "json_object" }
                     })
@@ -246,6 +271,9 @@ exports.endInterview = async (req, res) => {
         session.strengths = finalReport.strengths || [];
         session.improvements = finalReport.improvements || [];
         session.finalFeedback = finalReport.overallFeedback || '';
+        if (finalReport.gdMetrics) {
+            session.gdMetrics = finalReport.gdMetrics;
+        }
         session.completedAt = new Date();
         session.duration = Math.floor((new Date() - session.startedAt) / 1000);
         await session.save();

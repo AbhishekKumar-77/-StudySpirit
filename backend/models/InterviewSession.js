@@ -8,7 +8,7 @@ const interviewSessionSchema = new mongoose.Schema({
     },
     mode: {
         type: String,
-        enum: ['technical', 'behavioral', 'resume'],
+        enum: ['technical', 'behavioral', 'resume', 'gd'],
         default: 'technical'
     },
     totalQuestions: {
@@ -40,6 +40,12 @@ const interviewSessionSchema = new mongoose.Schema({
     strengths: [String],
     improvements: [String],
     finalFeedback: String,
+    gdMetrics: {
+        logic: Number,
+        communication: Number,
+        teamwork: Number,
+        confidence: Number
+    },
     status: {
         type: String,
         enum: ['in-progress', 'completed', 'abandoned'],
