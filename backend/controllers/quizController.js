@@ -5,7 +5,7 @@ const User = require('../models/User');
 exports.generateFromImage = async (req, res) => {
     try {
         const { imageBase64, mimeType = 'image/jpeg', count = 5, difficulty = 'medium' } = req.body;
-        const apiKey = "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";
+        const apiKey = process.env.GROQ_API_KEY || "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";
 
         if (!imageBase64) {
             return res.status(400).json({ success: false, message: "Image data is required" });
@@ -48,7 +48,7 @@ Output the JSON array now:`;
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+                model: 'llama-3.2-11b-vision-preview',
                 messages: [
                     {
                         role: 'user',
@@ -66,7 +66,7 @@ Output the JSON array now:`;
                         ]
                     }
                 ],
-                temperature: 0.7,
+                temperature: 0.5,
                 max_tokens: 4000
             })
         });
@@ -74,8 +74,8 @@ Output the JSON array now:`;
         const data = await response.json();
 
         if (!data.choices || !data.choices[0]?.message?.content) {
-            console.error("Vision AI raw response:", JSON.stringify(data));
-            throw new Error("Invalid response from Vision AI. The model may not support this image type.");
+            console.error("GROQ Vision API Error:", JSON.stringify(data, null, 2));
+            throw new Error(data.error?.message || "Invalid response from Vision AI provider");
         }
 
         let questions = [];
@@ -136,7 +136,7 @@ Output the JSON array now:`;
 exports.generateAIQuestions = async (req, res) => {
     try {
         const { topic, difficulty, count, mcqCount = count || 5, codingCount = 0 } = req.body;
-        const apiKey = "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";
+        const apiKey = process.env.GROQ_API_KEY || "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";
 
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
 
@@ -210,14 +210,15 @@ exports.generateAIQuestions = async (req, res) => {
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.7,
-                max_tokens: 6000
+                max_tokens: 4000
             })
         });
 
         const data = await response.json();
 
         if (!data.choices || !data.choices[0]?.message?.content) {
-            throw new Error("Invalid response from AI provider");
+            console.error("GROQ API ERROR RESPONSE:", JSON.stringify(data, null, 2));
+            throw new Error(data.error?.message || "Invalid response from AI provider");
         }
 
         let questions = [];
@@ -227,21 +228,31 @@ exports.generateAIQuestions = async (req, res) => {
             questions = JSON.parse(content);
         } catch (e) {
             let cleaned = content.replace(/```json/g, '').replace(/```/g, '').trim();
+            // Remove any potential text before or after the JSON array
+            const firstBracket = cleaned.indexOf('[');
+            const lastBracket = cleaned.lastIndexOf(']');
+            if (firstBracket !== -1 && lastBracket !== -1) {
+                cleaned = cleaned.substring(firstBracket, lastBracket + 1);
+            }
+
             try {
                 questions = JSON.parse(cleaned);
             } catch (e2) {
-                const objectMatches = cleaned.match(/\{[\s\S]*?\}(?=\s*,|\s*\])/g);
+                console.error("Failed to parse cleaned content:", cleaned);
+                const objectMatches = cleaned.match(/\{[\s\S]*?\}(?=\s*,|\s*\]|\s*\})/g);
                 if (objectMatches) {
                     questions = objectMatches.map(str => {
                         try { return JSON.parse(str); } catch { return null; }
                     }).filter(q => q !== null);
-                } else {
+                }
+                
+                if (!questions || questions.length === 0) {
                     const lastBrace = cleaned.lastIndexOf('}');
                     if (lastBrace !== -1) {
                         const repaired = cleaned.substring(0, lastBrace + 1) + ']';
                         try { questions = JSON.parse(repaired); }
-                        catch (e3) { throw new Error("Failed to parse AI response. Try reducing the question count."); }
-                    } else { throw e; }
+                        catch (e3) { throw new Error("Failed to parse AI response. Try a shorter topic or fewer questions."); }
+                    } else { throw new Error("Could not find any parseable JSON in AI response."); }
                 }
             }
         }
