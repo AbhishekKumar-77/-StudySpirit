@@ -26,8 +26,12 @@ const interviewSessionSchema = new mongoose.Schema({
         answer: String,
         score: { type: Number, default: 0 }, // 1-10
         feedback: String,
+        idealAnswer: String,
         timestamp: { type: Date, default: Date.now }
     }],
+    // Config
+    targetRole: String,
+    targetCompany: String,
     // Final report
     overallScore: {
         type: Number,

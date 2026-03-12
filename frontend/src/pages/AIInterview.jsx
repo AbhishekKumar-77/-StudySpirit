@@ -220,6 +220,9 @@ export default function AIInterview() {
     const [resumeFile, setResumeFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState('technical'); // technical, behavioral, resume
+    const [totalQuestionsConfig, setTotalQuestionsConfig] = useState(10); 
+    const [targetRole, setTargetRole] = useState('Software Engineer');
+    const [targetCompany, setTargetCompany] = useState('General Tech');
     const [view, setView] = useState('setup'); // setup, interview, report, history
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [autoSpeak, setAutoSpeak] = useState(true);
@@ -283,12 +286,16 @@ export default function AIInterview() {
         scrollToBottom();
     }, [messages]);
 
+    // Bug #2 fix: use a ref to hold latest sendMessage to avoid stale closure in auto-submit
+    const sendMessageRef = useRef(null);
+
     // Auto submit mechanic when listening
     useEffect(() => {
         if (isListening && input.trim()) {
             if (autoSubmitTimeoutRef.current) clearTimeout(autoSubmitTimeoutRef.current);
             autoSubmitTimeoutRef.current = setTimeout(() => {
-                sendMessage();
+                // Use ref to always call the latest version of sendMessage
+                if (sendMessageRef.current) sendMessageRef.current();
             }, 3500); // Wait 3.5 seconds of silence
         }
         return () => {
@@ -383,12 +390,19 @@ export default function AIInterview() {
                     if (event.results[i].isFinal) {
                         finalTranscript += transcript;
 
-                        // Advanced Analytics: Filler Words
-                        const words = transcript.toLowerCase().split(/\s+/);
-                        const fillerWords = ['um', 'uh', 'like', 'literally', 'basically', 'actually', 'sort of'];
+                        // Bug #9 fix: filler words — check both single words AND multi-word phrases
+                        const lowerTranscript = transcript.toLowerCase();
+                        const words = lowerTranscript.split(/\s+/);
+                        const singleFillers = ['um', 'uh', 'like', 'literally', 'basically', 'actually'];
+                        const phraseFillers = ['sort of', 'you know', 'kind of', 'i mean', 'you see'];
                         let fillers = 0;
                         words.forEach(w => {
-                            if (fillerWords.includes(w.replace(/[^a-z]/g, ''))) fillers++;
+                            if (singleFillers.includes(w.replace(/[^a-z]/g, ''))) fillers++;
+                        });
+                        phraseFillers.forEach(phrase => {
+                            const regex = new RegExp(phrase, 'g');
+                            const matches = lowerTranscript.match(regex);
+                            if (matches) fillers += matches.length;
                         });
                         setFillerWordCount(prev => prev + fillers);
 
@@ -429,7 +443,7 @@ export default function AIInterview() {
         }
     };
 
-    // Load Human-like voices
+    // Bug #6 fix: removed selectedVoiceURI from dep array — was causing infinite re-render loop
     useEffect(() => {
         const loadVoices = () => {
             let voices = window.speechSynthesis.getVoices();
@@ -437,20 +451,22 @@ export default function AIInterview() {
                 let engVoices = voices.filter(v => v.lang.startsWith('en'));
                 engVoices.sort((a, b) => {
                     const aNat = a.name.includes('Natural') || a.name.includes('Online') || a.name.includes('Google') || a.name.includes('Microsoft');
-                    const bNat = b.name.includes('Natural') || b.name.includes('Online') || b.name.includes('Google') || a.name.includes('Microsoft');
+                    const bNat = b.name.includes('Natural') || b.name.includes('Online') || b.name.includes('Google') || b.name.includes('Microsoft');
                     return (aNat === bNat) ? 0 : aNat ? -1 : 1;
                 });
                 setAvailableVoices(engVoices);
-                if (!selectedVoiceURI) {
-                    // Default to Aria/Jenny natural if available
-                    const best = engVoices.find(v => v.name.includes('Aria') || v.name.includes('Jenny')) || engVoices[0];
-                    setSelectedVoiceURI(best?.voiceURI || '');
-                }
+                // Only set default once — don't overwrite user's manual choice
+                setSelectedVoiceURI(prev => {
+                    if (prev) return prev;
+                    const best = engVoices.find(v => v.name.includes('Aria') || v.name.includes('Jenny') || v.name.includes('Google')) || engVoices[0];
+                    return best?.voiceURI || '';
+                });
             }
         };
         loadVoices();
         window.speechSynthesis.onvoiceschanged = loadVoices;
-    }, [selectedVoiceURI]);
+        return () => { window.speechSynthesis.onvoiceschanged = null; };
+    }, []); // Bug #6: empty dep array — only load voices once
 
     const speak = (text) => {
         if (!autoSpeak) return;
@@ -565,9 +581,12 @@ export default function AIInterview() {
 
         try {
             let response;
+            // Bug #3 fix: use configurable totalQuestionsConfig instead of hardcoded 999
             const payload = {
                 mode,
-                totalQuestions: 999,
+                role: targetRole,
+                company: targetCompany,
+                totalQuestions: totalQuestionsConfig,
                 questionNumber: 1
             };
 
@@ -575,7 +594,9 @@ export default function AIInterview() {
                 const formData = new FormData();
                 formData.append('resume', resumeFile);
                 formData.append('mode', mode);
-                formData.append('totalQuestions', 999);
+                formData.append('role', targetRole);
+                formData.append('company', targetCompany);
+                formData.append('totalQuestions', totalQuestionsConfig);
                 formData.append('questionNumber', 1);
                 response = await soloApi.startInterview(formData);
             } else {
@@ -603,7 +624,7 @@ export default function AIInterview() {
     };
 
     const sendMessage = async () => {
-        if (!input.trim()) return;
+        if (!input.trim() || isLoading) return; // Bug #7 fix: guard against rapid double-sends
 
         if (isListening) {
             recognitionRef.current?.stop();
@@ -611,12 +632,10 @@ export default function AIInterview() {
         }
         stopSpeaking();
 
-        const userMsg = { role: 'user', content: input };
+        const userMsg = { role: 'user', content: input.trim() };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsLoading(true);
-
-        // Interview continues indefinitely — user manually ends it via "End Session" button
 
         try {
             const context = messages.slice(-10).map(m => ({
@@ -628,10 +647,12 @@ export default function AIInterview() {
 
             const response = await soloApi.startInterview({
                 mode,
+                role: targetRole,
+                company: targetCompany,
                 message: userMsg.content,
                 context: context,
                 sessionId,
-                totalQuestions: 999,
+                totalQuestions: totalQuestionsConfig, 
                 questionNumber: nextQNum
             });
 
@@ -639,9 +660,6 @@ export default function AIInterview() {
                 setCurrentQuestionNum(nextQNum);
                 const score = response.parsedResponse?.score || 0;
                 const feedback = response.parsedResponse?.feedback || "";
-
-                // Add score/feedback to previous user message in local state for display if needed
-                // (In a real app, strict message mapping would be better)
 
                 const aiMsg = {
                     role: 'ai',
@@ -659,6 +677,9 @@ export default function AIInterview() {
             setIsLoading(false);
         }
     };
+
+    // Bug #2 fix: keep ref in sync so auto-submit always uses latest sendMessage
+    useEffect(() => { sendMessageRef.current = sendMessage; });
 
     const finishInterview = async (lastAnswer, lastQuestion) => {
         if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
@@ -714,6 +735,10 @@ export default function AIInterview() {
             // Re-create the structure that endInterview returns to use the 'report' view
             setSessionReport({
                 ...session,
+                strengths: session.strengths || [],
+                improvements: session.improvements || [],
+                finalFeedback: session.finalFeedback || "Session was not fully completed.",
+                overallScore: session.overallScore || 0,
                 mode: session.mode,
                 totalQuestions: session.exchanges ? session.exchanges.length : 0,
                 duration: session.duration || 0,
@@ -824,8 +849,12 @@ export default function AIInterview() {
                                 stopSpeaking();
                                 if (sessionId && messages.length > 1) {
                                     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
-                                    const lastAiMsg = [...messages].reverse().find(m => m.role === 'ai');
-                                    finishInterview(lastUserMsg?.content || '', lastAiMsg?.content || '');
+                                    // Bug #4 fix: lastQuestion should be the AI's question, not its follow-up response
+                                    // Find the last AI message BEFORE the last user message
+                                    const lastUserIdx = [...messages].reverse().findIndex(m => m.role === 'user');
+                                    const msgsBeforeLastUser = messages.slice(0, messages.length - lastUserIdx);
+                                    const lastAiQuestion = [...msgsBeforeLastUser].reverse().find(m => m.role === 'ai');
+                                    finishInterview(lastUserMsg?.content || '', lastAiQuestion?.content || '');
                                 } else {
                                     setView('setup');
                                 }
@@ -871,6 +900,61 @@ export default function AIInterview() {
                                 <h3 className="font-semibold mb-4">Interview Configuration</h3>
                                 <div className="space-y-4">
 
+                                    {/* Bug #3 fix: let user choose number of questions */}
+                                    <div>
+                                        <label className="block text-sm text-[var(--text-secondary)] mb-2">Number of Questions</label>
+                                        <div className="flex gap-2">
+                                            {[5, 10, 15, 20].map(n => (
+                                                <button
+                                                    key={n}
+                                                    onClick={() => setTotalQuestionsConfig(n)}
+                                                    className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-all ${
+                                                        totalQuestionsConfig === n
+                                                            ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
+                                                            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-cyan-500/40'
+                                                    }`}
+                                                >
+                                                    {n}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Additional Targeting */}
+                                    {(mode === 'technical' || mode === 'behavioral') && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm text-[var(--text-secondary)] mb-2">Target Role</label>
+                                                <select
+                                                    value={targetRole}
+                                                    onChange={e => setTargetRole(e.target.value)}
+                                                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 text-sm text-[var(--text-secondary)] focus:border-cyan-500/50 focus:outline-none"
+                                                >
+                                                    <option value="Software Engineer">Software Engineer (SWE)</option>
+                                                    <option value="Frontend Developer">Frontend Developer</option>
+                                                    <option value="Backend Developer">Backend Developer</option>
+                                                    <option value="Data Scientist">Data Scientist</option>
+                                                    <option value="Product Manager">Product Manager (PM)</option>
+                                                    <option value="DevOps Engineer">DevOps Engineer</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm text-[var(--text-secondary)] mb-2">Target Company</label>
+                                                <select
+                                                    value={targetCompany}
+                                                    onChange={e => setTargetCompany(e.target.value)}
+                                                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 text-sm text-[var(--text-secondary)] focus:border-cyan-500/50 focus:outline-none"
+                                                >
+                                                    <option value="General Tech">General Tech</option>
+                                                    <option value="Google">Google (FAANG style)</option>
+                                                    <option value="Amazon">Amazon (Leadership principles)</option>
+                                                    <option value="Startup">High-Growth Startup</option>
+                                                    <option value="Finance">FinTech / Trading</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div>
                                         <label className="block text-sm text-[var(--text-secondary)] mb-2">Interviewer Voice</label>
                                         <select
@@ -883,7 +967,7 @@ export default function AIInterview() {
                                                 if (v) u.voice = v;
                                                 window.speechSynthesis.speak(u);
                                             }}
-                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 text-sm text-[var(--text-secondary)] focus:border-cyan-500/50 focus:outline-none mb-4"
+                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 text-sm text-[var(--text-secondary)] focus:border-cyan-500/50 focus:outline-none mb-4"
                                         >
                                             <option value="" className="bg-[var(--bg-primary)] text-[var(--text-primary)]">Select a natural human voice...</option>
                                             {availableVoices.map((v, i) => (
@@ -911,7 +995,7 @@ export default function AIInterview() {
                                             value={resumeText}
                                             onChange={(e) => setResumeText(e.target.value)}
                                             placeholder="Or paste resume text here..."
-                                            className="w-full mt-3 h-24 bg-[var(--bg-secondary)]lack/20 rounded-lg p-3 text-sm text-[var(--text-secondary)] border border-[var(--border-color)] focus:border-cyan-500/50 focus:outline-none resize-none"
+                                            className="w-full mt-3 h-24 bg-[var(--bg-secondary)] rounded-lg p-3 text-sm text-[var(--text-secondary)] border border-[var(--border-color)] focus:border-cyan-500/50 focus:outline-none resize-none"
                                         />
                                     </div>
                                 </div>
@@ -1010,7 +1094,7 @@ export default function AIInterview() {
                             </div>
 
                             {/* User Camera */}
-                            <div className="aspect-video bg-[var(--bg-secondary)]lack rounded-xl overflow-hidden relative border border-[var(--border-color)]">
+                            <div className="aspect-video bg-[var(--bg-secondary)] rounded-xl overflow-hidden relative border border-[var(--border-color)]">
                                 {cameraEnabled ? (
                                     <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover transform scale-x-[-1]" />
                                 ) : (
@@ -1018,7 +1102,7 @@ export default function AIInterview() {
                                         <CameraOff className="w-8 h-8 text-[var(--text-primary)]" />
                                     </div>
                                 )}
-                                <div className="absolute bottom-2 left-2 bg-[var(--bg-secondary)]lack/60 px-2 py-1 rounded text-xs font-bold text-[var(--text-primary)]">You</div>
+                                <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white">You</div>
                             </div>
 
                             {/* Status Card */}
@@ -1040,7 +1124,7 @@ export default function AIInterview() {
 
                                 <div className="pt-3 border-t border-[var(--border-color)]">
                                     <span className="text-[var(--text-secondary)] text-xs mb-2 block">Vocal Confidence</span>
-                                    <div className="w-full h-2 bg-[var(--bg-secondary)]lack/50 rounded-full overflow-hidden flex">
+                                    <div className="w-full h-2 bg-black/30 rounded-full overflow-hidden flex">
                                         <div
                                             className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-75"
                                             style={{ width: `${Math.min(100, (vocalVolume / 128) * 100)}%` }}
@@ -1151,6 +1235,12 @@ export default function AIInterview() {
                                                 <div className="flex-1">
                                                     <h4 className="font-bold text-yellow-500 text-sm flex items-center gap-1"><AlertCircle className="w-4 h-4" /> AI Evaluation</h4>
                                                     <p className="text-sm text-[var(--text-secondary)] mt-1">{exchange.feedback}</p>
+                                                    {exchange.idealAnswer && (
+                                                        <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
+                                                            <h5 className="text-xs font-bold text-emerald-400 mb-1 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Ideal Answer Concept</h5>
+                                                            <p className="text-sm text-[var(--text-secondary)]">{exchange.idealAnswer}</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="flex flex-col items-center justify-center shrink-0 pr-4">
                                                     <div className="text-2xl font-black text-yellow-500">{exchange.score}</div>
@@ -1172,7 +1262,7 @@ export default function AIInterview() {
                         {/* Left: Input Form */}
                         <div className="w-full md:w-1/2 bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] overflow-y-auto print:hidden">
                             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                <FileText className="text-cyan-400" /> Build Your Resume
+                                <FileText className="text-cyan-400" /> AI Resume Builder
                             </h2>
 
                             <div className="space-y-6">
@@ -1182,7 +1272,7 @@ export default function AIInterview() {
                                         <input
                                             value={resumeForm.name}
                                             onChange={e => setResumeForm({ ...resumeForm, name: e.target.value })}
-                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
+                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
                                         />
                                     </div>
                                     <div>
@@ -1190,7 +1280,7 @@ export default function AIInterview() {
                                         <input
                                             value={resumeForm.email}
                                             onChange={e => setResumeForm({ ...resumeForm, email: e.target.value })}
-                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
+                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
                                         />
                                     </div>
                                     <div>
@@ -1199,7 +1289,7 @@ export default function AIInterview() {
                                             value={resumeForm.phone}
                                             onChange={e => setResumeForm({ ...resumeForm, phone: e.target.value })}
                                             placeholder="+1 234..."
-                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
+                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
                                         />
                                     </div>
                                     <div>
@@ -1208,7 +1298,7 @@ export default function AIInterview() {
                                             value={resumeForm.links}
                                             onChange={e => setResumeForm({ ...resumeForm, links: e.target.value })}
                                             placeholder="linkedin.com/in/..."
-                                            className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)]"
+                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
                                         />
                                     </div>
                                 </div>
@@ -1218,7 +1308,7 @@ export default function AIInterview() {
                                     <select
                                         value={resumeForm.template}
                                         onChange={e => setResumeForm({ ...resumeForm, template: e.target.value })}
-                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
                                     >
                                         <option value="Modern Professional" className="bg-[var(--bg-primary)]">Modern Professional</option>
                                         <option value="Creative Tech" className="bg-[var(--bg-primary)]">Creative Tech</option>
@@ -1232,7 +1322,7 @@ export default function AIInterview() {
                                         value={resumeForm.skills}
                                         onChange={e => setResumeForm({ ...resumeForm, skills: e.target.value })}
                                         placeholder="React, Node.js, Python, Leadership, Public Speaking..."
-                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1242,7 +1332,7 @@ export default function AIInterview() {
                                         value={resumeForm.experience}
                                         onChange={e => setResumeForm({ ...resumeForm, experience: e.target.value })}
                                         placeholder="Software Engineer at Google (2020-Present). Built X feature..."
-                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-32 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-32 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1252,7 +1342,7 @@ export default function AIInterview() {
                                         value={resumeForm.education}
                                         onChange={e => setResumeForm({ ...resumeForm, education: e.target.value })}
                                         placeholder="B.Tech in CS, XYZ University (2018-2022), GPA 3.8"
-                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1262,7 +1352,7 @@ export default function AIInterview() {
                                         value={resumeForm.additionalInfo}
                                         onChange={e => setResumeForm({ ...resumeForm, additionalInfo: e.target.value })}
                                         placeholder="Certified AWS Sol Arch, Won Hackathon 2024..."
-                                        className="w-full bg-[var(--bg-secondary)]lack/20 border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
+                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
                                     />
                                 </div>
 
@@ -1290,14 +1380,25 @@ export default function AIInterview() {
                                         >
                                             <Printer size={14} /> Export PDF
                                         </button>
+                                        {/* Bug #5 fix: copy formatted readable text, not raw JSON */}
                                         <button
                                             onClick={() => {
-                                                navigator.clipboard.writeText(JSON.stringify(generatedResume, null, 2));
-                                                alert("Raw Resume JSON data copied to clipboard!");
+                                                const r = generatedResume;
+                                                const lines = [
+                                                    r.personalInfo?.name, r.personalInfo?.email, r.personalInfo?.phone, r.personalInfo?.links,
+                                                    '', r.summary || '',
+                                                    '', 'SKILLS:', (r.skills || []).join(', '),
+                                                    '', 'EXPERIENCE:',
+                                                    ...(r.experience || []).flatMap(e => [`${e.role} @ ${e.company} (${e.duration})`, ...(e.description || []).map(d => `  • ${d}`), '']),
+                                                    'EDUCATION:',
+                                                    ...(r.education || []).map(e => `${e.degree} — ${e.institution} (${e.year})`),
+                                                ];
+                                                navigator.clipboard.writeText(lines.filter(Boolean).join('\n'));
+                                                alert('Resume copied as plain text!');
                                             }}
                                             className="text-xs font-bold text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 px-3 py-1.5 rounded border border-cyan-200 bg-white transition-colors"
                                         >
-                                            Copy JSON
+                                            Copy Text
                                         </button>
                                     </div>
                                 )}

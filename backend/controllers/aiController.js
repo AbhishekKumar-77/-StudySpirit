@@ -7,7 +7,7 @@ exports.interviewWithAI = async (req, res) => {
     console.log("🎤 AI Interview Request Received");
 
     try {
-        let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber } = req.body;
+        let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber, role, company } = req.body;
         const user = req.user ? await User.findById(req.user.id) : null;
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
@@ -42,10 +42,12 @@ exports.interviewWithAI = async (req, res) => {
             if (sessionId) {
                 session = await InterviewSession.findById(sessionId);
             }
-            if (!session && isNewResumeSession) {
+            if (!session && (!context || context.length === 0)) {
                 session = await InterviewSession.create({
                     userId: user._id,
                     mode: mode || 'technical',
+                    targetRole: role || 'Software Engineer',
+                    targetCompany: company || 'General Tech',
                     totalQuestions: qTotal,
                     resumeText: resumeText ? resumeText.substring(0, 5000) : '',
                     status: 'in-progress'
@@ -64,13 +66,15 @@ exports.interviewWithAI = async (req, res) => {
             4. **⚠️ STRICTLY ONE QUESTION ONLY ⚠️**: This is the MOST IMPORTANT rule. You MUST ask exactly ONE question per response. NEVER two, NEVER three. Your entire "spokenText" should contain only ONE question mark at the very end. Do NOT ask follow-ups. ONLY ONE question.
             5. **SPOKEN FORMAT**: Write "spokenText" as you would SAY it out loud. Use contractions, natural flow.
             6. **SHORT & FOCUSED**: Keep responses concise — 2-4 sentences of reaction/feedback, then ONE question.
+            7. **ROLE AND COMPANY**: You are interviewing the candidate for the role of "${role || 'Software Engineer'}" at ${company === 'Startup' ? 'a High-Growth Startup' : company === 'General Tech' ? 'a tech company' : company || 'General Tech'}. Frame questions contextually based on this role and company.
         `;
 
         const jsonFormat = `
             RESPONSE FORMAT (strict JSON):
             {
-                "question": "The single question being asked",
+                "question": "The single follow-up question being asked",
                 "feedback": "Internal notes about their previous answer",
+                "idealAnswer": "A short, bulleted 1-2 sentence example of an ideal, perfect answer to the PREVIOUS question you asked them.",
                 "score": 0-10,
                 "spokenText": "Your natural response. MUST end with exactly ONE question. No more."
             }
@@ -168,6 +172,7 @@ ${mode === 'technical'
                 parsedResponse = {
                     question: raw,
                     feedback: "",
+                    idealAnswer: "",
                     score: 0,
                     spokenText: raw
                 };
@@ -176,7 +181,7 @@ ${mode === 'technical'
         } else {
             console.error('❌ Groq Error:', JSON.stringify(data));
             aiResponse = "I encountered an error. Let's continue.";
-            parsedResponse = { question: aiResponse, feedback: "", score: 0, spokenText: aiResponse };
+            parsedResponse = { question: aiResponse, feedback: "", idealAnswer: "", score: 0, spokenText: aiResponse };
         }
 
         // Save exchange to session
@@ -186,7 +191,8 @@ ${mode === 'technical'
                 question: context && context.length > 0 ? context[context.length - 2]?.content || '' : '',
                 answer: message,
                 score: parsedResponse.score || 0,
-                feedback: parsedResponse.feedback || ''
+                feedback: parsedResponse.feedback || '',
+                idealAnswer: parsedResponse.idealAnswer || ''
             });
             session.questionsAsked = qNum - 1;
             await session.save();
