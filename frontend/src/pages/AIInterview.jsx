@@ -326,6 +326,10 @@ export default function AIInterview() {
     const [atsResult, setAtsResult] = useState(null);
     const [isCheckingAts, setIsCheckingAts] = useState(false);
 
+    // Journey Mode State
+    const [isJourneyMode, setIsJourneyMode] = useState(false);
+    const [journeyStep, setJourneyStep] = useState(0); // 1: ATS, 2: HR, 3: GD, 4: Technical
+
     // Interview Config
     const [currentQuestionNum, setCurrentQuestionNum] = useState(1);
     const [sessionId, setSessionId] = useState(null);
@@ -649,49 +653,50 @@ export default function AIInterview() {
         };
     }, []);
 
-    const startInterview = async () => {
-        if (!resumeText.trim() && !resumeFile && mode === 'resume') {
+    const startInterview = async (providedMode = null, providedFile = null) => {
+        const activeMode = providedMode || mode;
+        const activeFile = providedFile || resumeFile;
+
+        if (!resumeText.trim() && !activeFile && activeMode === 'resume') {
             alert("Please paste your resume content OR upload a PDF first.");
             return;
         }
 
         setView('interview');
-        setMessages([]);
         setIsLoading(true);
-        setCurrentQuestionNum(1);
+        setMessages([]);
         setSessionId(null);
+        setCurrentQuestionNum(1);
         setFillerWordCount(0);
         setWpm(0);
-        wordsSpokenRef.current = 0;
         setElapsedTime(0);
-
-        // Start Timer
         startTimeRef.current = Date.now();
+        wordsSpokenRef.current = 0;
+        
         if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-            setElapsedTime(elapsed);
-            if (elapsed > 10) {
-                const mins = elapsed / 60;
+            const sec = Math.floor((Date.now() - startTimeRef.current) / 1000);
+            setElapsedTime(sec);
+            if (sec > 60) {
+                const mins = sec / 60;
                 setWpm(Math.round(wordsSpokenRef.current / mins));
             }
         }, 1000);
 
         try {
             let response;
-            // Bug #3 fix: use configurable totalQuestionsConfig instead of hardcoded 999
             const payload = {
-                mode,
+                mode: activeMode,
                 role: targetRole,
                 company: targetCompany,
                 totalQuestions: totalQuestionsConfig,
                 questionNumber: 1
             };
 
-            if (resumeFile) {
+            if (activeFile) {
                 const formData = new FormData();
-                formData.append('resume', resumeFile);
-                formData.append('mode', mode);
+                formData.append('resume', activeFile);
+                formData.append('mode', activeMode);
                 formData.append('role', targetRole);
                 formData.append('company', targetCompany);
                 formData.append('totalQuestions', totalQuestionsConfig);
@@ -791,26 +796,65 @@ export default function AIInterview() {
         if (isListening) recognitionRef.current?.stop();
         setIsListening(false);
 
-        setIsLoading(true);
-        try {
-            const response = await soloApi.endInterview({
-                sessionId,
-                lastAnswer,
-                lastQuestion: lastQuestion || "Final Question",
-                lastQuestionNumber: currentQuestionNum
-            });
+        const endInterview = async () => {
+            setIsLoading(true);
+            try {
+                const lastMsg = messages[messages.length - 1];
+                const response = await soloApi.endInterview({
+                    sessionId,
+                    lastAnswer: lastMsg?.role === 'user' ? lastMsg.content : '',
+                    lastQuestion: lastMsg?.role === 'ai' ? lastMsg.content : '',
+                    lastQuestionNumber: currentQuestionNum
+                });
 
-            if (response.success) {
-                setSessionReport(response.report);
-                setView('report');
-                stopSpeaking();
+                if (response.success) {
+                    setSessionReport(response.report);
+                    setView('report');
+                    stopSpeaking();
+                }
+            } catch (error) {
+                console.error("Failed to end interview:", error);
+                alert("Error generating report. Please check your connection.");
+            } finally {
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to end interview:", error);
-            alert("Error generating report. Please check your connection.");
-        } finally {
-            setIsLoading(false);
+        };
+
+        if (isJourneyMode && journeyStep < 4) {
+            // In journey mode, don't show report immediately, move to next step
+            await endInterview(); // Still end the current interview session
+            nextJourneyStep();
+        } else {
+            // Regular interview or final step of journey
+            await endInterview();
         }
+    };
+
+    const nextJourneyStep = () => {
+        const nextStep = journeyStep + 1;
+        setJourneyStep(nextStep);
+        
+        const effectiveFile = resumeFile || atsFile;
+        if (effectiveFile && !resumeFile) setResumeFile(effectiveFile);
+
+        if (nextStep === 2) {
+            setMode('behavioral');
+            startInterview('behavioral', effectiveFile);
+        } else if (nextStep === 3) {
+            setMode('gd');
+            startInterview('gd', effectiveFile);
+        } else if (nextStep === 4) {
+            setMode('technical');
+            startInterview('technical', effectiveFile);
+        } else {
+            setView('report');
+        }
+    };
+
+    const startJourney = () => {
+        setIsJourneyMode(true);
+        setJourneyStep(1);
+        setView('ats-checker');
     };
 
     const handleKeyDown = (e) => {
@@ -881,6 +925,33 @@ export default function AIInterview() {
             setIsCheckingAts(false);
         }
     };
+
+    const JourneyProgressBar = () => (
+        <div className="w-full max-w-4xl mx-auto mb-8 px-4">
+            <div className="flex items-center justify-between relative">
+                {/* Connecting Lines */}
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2 z-0" />
+                <div 
+                    className="absolute top-1/2 left-0 h-0.5 bg-gradient-to-r from-cyan-500 to-pink-500 -translate-y-1/2 z-0 transition-all duration-1000" 
+                    style={{ width: `${((journeyStep - 1) / 3) * 100}%` }}
+                />
+                
+                {[
+                    { step: 1, label: 'CV Check', icon: <FileText size={16} /> },
+                    { step: 2, label: 'HR Round', icon: <User size={16} /> },
+                    { step: 3, label: 'GD Round', icon: <Users size={16} /> },
+                    { step: 4, label: 'Technical', icon: <Cpu size={16} /> }
+                ].map((item) => (
+                    <div key={item.step} className="relative z-10 flex flex-col items-center gap-2">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${journeyStep >= item.step ? 'bg-gradient-to-br from-cyan-500 to-blue-600 scale-110 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-slate-800 border border-white/10'}`}>
+                            {journeyStep > item.step ? <CheckCircle size={20} className="text-white" /> : item.icon}
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${journeyStep >= item.step ? 'text-cyan-400' : 'text-slate-500'}`}>{item.label}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans relative overflow-y-auto overflow-x-hidden">
@@ -957,7 +1028,8 @@ export default function AIInterview() {
                 </div>
             </nav>
 
-            <main className="max-w-7xl mx-auto p-6 flex gap-6 min-h-[calc(100vh-80px)]">
+            <main className="max-w-7xl mx-auto p-6 flex flex-col gap-6 min-h-[calc(100vh-80px)]">
+                {isJourneyMode && <JourneyProgressBar />}
 
                 {/* SETUP VIEW */}
                 {view === 'setup' && (
@@ -965,7 +1037,33 @@ export default function AIInterview() {
                         <div className="flex-1 space-y-8">
                             <div>
                                 <h2 className="text-4xl font-bold mb-4">Master Your Interview Skills</h2>
-                                <p className="text-[var(--text-secondary)] text-lg">Practice with Aria, our AI interviewer. Get real-time feedback, scoring, and confidence analysis.</p>
+                                <p className="text-[var(--text-secondary)] text-lg mb-8">Practice with Aria, our AI interviewer. Get real-time feedback, scoring, and confidence analysis.</p>
+
+                                {/* Master Journey Card */}
+                                <div 
+                                    onClick={startJourney}
+                                    className="relative group cursor-pointer overflow-hidden p-8 rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-900/40 via-purple-900/20 to-black hover:border-cyan-500 transition-all duration-500 mb-10"
+                                >
+                                    <div className="absolute inset-0 bg-cyan-500/5 group-hover:bg-cyan-500/10 transition-colors" />
+                                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 blur-[80px] group-hover:blur-[100px] transition-all" />
+                                    
+                                    <div className="relative flex flex-col md:flex-row items-center gap-8">
+                                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500 to-pink-500 flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(6,182,212,0.3)] group-hover:scale-110 transition-transform">
+                                            <Sparkles className="w-10 h-10 text-white animate-pulse" />
+                                        </div>
+                                        <div className="flex-1 text-center md:text-left">
+                                            <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-2">
+                                                <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest">Recommended</span>
+                                                <span className="px-3 py-1 rounded-full bg-pink-500/20 text-pink-400 text-[10px] font-black uppercase tracking-widest">Full Cycle</span>
+                                            </div>
+                                            <h3 className="text-3xl font-black text-white mb-2">Complete Recruitment Journey</h3>
+                                            <p className="text-slate-400 text-sm max-w-xl">Experience the full hiring loop: ATS CV Check → HR Screening → Group Discussion → Final Technical Round. One complete simulation to make you job-ready.</p>
+                                        </div>
+                                        <button className="px-8 py-4 bg-white text-black rounded-xl font-black group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-xl">
+                                            START JOURNEY
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1392,12 +1490,20 @@ export default function AIInterview() {
                         )}
 
                         <div className="flex justify-center gap-4">
-                            <button onClick={() => setView('setup')} className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">
-                                Back to Menu
-                            </button>
-                            <button onClick={() => { setMode(sessionReport.mode); setView('setup'); }} className="px-8 py-3 bg-cyan-500 hover:bg-violet-700 rounded-xl font-bold transition-all shadow-lg shadow-violet-500/20">
-                                Try Again
-                            </button>
+                            {isJourneyMode && journeyStep < 4 ? (
+                                <button onClick={nextJourneyStep} className="px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold transition-all shadow-xl shadow-emerald-500/20 flex items-center gap-2 animate-bounce">
+                                    Proceed to Next Round <ChevronRight />
+                                </button>
+                            ) : (
+                                <>
+                                    <button onClick={() => { setView('setup'); setIsJourneyMode(false); }} className="px-8 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">
+                                        Back to Menu
+                                    </button>
+                                    <button onClick={() => { setMode(sessionReport.mode); setView('setup'); }} className="px-8 py-3 bg-cyan-500 hover:bg-violet-700 rounded-xl font-bold transition-all shadow-lg shadow-violet-500/20">
+                                        Try Again
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                         {/* DETAILED TRANSCRIPT */}
@@ -1518,6 +1624,18 @@ export default function AIInterview() {
                                             <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{atsResult.summary}</p>
                                         </div>
                                     </div>
+
+                                    {isJourneyMode && atsResult.overallScore >= 50 && (
+                                        <div className="bg-emerald-500/10 p-6 rounded-2xl border border-emerald-500/30 flex items-center justify-between animate-pulse">
+                                            <div>
+                                                <h4 className="font-bold text-emerald-400">Application Success!</h4>
+                                                <p className="text-sm text-emerald-300/70">Your CV meets the requirements. You've been advanced to the HR Interview round.</p>
+                                            </div>
+                                            <button onClick={nextJourneyStep} className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl font-bold transition-all shadow-lg">
+                                                Go to HR Interview
+                                            </button>
+                                        </div>
+                                    )}
                                     
                                     {/* Advanced Keyword Analysis */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
