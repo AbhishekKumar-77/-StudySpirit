@@ -541,45 +541,67 @@ export default function AIInterview() {
         return () => { window.speechSynthesis.onvoiceschanged = null; };
     }, []); // Bug #6: empty dep array — only load voices once
 
-    const speak = (text) => {
+    const speak = (text, speakers = null) => {
         if (!autoSpeak) return;
         window.speechSynthesis.cancel();
 
-        // Clean markdown formatting
-        const cleanText = text.replace(/[*_`#]/g, '').replace(/\n+/g, '. ').trim();
+        let sentenceQueue = [];
 
-        // Split into sentences for natural pauses
-        const sentences = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
+        if (speakers && Array.isArray(speakers) && speakers.length > 0) {
+            speakers.forEach(sp => {
+                const clean = sp.text.replace(/[*_`#]/g, '').replace(/\n+/g, '. ').trim();
+                const parts = clean.match(/[^.!?]+[.!?]+/g) || [clean];
+                parts.forEach(p => {
+                    if (p.trim()) sentenceQueue.push({ text: p.trim(), speaker: sp.name });
+                });
+            });
+        } else {
+            const cleanText = text.replace(/[*_`#]/g, '').replace(/\n+/g, '. ').trim();
+            const parts = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
+            parts.forEach(p => {
+                if (p.trim()) sentenceQueue.push({ text: p.trim(), speaker: 'Aria' });
+            });
+        }
+
         const voices = window.speechSynthesis.getVoices();
-        const voice = voices.find(v => v.voiceURI === selectedVoiceURI) || voices[0];
+        const baseVoice = voices.find(v => v.voiceURI === selectedVoiceURI) || voices[0];
+        // For GD, try to find an alternative male voice for Alex if possible
+        const maleVoice = voices.find(v => v.name.toLowerCase().includes('guy') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('mark') || v.name.toLowerCase().includes('male')) || baseVoice;
+        // For GD, try to find an alternative female voice for Sarah
+        const femaleVoice2 = voices.find(v => v.voiceURI !== baseVoice?.voiceURI && (v.name.toLowerCase().includes('girl') || v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('female'))) || baseVoice;
 
         setIsSpeaking(true);
         speechStoppedRef.current = false;
 
         let index = 0;
         const speakNext = () => {
-            if (speechStoppedRef.current || index >= sentences.length) {
+            if (speechStoppedRef.current || index >= sentenceQueue.length) {
                 setIsSpeaking(false);
                 return;
             }
 
-            const sentence = sentences[index].trim();
-            if (!sentence) {
-                index++;
-                speakNext();
-                return;
+            const current = sentenceQueue[index];
+            const utterance = new SpeechSynthesisUtterance(current.text);
+
+            if (current.speaker === 'Alex') {
+                utterance.voice = maleVoice;
+                utterance.pitch = 0.8;
+                utterance.rate = 1.0;
+            } else if (current.speaker === 'Sarah') {
+                utterance.voice = femaleVoice2;
+                utterance.pitch = 1.2;
+                utterance.rate = 1.05;
+            } else {
+                // Aria (Default)
+                if (baseVoice) utterance.voice = baseVoice;
+                utterance.rate = 0.92;
+                utterance.pitch = 1.05;
             }
 
-            const utterance = new SpeechSynthesisUtterance(sentence);
-
-            if (voice) utterance.voice = voice;
-            utterance.rate = 0.92;   // Slightly slower = more natural
-            utterance.pitch = 1.05;  // Slightly higher = warmer female voice
             utterance.volume = 1.0;
 
             utterance.onend = () => {
                 index++;
-                // Natural pause between sentences (200-400ms)
                 setTimeout(speakNext, 200 + Math.random() * 200);
             };
             utterance.onerror = () => {
@@ -684,9 +706,14 @@ export default function AIInterview() {
                     setResumeText(response.resumeTextParsed);
                 }
                 setSessionId(response.sessionId);
-                const aiMsg = { role: 'ai', content: response.response, score: 0 };
+                const aiMsg = { 
+                    role: 'ai', 
+                    content: response.response, 
+                    score: 0,
+                    speakers: response.parsedResponse?.speakers 
+                };
                 setMessages([aiMsg]);
-                speak(response.response);
+                speak(response.response, response.parsedResponse?.speakers);
             }
         } catch (error) {
             console.error('Failed to start interview:', error);
@@ -738,10 +765,11 @@ export default function AIInterview() {
                     role: 'ai',
                     content: response.response,
                     score: score,
-                    feedback: feedback
+                    feedback: feedback,
+                    speakers: response.parsedResponse?.speakers
                 };
                 setMessages(prev => [...prev, aiMsg]);
-                speak(response.response);
+                speak(response.response, response.parsedResponse?.speakers);
             }
         } catch (error) {
             console.error('Failed to send message:', error);
@@ -937,16 +965,21 @@ export default function AIInterview() {
                                 <p className="text-[var(--text-secondary)] text-lg">Practice with Aria, our AI interviewer. Get real-time feedback, scoring, and confidence analysis.</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'technical' ? 'bg-cyan-500/10 border-cyan-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setMode('technical')}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'technical' ? 'bg-cyan-500/10 border-cyan-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => {setMode('technical'); setView('setup');}}>
                                     <Cpu className={`w-8 h-8 mb-4 ${mode === 'technical' ? 'text-cyan-500' : 'text-[var(--text-muted)]'}`} />
                                     <h3 className="text-xl font-bold mb-2">Technical Round</h3>
                                     <p className="text-sm text-[var(--text-secondary)]">DSA, System Design, and coding concepts. Strict and focused.</p>
                                 </div>
-                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'behavioral' ? 'bg-pink-600/10 border-pink-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-pink-500/50'}`} onClick={() => setMode('behavioral')}>
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'behavioral' ? 'bg-pink-600/10 border-pink-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-pink-500/50'}`} onClick={() => {setMode('behavioral'); setView('setup');}}>
                                     <User className={`w-8 h-8 mb-4 ${mode === 'behavioral' ? 'text-pink-400' : 'text-[var(--text-muted)]'}`} />
                                     <h3 className="text-xl font-bold mb-2">HR / Behavioral</h3>
                                     <p className="text-sm text-[var(--text-secondary)]">Soft skills, STAR method, and cultural fit evaluation.</p>
+                                </div>
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${mode === 'gd' ? 'bg-violet-600/10 border-violet-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-violet-500/50'}`} onClick={() => {setMode('gd'); setView('setup');}}>
+                                    <Mic className={`w-8 h-8 mb-4 ${mode === 'gd' ? 'text-violet-400' : 'text-[var(--text-muted)]'}`} />
+                                    <h3 className="text-xl font-bold mb-2">Group Discussion</h3>
+                                    <p className="text-sm text-[var(--text-secondary)]">Virtual GD with AI peers (Alex, Sarah). Test debate & leadership.</p>
                                 </div>
                                 <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${view === 'ats-checker' ? 'bg-cyan-600/10 border-cyan-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setView('ats-checker')}>
                                     <FileText className={`w-8 h-8 mb-4 ${view === 'ats-checker' ? 'text-cyan-400' : 'text-[var(--text-muted)]'}`} />
@@ -1098,7 +1131,22 @@ export default function AIInterview() {
                                 {messages.map((msg, idx) => (
                                     <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`p-4 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-lg ${msg.role === 'user' ? 'bg-cyan-500/90 text-white rounded-tr-sm' : 'bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-tl-sm'}`}>
-                                            {msg.content}
+                                            {msg.speakers && msg.speakers.length > 0 ? (
+                                                <div className="space-y-3">
+                                                    {msg.speakers.map((sp, sIdx) => (
+                                                        <div key={sIdx}>
+                                                            <strong className={
+                                                                sp.name === 'Alex' ? 'text-blue-400' : 
+                                                                sp.name === 'Sarah' ? 'text-pink-400' : 
+                                                                sp.name === 'Aria' ? 'text-cyan-400' : 'text-violet-400'
+                                                            }>{sp.name}: </strong>
+                                                            <span>{sp.text}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <>{msg.content}</>
+                                            )}
                                             {msg.role === 'ai' && msg.feedback && (
                                                 <div className="mt-3 pt-3 border-t border-[var(--border-color)] text-xs text-yellow-500/80 italic">
                                                     Feedback: "{msg.feedback}"

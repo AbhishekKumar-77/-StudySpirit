@@ -81,7 +81,35 @@ exports.interviewWithAI = async (req, res) => {
             
             ⚠️ HARD RULE: The "spokenText" must contain EXACTLY ONE question mark (?). If you put more than one ?, you are violating the rules.`;
 
-        if (qNum === 1) {
+        if (mode === 'gd') {
+            systemPrompt = `You are Aria, the moderator of a Virtual Group Discussion (GD). 
+            There are two other AI participants: Alex (Analytical, critical) and Sarah (Creative, enthusiastic).
+            The User is the 4th participant.
+            
+            GD TOPIC: ${role && role !== 'Software Engineer' ? role : 'The Impact of AI on Future Jobs'}
+            CURRENT TURN: ${qNum}
+            
+            GD RULES:
+            1. You must simulate a fast-paced group discussion. 
+            2. Do NOT write one giant wall of text. Break it down into lines spoken by Alex, Sarah, or Aria.
+            3. On turn 1, Aria introduces the topic. On later turns, Alex or Sarah react to the User's previous answer.
+            4. Always end with Aria or another AI asking the User a direct question to keep them engaged.
+            5. Return STRICT JSON with a "speakers" array.
+
+            RESPONSE FORMAT (strict JSON):
+            {
+                "speakers": [
+                    { "name": "Alex", "text": "Dialogue here..." },
+                    { "name": "Aria", "text": "Dialogue here..." }
+                ],
+                "question": "The final question asked to the user",
+                "feedback": "Internal notes on the user's participation quality",
+                "idealAnswer": "What a strong GD participant would say next",
+                "score": 0-10,
+                "spokenText": "Combined text of all speakers (fallback)"
+            }
+            `;
+        } else if (qNum === 1) {
             // FIRST MESSAGE: Always introduce as Aria, Personal HR Interviewer, and ask "Tell me about yourself"
             systemPrompt = `You are "Aria", a Personal HR Interviewer. 
             
@@ -174,14 +202,15 @@ ${mode === 'technical'
                     feedback: "",
                     idealAnswer: "",
                     score: 0,
-                    spokenText: raw
+                    spokenText: raw,
+                    speakers: [{name: "Aria", text: raw}]
                 };
             }
             aiResponse = parsedResponse.spokenText || parsedResponse.question || raw;
         } else {
             console.error('❌ Groq Error:', JSON.stringify(data));
             aiResponse = "I encountered an error. Let's continue.";
-            parsedResponse = { question: aiResponse, feedback: "", idealAnswer: "", score: 0, spokenText: aiResponse };
+            parsedResponse = { question: aiResponse, feedback: "", idealAnswer: "", score: 0, spokenText: aiResponse, speakers: [{name: "Aria", text: aiResponse}] };
         }
 
         // Save exchange to session
@@ -222,7 +251,6 @@ exports.endInterview = async (req, res) => {
         if (!sessionId) {
             return res.status(400).json({ message: "Session ID is required" });
         }
-
         const session = await InterviewSession.findById(sessionId);
         if (!session) {
             return res.status(404).json({ message: "Session not found" });
