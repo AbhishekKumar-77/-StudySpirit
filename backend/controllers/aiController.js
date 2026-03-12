@@ -155,12 +155,14 @@ exports.interviewWithAI = async (req, res) => {
             try {
                 parsedResponse = JSON.parse(raw.replace(/```json/g, '').replace(/```/g, '').trim());
             } catch (e) {
+                console.error("JSON parse error:", raw);
                 parsedResponse = {
                     question: raw, feedback: "", idealAnswer: "", score: 0, spokenText: raw,
                     speakers: [{name: "Aria", text: raw}]
                 };
             }
         } else {
+            console.error("Groq API error response:", data);
             parsedResponse = { question: "Error.", feedback: "", idealAnswer: "", score: 0, spokenText: "Error.", speakers: [{name: "Aria", text: "Error."}] };
         }
 
