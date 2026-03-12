@@ -5,7 +5,7 @@ const User = require('../models/User');
 exports.generateFromImage = async (req, res) => {
     try {
         const { imageBase64, mimeType = 'image/jpeg', count = 5, difficulty = 'medium' } = req.body;
-        const apiKey = process.env.GROQ_API_KEY || "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";
+        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
 
         if (!imageBase64) {
             return res.status(400).json({ success: false, message: "Image data is required" });
@@ -136,7 +136,7 @@ Output the JSON array now:`;
 exports.generateAIQuestions = async (req, res) => {
     try {
         const { topic, difficulty, count, mcqCount = count || 5, codingCount = 0 } = req.body;
-        const apiKey = process.env.GROQ_API_KEY || "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";
+        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
 
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
 
