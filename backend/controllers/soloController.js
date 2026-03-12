@@ -1375,7 +1375,7 @@ exports.refreshPlatformData = async (req, res) => {
 exports.getStudySuggestions = async (req, res) => {
     try {
         const { topics, daysAvailable, hoursPerDay, pressureLevel } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_PLANNER || process.env.GROQ_API_KEY;
 
         // Validation
         if (!topics || topics.trim().length === 0) {
