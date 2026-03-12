@@ -304,6 +304,7 @@ export default function AIInterview() {
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState('technical'); // technical, behavioral, resume
     const [totalQuestionsConfig, setTotalQuestionsConfig] = useState(10); 
+    const [currentQuestionNum, setCurrentQuestionNum] = useState(1);
     const [targetRole, setTargetRole] = useState('Software Engineer');
     const [targetCompany, setTargetCompany] = useState('General Tech');
     const [view, setView] = useState('setup'); // setup, interview, report, history
@@ -331,11 +332,14 @@ export default function AIInterview() {
     const [journeyStep, setJourneyStep] = useState(0); // 1: ATS, 2: HR, 3: GD, 4: Technical
     const [journeyReports, setJourneyReports] = useState([]);
 
-    // Interview Config
-    const [currentQuestionNum, setCurrentQuestionNum] = useState(1);
     const [sessionId, setSessionId] = useState(null);
     const [sessionReport, setSessionReport] = useState(null);
     const [interviewHistory, setInterviewHistory] = useState([]);
+    const [examCode, setExamCode] = useState('');
+    const [registrationNumber, setRegistrationNumber] = useState('');
+    const [examData, setExamData] = useState(null);
+    const [submissionId, setSubmissionId] = useState(null);
+    const [isJoiningExam, setIsJoiningExam] = useState(false);
 
     // Speech-to-Text states
     const [isListening, setIsListening] = useState(false);
@@ -659,7 +663,45 @@ export default function AIInterview() {
         };
     }, []);
 
-    const startInterview = async (providedMode = null, providedFile = null, overrideConfig = null) => {
+    const handleJoinExam = async () => {
+        if (!examCode.trim()) return alert("Please enter an exam code!");
+        if (!registrationNumber.trim()) return alert("Please enter your Registration/Roll Number!");
+        
+        setIsJoiningExam(true);
+        try {
+            const res = await fetch(`${API_BASE}/interview-exam/join`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ examCode, registrationNumber }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                setExamData(data.exam);
+                setSubmissionId(data.submissionId);
+                setMode(data.exam.mode);
+                setTotalQuestionsConfig(data.exam.totalQuestions);
+                setTargetRole(data.exam.targetRole);
+                setTargetCompany(data.exam.targetCompany);
+                
+                // Start interview automatically with exam settings
+                startInterview(data.exam.mode, null, data.exam.totalQuestions, {
+                    examCode: data.exam.code,
+                    submissionId: data.submissionId
+                });
+            } else {
+                alert(data.message || "Failed to join exam");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error joining exam. Check your connection.");
+        } finally {
+            setIsJoiningExam(false);
+        }
+    };
+
+    const startInterview = async (providedMode = null, providedFile = null, overrideConfig = null, examCtx = null) => {
         const activeMode = providedMode || mode;
         const activeFile = providedFile || resumeFile;
         const activeTotalQuestions = overrideConfig || totalQuestionsConfig;
@@ -712,7 +754,9 @@ export default function AIInterview() {
             } else {
                 response = await soloApi.startInterview({
                     ...payload,
-                    resumeText
+                    resumeText,
+                    examCode: examCtx?.examCode || examCode,
+                    submissionId: examCtx?.submissionId || submissionId
                 });
             }
 
@@ -768,7 +812,9 @@ export default function AIInterview() {
                 context: context,
                 sessionId,
                 totalQuestions: totalQuestionsConfig, 
-                questionNumber: nextQNum
+                questionNumber: nextQNum,
+                examCode: examCode,
+                submissionId: submissionId
             });
 
             if (response && response.response) {
@@ -816,6 +862,24 @@ export default function AIInterview() {
 
                 if (response.success) {
                     setSessionReport(response.report);
+                    // If this was a teacher exam, mark it complete in the exam system
+                    if (submissionId) {
+                        try {
+                            await fetch(`${API_BASE}/interview-exam/complete`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    submissionId,
+                                    score: response.report.overallScore,
+                                    feedback: response.report.finalFeedback,
+                                    strengths: response.report.strengths,
+                                    improvements: response.report.improvements
+                                }),
+                                credentials: 'include'
+                            });
+                        } catch (e) { console.error("Failed to notify exam system", e); }
+                    }
+                    
                     if (isJourneyMode) {
                         setJourneyReports(prev => {
                             // avoid appending duplicates if re-rendering issue occurs
@@ -1137,9 +1201,57 @@ export default function AIInterview() {
                                     <h3 className="text-xl font-bold mb-2">ATS Score Checker</h3>
                                     <p className="text-sm text-[var(--text-secondary)]">Upload your CV to check its ATS compatibility and get improvements.</p>
                                 </div>
-                            </div>
+                                </div>
 
-                            <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)]">
+                                {/* Join Teacher Exam Card */}
+                                <div className="bg-gradient-to-br from-rose-900/40 via-purple-900/20 to-black border border-rose-500/30 p-6 rounded-3xl mb-10 overflow-hidden relative group">
+                                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-rose-500/10 blur-[40px] group-hover:blur-[60px] transition-all" />
+                                    <h3 className="text-xl font-black text-white mb-4 flex items-center gap-2">
+                                        <Users className="text-rose-500" /> Join Teacher's Interview Exam
+                                    </h3>
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        <div className="flex-1">
+                                            <label className="block text-[10px] font-black uppercase tracking-widest text-rose-400 mb-2">Exam Code</label>
+                                            <input 
+                                                type="text" 
+                                                value={examCode} 
+                                                onChange={e => setExamCode(e.target.value.toUpperCase())}
+                                                placeholder="e.g. IV-ABCD"
+                                                className="w-full bg-white/5 border border-rose-500/20 rounded-xl p-3 text-white focus:border-rose-500 outline-none font-mono tracking-widest"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-[10px] font-black uppercase tracking-widest text-rose-400 mb-2">Reg / Roll Number</label>
+                                            <input 
+                                                type="text" 
+                                                value={registrationNumber} 
+                                                onChange={e => setRegistrationNumber(e.target.value)}
+                                                placeholder="e.g. 21BCE001"
+                                                className="w-full bg-white/5 border border-rose-500/20 rounded-xl p-3 text-white focus:border-rose-500 outline-none"
+                                            />
+                                        </div>
+                                        <div className="flex items-end">
+                                            <button 
+                                                onClick={handleJoinExam}
+                                                disabled={isJoiningExam || !examCode || !registrationNumber}
+                                                className="h-12 px-8 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl shadow-lg shadow-rose-900/20 disabled:opacity-50 transition-all whitespace-nowrap"
+                                            >
+                                                {isJoiningExam ? 'JOINING...' : 'JOIN EXAM'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {examData && (
+                                        <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3">
+                                            <CheckCircle className="text-emerald-500 w-5 h-5" />
+                                            <div>
+                                                <div className="text-sm font-bold text-white">Joined: {examData.title}</div>
+                                                <div className="text-xs text-emerald-400">Settings loaded. Click "Start Interview" to begin.</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)]">
                                 <h3 className="font-semibold mb-4">Interview Configuration</h3>
                                 <div className="space-y-4">
 
