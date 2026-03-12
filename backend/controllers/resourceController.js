@@ -126,7 +126,7 @@ exports.deleteResource = async (req, res) => {
 exports.generateNotes = async (req, res) => {
     try {
         const { topic, content } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) {
             return res.status(500).json({ success: false, message: "Groq API Key missing." });
@@ -168,7 +168,7 @@ exports.generateNotes = async (req, res) => {
 exports.explainConcept = async (req, res) => {
     try {
         const { topic } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) return res.status(500).json({ success: false, message: "Groq API Key missing." });
 
@@ -233,7 +233,7 @@ exports.searchYoutube = async (req, res) => {
 exports.generateFlashcards = async (req, res) => {
     try {
         const { topic, count = 8, difficulty = 'medium' } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) {
             return res.status(500).json({ success: false, message: "Groq API Key missing." });
