@@ -329,6 +329,7 @@ export default function AIInterview() {
     // Journey Mode State
     const [isJourneyMode, setIsJourneyMode] = useState(false);
     const [journeyStep, setJourneyStep] = useState(0); // 1: ATS, 2: HR, 3: GD, 4: Technical
+    const [journeyReports, setJourneyReports] = useState([]);
 
     // Interview Config
     const [currentQuestionNum, setCurrentQuestionNum] = useState(1);
@@ -364,6 +365,11 @@ export default function AIInterview() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Scroll to top when view changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [view]);
 
     // Bug #2 fix: use a ref to hold latest sendMessage to avoid stale closure in auto-submit
     const sendMessageRef = useRef(null);
@@ -653,9 +659,10 @@ export default function AIInterview() {
         };
     }, []);
 
-    const startInterview = async (providedMode = null, providedFile = null) => {
+    const startInterview = async (providedMode = null, providedFile = null, overrideConfig = null) => {
         const activeMode = providedMode || mode;
         const activeFile = providedFile || resumeFile;
+        const activeTotalQuestions = overrideConfig || totalQuestionsConfig;
 
         if (!resumeText.trim() && !activeFile && activeMode === 'resume') {
             alert("Please paste your resume content OR upload a PDF first.");
@@ -689,7 +696,7 @@ export default function AIInterview() {
                 mode: activeMode,
                 role: targetRole,
                 company: targetCompany,
-                totalQuestions: totalQuestionsConfig,
+                totalQuestions: activeTotalQuestions,
                 questionNumber: 1
             };
 
@@ -699,7 +706,7 @@ export default function AIInterview() {
                 formData.append('mode', activeMode);
                 formData.append('role', targetRole);
                 formData.append('company', targetCompany);
-                formData.append('totalQuestions', totalQuestionsConfig);
+                formData.append('totalQuestions', activeTotalQuestions);
                 formData.append('questionNumber', 1);
                 response = await soloApi.startInterview(formData);
             } else {
@@ -809,6 +816,13 @@ export default function AIInterview() {
 
                 if (response.success) {
                     setSessionReport(response.report);
+                    if (isJourneyMode) {
+                        setJourneyReports(prev => {
+                            // avoid appending duplicates if re-rendering issue occurs
+                            const exists = prev.find(r => r.sessionId === sessionId);
+                            return exists ? prev : [...prev, { ...response.report, sessionMode: mode, sessionId }];
+                        });
+                    }
                     setView('report');
                     stopSpeaking();
                 }
@@ -822,13 +836,46 @@ export default function AIInterview() {
 
         if (isJourneyMode && journeyStep < 4) {
             // In journey mode, don't show report immediately, move to next step
-            await endInterview(); // Still end the current interview session
+            await endInterview(); 
             nextJourneyStep();
+        } else if (isJourneyMode && journeyStep === 4) {
+            // Finished journey
+            await endInterview();
+            setJourneyStep(5);
         } else {
-            // Regular interview or final step of journey
+            // Regular interview
             await endInterview();
         }
     };
+
+    // Auto-advance logic for Journey Mode
+    useEffect(() => {
+        if (!isJourneyMode || view !== 'interview' || isLoading) return;
+
+        let shouldEnd = false;
+        
+        if (mode === 'gd') {
+            // End GD after 8 minutes (480s)
+            if (elapsedTime >= 480) {
+                shouldEnd = true;
+            }
+        } else {
+            // End HR/Technical strictly after 10 questions (since they are fixed to 10 in journey mode)
+            if (currentQuestionNum > 10) {
+                shouldEnd = true;
+            }
+        }
+
+        if (shouldEnd) {
+            if (sessionId && messages.length > 1) {
+                const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+                const lastAiQuestion = [...messages].reverse().find(m => m.role === 'ai');
+                finishInterview(lastUserMsg?.content || '', lastAiQuestion?.content || '');
+            } else {
+                finishInterview('', '');
+            }
+        }
+    }, [elapsedTime, currentQuestionNum, isJourneyMode, view, isLoading, mode]);
 
     const nextJourneyStep = () => {
         const nextStep = journeyStep + 1;
@@ -837,15 +884,17 @@ export default function AIInterview() {
         const effectiveFile = resumeFile || atsFile;
         if (effectiveFile && !resumeFile) setResumeFile(effectiveFile);
 
+        setTotalQuestionsConfig(10); // Standardize on 10 for Journey mode
+
         if (nextStep === 2) {
             setMode('behavioral');
-            startInterview('behavioral', effectiveFile);
+            startInterview('behavioral', effectiveFile, 10);
         } else if (nextStep === 3) {
             setMode('gd');
-            startInterview('gd', effectiveFile);
+            startInterview('gd', effectiveFile, 10);
         } else if (nextStep === 4) {
             setMode('technical');
-            startInterview('technical', effectiveFile);
+            startInterview('technical', effectiveFile, 10);
         } else {
             setView('report');
         }
@@ -854,6 +903,7 @@ export default function AIInterview() {
     const startJourney = () => {
         setIsJourneyMode(true);
         setJourneyStep(1);
+        setJourneyReports([]);
         setView('ats-checker');
     };
 
@@ -1710,6 +1760,94 @@ export default function AIInterview() {
                                     <p className="text-sm max-w-sm">Upload your CV (and optional Job Description) to reveal exactly how ATS algorithms will parse and grade your application.</p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {/* JOURNEY FINAL REPORT */}
+                {view === 'journey-report' && (
+                    <div className="w-full max-w-6xl mx-auto animate-fade-in-up">
+                        <div className="text-center mb-12">
+                            <h2 className="text-4xl font-black mb-4 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Complete Recruitment Journey Concluded</h2>
+                            <p className="text-[var(--text-secondary)] mb-8">You have successfully navigated the entire hiring cycle: ATS, Behavioral, Group Discussion, and Technical Assessment.</p>
+                            
+                            {/* Final Master Score */}
+                            {(() => {
+                                const avgScore = journeyReports.length > 0 
+                                    ? Math.round((journeyReports.reduce((sum, r) => sum + r.overallScore, 0) / journeyReports.length) * 10) / 10 
+                                    : 0;
+                                    
+                                const isHired = avgScore >= 7;
+                                
+                                return (
+                                    <div className="flex flex-col items-center">
+                                        <div className={`w-40 h-40 rounded-full flex flex-col items-center justify-center text-5xl font-black shrink-0 shadow-2xl mb-6 relative ${isHired ? 'bg-emerald-500/10 text-emerald-500 border-4 border-emerald-500 shadow-emerald-500/30' : 'bg-red-500/10 text-red-500 border-4 border-red-500 shadow-red-500/30'}`}>
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-full pointer-events-none" />
+                                            {avgScore}
+                                            <span className="text-[12px] font-bold uppercase tracking-widest opacity-80 mt-2">Overall Score</span>
+                                        </div>
+                                        <div className={`px-8 py-3 rounded-full font-bold text-xl uppercase tracking-widest shadow-lg ${isHired ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' : 'bg-red-500/20 text-red-400 border border-red-500/50'}`}>
+                                            {isHired ? 'Status: Recommended for Hire!' : 'Status: Needs Improvement'}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+
+                        {/* Breakdown Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                            {['behavioral', 'gd', 'technical'].map((reportMode, idx) => {
+                                const report = journeyReports.find(r => r.sessionMode === reportMode);
+                                const icons = [<User className="w-6 h-6 text-cyan-400" />, <Users className="w-6 h-6 text-emerald-400" />, <Cpu className="w-6 h-6 text-blue-400" />];
+                                const labels = ["HR / Behavioral", "Group Discussion", "Technical Round"];
+                                const colors = ["text-cyan-400", "text-emerald-400", "text-blue-400"];
+                                
+                                return (
+                                    <div key={idx} className="bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] relative overflow-hidden group hover:border-white/20 transition-all">
+                                        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                        <div className="flex justify-between items-start mb-6 border-b border-[var(--border-color)] pb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-3 bg-black/40 rounded-xl">{icons[idx]}</div>
+                                                <h3 className={`font-bold text-lg ${colors[idx]}`}>{labels[idx]}</h3>
+                                            </div>
+                                            {report && (
+                                                <span className={`text-2xl font-black ${report.overallScore >= 7 ? 'text-emerald-500' : report.overallScore >= 5 ? 'text-amber-500' : 'text-red-500'}`}>
+                                                    {report.overallScore}/10
+                                                </span>
+                                            )}
+                                        </div>
+                                        
+                                        {report ? (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <h4 className="text-xs uppercase tracking-widest font-bold text-[var(--text-muted)] mb-2">Key Strengths</h4>
+                                                    <ul className="text-sm space-y-1">
+                                                        {report.strengths?.slice(0, 2).map((s, i) => <li key={i} className="text-emerald-400/80 truncate">• {s}</li>)}
+                                                    </ul>
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-xs uppercase tracking-widest font-bold text-[var(--text-muted)] mb-2">Areas for Growth</h4>
+                                                    <ul className="text-sm space-y-1">
+                                                        {report.improvements?.slice(0, 2).map((s, i) => <li key={i} className="text-amber-400/80 truncate">• {s}</li>)}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center py-6 opacity-40">
+                                                <AlertCircle size={32} className="mb-2" />
+                                                <p className="text-sm text-center">Report missing or step skipped</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        
+                        <div className="flex justify-center">
+                            <button onClick={() => { setView('setup'); setIsJourneyMode(false); setJourneyReports([]); }} className="px-10 py-4 bg-white hover:bg-gray-200 text-black rounded-xl font-bold transition-all shadow-xl shadow-white/10 flex items-center gap-2 relative overflow-hidden group">
+                                <span className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-emerald-400/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500" />
+                                <span className="relative z-10 flex items-center gap-2"><History /> Finish & Back to Dashboard</span>
+                            </button>
                         </div>
                     </div>
                 )}
