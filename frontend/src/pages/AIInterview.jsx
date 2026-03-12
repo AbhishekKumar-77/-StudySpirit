@@ -1014,7 +1014,7 @@ export default function AIInterview() {
 
                                     {/* Additional Targeting */}
                                     {(mode === 'technical' || mode === 'behavioral') && (
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-4 animate-fade-in">
                                             <div>
                                                 <label className="block text-sm text-[var(--text-secondary)] mb-2">Target Role</label>
                                                 <select
@@ -1044,6 +1044,22 @@ export default function AIInterview() {
                                                     <option value="Finance">FinTech / Trading</option>
                                                 </select>
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {mode === 'gd' && (
+                                        <div className="animate-fade-in">
+                                            <label className="block text-sm text-[var(--text-secondary)] mb-2">Group Discussion Topic</label>
+                                            <input
+                                                type="text"
+                                                value={targetRole === 'Software Engineer' ? '' : targetRole}
+                                                onChange={e => setTargetRole(e.target.value)}
+                                                placeholder="e.g., The Impact of AI on Future Jobs (Left blank for random)"
+                                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 text-sm text-[var(--text-primary)] focus:border-violet-500/50 focus:outline-none"
+                                            />
+                                            <p className="text-xs text-[var(--text-muted)] mt-2">
+                                                Aria will moderate a roundtable discussion with two AI peers (Alex & Sarah) over this topic.
+                                            </p>
                                         </div>
                                     )}
 
