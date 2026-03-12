@@ -9,7 +9,7 @@ exports.interviewWithAI = async (req, res) => {
     try {
         let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber, role, company } = req.body;
         const user = req.user ? await User.findById(req.user.id) : null;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
         // Parse context if string
         if (typeof context === 'string') {
@@ -198,7 +198,7 @@ exports.interviewWithAI = async (req, res) => {
 exports.endInterview = async (req, res) => {
     try {
         const { sessionId, lastAnswer, lastQuestion, lastQuestionNumber } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
         if (!sessionId) return res.status(400).json({ message: "Session ID is required" });
         const session = await InterviewSession.findById(sessionId);
@@ -327,7 +327,7 @@ exports.logHeartbeat = async (req, res) => {
 exports.softSkillsAI = async (req, res) => {
     try {
         const { message, previousMessages = [] } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const context = previousMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -350,7 +350,7 @@ exports.softSkillsAI = async (req, res) => {
 // Generate Vocabulary List
 exports.generateVocabulary = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
@@ -368,7 +368,7 @@ exports.generateVocabulary = async (req, res) => {
 // Generate Writing Topic
 exports.generateWritingTopic = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
@@ -386,7 +386,7 @@ exports.generateWritingTopic = async (req, res) => {
 exports.evaluateWriting = async (req, res) => {
     try {
         const { topic, essay } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
@@ -404,7 +404,7 @@ exports.evaluateWriting = async (req, res) => {
 // Generate Speaking Topic
 exports.generateSpeakingTopic = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
@@ -422,7 +422,7 @@ exports.generateSpeakingTopic = async (req, res) => {
 exports.evaluateSpeech = async (req, res) => {
     try {
         const { topic, transcript } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
@@ -439,7 +439,7 @@ exports.evaluateSpeech = async (req, res) => {
 
 exports.checkATSScore = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const { jobDescription } = req.body;
 
         if (!GROQ_API_KEY) return res.status(500).json({ message: "Groq API Key missing" });
