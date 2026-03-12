@@ -764,67 +764,48 @@ exports.evaluateSpeech = async (req, res) => {
 };
 
 // AI Resume Generator
-exports.generateResume = async (req, res) => {
+// ATS Resume Checker
+exports.checkATSScore = async (req, res) => {
     try {
-        const { personalInfo, experience, education, skills, additionalInfo, template = "Modern Professional" } = req.body;
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
             return res.status(500).json({ message: "Groq API Key missing" });
         }
 
+        if (!req.file) {
+            return res.status(400).json({ message: "No resume PDF provided." });
+        }
+
+        let resumeText = "";
+        try {
+            const data = await pdfParse(req.file.buffer);
+            resumeText = data.text.replace(/\s+/g, ' ').trim();
+        } catch (err) {
+            console.error('PDF Parse Error:', err);
+            return res.status(400).json({ message: "Failed to read the resume PDF." });
+        }
+
         const prompt = `
-        You are an expert Resume Writer and Career Coach.
-        Enhance and format the following details into a professional resume.
+        You are an elite Applicant Tracking System (ATS) Expert and Technical Recruiter.
+        Analyze the following resume text and provide a comprehensive ATS evaluation.
         
-        **User Details:**
-        - Name: ${personalInfo.name}
-        - Email: ${personalInfo.email}
-        - Phone: ${personalInfo.phone}
-        - LinkedIn/Portfolio: ${personalInfo.links}
-        
-        **Experience:**
-        ${experience}
-        
-        **Education:**
-        ${education}
-        
-        **Skills:**
-        ${skills}
-        
-        **Additional Info:**
-        ${additionalInfo}
+        **Resume Text:**
+        ${resumeText.substring(0, 6000)} // limit length just in case
         
         **Instructions:**
-        1. Write a compelling Professional Summary (3-4 lines).
-        2. Enhance the experience descriptions to be impactful, action-oriented, and results-driven.
-        3. You MUST return strictly a JSON object using the following exact structure:
+        1. Evaluate the resume as an ATS parser would. 
+        2. Assign a strict score out of 100 based on keyword density, action verbs, impact metrics, format parse-ability, and overall clarity.
+        3. Identify EXACTLY what is missing or weak (e.g. missing quantifiable results, poor layout cues).
+        4. Give detailed, actionable recommendations on how to dramatically improve the CV for 2026 tech standards.
+        5. You MUST return STRICTLY a JSON object using the exact structure below. No markdown wrappers.
+
         {
-          "personalInfo": {
-            "name": "enhanced name",
-            "email": "email",
-            "phone": "phone",
-            "links": "links"
-          },
-          "summary": "enhanced summary",
-          "skills": ["Skill 1", "Skill 2", "Skill 3"],
-          "experience": [
-            {
-              "role": "Job Title",
-              "company": "Company Name",
-              "duration": "2020 - Present",
-              "description": ["Action-oriented bullet 1", "Action-oriented bullet 2"]
-            }
-          ],
-          "education": [
-            {
-              "degree": "Degree Name",
-              "institution": "University/School",
-              "year": "Graduation Year",
-              "details": "GPA or relevant coursework"
-            }
-          ],
-          "additionalInfo": ["Award 1", "Certification 1"]
+          "score": 85,
+          "strengths": ["Clear section headings", "Good use of Python keywords"],
+          "weaknesses": ["Lacks quantifiable metrics in the Experience section", "No summary statement"],
+          "improvements": ["Add statistical results to bullets (e.g., 'improved performance by 20%')", "Include a modern technical toolkit section"],
+          "summary": "Your resume has a solid technical foundation but fails to sell your impact. Ats systems will parse it correctly, but human recruiters might find it lacking in specific achievements."
         }
         `;
 
@@ -837,25 +818,25 @@ exports.generateResume = async (req, res) => {
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [{ role: 'user', content: prompt }],
-                temperature: 0.4,
-                max_tokens: 3000,
+                temperature: 0.3,
+                max_tokens: 1500,
                 response_format: { type: "json_object" }
             })
         });
 
         const data = await response.json();
-        let resumeContent;
+        let atsResult;
         try {
-            resumeContent = JSON.parse(data.choices[0].message.content);
+            atsResult = JSON.parse(data.choices[0].message.content);
         } catch (e) {
-            console.error("Failed to parse JSON resume:", e);
-            resumeContent = { error: "Failed to generate resume format." };
+            console.error("Failed to parse ATS JSON:", data.choices[0]?.message);
+            return res.status(500).json({ message: "Failed to evaluate ATS score." });
         }
 
-        res.json({ resume: resumeContent });
+        res.json({ result: atsResult });
 
     } catch (error) {
-        console.error("Resume Gen Error:", error);
-        res.status(500).json({ message: "Error generating resume" });
+        console.error("ATS Checker Error:", error);
+        res.status(500).json({ message: "Error evaluating resume" });
     }
 };

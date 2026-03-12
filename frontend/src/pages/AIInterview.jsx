@@ -318,20 +318,10 @@ export default function AIInterview() {
     const [elapsedTime, setElapsedTime] = useState(0);
     const [vocalVolume, setVocalVolume] = useState(0);
 
-    // Resume Builder State
-    const [resumeForm, setResumeForm] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        phone: '',
-        links: '',
-        experience: '',
-        education: '',
-        skills: '',
-        additionalInfo: '',
-        template: 'Modern Professional'
-    });
-    const [generatedResume, setGeneratedResume] = useState('');
-    const [isGeneratingResume, setIsGeneratingResume] = useState(false);
+    // ATS Checker State
+    const [atsFile, setAtsFile] = useState(null);
+    const [atsResult, setAtsResult] = useState(null);
+    const [isCheckingAts, setIsCheckingAts] = useState(false);
 
     // Interview Config
     const [currentQuestionNum, setCurrentQuestionNum] = useState(1);
@@ -834,43 +824,26 @@ export default function AIInterview() {
         }
     };
 
-    const handleGenerateResume = async () => {
-        if (!resumeForm.experience && !resumeForm.education) {
-            alert("Please fill in at least Experience or Education.");
-            return;
-        }
-        setIsGeneratingResume(true);
+    const handleCheckATS = async () => {
+        if (!atsFile) return alert("Please upload your PDF resume first!");
+        setIsCheckingAts(true);
+        setAtsResult(null);
+
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE}/solo/ai/resume/generate`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    personalInfo: {
-                        name: resumeForm.name,
-                        email: resumeForm.email,
-                        phone: resumeForm.phone,
-                        links: resumeForm.links
-                    },
-                    experience: resumeForm.experience,
-                    education: resumeForm.education,
-                    skills: resumeForm.skills,
-                    additionalInfo: resumeForm.additionalInfo,
-                    template: resumeForm.template
-                })
-            });
-            const data = await res.json();
-            if (data.resume) {
-                setGeneratedResume(data.resume);
+            const formData = new FormData();
+            formData.append('resume', atsFile);
+
+            const data = await soloApi.checkATS(formData);
+            if (data && data.result) {
+                setAtsResult(data.result);
+            } else {
+                alert("Failed to evaluate ATS. Please try again.");
             }
         } catch (err) {
             console.error(err);
-            alert("Error generating resume");
+            alert("Error checking ATS Score");
         } finally {
-            setIsGeneratingResume(false);
+            setIsCheckingAts(false);
         }
     };
 
@@ -971,10 +944,10 @@ export default function AIInterview() {
                                     <h3 className="text-xl font-bold mb-2">HR / Behavioral</h3>
                                     <p className="text-sm text-[var(--text-secondary)]">Soft skills, STAR method, and cultural fit evaluation.</p>
                                 </div>
-                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${view === 'resume-builder' ? 'bg-cyan-600/10 border-cyan-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setView('resume-builder')}>
-                                    <FileText className={`w-8 h-8 mb-4 ${view === 'resume-builder' ? 'text-cyan-400' : 'text-[var(--text-muted)]'}`} />
-                                    <h3 className="text-xl font-bold mb-2">AI Resume Builder</h3>
-                                    <p className="text-sm text-[var(--text-secondary)]">Craft a perfect ATS-friendly resume with AI assistance.</p>
+                                <div className={`p-6 rounded-2xl border cursor-pointer transition-all ${view === 'ats-checker' ? 'bg-cyan-600/10 border-cyan-500' : 'bg-[var(--bg-primary)] border-[var(--border-color)] hover:border-cyan-500/50'}`} onClick={() => setView('ats-checker')}>
+                                    <FileText className={`w-8 h-8 mb-4 ${view === 'ats-checker' ? 'text-cyan-400' : 'text-[var(--text-muted)]'}`} />
+                                    <h3 className="text-xl font-bold mb-2">ATS Score Checker</h3>
+                                    <p className="text-sm text-[var(--text-secondary)]">Upload your CV to check its ATS compatibility and get improvements.</p>
                                 </div>
                             </div>
 
@@ -1338,166 +1311,86 @@ export default function AIInterview() {
                     </div>
                 )}
 
-                {/* RESUME BUILDER VIEW */}
-                {view === 'resume-builder' && (
+                {/* ATS CHECKER VIEW */}
+                {view === 'ats-checker' && (
                     <div className="w-full h-full flex flex-col md:flex-row gap-6 animate-fade-in-up">
                         {/* Left: Input Form */}
-                        <div className="w-full md:w-1/2 bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] overflow-y-auto print:hidden">
-                            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                <FileText className="text-cyan-400" /> AI Resume Builder
+                        <div className="w-full md:w-1/3 bg-[var(--bg-primary)] p-6 rounded-2xl border border-[var(--border-color)] flex flex-col items-center justify-center text-center">
+                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-400">
+                                <FileText className="text-cyan-400" /> ATS CV Checker
                             </h2>
+                            <p className="text-sm text-[var(--text-secondary)] mb-8">Upload your CV in PDF format to run it through our AI-powered ATS simulator.</p>
+                            
+                            <label className="w-full h-48 border-2 border-dashed border-cyan-500/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-cyan-500/5 transition-all mb-8">
+                                <UploadCloud className="w-10 h-10 text-cyan-500 mb-2" />
+                                <span className="font-bold text-cyan-400">{atsFile ? atsFile.name : "Select PDF Resume"}</span>
+                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => setAtsFile(e.target.files[0])} />
+                            </label>
 
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Full Name</label>
-                                        <input
-                                            value={resumeForm.name}
-                                            onChange={e => setResumeForm({ ...resumeForm, name: e.target.value })}
-                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Email</label>
-                                        <input
-                                            value={resumeForm.email}
-                                            onChange={e => setResumeForm({ ...resumeForm, email: e.target.value })}
-                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Phone</label>
-                                        <input
-                                            value={resumeForm.phone}
-                                            onChange={e => setResumeForm({ ...resumeForm, phone: e.target.value })}
-                                            placeholder="+1 234..."
-                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-[var(--text-muted)] uppercase">LinkedIn / Portfolio</label>
-                                        <input
-                                            value={resumeForm.links}
-                                            onChange={e => setResumeForm({ ...resumeForm, links: e.target.value })}
-                                            placeholder="linkedin.com/in/..."
-                                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Design Template</label>
-                                    <select
-                                        value={resumeForm.template}
-                                        onChange={e => setResumeForm({ ...resumeForm, template: e.target.value })}
-                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] focus:outline-none focus:border-cyan-500/50"
-                                    >
-                                        <option value="Modern Professional" className="bg-[var(--bg-primary)]">Modern Professional</option>
-                                        <option value="Creative Tech" className="bg-[var(--bg-primary)]">Creative Tech</option>
-                                        <option value="Executive Minimalist" className="bg-[var(--bg-primary)]">Executive Minimalist</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Professional Skills (comma separated)</label>
-                                    <textarea
-                                        value={resumeForm.skills}
-                                        onChange={e => setResumeForm({ ...resumeForm, skills: e.target.value })}
-                                        placeholder="React, Node.js, Python, Leadership, Public Speaking..."
-                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-20 resize-none focus:outline-none focus:border-cyan-500/50"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Experience (Paste raw details)</label>
-                                    <textarea
-                                        value={resumeForm.experience}
-                                        onChange={e => setResumeForm({ ...resumeForm, experience: e.target.value })}
-                                        placeholder="Software Engineer at Google (2020-Present). Built X feature..."
-                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-32 resize-none focus:outline-none focus:border-cyan-500/50"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Education</label>
-                                    <textarea
-                                        value={resumeForm.education}
-                                        onChange={e => setResumeForm({ ...resumeForm, education: e.target.value })}
-                                        placeholder="B.Tech in CS, XYZ University (2018-2022), GPA 3.8"
-                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-[var(--text-muted)] uppercase">Additional Info (Awards, Certs)</label>
-                                    <textarea
-                                        value={resumeForm.additionalInfo}
-                                        onChange={e => setResumeForm({ ...resumeForm, additionalInfo: e.target.value })}
-                                        placeholder="Certified AWS Sol Arch, Won Hackathon 2024..."
-                                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-3 mt-1 text-[var(--text-primary)] h-24 resize-none focus:outline-none focus:border-cyan-500/50"
-                                    />
-                                </div>
-
-                                <button
-                                    onClick={handleGenerateResume}
-                                    disabled={isGeneratingResume}
-                                    className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl font-bold text-lg shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
-                                >
-                                    {isGeneratingResume ? <Loader className="animate-spin" /> : <Sparkles />} Generate Magic Resume
-                                </button>
-                            </div>
+                            <button
+                                onClick={handleCheckATS}
+                                disabled={isCheckingAts || !atsFile}
+                                className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-xl font-bold text-lg shadow-lg hover:shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isCheckingAts ? <Loader className="animate-spin" /> : <Activity />} Analyze ATS Score
+                            </button>
                         </div>
 
-                        {/* Right: Preview */}
-                        <div className="hidden md:flex w-1/2 bg-white text-[var(--text-primary)] rounded-2xl overflow-hidden flex-col shadow-2xl relative print:flex print:w-full print:absolute print:inset-0 print:border-none print:shadow-none print:z-50 print:bg-white print:m-0 print:p-0">
-                            <div className="bg-[var(--bg-secondary)] p-4 border-b flex justify-between items-center z-10 print:hidden">
-                                <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                    <FileText size={18} /> Live Preview
-                                </h3>
-                                {generatedResume && (
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => window.print()}
-                                            className="text-xs flex items-center gap-1 font-bold text-violet-600 hover:text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded border border-violet-200 bg-white transition-colors"
-                                        >
-                                            <Printer size={14} /> Export PDF
-                                        </button>
-                                        {/* Bug #5 fix: copy formatted readable text, not raw JSON */}
-                                        <button
-                                            onClick={() => {
-                                                const r = generatedResume;
-                                                const lines = [
-                                                    r.personalInfo?.name, r.personalInfo?.email, r.personalInfo?.phone, r.personalInfo?.links,
-                                                    '', r.summary || '',
-                                                    '', 'SKILLS:', (r.skills || []).join(', '),
-                                                    '', 'EXPERIENCE:',
-                                                    ...(r.experience || []).flatMap(e => [`${e.role} @ ${e.company} (${e.duration})`, ...(e.description || []).map(d => `  • ${d}`), '']),
-                                                    'EDUCATION:',
-                                                    ...(r.education || []).map(e => `${e.degree} — ${e.institution} (${e.year})`),
-                                                ];
-                                                navigator.clipboard.writeText(lines.filter(Boolean).join('\n'));
-                                                alert('Resume copied as plain text!');
-                                            }}
-                                            className="text-xs font-bold text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 px-3 py-1.5 rounded border border-cyan-200 bg-white transition-colors"
-                                        >
-                                            Copy Text
-                                        </button>
+                        {/* Right: Results */}
+                        <div className="w-full md:w-2/3 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] overflow-y-auto p-8 relative">
+                            {atsResult ? (
+                                <div className="space-y-8 animate-fade-in-up">
+                                    <div className="flex items-center gap-6 pb-6 border-b border-[var(--border-color)]">
+                                        <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl font-black ${atsResult.score >= 80 ? 'bg-emerald-500/10 text-emerald-500 border-4 border-emerald-500/50' : atsResult.score >= 50 ? 'bg-amber-500/10 text-amber-500 border-4 border-amber-500/50' : 'bg-red-500/10 text-red-500 border-4 border-red-500/50'}`}>
+                                            {atsResult.score}
+                                        </div>
+                                        <div>
+                                            <h2 className="text-3xl font-bold mb-2">ATS Score Result</h2>
+                                            <p className="text-[var(--text-secondary)] text-sm mt-2">{atsResult.summary}</p>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                            <div className="flex-1 p-6 overflow-y-auto bg-slate-100/10 backdrop-blur-sm print:overflow-visible print:bg-white print:p-0 flex justify-center items-start">
-                                {generatedResume ? (
-                                    <div className="w-full h-auto transition-all bg-white shadow-2xl overflow-hidden">
-                                        <ResumeTemplate data={generatedResume} template={resumeForm.template} />
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="bg-emerald-500/5 p-6 rounded-xl border border-emerald-500/10">
+                                            <h3 className="font-bold text-emerald-400 mb-4 flex items-center gap-2"><CheckCircle size={18} /> Strengths</h3>
+                                            <ul className="space-y-2">
+                                                {atsResult.strengths.map((str, i) => (
+                                                    <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                                        <span className="text-emerald-500 font-bold mt-0.5">•</span> {str}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div className="bg-red-500/5 p-6 rounded-xl border border-red-500/10">
+                                            <h3 className="font-bold text-red-400 mb-4 flex items-center gap-2"><X size={18} /> Weaknesses</h3>
+                                            <ul className="space-y-2">
+                                                {atsResult.weaknesses.map((wk, i) => (
+                                                    <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                                        <span className="text-red-500 font-bold mt-0.5">•</span> {wk}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
                                     </div>
-                                ) : (
-                                    <div className="h-full w-full flex flex-col items-center justify-center text-[var(--text-secondary)] opacity-50 select-none pt-20">
-                                        <FileText size={48} className="mb-4 text-[var(--text-secondary)]" />
-                                        <p className="font-medium">Fill details and click Generate</p>
-                                        <p className="text-xs mt-2">AI will format it professionally</p>
+
+                                    <div className="bg-cyan-500/5 p-6 rounded-xl border border-cyan-500/10">
+                                        <h3 className="font-bold text-cyan-400 mb-4 flex items-center gap-2"><Sparkles size={18} /> Recommended Action Plan</h3>
+                                        <ul className="space-y-3">
+                                            {atsResult.improvements.map((imp, i) => (
+                                                <li key={i} className="text-sm text-[var(--text-primary)] flex items-start gap-3 bg-[var(--bg-secondary)] p-3 rounded-lg">
+                                                    <span className="text-cyan-500 font-black">{i+1}.</span> <span className="flex-1 opacity-90">{imp}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                                    <Activity size={64} className="mb-6 mb-4" />
+                                    <h3 className="text-xl font-bold">Waiting for details...</h3>
+                                    <p className="text-sm">Upload your CV to see how an ATS software perceives your application.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

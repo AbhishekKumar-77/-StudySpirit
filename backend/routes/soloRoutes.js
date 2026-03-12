@@ -100,7 +100,12 @@ router.post('/writing/evaluate', aiLimiter, aiController.evaluateWriting);
 router.get('/speaking/topic', aiLimiter, aiController.generateSpeakingTopic);
 router.post('/speaking/evaluate', aiLimiter, aiController.evaluateSpeech);
 
-// AI Resume Builder
-router.post('/ai/resume/generate', aiLimiter, aiController.generateResume);
+// ATS Resume Checker
+router.post('/ai/ats/check', (req, res, next) => {
+    upload.single('resume')(req, res, (err) => {
+        if (err) return res.status(400).json({ message: "File upload error" });
+        next();
+    });
+}, aiLimiter, aiController.checkATSScore);
 
 module.exports = router;

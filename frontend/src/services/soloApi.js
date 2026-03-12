@@ -188,6 +188,12 @@ export default {
     },
     getMonitoredEvents: async () => {
         return fetchWithAuth('/events/monitored');
+    },
+    checkATS: async (formData) => {
+        return fetchWithAuth('/solo/ai/ats/check', {
+            method: 'POST',
+            body: formData
+        });
     }
 };
 
