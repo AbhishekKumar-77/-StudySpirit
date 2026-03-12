@@ -327,7 +327,7 @@ exports.logHeartbeat = async (req, res) => {
 exports.softSkillsAI = async (req, res) => {
     try {
         const { message, previousMessages = [] } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOFTSKILLS || process.env.GROQ_API_KEY;
         const context = previousMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
