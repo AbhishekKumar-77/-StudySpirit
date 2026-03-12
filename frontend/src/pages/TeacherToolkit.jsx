@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ClipboardCheck, Home, Shield, ArrowRight, Library, Target } from 'lucide-react';
+import { ClipboardCheck, Home, Shield, ArrowRight, Library, Target, Mic } from 'lucide-react';
 import './Dashboard.css';
 
 export default function TeacherToolkit() {
@@ -48,6 +48,14 @@ export default function TeacherToolkit() {
             path: '/teacher-codespirit',
             icon: Target,
             color: '#8b5cf6'
+        },
+        {
+            id: 4,
+            name: 'AI Interview Exam',
+            description: 'Create & monitor AI interview exams',
+            path: '/teacher-interview',
+            icon: Mic,
+            color: '#f43f5e'
         }
     ];
 

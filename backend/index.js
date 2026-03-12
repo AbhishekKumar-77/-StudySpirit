@@ -175,6 +175,7 @@ const codeSpiritRoutes = require('./routes/codeSpiritRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const interviewExamRoutes = require('./routes/interviewExamRoutes');
 
 // Auth routes get stricter rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
@@ -198,6 +199,9 @@ app.use('/api/health', healthRoutes);
 
 // Admin panel (admin auth handled inside routes)
 app.use('/api/admin', adminRoutes);
+
+// Interview Exam routes (Teacher AI Interview system)
+app.use('/api/interview-exam', interviewExamRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
