@@ -769,6 +769,202 @@ exports.checkATSScore = async (req, res) => {
     try {
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
+        if (!GROQ_API_KEY) return res.status(500).json({ message: "API Key missing" });
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    {
+                        role: 'system',
+                        content: "Generate 1 thought-provoking writing prompt related to Soft Skills, Leadership, or Workplace Ethics. Return ONLY the prompt text, no quotes or labels."
+                    },
+                    { role: 'user', content: "Give me a writing topic." }
+                ],
+                temperature: 0.9,
+                max_tokens: 100
+            })
+        });
+
+        const data = await response.json();
+        const topic = data.choices?.[0]?.message?.content || "Explain the importance of active listening in conflict resolution.";
+        res.json({ topic });
+
+    } catch (error) {
+        console.error('Writing Topic Error:', error);
+        res.status(500).json({ message: "Error generating topic" });
+    }
+};
+
+// Evaluate Writing
+exports.evaluateWriting = async (req, res) => {
+    try {
+        const { topic, essay } = req.body;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+        if (!essay || essay.trim().length < 10) {
+            return res.status(400).json({ message: "Essay is too short." });
+        }
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `Evaluate the user's essay on the topic: "${topic}".
+                        
+                        OUTPUT JSON FORMAT:
+                        {
+                            "score": number (0-100),
+                            "feedback": "Concise summary of strengths and weaknesses (2-3 sentences).",
+                            "improvements": ["Specific bullet point 1", "Specific bullet point 2", "Specific bullet point 3"]
+                        }
+                        
+                        Strictly return valid JSON.`
+                    },
+                    { role: 'user', content: essay }
+                ],
+                temperature: 0.5,
+                max_tokens: 500,
+                response_format: { type: "json_object" }
+            })
+        });
+
+        const data = await response.json();
+        let evaluation = { score: 0, feedback: "Error parsing evaluation", improvements: [] };
+
+        if (data.choices && data.choices[0]?.message?.content) {
+            try {
+                evaluation = JSON.parse(data.choices[0].message.content);
+            } catch (e) {
+                console.error("JSON Parse Error for Writing Eval:", e);
+                evaluation.feedback = data.choices[0].message.content;
+            }
+        }
+
+        res.json(evaluation);
+
+    } catch (error) {
+        console.error('Writing Evaluation Error:', error);
+        res.status(500).json({ message: "Error evaluating writing" });
+    }
+};
+
+// Generate Speaking Topic (Engineering/Pressure Context)
+exports.generateSpeakingTopic = async (req, res) => {
+    try {
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        if (!GROQ_API_KEY) return res.status(500).json({ message: "API Key missing" });
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    {
+                        role: 'system',
+                        content: "Generate 1 engaging impromptu speech topic specifically for an Engineering Student or Tech Professional. Themes: Handling High-Pressure Situations, The Future of AI, Engineering Ethics, or Leadership in Tech. Return ONLY the topic string, no quotes."
+                    },
+                    { role: 'user', content: "Give me a speech topic." }
+                ],
+                temperature: 0.9,
+                max_tokens: 60
+            })
+        });
+
+        const data = await response.json();
+        const topic = data.choices?.[0]?.message?.content || "How AI will change the role of software engineers in the next 5 years.";
+        res.json({ topic });
+
+    } catch (error) {
+        console.error('Speaking Topic Error:', error);
+        res.status(500).json({ message: "Error generating topic" });
+    }
+};
+
+// Evaluate Speaking
+exports.evaluateSpeech = async (req, res) => {
+    try {
+        const { topic, transcript } = req.body;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+        if (!transcript || transcript.trim().length < 10) {
+            return res.status(400).json({ message: "Speech is too short to evaluate." });
+        }
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `Evaluate the user's speech transcript on the topic: "${topic}".
+                        Assess their Communication Skills, content relevance, and flow.
+                        
+                        OUTPUT JSON FORMAT:
+                        {
+                            "score": number (0-100),
+                            "feedback": "Constructive feedback on their delivery and content (2-3 sentences).",
+                            "improvements": ["Specific improvement 1", "Specific improvement 2", "Specific improvement 3"]
+                        }
+                        
+                        Strictly return valid JSON.`
+                    },
+                    { role: 'user', content: transcript }
+                ],
+                temperature: 0.6,
+                max_tokens: 500,
+                response_format: { type: "json_object" }
+            })
+        });
+
+        const data = await response.json();
+        let evaluation = { score: 0, feedback: "Error parsing evaluation", improvements: [] };
+
+        if (data.choices && data.choices[0]?.message?.content) {
+            try {
+                evaluation = JSON.parse(data.choices[0].message.content);
+            } catch (e) {
+                console.error("JSON Parse Error for Speech Eval:", e);
+                evaluation.feedback = data.choices[0].message.content;
+            }
+        }
+
+        res.json(evaluation);
+
+    } catch (error) {
+        console.error('Speech Evaluation Error:', error);
+        res.status(500).json({ message: "Error evaluating speech" });
+    }
+};
+
+// AI Resume Generator
+// ATS Resume Checker
+exports.checkATSScore = async (req, res) => {
+    try {
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const { jobDescription } = req.body;
+
         if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
             return res.status(500).json({ message: "Groq API Key missing" });
         }
@@ -788,24 +984,38 @@ exports.checkATSScore = async (req, res) => {
 
         const prompt = `
         You are an elite Applicant Tracking System (ATS) Expert and Technical Recruiter.
-        Analyze the following resume text and provide a comprehensive ATS evaluation.
+        Analyze the following resume text. If a Job Description is provided, evaluate the resume specifically against it.
         
         **Resume Text:**
-        ${resumeText.substring(0, 6000)} // limit length just in case
+        ${resumeText.substring(0, 6000)}
+        
+        **Target Job Description (Optional):**
+        ${jobDescription ? jobDescription.substring(0, 4000) : "No Job Description provided. Perform a general industry-standard ATS evaluation."}
         
         **Instructions:**
-        1. Evaluate the resume as an ATS parser would. 
-        2. Assign a strict score out of 100 based on keyword density, action verbs, impact metrics, format parse-ability, and overall clarity.
-        3. Identify EXACTLY what is missing or weak (e.g. missing quantifiable results, poor layout cues).
-        4. Give detailed, actionable recommendations on how to dramatically improve the CV for 2026 tech standards.
-        5. You MUST return STRICTLY a JSON object using the exact structure below. No markdown wrappers.
-
+        1. Evaluate the resume with strict ATS logic. Be highly critical.
+        2. Assign an "overallScore" (0-100).
+        3. If there is a Job Description, compute a "matchRate" (0-100%). If not, estimate matchRate vs general tech roles.
+        4. Provide sub-scores out of 100 for: "formatting", "impactMetrics", "readability", and "keywordDensity".
+        5. Provide a succinct "summary" of your findings.
+        6. Extract arrays of:
+           - "strengths" (what they did well)
+           - "weaknesses" (what is missing or bad)
+           - "improvements" (actionable steps)
+           - "missingKeywords" (crucial skills/tech missing compared to JD or standard roles)
+           - "strongVerbsFound" (good action verbs used)
+        7. Ensure return is STRICTLY a JSON object matching this schema EXACTLY:
+        
         {
-          "score": 85,
-          "strengths": ["Clear section headings", "Good use of Python keywords"],
-          "weaknesses": ["Lacks quantifiable metrics in the Experience section", "No summary statement"],
-          "improvements": ["Add statistical results to bullets (e.g., 'improved performance by 20%')", "Include a modern technical toolkit section"],
-          "summary": "Your resume has a solid technical foundation but fails to sell your impact. Ats systems will parse it correctly, but human recruiters might find it lacking in specific achievements."
+          "overallScore": 0,
+          "matchRate": 0,
+          "subScores": { "formatting": 0, "impactMetrics": 0, "readability": 0, "keywordDensity": 0 },
+          "summary": "...",
+          "strengths": ["..."],
+          "weaknesses": ["..."],
+          "improvements": ["..."],
+          "missingKeywords": ["..."],
+          "strongVerbsFound": ["..."]
         }
         `;
 
@@ -819,7 +1029,7 @@ exports.checkATSScore = async (req, res) => {
                 model: 'llama-3.3-70b-versatile',
                 messages: [{ role: 'user', content: prompt }],
                 temperature: 0.3,
-                max_tokens: 1500,
+                max_tokens: 2000,
                 response_format: { type: "json_object" }
             })
         });
