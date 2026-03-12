@@ -110,85 +110,44 @@ exports.interviewWithAI = async (req, res) => {
             }
             `;
         } else if (qNum === 1) {
-            // FIRST MESSAGE: Always introduce as Aria, Personal HR Interviewer, and ask "Tell me about yourself"
             systemPrompt = `You are "Aria", a Personal HR Interviewer. 
-            
-            CANDIDATE'S RESUME (if any):
-            ${resumeText ? resumeText.substring(0, 4000) : "No resume provided."}
-            
-            YOUR TASK FOR THIS FIRST MESSAGE:
-            Introduce yourself: "Hi, I am Aria, your personal HR interviewer."
-            Then, ask exactly ONE question: "Tell me about yourself." (or variation of tell me about yourself/background).
-            If they uploaded a resume, you can briefly acknowledge it, but keep the question to "tell me about yourself".
-            
+            CANDIDATE'S RESUME: ${resumeText ? resumeText.substring(0, 4000) : "No resume provided."}
+            TASK: Introduce yourself and ask "Tell me about yourself."
             ${commonRules}
-            
             ${jsonFormat}
             Set score to 0.`;
         } else {
-            // SUBSEQUENT MESSAGES: ONE question only
             systemPrompt = `You are "Aria", a Personal ${mode === 'technical' ? 'Technical' : 'HR'} Interviewer.
-            
             CANDIDATE'S RESUME: ${resumeText ? resumeText.substring(0, 3000) : "No resume provided."}
-            
             CURRENT QUESTION NUMBER: ${qNum}
             MODE: ${mode}
-            
             ${commonRules}
-            
-            YOUR TASK:
-            1. React to their previous answer in 1-3 sentences (good? bad? correct them if needed)
-            2. Then ask exactly ONE follow-up question.
-${mode === 'technical'
-                    ? '               - IMPORTANT: Scrutinize the resume for specific programming languages, frameworks (e.g., React, Node.js), and tools. Ask deeply technical, challenging questions about how those specific technologies work under the hood, or how they applied them. (e.g. "I see you used React, how does the Virtual DOM work?" or "Explain the time complexity of the algorithm you wrote for XYZ project").'
-                    : '               - IMPORTANT: Start by asking deep questions about specific PROJECTS and details mentioned in their resume.'}
-               - After covering the resume, or if no resume was provided, ask other real-world interview questions relevant to the ${mode} mode.
-            
-            KEEP IT SHORT. React briefly, then ONE question.
-            
+            YOUR TASK: React to previous answer and ask exactly ONE follow-up question.
             ${jsonFormat}`;
         }
 
         if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
-            return res.status(500).json({ response: "AI service not configured. Set GROQ_API_KEY." });
+            return res.status(500).json({ response: "AI service not configured." });
         }
 
         const messages = [{ role: 'system', content: systemPrompt }];
+        if (context && Array.isArray(context)) messages.push(...context.slice(-12));
+        if (message) messages.push({ role: 'user', content: message });
+        if (isNewResumeSession && !message) messages.push({ role: 'user', content: "Hi Aria! Let's start." });
 
-        if (context && Array.isArray(context)) {
-            messages.push(...context.slice(-12));
-        }
-
-        if (message) {
-            messages.push({ role: 'user', content: message });
-        }
-
-        if (isNewResumeSession && !message) {
-            messages.push({ role: 'user', content: "Hi Aria! Let's start the interview." });
-        } else if (messages.length === 1 && !message) {
-            messages.push({ role: 'user', content: "Hey Aria! I'm ready for the interview. Let's do this!" });
-        }
-
-        const groqResponse = await fetch(
-            'https://api.groq.com/openai/v1/chat/completions',
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${GROQ_API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 2000,
-                    response_format: { type: "json_object" }
-                })
-            }
-        );
+        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: messages,
+                temperature: 0.7,
+                max_tokens: 2000,
+                response_format: { type: "json_object" }
+            })
+        });
 
         const data = await groqResponse.json();
-        let aiResponse = "";
         let parsedResponse = null;
 
         if (data.choices && data.choices[0]?.message?.content) {
@@ -196,24 +155,15 @@ ${mode === 'technical'
             try {
                 parsedResponse = JSON.parse(raw.replace(/```json/g, '').replace(/```/g, '').trim());
             } catch (e) {
-                // Fallback if not valid JSON
                 parsedResponse = {
-                    question: raw,
-                    feedback: "",
-                    idealAnswer: "",
-                    score: 0,
-                    spokenText: raw,
+                    question: raw, feedback: "", idealAnswer: "", score: 0, spokenText: raw,
                     speakers: [{name: "Aria", text: raw}]
                 };
             }
-            aiResponse = parsedResponse.spokenText || parsedResponse.question || raw;
         } else {
-            console.error('❌ Groq Error:', JSON.stringify(data));
-            aiResponse = "I encountered an error. Let's continue.";
-            parsedResponse = { question: aiResponse, feedback: "", idealAnswer: "", score: 0, spokenText: aiResponse, speakers: [{name: "Aria", text: aiResponse}] };
+            parsedResponse = { question: "Error.", feedback: "", idealAnswer: "", score: 0, spokenText: "Error.", speakers: [{name: "Aria", text: "Error."}] };
         }
 
-        // Save exchange to session
         if (session && message && qNum > 1) {
             session.exchanges.push({
                 questionNumber: qNum - 1,
@@ -228,7 +178,7 @@ ${mode === 'technical'
         }
 
         res.json({
-            response: aiResponse,
+            response: parsedResponse.spokenText || parsedResponse.question,
             parsedResponse,
             sessionId: session?._id,
             resumeTextParsed: isNewResumeSession ? resumeText : undefined,
@@ -238,7 +188,7 @@ ${mode === 'technical'
 
     } catch (error) {
         console.error('❌ Interview Error:', error);
-        res.status(500).json({ message: "Error processing interview: " + error.message });
+        res.status(500).json({ message: "Error processing interview" });
     }
 };
 
@@ -248,15 +198,10 @@ exports.endInterview = async (req, res) => {
         const { sessionId, lastAnswer, lastQuestion, lastQuestionNumber } = req.body;
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-        if (!sessionId) {
-            return res.status(400).json({ message: "Session ID is required" });
-        }
+        if (!sessionId) return res.status(400).json({ message: "Session ID is required" });
         const session = await InterviewSession.findById(sessionId);
-        if (!session) {
-            return res.status(404).json({ message: "Session not found" });
-        }
+        if (!session) return res.status(404).json({ message: "Session not found" });
 
-        // Save last exchange if provided
         if (lastAnswer && lastQuestionNumber) {
             session.exchanges.push({
                 questionNumber: lastQuestionNumber,
@@ -267,66 +212,35 @@ exports.endInterview = async (req, res) => {
             });
         }
 
-        // Calculate scores from exchanges
         const scores = session.exchanges.filter(e => e.score > 0).map(e => e.score);
         const avgScore = scores.length > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10 : 0;
-
-        // Generate final report using AI
-        const exchangeSummary = session.exchanges.map(e =>
-            `Q${e.questionNumber}: ${e.question}\nAnswer: ${e.answer}\nScore: ${e.score}/10\nFeedback: ${e.feedback}`
-        ).join('\n\n');
+        const exchangeSummary = session.exchanges.map(e => `Q: ${e.question}\nA: ${e.answer}`).join('\n\n');
 
         let finalReport = { strengths: [], improvements: [], overallFeedback: '', overallScore: avgScore };
 
-        if (GROQ_API_KEY && GROQ_API_KEY !== 'your_groq_api_key_here' && session.exchanges.length > 0) {
+        if (GROQ_API_KEY && session.exchanges.length > 0) {
             try {
-                const reportPrompt = `Analyze this interview performance and generate a detailed feedback report.
-
-INTERVIEW EXCHANGES:
-${exchangeSummary}
-
-MODE: ${session.mode}
-QUESTIONS ASKED: ${session.exchanges.length}
-
-Return ONLY valid JSON:
-{
-    "overallScore": <number 1-10>,
-    "strengths": ["strength 1", "strength 2", "strength 3"],
-    "improvements": ["improvement 1", "improvement 2", "improvement 3"],
-    "overallFeedback": "2-3 sentence overall assessment"
-}`;
-
-                const groqResponse = await fetch(
-                    'https://api.groq.com/openai/v1/chat/completions',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${GROQ_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: 'llama-3.3-70b-versatile',
-                            messages: [
-                                { role: 'system', content: 'You are an interview performance evaluator. Return ONLY valid JSON.' },
-                                { role: 'user', content: reportPrompt }
-                            ],
-                            temperature: 0.5,
-                            max_tokens: 1000,
-                            response_format: { type: "json_object" }
-                        })
-                    }
-                );
-
-                const reportData = await groqResponse.json();
-                if (reportData.choices && reportData.choices[0]?.message?.content) {
-                    finalReport = JSON.parse(reportData.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '').trim());
+                const evalFocus = session.mode === 'gd' ? "Evaluate leadership and collaboration." : "Evaluate communication and technical skills.";
+                const prompt = `Report for ${session.mode} session. Focus: ${evalFocus}\n\n${exchangeSummary}`;
+                const gRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: 'Generate JSON report: {overallScore, strengths:[], improvements:[], overallFeedback}' },
+                            { role: 'user', content: prompt }
+                        ],
+                        response_format: { type: "json_object" }
+                    })
+                });
+                const rData = await gRes.json();
+                if (rData.choices?.[0]?.message?.content) {
+                    finalReport = JSON.parse(rData.choices[0].message.content);
                 }
-            } catch (e) {
-                console.error('Report generation error:', e);
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // Update session
         session.status = 'completed';
         session.overallScore = finalReport.overallScore || avgScore;
         session.strengths = finalReport.strengths || [];
@@ -336,54 +250,26 @@ Return ONLY valid JSON:
         session.duration = Math.floor((new Date() - session.startedAt) / 1000);
         await session.save();
 
-        res.json({
-            success: true,
-            report: {
-                overallScore: session.overallScore,
-                strengths: session.strengths,
-                improvements: session.improvements,
-                finalFeedback: session.finalFeedback,
-                totalQuestions: session.exchanges.length,
-                duration: session.duration,
-                exchanges: session.exchanges,
-                mode: session.mode
-            }
-        });
-
-    } catch (error) {
-        console.error('End Interview Error:', error);
-        res.status(500).json({ message: "Error generating report: " + error.message });
-    }
+        res.json({ success: true, report: session });
+    } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
 // Get Interview History
 exports.getInterviewHistory = async (req, res) => {
     try {
         const userId = req.user.id;
-        const sessions = await InterviewSession.find({ userId })
-            .sort({ startedAt: -1 })
-            .limit(20)
-            .select('-resumeText -exchanges.answer');
-
+        const sessions = await InterviewSession.find({ userId }).sort({ startedAt: -1 }).limit(20).select('-resumeText -exchanges.answer');
         res.json({ success: true, sessions });
-    } catch (error) {
-        console.error('Interview History Error:', error);
-        res.status(500).json({ message: "Error fetching history" });
-    }
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
 // Get Single Interview Session Detail
 exports.getInterviewSession = async (req, res) => {
     try {
         const session = await InterviewSession.findById(req.params.sessionId);
-        if (!session) {
-            return res.status(404).json({ message: "Session not found" });
-        }
+        if (!session) return res.status(404).json({ message: "Session not found" });
         res.json({ success: true, session });
-    } catch (error) {
-        console.error('Get Session Error:', error);
-        res.status(500).json({ message: "Error fetching session" });
-    }
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
 // Update study time (Heartbeat)
@@ -391,247 +277,79 @@ exports.logHeartbeat = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         const today = new Date().toISOString().split('T')[0];
-
-        // Ensure stats exist
-        if (!user.stats) {
-            user.stats = { totalStudyTime: 0, xp: 0, level: 1 };
-        }
-
-        // Update total study time (add 60 seconds)
-        user.stats.totalStudyTime = (user.stats.totalStudyTime || 0) + 60;
-
-        // Update today's activity log
+        if (!user.stats) user.stats = { totalStudyTime: 0, xp: 0, level: 1 };
+        user.stats.totalStudyTime += 60;
         let todayLog = user.activityLog.find(log => log.date === today);
         if (!todayLog) {
-            todayLog = {
-                date: today,
-                problemsSolved: 0,
-                studyTime: 0,
-                xpEarned: 0,
-                focusSessions: 0
-            };
+            todayLog = { date: today, problemsSolved: 0, studyTime: 0, xpEarned: 0, focusSessions: 0 };
             user.activityLog.push(todayLog);
         }
-
         todayLog.studyTime += 60;
-
-        // Award XP for study time (e.g., 5 XP per minute)
-        const xpGain = 5;
-        user.stats.xp += xpGain;
-        todayLog.xpEarned += xpGain;
-
-        // Level Up Logic (Simple: Level = 1 + floor(XP / 1000))
-        const newLevel = 1 + Math.floor(user.stats.xp / 1000);
-        if (newLevel > user.stats.level) {
-            user.stats.level = newLevel;
-            // Could add a notification here or return a flag
-        }
-
+        user.stats.xp += 5;
+        todayLog.xpEarned += 5;
+        user.stats.level = 1 + Math.floor(user.stats.xp / 1000);
         await user.save();
-
-        res.json({
-            success: true,
-            totalStudyTime: user.stats.totalStudyTime,
-            todayStudyTime: todayLog.studyTime,
-            xp: user.stats.xp,
-            level: user.stats.level
-        });
-
-    } catch (error) {
-        console.error("Heartbeat Error:", error);
-        res.status(500).json({ message: "Error updating study time" });
-    }
+        res.json({ success: true, stats: user.stats });
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
-// Soft Skills AI Conversation - Real-time correction
+// Soft Skills AI Conversation
 exports.softSkillsAI = async (req, res) => {
     try {
         const { message, previousMessages = [] } = req.body;
-
-        if (!message || message.trim().length === 0) {
-            return res.status(400).json({ message: "Message is required" });
-        }
-
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
-            return res.json({ response: "AI configuration missing. Please check API key." });
-        }
-
-        // Limit history to last 6 messages
-        const context = previousMessages.map(m => ({
-            role: m.role === 'ai' ? 'assistant' : 'user',
-            content: m.text
-        }));
-
+        const context = previousMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [
-                    {
-                        role: 'system',
-                        content: `You are a wise, supportive English soft skills mentor. 
-                        
-                        YOUR GOAL: 
-                        1. Correct the user's grammar/speech ONLY if there is a mistake.
-                        2. Answer their question or continue the conversation naturally.
-
-                        OUTPUT FORMAT:
-                        You MUST respond in valid JSON format ONLY:
-                        {
-                            "correction": "The correction string starting with 'Not like this...' OR null if speech was perfect",
-                            "reply": "Your conversational response to the user's content (answer their question thoroughly)"
-                        }
-
-                        EXAMPLES:
-                        User: "I go store yesterday."
-                        AI: { "correction": "Not like this, correct is: 'I went to the store yesterday.' (Past tense)", "reply": "Did you buy anything interesting?" }
-
-                        User: "What is the difference between affect and effect?"
-                        AI: { "correction": null, "reply": "'Affect' is usually a verb (to influence), while 'Effect' is usually a noun (the result). For example: The rain affected the game. The effect was a delay." }`
-                    },
+                    { role: 'system', content: 'Wise mentor. Return JSON: {correction, reply}' },
                     ...context,
                     { role: 'user', content: message }
                 ],
-                temperature: 0.7,
-                max_tokens: 300,
                 response_format: { type: "json_object" }
             })
         });
-
         const data = await response.json();
-        let aiResponse = { correction: null, reply: "I'm having trouble understanding. Please try again." };
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            try {
-                aiResponse = JSON.parse(data.choices[0].message.content);
-            } catch (e) {
-                // Fallback if AI didn't return strict JSON
-                aiResponse = { correction: null, reply: data.choices[0].message.content };
-            }
-        }
-
-        res.json(aiResponse);
-
-    } catch (error) {
-        console.error('Soft Skills AI Error:', error);
-        res.status(500).json({ message: "Error processing conversation" });
-    }
+        res.json(JSON.parse(data.choices[0].message.content));
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
-// Generate Vocabulary List (50 Words)
+// Generate Vocabulary List
 exports.generateVocabulary = async (req, res) => {
     try {
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
-            return res.json({ words: [] });
-        }
-
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `You are an expert linguist. Generate exactly 50 distinct, advanced, and useful English vocabulary words for professional and academic improvement.
-                        
-                        OUTPUT FORMAT:
-                        Strictly return a valid JSON Array of objects. No markdown formatting, no intro/outro text.
-                        Example:
-                        [
-                            {
-                                "word": "Obfuscate",
-                                "meaning": "To render obscure, unclear, or unintelligible.",
-                                "usage": "The politician tried to obfuscate the truth with misleading statistics.",
-                                "context": "Professional/Academic"
-                            }
-                        ]`
-                    },
-                    { role: 'user', content: "Generate 50 words now." }
-                ],
-                temperature: 0.8,
-                max_tokens: 3000,
+                messages: [{ role: 'system', content: 'Generate 50 vocab words in JSON array format.' }],
                 response_format: { type: "json_object" }
             })
         });
-
         const data = await response.json();
-        let words = [];
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            try {
-                // The model might return object with a key like "words": [...] because we requested json_object
-                const parsed = JSON.parse(data.choices[0].message.content);
-                if (Array.isArray(parsed)) {
-                    words = parsed;
-                } else if (parsed.words && Array.isArray(parsed.words)) {
-                    words = parsed.words;
-                } else if (parsed.vocabulary && Array.isArray(parsed.vocabulary)) {
-                    words = parsed.vocabulary;
-                } else {
-                    // unexpected format, try to find array in values
-                    const values = Object.values(parsed);
-                    const foundArray = values.find(v => Array.isArray(v));
-                    if (foundArray) words = foundArray;
-                }
-            } catch (e) {
-                console.error("JSON Parse Error for Vocabulary:", e);
-            }
-        }
-
-        res.json({ words });
-
-    } catch (error) {
-        console.error('Vocabulary Generation Error:', error);
-        res.status(500).json({ message: "Error generating vocabulary" });
-    }
+        res.json(JSON.parse(data.choices[0].message.content));
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
 // Generate Writing Topic
 exports.generateWritingTopic = async (req, res) => {
     try {
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
-        if (!GROQ_API_KEY) return res.status(500).json({ message: "API Key missing" });
-
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: "Generate 1 thought-provoking writing prompt related to Soft Skills, Leadership, or Workplace Ethics. Return ONLY the prompt text, no quotes or labels."
-                    },
-                    { role: 'user', content: "Give me a writing topic." }
-                ],
-                temperature: 0.9,
-                max_tokens: 100
+                messages: [{ role: 'system', content: 'Generate 1 writing topic.' }]
             })
         });
-
         const data = await response.json();
-        const topic = data.choices?.[0]?.message?.content || "Explain the importance of active listening in conflict resolution.";
-        res.json({ topic });
-
-    } catch (error) {
-        console.error('Writing Topic Error:', error);
-        res.status(500).json({ message: "Error generating topic" });
-    }
+        res.json({ topic: data.choices[0].message.content });
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
 // Evaluate Writing
@@ -639,95 +357,35 @@ exports.evaluateWriting = async (req, res) => {
     try {
         const { topic, essay } = req.body;
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!essay || essay.trim().length < 10) {
-            return res.status(400).json({ message: "Essay is too short." });
-        }
-
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `Evaluate the user's essay on the topic: "${topic}".
-                        
-                        OUTPUT JSON FORMAT:
-                        {
-                            "score": number (0-100),
-                            "feedback": "Concise summary of strengths and weaknesses (2-3 sentences).",
-                            "improvements": ["Specific bullet point 1", "Specific bullet point 2", "Specific bullet point 3"]
-                        }
-                        
-                        Strictly return valid JSON.`
-                    },
-                    { role: 'user', content: essay }
-                ],
-                temperature: 0.5,
-                max_tokens: 500,
+                messages: [{ role: 'system', content: `Eval essay on ${topic}. Return JSON.` }],
                 response_format: { type: "json_object" }
             })
         });
-
         const data = await response.json();
-        let evaluation = { score: 0, feedback: "Error parsing evaluation", improvements: [] };
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            try {
-                evaluation = JSON.parse(data.choices[0].message.content);
-            } catch (e) {
-                console.error("JSON Parse Error for Writing Eval:", e);
-                evaluation.feedback = data.choices[0].message.content;
-            }
-        }
-
-        res.json(evaluation);
-
-    } catch (error) {
-        console.error('Writing Evaluation Error:', error);
-        res.status(500).json({ message: "Error evaluating writing" });
-    }
+        res.json(JSON.parse(data.choices[0].message.content));
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
-// Generate Speaking Topic (Engineering/Pressure Context)
+// Generate Speaking Topic
 exports.generateSpeakingTopic = async (req, res) => {
     try {
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
-        if (!GROQ_API_KEY) return res.status(500).json({ message: "API Key missing" });
-
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: "Generate 1 engaging impromptu speech topic specifically for an Engineering Student or Tech Professional. Themes: Handling High-Pressure Situations, The Future of AI, Engineering Ethics, or Leadership in Tech. Return ONLY the topic string, no quotes."
-                    },
-                    { role: 'user', content: "Give me a speech topic." }
-                ],
-                temperature: 0.9,
-                max_tokens: 60
+                messages: [{ role: 'system', content: 'Generate 1 tech speaking topic.' }]
             })
         });
-
         const data = await response.json();
-        const topic = data.choices?.[0]?.message?.content || "How AI will change the role of software engineers in the next 5 years.";
-        res.json({ topic });
-
-    } catch (error) {
-        console.error('Speaking Topic Error:', error);
-        res.status(500).json({ message: "Error generating topic" });
-    }
+        res.json({ topic: data.choices[0].message.content });
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
 // Evaluate Speaking
@@ -735,346 +393,38 @@ exports.evaluateSpeech = async (req, res) => {
     try {
         const { topic, transcript } = req.body;
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!transcript || transcript.trim().length < 10) {
-            return res.status(400).json({ message: "Speech is too short to evaluate." });
-        }
-
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `Evaluate the user's speech transcript on the topic: "${topic}".
-                        Assess their Communication Skills, content relevance, and flow.
-                        
-                        OUTPUT JSON FORMAT:
-                        {
-                            "score": number (0-100),
-                            "feedback": "Constructive feedback on their delivery and content (2-3 sentences).",
-                            "improvements": ["Specific improvement 1", "Specific improvement 2", "Specific improvement 3"]
-                        }
-                        
-                        Strictly return valid JSON.`
-                    },
-                    { role: 'user', content: transcript }
-                ],
-                temperature: 0.6,
-                max_tokens: 500,
+                messages: [{ role: 'system', content: `Eval speech on ${topic}. Return JSON.` }],
                 response_format: { type: "json_object" }
             })
         });
-
         const data = await response.json();
-        let evaluation = { score: 0, feedback: "Error parsing evaluation", improvements: [] };
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            try {
-                evaluation = JSON.parse(data.choices[0].message.content);
-            } catch (e) {
-                console.error("JSON Parse Error for Speech Eval:", e);
-                evaluation.feedback = data.choices[0].message.content;
-            }
-        }
-
-        res.json(evaluation);
-
-    } catch (error) {
-        console.error('Speech Evaluation Error:', error);
-        res.status(500).json({ message: "Error evaluating speech" });
-    }
+        res.json(JSON.parse(data.choices[0].message.content));
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
-// AI Resume Generator
-// ATS Resume Checker
-exports.checkATSScore = async (req, res) => {
-    try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!GROQ_API_KEY) return res.status(500).json({ message: "API Key missing" });
-
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: "Generate 1 thought-provoking writing prompt related to Soft Skills, Leadership, or Workplace Ethics. Return ONLY the prompt text, no quotes or labels."
-                    },
-                    { role: 'user', content: "Give me a writing topic." }
-                ],
-                temperature: 0.9,
-                max_tokens: 100
-            })
-        });
-
-        const data = await response.json();
-        const topic = data.choices?.[0]?.message?.content || "Explain the importance of active listening in conflict resolution.";
-        res.json({ topic });
-
-    } catch (error) {
-        console.error('Writing Topic Error:', error);
-        res.status(500).json({ message: "Error generating topic" });
-    }
-};
-
-// Evaluate Writing
-exports.evaluateWriting = async (req, res) => {
-    try {
-        const { topic, essay } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!essay || essay.trim().length < 10) {
-            return res.status(400).json({ message: "Essay is too short." });
-        }
-
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `Evaluate the user's essay on the topic: "${topic}".
-                        
-                        OUTPUT JSON FORMAT:
-                        {
-                            "score": number (0-100),
-                            "feedback": "Concise summary of strengths and weaknesses (2-3 sentences).",
-                            "improvements": ["Specific bullet point 1", "Specific bullet point 2", "Specific bullet point 3"]
-                        }
-                        
-                        Strictly return valid JSON.`
-                    },
-                    { role: 'user', content: essay }
-                ],
-                temperature: 0.5,
-                max_tokens: 500,
-                response_format: { type: "json_object" }
-            })
-        });
-
-        const data = await response.json();
-        let evaluation = { score: 0, feedback: "Error parsing evaluation", improvements: [] };
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            try {
-                evaluation = JSON.parse(data.choices[0].message.content);
-            } catch (e) {
-                console.error("JSON Parse Error for Writing Eval:", e);
-                evaluation.feedback = data.choices[0].message.content;
-            }
-        }
-
-        res.json(evaluation);
-
-    } catch (error) {
-        console.error('Writing Evaluation Error:', error);
-        res.status(500).json({ message: "Error evaluating writing" });
-    }
-};
-
-// Generate Speaking Topic (Engineering/Pressure Context)
-exports.generateSpeakingTopic = async (req, res) => {
-    try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
-        if (!GROQ_API_KEY) return res.status(500).json({ message: "API Key missing" });
-
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: "Generate 1 engaging impromptu speech topic specifically for an Engineering Student or Tech Professional. Themes: Handling High-Pressure Situations, The Future of AI, Engineering Ethics, or Leadership in Tech. Return ONLY the topic string, no quotes."
-                    },
-                    { role: 'user', content: "Give me a speech topic." }
-                ],
-                temperature: 0.9,
-                max_tokens: 60
-            })
-        });
-
-        const data = await response.json();
-        const topic = data.choices?.[0]?.message?.content || "How AI will change the role of software engineers in the next 5 years.";
-        res.json({ topic });
-
-    } catch (error) {
-        console.error('Speaking Topic Error:', error);
-        res.status(500).json({ message: "Error generating topic" });
-    }
-};
-
-// Evaluate Speaking
-exports.evaluateSpeech = async (req, res) => {
-    try {
-        const { topic, transcript } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-        if (!transcript || transcript.trim().length < 10) {
-            return res.status(400).json({ message: "Speech is too short to evaluate." });
-        }
-
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `Evaluate the user's speech transcript on the topic: "${topic}".
-                        Assess their Communication Skills, content relevance, and flow.
-                        
-                        OUTPUT JSON FORMAT:
-                        {
-                            "score": number (0-100),
-                            "feedback": "Constructive feedback on their delivery and content (2-3 sentences).",
-                            "improvements": ["Specific improvement 1", "Specific improvement 2", "Specific improvement 3"]
-                        }
-                        
-                        Strictly return valid JSON.`
-                    },
-                    { role: 'user', content: transcript }
-                ],
-                temperature: 0.6,
-                max_tokens: 500,
-                response_format: { type: "json_object" }
-            })
-        });
-
-        const data = await response.json();
-        let evaluation = { score: 0, feedback: "Error parsing evaluation", improvements: [] };
-
-        if (data.choices && data.choices[0]?.message?.content) {
-            try {
-                evaluation = JSON.parse(data.choices[0].message.content);
-            } catch (e) {
-                console.error("JSON Parse Error for Speech Eval:", e);
-                evaluation.feedback = data.choices[0].message.content;
-            }
-        }
-
-        res.json(evaluation);
-
-    } catch (error) {
-        console.error('Speech Evaluation Error:', error);
-        res.status(500).json({ message: "Error evaluating speech" });
-    }
-};
-
-// AI Resume Generator
 // ATS Resume Checker
 exports.checkATSScore = async (req, res) => {
     try {
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
         const { jobDescription } = req.body;
-
-        if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
-            return res.status(500).json({ message: "Groq API Key missing" });
-        }
-
-        if (!req.file) {
-            return res.status(400).json({ message: "No resume PDF provided." });
-        }
-
-        let resumeText = "";
-        try {
-            const data = await pdfParse(req.file.buffer);
-            resumeText = data.text.replace(/\s+/g, ' ').trim();
-        } catch (err) {
-            console.error('PDF Parse Error:', err);
-            return res.status(400).json({ message: "Failed to read the resume PDF." });
-        }
-
-        const prompt = `
-        You are an elite Applicant Tracking System (ATS) Expert and Technical Recruiter.
-        Analyze the following resume text. If a Job Description is provided, evaluate the resume specifically against it.
-        
-        **Resume Text:**
-        ${resumeText.substring(0, 6000)}
-        
-        **Target Job Description (Optional):**
-        ${jobDescription ? jobDescription.substring(0, 4000) : "No Job Description provided. Perform a general industry-standard ATS evaluation."}
-        
-        **Instructions:**
-        1. Evaluate the resume with strict ATS logic. Be highly critical.
-        2. Assign an "overallScore" (0-100).
-        3. If there is a Job Description, compute a "matchRate" (0-100%). If not, estimate matchRate vs general tech roles.
-        4. Provide sub-scores out of 100 for: "formatting", "impactMetrics", "readability", and "keywordDensity".
-        5. Provide a succinct "summary" of your findings.
-        6. Extract arrays of:
-           - "strengths" (what they did well)
-           - "weaknesses" (what is missing or bad)
-           - "improvements" (actionable steps)
-           - "missingKeywords" (crucial skills/tech missing compared to JD or standard roles)
-           - "strongVerbsFound" (good action verbs used)
-        7. Ensure return is STRICTLY a JSON object matching this schema EXACTLY:
-        
-        {
-          "overallScore": 0,
-          "matchRate": 0,
-          "subScores": { "formatting": 0, "impactMetrics": 0, "readability": 0, "keywordDensity": 0 },
-          "summary": "...",
-          "strengths": ["..."],
-          "weaknesses": ["..."],
-          "improvements": ["..."],
-          "missingKeywords": ["..."],
-          "strongVerbsFound": ["..."]
-        }
-        `;
-
+        if (!req.file) return res.status(400).json({ message: "No PDF" });
+        const pdfData = await pdfParse(req.file.buffer);
+        const resumeText = pdfData.text;
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'user', content: prompt }],
-                temperature: 0.3,
-                max_tokens: 2000,
+                messages: [{ role: 'user', content: `ATS eval: ${resumeText} against ${jobDescription}. Return JSON.` }],
                 response_format: { type: "json_object" }
             })
         });
-
         const data = await response.json();
-        let atsResult;
-        try {
-            atsResult = JSON.parse(data.choices[0].message.content);
-        } catch (e) {
-            console.error("Failed to parse ATS JSON:", data.choices[0]?.message);
-            return res.status(500).json({ message: "Failed to evaluate ATS score." });
-        }
-
-        res.json({ result: atsResult });
-
-    } catch (error) {
-        console.error("ATS Checker Error:", error);
-        res.status(500).json({ message: "Error evaluating resume" });
-    }
+        res.json({ result: JSON.parse(data.choices[0].message.content) });
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 };

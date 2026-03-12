@@ -307,6 +307,7 @@ export default function AIInterview() {
     const [targetCompany, setTargetCompany] = useState('General Tech');
     const [view, setView] = useState('setup'); // setup, interview, report, history
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [currentSpeaker, setCurrentSpeaker] = useState('Aria'); 
     const [autoSpeak, setAutoSpeak] = useState(true);
     const [cameraEnabled, setCameraEnabled] = useState(true);
 
@@ -581,6 +582,7 @@ export default function AIInterview() {
             }
 
             const current = sentenceQueue[index];
+            setCurrentSpeaker(current.speaker || 'Aria');
             const utterance = new SpeechSynthesisUtterance(current.text);
 
             if (current.speaker === 'Alex') {
@@ -1064,13 +1066,15 @@ export default function AIInterview() {
                                     )}
 
                                     <div>
-                                        <label className="block text-sm text-[var(--text-secondary)] mb-2">Interviewer Voice</label>
+                                        <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                                            {mode === 'gd' ? 'Lead Moderator Voice' : 'Interviewer Voice'}
+                                        </label>
                                         <select
                                             value={selectedVoiceURI}
                                             onChange={e => {
                                                 setSelectedVoiceURI(e.target.value);
                                                 // Test voice
-                                                const u = new SpeechSynthesisUtterance("Hi! I will be your interviewer.");
+                                                const u = new SpeechSynthesisUtterance(mode === 'gd' ? "Hi, I will moderate this discussion." : "Hi! I will be your interviewer.");
                                                 const v = availableVoices.find(voice => voice.voiceURI === e.target.value);
                                                 if (v) u.voice = v;
                                                 window.speechSynthesis.speak(u);
@@ -1121,10 +1125,16 @@ export default function AIInterview() {
                         {/* Right Side - Avatar Preview */}
                         <div className="hidden md:flex w-1/3 flex-col gap-4">
                             <div className="aspect-[3/4] rounded-2xl border border-[var(--border-color)] relative overflow-hidden">
-                                <AriaAvatar isSpeaking={false} />
+                                <AriaAvatar isSpeaking={isSpeaking} currentSpeaker={currentSpeaker} />
                                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-black/80 to-transparent">
-                                    <h3 className="text-2xl font-bold text-[var(--text-primary)]">Aria</h3>
-                                    <p className="text-violet-300">Senior Tech Recruiter</p>
+                                    <h3 className="text-2xl font-bold text-[var(--text-primary)]">
+                                        {mode === 'gd' && isSpeaking ? currentSpeaker : 'Aria'}
+                                    </h3>
+                                    <p className="text-violet-300">
+                                        {mode === 'gd' && isSpeaking 
+                                            ? (currentSpeaker === 'Alex' ? 'Analytical Peer' : currentSpeaker === 'Sarah' ? 'Creative Peer' : 'Moderator')
+                                            : 'Senior Tech Recruiter'}
+                                    </p>
                                 </div>
                             </div>
                         </div>

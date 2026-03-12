@@ -9,10 +9,19 @@ import React, { useEffect, useState, useRef } from 'react';
  * - Idle breathing animation
  * - Audio wave visualizer when speaking
  */
-export default function AriaAvatar({ isSpeaking = false, className = '' }) {
+export default function AriaAvatar({ isSpeaking = false, currentSpeaker = 'Aria', className = '' }) {
     const [blinkState, setBlinkState] = useState(false);
     const [mouthOpen, setMouthOpen] = useState(0);
     const mouthInterval = useRef(null);
+
+    // Dynamic styles based on persona
+    const getPersonaGlow = () => {
+        if (currentSpeaker === 'Alex') return { g1: '#0ea5e9', g2: '#3b82f6', bg: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)' };
+        if (currentSpeaker === 'Sarah') return { g1: '#f472b6', g2: '#db2777', bg: 'linear-gradient(135deg, #450a0a 0%, #831843 100%)' };
+        return { g1: '#7c3aed', g2: '#ec4899', bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' };
+    };
+
+    const persona = getPersonaGlow();
 
     // Natural blinking
     useEffect(() => {
@@ -23,10 +32,7 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
 
         const interval = setInterval(() => {
             blink();
-            // Sometimes double-blink
-            if (Math.random() > 0.7) {
-                setTimeout(blink, 300);
-            }
+            if (Math.random() > 0.7) setTimeout(blink, 300);
         }, 2500 + Math.random() * 2000);
 
         return () => clearInterval(interval);
@@ -45,13 +51,11 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
         return () => clearInterval(mouthInterval.current);
     }, [isSpeaking]);
 
-    const eyeHeight = blinkState ? 1 : 10;
     const eyeRy = blinkState ? 0.5 : 5;
-    const mouthHeight = 2 + mouthOpen * 10;
     const mouthRy = 1 + mouthOpen * 5;
 
     return (
-        <div className={`aria-avatar-container ${className}`}>
+        <div className={`aria-avatar-container ${className}`} style={{ background: persona.bg }}>
             <style>{`
                 .aria-avatar-container {
                     position: relative;
@@ -60,9 +64,9 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
                     overflow: hidden;
                     border-radius: inherit;
+                    transition: background 1s ease;
                 }
                 
                 .aria-bg-glow {
@@ -73,14 +77,13 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
                     filter: blur(60px);
                     opacity: 0.3;
                     animation: bgFloat 8s ease-in-out infinite;
+                    transition: background 1s ease;
                 }
                 .aria-bg-glow.glow1 {
-                    background: #7c3aed;
                     top: 10%;
                     left: 20%;
                 }
                 .aria-bg-glow.glow2 {
-                    background: #ec4899;
                     bottom: 10%;
                     right: 20%;
                     animation-delay: -4s;
@@ -136,8 +139,8 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
                 .aria-wave-bar {
                     width: 3px;
                     border-radius: 2px;
-                    background: linear-gradient(to top, #7c3aed, #ec4899);
-                    transition: height 0.1s ease;
+                    background: linear-gradient(to top, ${persona.g1}, ${persona.g2});
+                    transition: height 0.1s ease, background 1s ease;
                 }
                 
                 /* Name badge */
@@ -189,7 +192,7 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
                 .aria-status-ring.active {
                     opacity: 1;
                     border: 2px solid transparent;
-                    background: linear-gradient(135deg, #7c3aed, #ec4899) border-box;
+                    background: linear-gradient(135deg, ${persona.g1}, ${persona.g2}) border-box;
                     -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
                     -webkit-mask-composite: destination-out;
                     mask-composite: exclude;
@@ -202,8 +205,8 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
             `}</style>
 
             {/* Background glows */}
-            <div className="aria-bg-glow glow1" />
-            <div className="aria-bg-glow glow2" />
+            <div className="aria-bg-glow glow1" style={{ background: persona.g1 }} />
+            <div className="aria-bg-glow glow2" style={{ background: persona.g2 }} />
 
             {/* Status ring when speaking */}
             <div className={`aria-status-ring ${isSpeaking ? 'active' : ''}`} />
@@ -215,22 +218,18 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
                 style={{ width: '75%', maxHeight: '85%' }}
             >
                 {/* Hair back */}
-                <ellipse cx="100" cy="85" rx="62" ry="70" fill="#2d1b0e" />
-                <path d="M 38 85 Q 30 140 45 180 L 55 160 Q 45 120 50 85 Z" fill="#2d1b0e" />
-                <path d="M 162 85 Q 170 140 155 180 L 145 160 Q 155 120 150 85 Z" fill="#2d1b0e" />
-
+                <ellipse cx="100" cy="85" rx="62" ry="70" fill={currentSpeaker === 'Alex' ? '#1e293b' : '#2d1b0e'} />
+                
                 {/* Neck */}
                 <rect x="85" y="148" width="30" height="30" rx="5" fill="#f0c9a6" />
 
                 {/* Shoulders / Top */}
                 <path
                     d="M 50 178 Q 50 168 85 168 L 115 168 Q 150 168 150 178 L 160 230 Q 160 245 140 248 L 60 248 Q 40 245 40 230 Z"
-                    fill="#e8e0f0"
-                    stroke="#d4c8e8"
+                    fill={currentSpeaker === 'Alex' ? '#cbd5e1' : currentSpeaker === 'Sarah' ? '#fde2e4' : '#e8e0f0'}
+                    stroke={persona.g1}
                     strokeWidth="0.5"
                 />
-                {/* Collar detail */}
-                <path d="M 88 168 L 100 190 L 112 168" fill="none" stroke="#c4b8d8" strokeWidth="1.5" />
 
                 {/* Face */}
                 <ellipse cx="100" cy="100" rx="48" ry="55" fill="#f5d5b8" />
@@ -238,117 +237,43 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
                 {/* Ears */}
                 <ellipse cx="53" cy="100" rx="7" ry="10" fill="#f0c9a6" />
                 <ellipse cx="147" cy="100" rx="7" ry="10" fill="#f0c9a6" />
-                {/* Earrings */}
-                <circle cx="53" cy="113" r="3" fill="#c084fc" opacity="0.8" />
-                <circle cx="147" cy="113" r="3" fill="#c084fc" opacity="0.8" />
 
-                {/* Hair front */}
-                <path
-                    d="M 52 80 Q 55 40 100 35 Q 145 40 148 80 Q 140 55 100 50 Q 60 55 52 80 Z"
-                    fill="#3d2517"
-                />
-                {/* Side bangs */}
-                <path d="M 52 80 Q 48 60 58 50 Q 55 70 60 85 Z" fill="#3d2517" />
-                <path d="M 148 80 Q 152 60 142 50 Q 145 70 140 85 Z" fill="#3d2517" />
-
-                {/* Eyebrows */}
-                <path d="M 72 80 Q 80 75 90 78" stroke="#4a3020" strokeWidth="2" fill="none" strokeLinecap="round" />
-                <path d="M 128 80 Q 120 75 110 78" stroke="#4a3020" strokeWidth="2" fill="none" strokeLinecap="round" />
-
-                {/* Eyes */}
-                <g>
-                    {/* Eye whites */}
-                    <ellipse cx="82" cy="92" rx="10" ry="8" fill="white" />
-                    <ellipse cx="118" cy="92" rx="10" ry="8" fill="white" />
-
-                    {/* Iris */}
-                    <ellipse cx="82" cy="92" rx="5" ry={eyeRy} fill="#5B4A3F">
-                        <animate attributeName="ry" values={`${eyeRy}`} dur="0.1s" />
-                    </ellipse>
-                    <ellipse cx="118" cy="92" rx="5" ry={eyeRy} fill="#5B4A3F">
-                        <animate attributeName="ry" values={`${eyeRy}`} dur="0.1s" />
-                    </ellipse>
-
-                    {/* Pupils */}
-                    {!blinkState && (
-                        <>
-                            <circle cx="83" cy="91" r="2.5" fill="#1a1a1a" />
-                            <circle cx="119" cy="91" r="2.5" fill="#1a1a1a" />
-                            {/* Eye shine */}
-                            <circle cx="84.5" cy="89.5" r="1" fill="white" opacity="0.9" />
-                            <circle cx="120.5" cy="89.5" r="1" fill="white" opacity="0.9" />
-                        </>
-                    )}
-
-                    {/* Eyelids (blink) */}
-                    <ellipse
-                        cx="82" cy="92" rx="11" ry={blinkState ? 9 : 0}
-                        fill="#f5d5b8"
-                        style={{ transition: 'ry 0.08s ease' }}
-                    />
-                    <ellipse
-                        cx="118" cy="92" rx="11" ry={blinkState ? 9 : 0}
-                        fill="#f5d5b8"
-                        style={{ transition: 'ry 0.08s ease' }}
-                    />
-
-                    {/* Eyelashes */}
-                    <path d="M 72 90 Q 77 84 82 83" stroke="#2d1b0e" strokeWidth="1.5" fill="none" />
-                    <path d="M 128 90 Q 123 84 118 83" stroke="#2d1b0e" strokeWidth="1.5" fill="none" />
-                </g>
+                {/* Hair front - different for Alex */}
+                {currentSpeaker === 'Alex' ? (
+                   <path d="M 52 80 Q 55 20 100 20 Q 145 20 148 80 L 150 100 Q 150 120 140 120 L 60 120 Q 50 120 50 100 Z" fill="#1e293b" />
+                ) : (
+                    <>
+                        <path d="M 52 80 Q 55 40 100 35 Q 145 40 148 80 Q 140 55 100 50 Q 60 55 52 80 Z" fill="#3d2517" />
+                        <path d="M 52 80 Q 48 60 58 50 Q 55 70 60 85 Z" fill="#3d2517" />
+                        <path d="M 148 80 Q 152 60 142 50 Q 145 70 140 85 Z" fill="#3d2517" />
+                    </>
+                )}
 
                 {/* Nose */}
                 <path d="M 98 102 Q 96 108 94 112 Q 98 114 102 114 Q 106 112 104 108 Z" fill="#e8c4a0" opacity="0.6" />
 
-                {/* Mouth */}
+                {/* Eyes */}
                 <g>
-                    {mouthOpen > 0.1 ? (
+                    <ellipse cx="82" cy="92" rx="10" ry="8" fill="white" />
+                    <ellipse cx="118" cy="92" rx="10" ry="8" fill="white" />
+                    <ellipse cx="82" cy="92" rx="5" ry={eyeRy} fill="#5B4A3F" />
+                    <ellipse cx="118" cy="92" rx="5" ry={eyeRy} fill="#5B4A3F" />
+                    {!blinkState && (
                         <>
-                            {/* Open mouth */}
-                            <ellipse
-                                cx="100"
-                                cy="126"
-                                rx={8 + mouthOpen * 3}
-                                ry={mouthRy}
-                                fill="#a03040"
-                                style={{ transition: 'ry 0.08s ease, rx 0.08s ease' }}
-                            />
-                            {/* Teeth hint */}
-                            <rect
-                                x="94"
-                                y={124 - mouthOpen * 1}
-                                width="12"
-                                height={Math.min(mouthOpen * 4, 3)}
-                                rx="1"
-                                fill="white"
-                                opacity={mouthOpen > 0.3 ? 0.8 : 0}
-                                style={{ transition: 'opacity 0.08s ease' }}
-                            />
-                            {/* Upper lip */}
-                            <path
-                                d={`M ${90 - mouthOpen * 2} 124 Q 95 ${122 - mouthOpen * 1} 100 ${122 - mouthOpen * 2} Q 105 ${122 - mouthOpen * 1} ${110 + mouthOpen * 2} 124`}
-                                fill="none"
-                                stroke="#c06070"
-                                strokeWidth="1.5"
-                            />
-                        </>
-                    ) : (
-                        <>
-                            {/* Closed mouth - slight smile */}
-                            <path
-                                d="M 88 125 Q 94 130 100 130 Q 106 130 112 125"
-                                fill="none"
-                                stroke="#c06070"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                            />
+                            <circle cx="83" cy="91" r="2.5" fill="#1a1a1a" />
+                            <circle cx="119" cy="91" r="2.5" fill="#1a1a1a" />
                         </>
                     )}
                 </g>
 
-                {/* Blush */}
-                <ellipse cx="72" cy="112" rx="10" ry="5" fill="#ff9999" opacity="0.15" />
-                <ellipse cx="128" cy="112" rx="10" ry="5" fill="#ff9999" opacity="0.15" />
+                {/* Mouth */}
+                <g>
+                    {mouthOpen > 0.1 ? (
+                        <ellipse cx="100" cy="126" rx={8 + mouthOpen * 3} ry={mouthRy} fill="#a03040" />
+                    ) : (
+                        <path d="M 88 125 Q 94 130 100 130 Q 106 130 112 125" fill="none" stroke="#c06070" strokeWidth="2" strokeLinecap="round" />
+                    )}
+                </g>
             </svg>
 
             {/* Audio wave bars */}
@@ -358,9 +283,7 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
                         key={i}
                         className="aria-wave-bar"
                         style={{
-                            height: isSpeaking
-                                ? `${8 + Math.random() * 22}px`
-                                : '3px',
+                            height: isSpeaking ? `${8 + Math.random() * 22}px` : '3px',
                             transition: `height ${0.1 + Math.random() * 0.1}s ease`,
                             animationDelay: `${i * 0.05}s`
                         }}
@@ -371,7 +294,7 @@ export default function AriaAvatar({ isSpeaking = false, className = '' }) {
             {/* Name badge */}
             <div className="aria-name-badge">
                 <div className={`aria-speaking-dot ${isSpeaking ? '' : 'idle'}`} />
-                <span>Aria (AI)</span>
+                <span>{currentSpeaker} (AI)</span>
             </div>
         </div>
     );
