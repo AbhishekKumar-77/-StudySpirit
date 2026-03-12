@@ -2,7 +2,7 @@
 exports.getStudySuggestions = async (req, res) => {
     try {
         const { topics, chapters, daysAvailable, hoursPerDay, difficulty } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
 
         if (!daysAvailable || daysAvailable < 1) {
             return res.status(400).json({ message: "Days available is required" });
