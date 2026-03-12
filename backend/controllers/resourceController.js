@@ -229,21 +229,23 @@ exports.searchYoutube = async (req, res) => {
     }
 };
 
-// Generate AI Flashcards
+// Generate AI Flashcards (with retry logic for rate limits)
 exports.generateFlashcards = async (req, res) => {
     try {
         const { topic, count = 8, difficulty = 'medium' } = req.body;
         const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) {
-            return res.status(500).json({ success: false, message: "Groq API Key missing." });
+            return res.status(500).json({ success: false, message: "Groq API Key missing. Add GROQ_API_KEY_RESOURCE to your environment." });
         }
 
         if (!topic || !topic.trim()) {
             return res.status(400).json({ success: false, message: "Topic is required." });
         }
 
-        const prompt = `Generate exactly ${count} flashcards for studying the topic: "${topic}".
+        const cardCount = Math.min(Math.max(parseInt(count) || 8, 1), 20);
+
+        const prompt = `Generate exactly ${cardCount} flashcards for studying the topic: "${topic}".
 Difficulty level: ${difficulty}.
 
 IMPORTANT: Return ONLY a valid JSON array with no extra text. Each object must have "front" (question) and "back" (answer) fields.
@@ -255,49 +257,134 @@ Example format:
   {"front": "Where does photosynthesis occur?", "back": "In the chloroplasts of plant cells, specifically in the thylakoid membranes."}
 ]
 
-Generate ${count} flashcards now:`;
+Generate ${cardCount} flashcards now:`;
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    { role: "system", content: "You are a flashcard generator. Return ONLY valid JSON arrays. No markdown, no explanations, just the JSON array." },
-                    { role: "user", content: prompt }
-                ],
-                temperature: 0.6,
-                max_tokens: 2000
-            })
-        });
+        // Retry logic: up to 3 attempts with backoff for rate limits
+        let lastError = null;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: "system", content: "You are a flashcard generator. Return ONLY valid JSON arrays. No markdown, no explanations, no code fences, just the raw JSON array." },
+                            { role: "user", content: prompt }
+                        ],
+                        temperature: 0.6,
+                        max_tokens: 4000
+                    })
+                });
 
-        const data = await response.json();
-        const rawText = data.choices?.[0]?.message?.content || "[]";
+                // Handle rate limiting (429) and server errors (5xx)
+                if (response.status === 429) {
+                    const retryAfter = parseInt(response.headers.get('retry-after')) || (attempt * 2);
+                    console.warn(`Flashcard Gen: Rate limited (attempt ${attempt}/3). Waiting ${retryAfter}s...`);
+                    await new Promise(r => setTimeout(r, retryAfter * 1000));
+                    continue;
+                }
 
-        // Extract JSON array from the response
-        let flashcards = [];
-        try {
-            // Try direct parse first
-            flashcards = JSON.parse(rawText);
-        } catch {
-            // Try to extract JSON array from text
-            const jsonMatch = rawText.match(/\[[\s\S]*\]/);
-            if (jsonMatch) {
-                flashcards = JSON.parse(jsonMatch[0]);
+                if (!response.ok) {
+                    const errBody = await response.text().catch(() => '');
+                    console.error(`Flashcard Gen: API error ${response.status} (attempt ${attempt}/3):`, errBody);
+                    if (response.status >= 500 && attempt < 3) {
+                        await new Promise(r => setTimeout(r, attempt * 1500));
+                        continue;
+                    }
+                    lastError = `Groq API error (${response.status})`;
+                    break;
+                }
+
+                const data = await response.json();
+
+                if (!data.choices || !data.choices[0]?.message?.content) {
+                    console.error("Flashcard Gen: Empty AI response (attempt " + attempt + "/3):", JSON.stringify(data, null, 2));
+                    if (attempt < 3) {
+                        await new Promise(r => setTimeout(r, attempt * 1000));
+                        continue;
+                    }
+                    return res.status(500).json({ success: false, message: "AI returned empty response. Please try again." });
+                }
+
+                const rawText = data.choices[0].message.content;
+
+                // Robust JSON parsing with multiple fallback methods
+                let flashcards = [];
+                try {
+                    flashcards = JSON.parse(rawText);
+                } catch {
+                    // Method 1: Strip markdown fences and try again
+                    let cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    try {
+                        flashcards = JSON.parse(cleaned);
+                    } catch {
+                        // Method 2: Extract JSON array using regex
+                        const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+                        if (jsonMatch) {
+                            try {
+                                flashcards = JSON.parse(jsonMatch[0]);
+                            } catch {
+                                // Method 3: Repair truncated JSON (missing closing bracket)
+                                const lastBrace = jsonMatch[0].lastIndexOf('}');
+                                if (lastBrace !== -1) {
+                                    try {
+                                        flashcards = JSON.parse(jsonMatch[0].substring(0, lastBrace + 1) + ']');
+                                    } catch { /* give up on this method */ }
+                                }
+                            }
+                        }
+
+                        // Method 4: Extract individual objects
+                        if (flashcards.length === 0) {
+                            const objMatches = cleaned.match(/\{[^{}]*"front"\s*:\s*"[^"]*"[^{}]*"back"\s*:\s*"[^"]*"[^{}]*\}/g);
+                            if (objMatches) {
+                                flashcards = objMatches.map(str => {
+                                    try { return JSON.parse(str); } catch { return null; }
+                                }).filter(Boolean);
+                            }
+                        }
+                    }
+                }
+
+                if (!Array.isArray(flashcards)) {
+                    if (flashcards && flashcards.flashcards) flashcards = flashcards.flashcards;
+                    else flashcards = [];
+                }
+
+                // Add IDs to each flashcard
+                flashcards = flashcards.map((card, idx) => ({
+                    id: Date.now() + idx,
+                    front: card.front || card.question || "No question",
+                    back: card.back || card.answer || "No answer"
+                }));
+
+                if (flashcards.length === 0) {
+                    if (attempt < 3) {
+                        console.warn(`Flashcard Gen: 0 cards parsed (attempt ${attempt}/3). Retrying...`);
+                        await new Promise(r => setTimeout(r, attempt * 1000));
+                        continue;
+                    }
+                    return res.status(500).json({ success: false, message: "AI could not generate flashcards for this topic. Try a different topic or fewer cards." });
+                }
+
+                return res.json({ success: true, flashcards, topic });
+
+            } catch (fetchErr) {
+                console.error(`Flashcard Gen: Network error (attempt ${attempt}/3):`, fetchErr.message);
+                lastError = fetchErr.message;
+                if (attempt < 3) {
+                    await new Promise(r => setTimeout(r, attempt * 1500));
+                    continue;
+                }
             }
         }
 
-        // Add IDs to each flashcard
-        flashcards = flashcards.map((card, idx) => ({
-            id: Date.now() + idx,
-            front: card.front || card.question || "No question",
-            back: card.back || card.answer || "No answer"
-        }));
-
-        res.json({ success: true, flashcards, topic });
+        // All retries exhausted
+        res.status(500).json({ success: false, message: lastError || 'Failed to generate flashcards after multiple attempts. Please try again.' });
 
     } catch (error) {
         console.error("Flashcard Gen Error:", error);
