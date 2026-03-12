@@ -435,24 +435,60 @@ exports.evaluateSpeech = async (req, res) => {
     } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
-// ATS Resume Checker
 exports.checkATSScore = async (req, res) => {
     try {
         const GROQ_API_KEY = process.env.GROQ_API_KEY;
         const { jobDescription } = req.body;
-        if (!req.file) return res.status(400).json({ message: "No PDF" });
-        const pdfData = await pdfParse(req.file.buffer);
-        const resumeText = pdfData.text;
+
+        if (!GROQ_API_KEY) return res.status(500).json({ message: "Groq API Key missing" });
+        if (!req.file) return res.status(400).json({ message: "No resume PDF provided." });
+
+        let resumeText = "";
+        try {
+            const data = await pdfParse(req.file.buffer);
+            resumeText = data.text.replace(/\s+/g, ' ').trim();
+        } catch (err) {
+            return res.status(400).json({ message: "Failed to read the resume PDF." });
+        }
+
+        const prompt = `
+        Analyze the following resume text as an elite ATS Expert.
+        
+        **Resume Text:**
+        ${resumeText.substring(0, 6000)}
+        
+        **Target Job Description (Optional):**
+        ${jobDescription ? jobDescription.substring(0, 4000) : "Perform a general industry-standard evaluation."}
+        
+        Return STRICTLY a JSON object:
+        {
+          "overallScore": 0-100,
+          "matchRate": 0-100,
+          "subScores": { "formatting": 0-100, "impactMetrics": 0-100, "readability": 0-100, "keywordDensity": 0-100 },
+          "summary": "Short professional summary",
+          "strengths": ["..."],
+          "weaknesses": ["..."],
+          "improvements": ["..."],
+          "missingKeywords": ["..."],
+          "strongVerbsFound": ["..."]
+        }`;
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'user', content: `ATS eval: ${resumeText} against ${jobDescription}. Return JSON.` }],
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.3,
                 response_format: { type: "json_object" }
             })
         });
+
         const data = await response.json();
         res.json({ result: JSON.parse(data.choices[0].message.content) });
-    } catch (error) { res.status(500).json({ message: "Error" }); }
+
+    } catch (error) {
+        console.error("ATS Checker Error:", error);
+        res.status(500).json({ message: "Error evaluating resume" });
+    }
 };

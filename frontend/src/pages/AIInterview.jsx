@@ -943,10 +943,10 @@ export default function AIInterview() {
                     { step: 4, label: 'Technical', icon: <Cpu size={16} /> }
                 ].map((item) => (
                     <div key={item.step} className="relative z-10 flex flex-col items-center gap-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${journeyStep >= item.step ? 'bg-gradient-to-br from-cyan-500 to-blue-600 scale-110 shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-slate-800 border border-white/10'}`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-700 ${journeyStep === item.step ? 'bg-gradient-to-br from-cyan-400 to-blue-500 scale-125 shadow-[0_0_20px_rgba(6,182,212,0.6)] animate-pulse' : journeyStep > item.step ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-slate-800 border border-white/10'}`}>
                             {journeyStep > item.step ? <CheckCircle size={20} className="text-white" /> : item.icon}
                         </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${journeyStep >= item.step ? 'text-cyan-400' : 'text-slate-500'}`}>{item.label}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${journeyStep === item.step ? 'text-cyan-400' : journeyStep > item.step ? 'text-emerald-400' : 'text-slate-500'}`}>{item.label}</span>
                     </div>
                 ))}
             </div>
@@ -1625,13 +1625,22 @@ export default function AIInterview() {
                                         </div>
                                     </div>
 
-                                    {isJourneyMode && atsResult.overallScore >= 50 && (
-                                        <div className="bg-emerald-500/10 p-6 rounded-2xl border border-emerald-500/30 flex items-center justify-between animate-pulse">
+                                    {isJourneyMode && (
+                                        <div className={`p-6 rounded-2xl border flex items-center justify-between transition-all ${atsResult.overallScore >= 50 ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-amber-500/10 border-amber-500/30'}`}>
                                             <div>
-                                                <h4 className="font-bold text-emerald-400">Application Success!</h4>
-                                                <p className="text-sm text-emerald-300/70">Your CV meets the requirements. You've been advanced to the HR Interview round.</p>
+                                                <h4 className={`font-bold ${atsResult.overallScore >= 50 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                                    {atsResult.overallScore >= 50 ? 'Application Success!' : 'Review & Proceed'}
+                                                </h4>
+                                                <p className="text-sm opacity-70">
+                                                    {atsResult.overallScore >= 50 
+                                                        ? "Your CV is strong! You've been advanced to the HR Interview round."
+                                                        : "Your CV could use work, but you can still proceed to the HR round for practice."}
+                                                </p>
                                             </div>
-                                            <button onClick={nextJourneyStep} className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl font-bold transition-all shadow-lg">
+                                            <button 
+                                                onClick={nextJourneyStep} 
+                                                className={`px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95 ${atsResult.overallScore >= 50 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-black'}`}
+                                            >
                                                 Go to HR Interview
                                             </button>
                                         </div>
