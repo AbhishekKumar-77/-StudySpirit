@@ -434,3 +434,113 @@ exports.addJob = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// ──────────────────────────────────────────
+// AI: Analyze Match Score
+// POST /api/career/analyze-match
+// Body: { userSkills, jobTitle, jobDescription, jobTags }
+// ──────────────────────────────────────────
+exports.analyzeMatch = async (req, res) => {
+    try {
+        const { userSkills, jobTitle, jobDescription, jobTags } = req.body;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+
+        if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
+        if (!jobTitle) return res.status(400).json({ message: 'Job details required.' });
+
+        const skillsStr = Array.isArray(userSkills) ? userSkills.join(', ') : (userSkills || 'Not specified');
+        const tagsStr = Array.isArray(jobTags) ? jobTags.join(', ') : (jobTags || '');
+
+        const prompt = `You are an expert tech career coach and recruiter. Analyze how well this candidate matches the job.
+
+CANDIDATE SKILLS: ${skillsStr}
+
+JOB TITLE: ${jobTitle}
+JOB TAGS/REQUIRED SKILLS: ${tagsStr}
+JOB DESCRIPTION: ${(jobDescription || '').substring(0, 600)}
+
+Return ONLY a JSON object like this:
+{
+  "matchScore": <number 0-100>,
+  "verdict": "<one of: 'Strong Match', 'Good Match', 'Fair Match', 'Weak Match'>",
+  "matchedSkills": ["skill1", "skill2"],
+  "missingSkills": ["skill1", "skill2"],
+  "tip": "<one short actionable tip to improve the match, max 15 words>"
+}`;
+
+        const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: 'You are a career advisor. Return ONLY valid JSON, no extra text.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.3,
+                max_tokens: 400,
+                response_format: { type: 'json_object' }
+            })
+        });
+
+        const data = await groqRes.json();
+        const result = JSON.parse(data.choices[0].message.content);
+        res.json({ success: true, result });
+    } catch (err) {
+        console.error('❌ analyzeMatch error:', err);
+        res.status(500).json({ success: false, message: 'AI analysis failed.' });
+    }
+};
+
+// ──────────────────────────────────────────
+// AI: Generate Cover Letter
+// POST /api/career/cover-letter
+// Body: { userName, userSkills, jobTitle, company, jobDescription, jobTags }
+// ──────────────────────────────────────────
+exports.generateCoverLetter = async (req, res) => {
+    try {
+        const { userName, userSkills, jobTitle, company, jobDescription, jobTags } = req.body;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+
+        if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
+        if (!jobTitle || !company) return res.status(400).json({ message: 'Job title and company required.' });
+
+        const skillsStr = Array.isArray(userSkills) ? userSkills.join(', ') : (userSkills || 'various technical skills');
+        const tagsStr = Array.isArray(jobTags) ? jobTags.join(', ') : (jobTags || '');
+
+        const prompt = `Write a compelling, personalized cover letter for the following:
+
+CANDIDATE NAME: ${userName || 'the candidate'}
+CANDIDATE SKILLS: ${skillsStr}
+APPLYING FOR: ${jobTitle} at ${company}
+REQUIRED SKILLS: ${tagsStr}
+JOB DESCRIPTION SNIPPET: ${(jobDescription || '').substring(0, 500)}
+
+Write a professional cover letter (3 short paragraphs, under 250 words). 
+- Opening: Express enthusiasm for the specific role and company.
+- Middle: Connect 2-3 of the candidate's skills to the job requirements with impact.
+- Closing: Strong call to action.
+Do NOT include addresses or dates. Start directly with "Dear Hiring Manager,". Be genuine, concise, and powerful.`;
+
+        const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: 'You are a professional career writer. Write compelling, tailored cover letters.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 600
+            })
+        });
+
+        const data = await groqRes.json();
+        const letter = data.choices[0].message.content.trim();
+        res.json({ success: true, letter });
+    } catch (err) {
+        console.error('❌ generateCoverLetter error:', err);
+        res.status(500).json({ success: false, message: 'Cover letter generation failed.' });
+    }
+};
