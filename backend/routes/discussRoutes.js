@@ -22,6 +22,13 @@ router.post('/posts', isAuthenticated, discussController.createPost);
 router.post('/posts/:id/upvote', isAuthenticated, discussController.toggleUpvote);
 
 // Direct Messages & Users
+router.get('/users/online', isAuthenticated, (req, res) => {
+    try {
+        const onlineUsers = req.app.get('onlineUsers');
+        if (!onlineUsers) return res.json([]);
+        res.json(Array.from(onlineUsers.keys()));
+    } catch (e) { res.json([]); }
+});
 router.get('/users', isAuthenticated, discussController.getUsers);
 router.get('/dms/:userId', isAuthenticated, discussController.getDirectMessages);
 router.post('/dms', isAuthenticated, discussController.sendDirectMessage);

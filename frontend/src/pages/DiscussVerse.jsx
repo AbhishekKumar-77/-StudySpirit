@@ -109,9 +109,20 @@ export default function DiscussVerse() {
         if (socket.connected) announceOnline();
         socket.on('connect', announceOnline);
 
-        // Online users list
+        // Online users list (Socket + Polling fallback for robustness)
         const handleOnlineUsers = (userIds) => setOnlineUserIds(new Set(userIds.map(String)));
         socket.on('users:online', handleOnlineUsers);
+
+        // Fetch online users immediately as fallback
+        discussAPI.getOnlineUsers().then(userIds => {
+            if (userIds && userIds.length > 0) handleOnlineUsers(userIds);
+        });
+
+        const pollingInterval = setInterval(() => {
+            discussAPI.getOnlineUsers().then(userIds => {
+                if (userIds && userIds.length > 0) handleOnlineUsers(userIds);
+            });
+        }, 15000); // sync every 15s to guarantee 'online' statuses
 
         // ──── Real-time DM: receive incoming message ────
         const handleDMReceive = (data) => {
@@ -120,29 +131,44 @@ export default function DiscussVerse() {
             const currentDM = activeDMRef.current;
             if (currentDM && String(currentDM.id) === String(senderId)) {
                 setMessages(prev => {
-                    // Prevent duplicates
                     if (prev.some(m => m._id === msg._id)) return prev;
                     return [...prev, msg];
                 });
             }
-            // Update DM list sidebar — show last message + bump unread + move to top
+            
+            // Update DM list sidebar — show last message + bump unread + move to top!
             setDirectMessages(prev => {
                 const isActive = currentDM && String(currentDM.id) === String(senderId);
-                let senderDM = prev.find(dm => String(dm.id) === String(senderId));
+                const senderDM = prev.find(dm => String(dm.id) === String(senderId));
 
                 if (senderDM) {
-                    senderDM = {
+                    const updatedDM = {
                         ...senderDM,
                         lastMessage: msg.content,
                         timestamp: msg.timestamp || 'Just now',
                         unread: isActive ? 0 : (senderDM.unread || 0) + 1
                     };
                     const others = prev.filter(dm => String(dm.id) !== String(senderId));
-                    return [senderDM, ...others];
+                    return [updatedDM, ...others]; // Move to top
+                } else {
+                    // Create a mock DM entry if someone new messages them
+                    const newDM = {
+                        id: senderId,
+                        user: {
+                            name: senderName,
+                            avatar: data.senderAvatar || '👤',
+                            status: 'online', 
+                            role: 'student',
+                            reputation: 0
+                        },
+                        lastMessage: msg.content,
+                        timestamp: 'Just now',
+                        unread: isActive ? 0 : 1,
+                        connectionStatus: 'none',
+                        connectionCount: 0
+                    };
+                    return [newDM, ...prev];
                 }
-
-                // If the user isn't in our DM list yet, we'll wait for them to be fetched or added 
-                return prev;
             });
         };
         socket.on('dm:receive', handleDMReceive);
@@ -163,6 +189,7 @@ export default function DiscussVerse() {
         socket.on('dm:typing', handleTyping);
 
         return () => {
+            clearInterval(pollingInterval);
             socket.off('connect', announceOnline);
             socket.off('users:online', handleOnlineUsers);
             socket.off('dm:receive', handleDMReceive);

@@ -86,6 +86,16 @@ export const getUsers = async () => {
     }
 };
 
+export const getOnlineUsers = async () => {
+    try {
+        const response = await api.get('/users/online');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching online users:', error);
+        return [];
+    }
+};
+
 export const getComments = async (postId) => {
     try {
         const response = await api.get(`/posts/${postId}/comments`);

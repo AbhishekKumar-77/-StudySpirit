@@ -18,6 +18,7 @@ export const connectSocket = () => {
     if (!socket) {
         socket = io(API_URL, {
             withCredentials: true,
+            transports: ['websocket'], // Force WebSocket (fixes Render/Vercel polling drops)
             reconnection: true,
             reconnectionAttempts: 10,
             reconnectionDelay: 1000,
