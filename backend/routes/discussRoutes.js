@@ -36,4 +36,12 @@ router.post('/connections/reject', isAuthenticated, discussController.rejectConn
 router.get('/posts/:postId/comments', discussController.getComments);
 router.post('/posts/:postId/comments', isAuthenticated, discussController.postComment);
 
+// Additional post actions
+router.post('/posts/:id/downvote', isAuthenticated, discussController.toggleDownvote);
+router.patch('/posts/:id/solve', isAuthenticated, discussController.markSolved);
+router.post('/posts/:id/ai-answer', isAuthenticated, discussController.aiAnswer);
+
+// Clear channel (authenticated — can add role check later)
+router.delete('/channels/:channelId/clear', isAuthenticated, discussController.clearChannel);
+
 module.exports = router;

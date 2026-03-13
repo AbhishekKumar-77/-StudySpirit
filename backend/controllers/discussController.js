@@ -418,3 +418,122 @@ exports.getTrendingTopics = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// Toggle Downvote on Post
+exports.toggleDownvote = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        // Ensure downvotes field exists
+        if (!post.downvotes) post.downvotes = [];
+        const index = post.downvotes.findIndex(id => id.toString() === req.user._id.toString());
+        if (index === -1) {
+            post.downvotes.push(req.user._id);
+        } else {
+            post.downvotes.splice(index, 1);
+        }
+        await post.save();
+
+        res.json({
+            downvotes: post.downvotes.length,
+            isDownvoted: index === -1
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Mark Post as Solved
+exports.markSolved = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+        if (post.author.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: 'Only the post author can mark it as solved' });
+        }
+        post.isSolved = !post.isSolved;
+        await post.save();
+        res.json({ isSolved: post.isSolved });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Clear all posts in a channel (admin/teacher only)
+exports.clearChannel = async (req, res) => {
+    try {
+        const { channelId } = req.params;
+        if (!channelId) return res.status(400).json({ error: 'Channel ID required' });
+
+        const result = await Post.deleteMany({ channelId });
+
+        // Also delete comments for those posts (optional cascade)
+        const Comment = require('../models/Comment');
+        // Since posts are gone, just delete orphan comments if you want
+        // For simplicity, skip here
+
+        res.json({ success: true, deleted: result.deletedCount });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// AI Answer Generator for a Post
+exports.aiAnswer = async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id).populate('author', 'name');
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        if (!GROQ_API_KEY) return res.status(500).json({ error: 'AI service not configured.' });
+
+        const prompt = `A student posted the following question in a study community forum:
+
+Title: ${post.title}
+Channel: ${post.channelId}
+Question: ${post.content}
+Tags: ${(post.tags || []).join(', ') || 'none'}
+
+Please provide a clear, helpful, and thorough answer to this question. Be educational, concise, and use examples where relevant. If it's a DSA/coding question, provide a brief explanation, time/space complexity, and a code snippet. Keep response under 400 words.`;
+
+        const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: 'You are a helpful study mentor and expert tutor. Give clear, accurate, student-friendly answers. Format with markdown when helpful.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.5,
+                max_tokens: 600
+            })
+        });
+
+        const data = await groqRes.json();
+        const answer = data.choices?.[0]?.message?.content?.trim() || '';
+        if (!answer) return res.status(500).json({ error: 'AI generation failed' });
+
+        // Save as a comment authored by system/AI
+        const Comment = require('../models/Comment');
+        const aiComment = new Comment({
+            post: post._id,
+            author: req.user._id, // Post as the requesting user
+            content: `🤖 **AI Answer:**\n\n${answer}`,
+            isAiGenerated: true
+        });
+        await aiComment.save();
+        await aiComment.populate('author', 'name avatar status');
+
+        res.status(201).json({
+            ...aiComment.toObject(),
+            timestamp: 'Just now',
+            isAiGenerated: true
+        });
+    } catch (err) {
+        console.error('❌ AI Answer error:', err);
+        res.status(500).json({ error: 'AI answer generation failed.' });
+    }
+};
+

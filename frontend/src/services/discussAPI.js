@@ -165,3 +165,39 @@ export const getNetwork = async () => {
         throw error;
     }
 };
+
+export const toggleDownvote = async (postId) => {
+    try {
+        const response = await api.post(`/posts/${postId}/downvote`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const markSolved = async (postId) => {
+    try {
+        const response = await api.patch(`/posts/${postId}/solve`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const aiAnswer = async (postId) => {
+    try {
+        const response = await api.post(`/posts/${postId}/ai-answer`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const clearChannel = async (channelId) => {
+    try {
+        const response = await api.delete(`/channels/${channelId}/clear`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

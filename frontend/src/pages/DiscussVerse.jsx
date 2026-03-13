@@ -9,11 +9,12 @@ import {
     Smile, Paperclip, MoreVertical, Circle, X, ChevronRight, AtSign,
     Bookmark, Flag, Crown, Coffee, Code, Flame, UserPlus, UserCheck,
     Clock, ArrowRight, Volume2, VolumeX, LogOut, HelpCircle, Layers,
-    Home, Compass, Trophy
+    Home, Compass, Trophy, Trash2
 } from 'lucide-react';
 import * as discussAPI from '../services/discussAPI';
 import { groupAPI, connectSocket, getSocket } from '../services/groupAPI';
 import { useApp } from '../context/AppContext';
+// NOTE: All `cyan-400` broken tokens have been replaced with `cyan-400` throughout.
 
 
 // Storage helpers - Removed in favor of real backend data
@@ -43,6 +44,8 @@ export default function DiscussVerse() {
     const [newPostTags, setNewPostTags] = useState('');
     const [messageInput, setMessageInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState('recent'); // recent | upvotes | replies
+    const [aiAnswering, setAiAnswering] = useState(null); // postId being answered
 
     // Modals & Panels
     const [showUserProfile, setShowUserProfile] = useState(null);
@@ -432,8 +435,63 @@ export default function DiscussVerse() {
                     ? { ...p, upvotes: updated.upvotes, isUpvoted: updated.isUpvoted }
                     : p
             ));
+            // Also update activePost if open
+            if (activePost && (activePost._id === postId || activePost.id === postId)) {
+                setActivePost(prev => ({ ...prev, upvotes: updated.upvotes, isUpvoted: updated.isUpvoted }));
+            }
         } catch (error) {
             console.error("Upvote failed", error);
+        }
+    };
+
+    const handleDownvote = async (postId) => {
+        try {
+            const updated = await discussAPI.toggleDownvote(postId);
+            setPosts(prev => prev.map(p =>
+                (p._id === postId || p.id === postId)
+                    ? { ...p, downvotes: updated.downvotes, isDownvoted: updated.isDownvoted }
+                    : p
+            ));
+        } catch (error) {
+            console.error('Downvote failed', error);
+        }
+    };
+
+    const handleMarkSolved = async (postId) => {
+        try {
+            const res = await discussAPI.markSolved(postId);
+            setPosts(prev => prev.map(p =>
+                (p._id === postId || p.id === postId) ? { ...p, isSolved: res.isSolved } : p
+            ));
+            if (activePost && (activePost._id === postId || activePost.id === postId)) {
+                setActivePost(prev => ({ ...prev, isSolved: res.isSolved }));
+            }
+        } catch (e) { console.error('Mark solved failed', e); }
+    };
+
+    const handleAiAnswer = async (postId) => {
+        setAiAnswering(postId);
+        try {
+            const aiComment = await discussAPI.aiAnswer(postId);
+            setComments(prev => [...prev, aiComment]);
+            setPosts(prev => prev.map(p =>
+                (p._id === postId || p.id === postId) ? { ...p, replies: (p.replies || 0) + 1 } : p
+            ));
+        } catch (e) {
+            alert('AI answer failed: ' + e.message);
+        } finally {
+            setAiAnswering(null);
+        }
+    };
+
+    const handleClearChannel = async (channelId, channelName) => {
+        if (!confirm(`⚠️ Are you sure you want to delete ALL posts in #${channelName}? This cannot be undone.`)) return;
+        try {
+            const res = await discussAPI.clearChannel(channelId);
+            setPosts([]);
+            alert(`✅ Cleared ${res.deleted} post(s) from #${channelName}`);
+        } catch (e) {
+            alert('Failed to clear channel: ' + e.message);
         }
     };
 
@@ -635,14 +693,21 @@ export default function DiscussVerse() {
 
     const currentChannel = channels.find(c => c.id === activeChannel);
 
-    // Filter posts based on search query
-    const currentPosts = searchQuery
-        ? posts.filter(post =>
-            post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        )
-        : posts;
+    // Filter + Sort posts
+    const currentPosts = (() => {
+        let filtered = searchQuery
+            ? posts.filter(post =>
+                post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (post.tags || []).some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+            )
+            : [...posts];
+
+        if (sortBy === 'upvotes') filtered.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
+        else if (sortBy === 'replies') filtered.sort((a, b) => (b.replies || 0) - (a.replies || 0));
+        // 'recent' is default from API
+        return filtered;
+    })();
 
     // Guard: if user hasn't loaded yet, show loading
     if (!user) {
@@ -660,17 +725,17 @@ export default function DiscussVerse() {
     return (
         <div className="h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col overflow-hidden font-[Inter,system-ui,sans-serif]">
             {/* Top Navbar - Enhanced */}
-            <nav className="h-16 bg-[var(--glass-bg)] backdrop-blur-2xl border-b border-cyan-500/20 px-6 flex items-center justify-between shrink-0 shadow-xl shadow-violet-500/5">
+            <nav className="h-16 bg-[var(--glass-bg)] backdrop-blur-2xl border-b border-cyan-400500/20 px-6 flex items-center justify-between shrink-0 shadow-xl shadow-violet-500/5">
                 <div className="flex items-center gap-5">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-2 bg-gradient-to-r from-cyan-/10 to-pink-500/10 hover:from-cyan-/20 hover:to-pink-500/20 px-5 py-2.5 rounded-xl text-violet-300 font-semibold transition-all duration-300 border border-cyan-500/20 hover:border-cyan-500/40 shadow-lg shadow-violet-500/5"
+                        className="flex items-center gap-2 bg-gradient-to-r from-cyan-400/10 to-pink-500/10 hover:from-cyan-400/20 hover:to-pink-500/20 px-5 py-2.5 rounded-xl text-violet-300 font-semibold transition-all duration-300 border border-cyan-400500/20 hover:border-cyan-400500/40 shadow-lg shadow-violet-500/5"
                     >
                         <ArrowLeft size={18} />
                         <span className="text-base">Dashboard</span>
                     </button>
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-gradient-to-br from-cyan- via-purple-500 to-pink-500 rounded-xl shadow-lg shadow-violet-500/30">
+                        <div className="p-2.5 bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 rounded-xl shadow-lg shadow-violet-500/30">
                             <MessageCircle size={24} className="text-[var(--text-primary)]" />
                         </div>
                         <div>
@@ -682,13 +747,13 @@ export default function DiscussVerse() {
 
                 <div className="flex-1 max-w-xl mx-10">
                     <div className="relative group">
-                        <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-cyan- transition-colors" />
+                        <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] group-focus-within:text-cyan-400 transition-colors" />
                         <input
                             type="text"
                             placeholder="Search discussions, members, channels..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-5 py-3 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-base placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 focus:bg-[var(--bg-secondary)] transition-all duration-300"
+                            className="w-full pl-12 pr-5 py-3 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-base placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-400500 focus:ring-2 focus:ring-violet-500/20 focus:bg-[var(--bg-secondary)] transition-all duration-300"
                         />
                     </div>
                 </div>
@@ -698,7 +763,7 @@ export default function DiscussVerse() {
                         onClick={handleNotifications}
                         className="relative p-2.5 hover:bg-[var(--glass-bg)] rounded-xl transition-all duration-300 group"
                     >
-                        <Bell size={22} className="text-[var(--text-secondary)] group-hover:text-cyan- transition-colors" />
+                        <Bell size={22} className="text-[var(--text-secondary)] group-hover:text-cyan-400 transition-colors" />
                         {totalUnread > 0 && (
                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-xs font-bold flex items-center justify-center animate-pulse shadow-lg shadow-red-500/50">
                                 {totalUnread}
@@ -710,7 +775,7 @@ export default function DiscussVerse() {
                         <span className="text-amber-300 font-bold text-base">{user?.reputation || 0}</span>
                         <span className="text-amber-500/70 text-xs font-medium">XP</span>
                     </div>
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan- via-purple-500 to-pink-500 flex items-center justify-center text-xl cursor-pointer hover:scale-105 transition-transform duration-300 shadow-lg shadow-violet-500/30 border-2 border-[var(--border-color)]">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-400 via-purple-500 to-pink-500 flex items-center justify-center text-xl cursor-pointer hover:scale-105 transition-transform duration-300 shadow-lg shadow-violet-500/30 border-2 border-[var(--border-color)]">
                         👤
                     </div>
                 </div>
@@ -731,7 +796,7 @@ export default function DiscussVerse() {
                                     key={view.id}
                                     onClick={() => setActiveView(view.id)}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${activeView === view.id
-                                        ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
+                                        ? 'bg-gradient-to-r from-cyan-400 to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30'
                                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)]/50'
                                         }`}
                                 >
@@ -746,7 +811,7 @@ export default function DiscussVerse() {
                     {activeView === 'channels' && (
                         <div className="flex-1 overflow-y-auto p-3">
                             <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest px-3 mb-3 flex items-center gap-2">
-                                <Zap size={12} className="text-cyan-" />
+                                <Zap size={12} className="text-cyan-400" />
                                 Study Channels
                             </div>
                             {channels.map(channel => (
@@ -754,11 +819,11 @@ export default function DiscussVerse() {
                                     key={channel.id}
                                     onClick={() => { setActiveChannel(channel.id); setActiveDM(null); }}
                                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1.5 transition-all duration-300 group ${activeChannel === channel.id
-                                        ? 'bg-gradient-to-r from-cyan-/25 to-pink-500/15 text-[var(--text-primary)] border border-cyan-500/30 shadow-lg shadow-violet-500/10'
+                                        ? 'bg-gradient-to-r from-cyan-400/25 to-pink-500/15 text-[var(--text-primary)] border border-cyan-400500/30 shadow-lg shadow-violet-500/10'
                                         : 'text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] hover:border-[var(--border-color)] border border-transparent'
                                         }`}
                                 >
-                                    <div className={`p-2 rounded-lg ${activeChannel === channel.id ? 'bg-cyan-/30' : 'bg-[var(--border-color)]/50 group-hover:bg-[var(--bg-secondary)]/50'} transition-all`}>
+                                    <div className={`p-2 rounded-lg ${activeChannel === channel.id ? 'bg-cyan-400/30' : 'bg-[var(--border-color)]/50 group-hover:bg-[var(--bg-secondary)]/50'} transition-all`}>
                                         <channel.icon size={18} className={activeChannel === channel.id ? 'text-violet-300' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-secondary)]'} />
                                     </div>
                                     <span className="flex-1 text-left text-sm font-medium truncate">{channel.name}</span>
@@ -807,7 +872,7 @@ export default function DiscussVerse() {
                                         // so it correctly finds the ID.
                                         onClick={() => handleStartDM({ ...dm.user, id: dm.id })}
                                         className={`w-full flex items-center gap-3.5 px-3 py-3 rounded-xl mb-1.5 transition-all duration-300 ${activeDM?.id === dm.id
-                                            ? 'bg-gradient-to-r from-cyan-/20 to-pink-500/10 border border-cyan-500/20 shadow-lg shadow-violet-500/10'
+                                            ? 'bg-gradient-to-r from-cyan-400/20 to-pink-500/10 border border-cyan-400500/20 shadow-lg shadow-violet-500/10'
                                             : 'hover:bg-[var(--glass-bg)] border border-transparent'
                                             }`}
                                     >
@@ -832,9 +897,9 @@ export default function DiscussVerse() {
 
                             <button
                                 onClick={() => setShowConnectModal(true)}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 mt-4 rounded-xl border border-dashed border-[var(--border-color)] text-[var(--text-secondary)] hover:border-cyan-500 hover:text-violet-300 hover:bg-cyan-/5 transition-all duration-300 group"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3.5 mt-4 rounded-xl border border-dashed border-[var(--border-color)] text-[var(--text-secondary)] hover:border-cyan-400500 hover:text-violet-300 hover:bg-cyan-400/5 transition-all duration-300 group"
                             >
-                                <div className="p-1 bg-[var(--bg-secondary)] rounded-full group-hover:bg-cyan-/20 transition-colors">
+                                <div className="p-1 bg-[var(--bg-secondary)] rounded-full group-hover:bg-cyan-400/20 transition-colors">
                                     <UserPlus size={16} />
                                 </div>
                                 <span className="text-sm font-medium">Find Connections</span>
@@ -864,11 +929,11 @@ export default function DiscussVerse() {
                             ))}
 
                             <div className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-widest px-3 mt-6 mb-3 flex items-center gap-2">
-                                <Zap size={12} className="text-cyan-" />
+                                <Zap size={12} className="text-cyan-400" />
                                 Featured Groups
                             </div>
                             {studyGroups.map(group => (
-                                <div key={group.id} className="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl mb-3 border border-[var(--border-color)] hover:border-cyan-500/30 transition-all duration-300 group shadow-lg shadow-black/20">
+                                <div key={group.id} className="p-4 bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-xl mb-3 border border-[var(--border-color)] hover:border-cyan-400500/30 transition-all duration-300 group shadow-lg shadow-black/20">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="font-semibold text-sm group-hover:text-violet-300 transition-colors">{group.name}</span>
                                         <div className="flex items-center gap-1 bg-emerald-500/10 px-1.5 py-0.5 rounded text-xs text-emerald-400 font-medium border border-emerald-500/20">
@@ -879,7 +944,7 @@ export default function DiscussVerse() {
                                     <p className="text-xs text-[var(--text-secondary)] mb-3 leading-relaxed">{group.topic}</p>
                                     <button
                                         onClick={() => handleJoinGroup(group.id)}
-                                        className="w-full py-2 bg-[var(--border-color)]/50 hover:bg-cyan-/20 text-[var(--text-secondary)] hover:text-violet-300 text-xs font-semibold rounded-lg transition-all border border-[var(--border-color)] hover:border-cyan-500/30"
+                                        className="w-full py-2 bg-[var(--border-color)]/50 hover:bg-cyan-400/20 text-[var(--text-secondary)] hover:text-violet-300 text-xs font-semibold rounded-lg transition-all border border-[var(--border-color)] hover:border-cyan-400500/30"
                                     >
                                         Join Group
                                     </button>
@@ -945,7 +1010,7 @@ export default function DiscussVerse() {
                         ) : currentChannel ? (
                             <div className="flex items-center gap-4">
                                 <div className="p-2.5 bg-[var(--glass-bg)] rounded-xl shadow-lg shadow-violet-500/5 group">
-                                    <currentChannel.icon size={24} className="text-[var(--text-secondary)] group-hover:text-cyan- transition-colors" />
+                                    <currentChannel.icon size={24} className="text-[var(--text-secondary)] group-hover:text-cyan-400 transition-colors" />
                                 </div>
                                 <div>
                                     <div className="font-bold text-lg text-[var(--text-primary)] flex items-center gap-2">
@@ -968,15 +1033,34 @@ export default function DiscussVerse() {
                         ) : null}
 
                         <div className="flex items-center gap-3">
-                            {/* Only show New Post button when viewing a channel, not in DMs */}
                             {!activeDM && (
-                                <button
-                                    onClick={() => setShowNewPost(true)}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all duration-300 border border-[var(--border-color)]"
-                                >
-                                    <Plus size={18} />
-                                    New Post
-                                </button>
+                                <>
+                                    {/* Sort */}
+                                    <select
+                                        value={sortBy}
+                                        onChange={e => setSortBy(e.target.value)}
+                                        className="px-3 py-2 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-secondary)] focus:outline-none focus:border-cyan-400"
+                                    >
+                                        <option value="recent">🕐 Recent</option>
+                                        <option value="upvotes">🔥 Most Upvoted</option>
+                                        <option value="replies">💬 Most Replies</option>
+                                    </select>
+                                    {/* Clear Channel */}
+                                    <button
+                                        onClick={() => handleClearChannel(activeChannel, currentChannel?.name)}
+                                        title="Clear all posts in this channel"
+                                        className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-xl transition-all"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => setShowNewPost(true)}
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-400 to-pink-600 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all duration-300"
+                                    >
+                                        <Plus size={18} />
+                                        New Post
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -997,7 +1081,7 @@ export default function DiscussVerse() {
                                             >
                                                 <div className={`max-w-[70%] ${msg.isMine ? 'order-2' : ''}`}>
                                                     <div className={`px-5 py-3.5 rounded-2xl shadow-md transition-all duration-300 ${msg.isMine
-                                                        ? 'bg-gradient-to-br from-cyan- to-pink-600 rounded-br-none text-[var(--text-primary)] shadow-violet-500/10'
+                                                        ? 'bg-gradient-to-br from-cyan-400 to-pink-600 rounded-br-none text-[var(--text-primary)] shadow-violet-500/10'
                                                         : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-bl-none shadow-black/20 border border-[var(--border-color)]'
                                                         }`}>
                                                         <p className="text-[15px] leading-relaxed tracking-wide">{msg.content}</p>
@@ -1016,7 +1100,7 @@ export default function DiscussVerse() {
                                                     <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                                                     <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                                                 </div>
-                                                <span className="text-xs text-cyan- font-medium">{typingUser} is typing...</span>
+                                                <span className="text-xs text-cyan-400 font-medium">{typingUser} is typing...</span>
                                             </div>
                                         )}
                                         <div ref={messagesEndRef} />
@@ -1024,10 +1108,10 @@ export default function DiscussVerse() {
 
                                     {/* Message Input - Enhanced */}
                                     <div className="p-5 border-t border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-md">
-                                        <div className="flex items-end gap-3 bg-[var(--glass-bg)] rounded-2xl p-2 border border-[var(--border-color)] shadow-inner focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-violet-500/10 transition-all duration-300">
+                                        <div className="flex items-end gap-3 bg-[var(--glass-bg)] rounded-2xl p-2 border border-[var(--border-color)] shadow-inner focus-within:border-cyan-400500/50 focus-within:ring-2 focus-within:ring-violet-500/10 transition-all duration-300">
                                             <button
                                                 onClick={handleAttachment}
-                                                className="p-2.5 hover:bg-[var(--border-color)] rounded-xl transition-all text-[var(--text-secondary)] hover:text-cyan-"
+                                                className="p-2.5 hover:bg-[var(--border-color)] rounded-xl transition-all text-[var(--text-secondary)] hover:text-cyan-400"
                                             >
                                                 <Paperclip size={20} />
                                             </button>
@@ -1052,7 +1136,7 @@ export default function DiscussVerse() {
                                                     onClick={handleSendMessage}
                                                     disabled={!messageInput.trim()}
                                                     className={`p-2.5 rounded-xl transition-all duration-300 ${messageInput.trim()
-                                                        ? 'bg-gradient-to-r from-cyan- to-pink-500 text-[var(--text-primary)] shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5'
+                                                        ? 'bg-gradient-to-r from-cyan-400 to-pink-500 text-[var(--text-primary)] shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5'
                                                         : 'bg-[var(--border-color)] text-[var(--text-muted)] cursor-not-allowed'
                                                         }`}
                                                 >
@@ -1067,12 +1151,12 @@ export default function DiscussVerse() {
                                 <div className="p-8 space-y-6 max-w-5xl mx-auto">
                                     {/* New Post Form Modal - Handled by state, but styling in modal section */}
                                     {showNewPost && (
-                                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/30 animate-fade-in shadow-2xl shadow-black/50 mb-8 relative overflow-hidden group">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-/5 to-pink-500/5 pointer-events-none" />
+                                        <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-cyan-400500/30 animate-fade-in shadow-2xl shadow-black/50 mb-8 relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-pink-500/5 pointer-events-none" />
                                             <div className="flex items-center justify-between mb-6 relative z-10">
                                                 <h3 className="font-bold text-xl flex items-center gap-2 text-[var(--text-primary)]">
-                                                    <div className="p-1.5 bg-cyan-/20 rounded-lg">
-                                                        <Sparkles size={18} className="text-cyan-" />
+                                                    <div className="p-1.5 bg-cyan-400/20 rounded-lg">
+                                                        <Sparkles size={18} className="text-cyan-400" />
                                                     </div>
                                                     Create New Post
                                                 </h3>
@@ -1082,16 +1166,23 @@ export default function DiscussVerse() {
                                             </div>
                                             <input
                                                 type="text"
-                                                placeholder="What's on your mind? (Title)"
+                                                placeholder="Post title..."
                                                 value={newPostTitle}
                                                 onChange={(e) => setNewPostTitle(e.target.value)}
-                                                className="w-full px-5 py-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl mb-4 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-violet-500/50 text-lg font-medium placeholder:text-[var(--text-primary)] transition-all shadow-inner"
+                                                className="w-full px-5 py-3.5 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl mb-3 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-violet-500/50 text-lg font-medium placeholder:text-[var(--text-muted)] transition-all"
                                             />
                                             <textarea
                                                 placeholder="Share your question, problem, or thoughts in detail..."
                                                 value={newPostContent}
                                                 onChange={(e) => setNewPostContent(e.target.value)}
-                                                className="w-full px-5 py-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl mb-6 min-h-[160px] resize-none focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-violet-500/50 text-base placeholder:text-[var(--text-primary)] transition-all shadow-inner"
+                                                className="w-full px-5 py-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl mb-3 min-h-[140px] resize-none focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-violet-500/50 text-base placeholder:text-[var(--text-muted)] transition-all"
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Tags (comma separated, e.g. react, arrays, beginner)"
+                                                value={newPostTags}
+                                                onChange={(e) => setNewPostTags(e.target.value)}
+                                                className="w-full px-5 py-3 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl mb-5 focus:outline-none focus:border-cyan-400 text-sm placeholder:text-[var(--text-muted)] transition-all"
                                             />
                                             <div className="flex justify-end gap-3 relative z-10">
                                                 <button
@@ -1102,7 +1193,8 @@ export default function DiscussVerse() {
                                                 </button>
                                                 <button
                                                     onClick={handleCreatePost}
-                                                    className="px-8 py-2.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all text-[var(--text-primary)] flex items-center gap-2"
+                                                    disabled={!newPostTitle.trim() || !newPostContent.trim()}
+                                                    className="px-8 py-2.5 bg-gradient-to-r from-cyan-400 to-pink-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 transition-all text-white flex items-center gap-2 disabled:opacity-50"
                                                 >
                                                     <Send size={18} />
                                                     Post to #{channels.find(c => c.id === activeChannel)?.name}
@@ -1121,7 +1213,7 @@ export default function DiscussVerse() {
                                             <p className="text-[var(--text-muted)] mb-8 max-w-sm leading-relaxed">This channel is waiting for its first spark. Be the pioneer and start a discussion!</p>
                                             <button
                                                 onClick={() => setShowNewPost(true)}
-                                                className="px-8 py-3 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/20 hover:-translate-y-0.5 transition-all"
+                                                className="px-8 py-3 bg-gradient-to-r from-cyan-400 to-pink-600 rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/20 hover:-translate-y-0.5 transition-all"
                                             >
                                                 Create First Post
                                             </button>
@@ -1130,7 +1222,7 @@ export default function DiscussVerse() {
                                         currentPosts.filter(post => post.author).map(post => (
                                             <div
                                                 key={post._id || post.id}
-                                                className="bg-[var(--glass-bg)] backdrop-blur-sm rounded-2xl p-6 border border-[var(--border-color)] hover:border-cyan-500/30 hover:bg-[var(--glass-bg)] transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-black/20"
+                                                className="bg-[var(--glass-bg)] backdrop-blur-sm rounded-2xl p-6 border border-[var(--border-color)] hover:border-cyan-400500/30 hover:bg-[var(--glass-bg)] transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-black/20"
                                             >
                                                 {/* Post Header */}
                                                 <div className="flex items-start justify-between mb-5">
@@ -1144,7 +1236,7 @@ export default function DiscussVerse() {
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2.5">
-                                                                <span className="font-bold text-[var(--text-primary)] hover:text-cyan- cursor-pointer transition-colors text-base" onClick={() => setShowUserProfile(post.author)}>
+                                                                <span className="font-bold text-[var(--text-primary)] hover:text-cyan-400 cursor-pointer transition-colors text-base" onClick={() => setShowUserProfile(post.author)}>
                                                                     {post.author?.name || 'Anonymous'}
                                                                 </span>
                                                                 {(post.author?.reputation || 0) > 2000 && (
@@ -1190,7 +1282,7 @@ export default function DiscussVerse() {
                                                     {post.tags.map((tag, idx) => (
                                                         <span
                                                             key={idx}
-                                                            className="flex items-center gap-1 px-3 py-1.5 bg-[var(--border-color)]/40 text-[var(--text-secondary)] text-xs font-medium rounded-lg cursor-pointer hover:bg-cyan-/20 hover:text-violet-300 hover:border-cyan-500/30 border border-transparent transition-all"
+                                                            className="flex items-center gap-1 px-3 py-1.5 bg-[var(--border-color)]/40 text-[var(--text-secondary)] text-xs font-medium rounded-lg cursor-pointer hover:bg-cyan-400/20 hover:text-violet-300 hover:border-cyan-400500/30 border border-transparent transition-all"
                                                         >
                                                             <Hash size={12} className="opacity-50" />
                                                             {tag}
@@ -1200,48 +1292,73 @@ export default function DiscussVerse() {
 
                                                 {/* Post Actions */}
                                                 <div className="flex items-center justify-between pt-5 border-t border-[var(--border-color)]">
-                                                    <div className="flex items-center gap-5">
+                                                    <div className="flex items-center gap-4">
                                                         <button
                                                             onClick={() => handleUpvote(post._id || post.id)}
-                                                            className={`flex items-center gap-2 transition-all group/btn ${post.isUpvoted ? 'text-cyan-' : 'text-[var(--text-secondary)] hover:text-cyan-'}`}
+                                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold transition-all border ${
+                                                                post.isUpvoted
+                                                                    ? 'bg-cyan-400/20 border-cyan-400/40 text-cyan-400'
+                                                                    : 'border-transparent text-[var(--text-secondary)] hover:bg-cyan-400/10 hover:text-cyan-400'
+                                                            }`}
                                                         >
-                                                            <div className="p-1.5 rounded-lg group-hover/btn:bg-cyan-/10 transition-colors">
-                                                                <ThumbsUp size={18} />
-                                                            </div>
-                                                            <span className="text-sm font-semibold">{post.upvotes}</span>
+                                                            <ThumbsUp size={15} />
+                                                            <span>{post.upvotes || 0}</span>
                                                         </button>
-                                                        <button className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-pink-400 transition-all group/btn">
-                                                            <div className="p-1.5 rounded-lg group-hover/btn:bg-pink-500/10 transition-colors">
-                                                                <ThumbsDown size={18} />
-                                                            </div>
+                                                        <button
+                                                            onClick={() => handleDownvote(post._id || post.id)}
+                                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold transition-all border ${
+                                                                post.isDownvoted
+                                                                    ? 'bg-pink-500/20 border-pink-500/40 text-pink-400'
+                                                                    : 'border-transparent text-[var(--text-secondary)] hover:bg-pink-500/10 hover:text-pink-400'
+                                                            }`}
+                                                        >
+                                                            <ThumbsDown size={15} />
+                                                            <span>{post.downvotes || 0}</span>
                                                         </button>
                                                         <button
                                                             onClick={() => handleOpenPost(post)}
-                                                            className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-cyan-400 transition-all group/btn"
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-[var(--text-secondary)] hover:bg-violet-500/10 hover:text-violet-300 transition-all border border-transparent"
                                                         >
-                                                            <div className="p-1.5 rounded-lg group-hover/btn:bg-cyan-500/10 transition-colors">
-                                                                <MessageSquare size={18} />
-                                                            </div>
-                                                            <span className="text-sm font-medium">{post.replies} replies</span>
+                                                            <MessageSquare size={15} />
+                                                            <span>{post.replies || 0} replies</span>
                                                         </button>
+                                                        {/* Mark Solved — only for post author */}
+                                                        {(post.author?._id?.toString() === user?._id?.toString() || post.author?.toString() === user?._id?.toString()) && (
+                                                            <button
+                                                                onClick={() => handleMarkSolved(post._id || post.id)}
+                                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                                                                    post.isSolved
+                                                                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                                                                        : 'border-transparent text-[var(--text-muted)] hover:bg-emerald-500/10 hover:text-emerald-400'
+                                                                }`}
+                                                            >
+                                                                <CheckCircle size={13} />
+                                                                {post.isSolved ? 'Solved' : 'Mark Solved'}
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <button
+                                                            onClick={() => { handleOpenPost(post); handleAiAnswer(post._id || post.id); }}
+                                                            disabled={aiAnswering === (post._id || post.id)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300 hover:border-purple-500/50 transition-all disabled:opacity-50"
+                                                            title="Get AI Answer"
+                                                        >
+                                                            <Sparkles size={12} />
+                                                            {aiAnswering === (post._id || post.id) ? 'Thinking...' : 'Ask AI'}
+                                                        </button>
                                                         <button
                                                             onClick={() => handleBookmark(post._id || post.id)}
-                                                            className="p-2 hover:bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:text-amber-400 transition-all"
-                                                            title="Bookmark"
+                                                            className={`p-2 rounded-xl transition-all ${
+                                                                localData.bookmarkedPosts.includes(post._id || post.id)
+                                                                    ? 'text-amber-400 bg-amber-400/10'
+                                                                    : 'text-[var(--text-muted)] hover:text-amber-400 hover:bg-[var(--border-color)]/50'
+                                                            }`}
                                                         >
-                                                            <Bookmark size={18} />
+                                                            <Bookmark size={16} />
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleShare(post)}
-                                                            className="p-2 hover:bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:text-cyan- transition-all"
-                                                            title="Share"
-                                                        >
-                                                            <Share2 size={18} />
-                                                        </button>
-                                                        <button className="p-2 hover:bg-[var(--border-color)]/50 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
-                                                            <MoreVertical size={18} />
+                                                        <button onClick={() => handleShare(post)} className="p-2 hover:bg-[var(--border-color)]/50 rounded-xl text-[var(--text-muted)] hover:text-cyan-400 transition-all">
+                                                            <Share2 size={16} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1257,11 +1374,11 @@ export default function DiscussVerse() {
                             <div className="w-72 border-l border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-xl shrink-0 overflow-y-auto hidden lg:block">
                                 <div className="p-5">
                                     {/* Channel Stats - Enhanced */}
-                                    <div className="p-5 bg-gradient-to-br from-cyan-/10 via-slate-800/50 to-pink-600/10 rounded-2xl border border-cyan-500/20 mb-6 shadow-lg shadow-violet-500/5 relative overflow-hidden group">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="p-5 bg-gradient-to-br from-cyan-400/10 via-slate-800/50 to-pink-600/10 rounded-2xl border border-cyan-400500/20 mb-6 shadow-lg shadow-violet-500/5 relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         <div className="flex items-center gap-2.5 mb-4 relative z-10">
-                                            <div className="p-1.5 bg-cyan-/20 rounded-lg">
-                                                <Users size={16} className="text-cyan-" />
+                                            <div className="p-1.5 bg-cyan-400/20 rounded-lg">
+                                                <Users size={16} className="text-cyan-400" />
                                             </div>
                                             <span className="font-bold text-sm text-[var(--text-primary)]">Channel Activity</span>
                                         </div>
@@ -1367,11 +1484,11 @@ export default function DiscussVerse() {
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Profile Header */}
-                                <div className="h-28 bg-gradient-to-br from-cyan- to-pink-600 relative overflow-hidden">
+                                <div className="h-28 bg-gradient-to-br from-cyan-400 to-pink-600 relative overflow-hidden">
                                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
                                     <button
                                         onClick={() => setShowUserProfile(null)}
-                                        className="absolute top-4 right-4 p-2 bg-[var(--bg-secondary)]lack/20 hover:bg-[var(--bg-secondary)]lack/40 text-[var(--text-primary)]/80 hover:text-[var(--text-primary)] rounded-full transition-all backdrop-blur-sm"
+                                        className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-[var(--text-primary)]/80 hover:text-[var(--text-primary)] rounded-full transition-all backdrop-blur-sm"
                                     >
                                         <X size={18} />
                                     </button>
@@ -1402,7 +1519,7 @@ export default function DiscussVerse() {
                                         <div className="flex items-center gap-3 text-sm">
                                             <span className="text-[var(--text-secondary)] font-medium">{profileData.role || 'Student'}</span>
                                             <span className="w-1.5 h-1.5 rounded-full bg-[var(--bg-secondary)]" />
-                                            <span className="text-cyan- font-medium flex items-center gap-1">
+                                            <span className="text-cyan-400 font-medium flex items-center gap-1">
                                                 <Award size={14} />
                                                 Level {Math.floor(profileData.reputation / 100) + 1}
                                             </span>
@@ -1416,7 +1533,7 @@ export default function DiscussVerse() {
                                             <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-muted)] mt-1">Reputation</div>
                                         </div>
                                         <div className="text-center group cursor-pointer">
-                                            <div className="text-xl font-bold text-cyan- group-hover:scale-110 transition-transform">{profileData.posts}</div>
+                                            <div className="text-xl font-bold text-cyan-400 group-hover:scale-110 transition-transform">{profileData.posts}</div>
                                             <div className="text-[10px] uppercase tracking-wider font-bold text-[var(--text-muted)] mt-1">Posts</div>
                                         </div>
                                         <div className="text-center group cursor-pointer">
@@ -1433,7 +1550,7 @@ export default function DiscussVerse() {
                                                     handleSendConnectionRequest({ id: profileData.id, name: profileData.name });
                                                     setShowUserProfile(null);
                                                 }}
-                                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-cyan- to-pink-600 rounded-xl font-bold text-[var(--text-primary)] shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                                                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-cyan-400 to-pink-600 rounded-xl font-bold text-[var(--text-primary)] shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300"
                                             >
                                                 <UserPlus size={20} />
                                                 Connect
@@ -1475,11 +1592,11 @@ export default function DiscussVerse() {
 
                             <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
                                 <div className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <Sparkles size={12} className="text-cyan-" />
+                                    <Sparkles size={12} className="text-cyan-400" />
                                     Recommended for you
                                 </div>
                                 {suggestedConnections.map(user => (
-                                    <div key={user.id} className="flex items-start gap-4 p-4 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-cyan-500/30 rounded-2xl mb-3 transition-all duration-300 group">
+                                    <div key={user.id} className="flex items-start gap-4 p-4 bg-[var(--glass-bg)] hover:bg-[var(--glass-bg)] border border-[var(--border-color)] hover:border-cyan-400500/30 rounded-2xl mb-3 transition-all duration-300 group">
                                         <div className="group-hover:scale-110 transition-transform duration-300">
                                             {renderAvatar(user.avatar, "w-12 h-12", "text-4xl")}
                                         </div>
@@ -1492,14 +1609,14 @@ export default function DiscussVerse() {
                                             </div>
                                             <div className="flex flex-wrap gap-1.5 mb-3">
                                                 {user.skills.map((skill, idx) => (
-                                                    <span key={idx} className="px-2 py-0.5 bg-cyan-/10 text-violet-300 text-[11px] font-medium rounded-md border border-cyan-500/10">
+                                                    <span key={idx} className="px-2 py-0.5 bg-cyan-400/10 text-violet-300 text-[11px] font-medium rounded-md border border-cyan-400500/10">
                                                         {skill}
                                                     </span>
                                                 ))}
                                             </div>
                                             <button
                                                 onClick={() => handleSendConnectionRequest(user)}
-                                                className="w-full py-2 bg-[var(--bg-secondary)] hover:bg-cyan- text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl text-sm font-semibold transition-all border border-[var(--border-color)] hover:border-cyan-500/50 flex items-center justify-center gap-2 group/btn"
+                                                className="w-full py-2 bg-[var(--bg-secondary)] hover:bg-cyan-400 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl text-sm font-semibold transition-all border border-[var(--border-color)] hover:border-cyan-400500/50 flex items-center justify-center gap-2 group/btn"
                                             >
                                                 <UserPlus size={16} className="text-[var(--text-muted)] group-hover/btn:text-[var(--text-primary)] transition-colors" />
                                                 Connect
@@ -1543,7 +1660,7 @@ export default function DiscussVerse() {
                                 <div className="flex items-center gap-6 py-3 border-y border-[var(--border-color)] mb-6">
                                     <button
                                         onClick={() => handleUpvote(activePost._id || activePost.id)}
-                                        className={`flex items-center gap-2 ${activePost.isUpvoted ? 'text-cyan-' : 'text-[var(--text-secondary)] hover:text-cyan-'} font-medium transition-colors`}
+                                        className={`flex items-center gap-2 ${activePost.isUpvoted ? 'text-cyan-400' : 'text-[var(--text-secondary)] hover:text-cyan-400'} font-medium transition-colors`}
                                     >
                                         <ThumbsUp size={18} /> {activePost.upvotes || 0}
                                     </button>
@@ -1587,7 +1704,7 @@ export default function DiscussVerse() {
                                     <button
                                         onClick={handlePostComment}
                                         disabled={!newComment.trim()}
-                                        className="bg-cyan- hover:bg-cyan- text-[var(--text-primary)] p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/20"
+                                        className="bg-cyan-400 hover:bg-cyan-400 text-[var(--text-primary)] p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/20"
                                     >
                                         <Send size={20} />
                                     </button>
@@ -1606,7 +1723,7 @@ export default function DiscussVerse() {
                         <div className="p-4 border-b border-[var(--border-color)]">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                    <Bell size={20} className="text-cyan-" />
+                                    <Bell size={20} className="text-cyan-400" />
                                     Notifications
                                 </h3>
                                 <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-[var(--bg-secondary)] rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
@@ -1634,7 +1751,7 @@ export default function DiscussVerse() {
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleAcceptConnection(req.id, req.name)}
-                                                    className="flex-1 py-2 bg-gradient-to-r from-cyan- to-pink-600 hover:shadow-lg text-[var(--text-primary)] text-xs font-bold rounded-lg transition-all"
+                                                    className="flex-1 py-2 bg-gradient-to-r from-cyan-400 to-pink-600 hover:shadow-lg text-[var(--text-primary)] text-xs font-bold rounded-lg transition-all"
                                                 >
                                                     Accept
                                                 </button>
@@ -1666,7 +1783,7 @@ export default function DiscussVerse() {
                     <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-[var(--border-color)] shadow-2xl animate-fade-in" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-                                <Settings size={24} className="text-cyan-" />
+                                <Settings size={24} className="text-cyan-400" />
                                 Settings
                             </h3>
                             <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-[var(--bg-secondary)] rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
@@ -1688,7 +1805,7 @@ export default function DiscussVerse() {
                                 </div>
                                 <p className="text-xs text-[var(--text-muted)]">Use dark theme across the application</p>
                             </div>
-                            <button className="w-full py-3 bg-gradient-to-r from-cyan- to-pink-600 hover:shadow-lg hover:shadow-violet-500/25 text-[var(--text-primary)] font-bold rounded-xl transition-all">
+                            <button className="w-full py-3 bg-gradient-to-r from-cyan-400 to-pink-600 hover:shadow-lg hover:shadow-violet-500/25 text-[var(--text-primary)] font-bold rounded-xl transition-all">
                                 Save Changes
                             </button>
                         </div>

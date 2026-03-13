@@ -7,6 +7,7 @@ const postSchema = new mongoose.Schema({
     content: { type: String, required: true },
     tags: [String],
     upvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    downvotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     views: { type: Number, default: 0 },
     isPinned: { type: Boolean, default: false },
     isSolved: { type: Boolean, default: false },
