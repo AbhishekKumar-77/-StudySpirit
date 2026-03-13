@@ -870,10 +870,14 @@ export default function AIInterview() {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     submissionId,
+                                    sessionId: response.report._id,
                                     score: response.report.overallScore,
                                     feedback: response.report.finalFeedback,
                                     strengths: response.report.strengths,
-                                    improvements: response.report.improvements
+                                    improvements: response.report.improvements,
+                                    gdMetrics: response.report.gdMetrics,
+                                    duration: response.report.duration,
+                                    questionsAnswered: response.report.questionsAsked
                                 }),
                                 credentials: 'include'
                             });

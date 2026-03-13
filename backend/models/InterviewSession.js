@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const interviewSessionSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        ref: 'User'
     },
     mode: {
         type: String,

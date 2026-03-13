@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const InterviewSession = require('../models/InterviewSession');
+const InterviewSubmission = require('../models/InterviewSubmission');
 const pdfParse = require('pdf-parse');
 
 // AI Interview - Mock Interviewer with Scoring & History
@@ -7,7 +8,7 @@ exports.interviewWithAI = async (req, res) => {
     console.log("🎤 AI Interview Request Received");
 
     try {
-        let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber, role, company } = req.body;
+        let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber, role, company, submissionId } = req.body;
         const user = req.user ? await User.findById(req.user.id) : null;
         const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
@@ -38,20 +39,25 @@ exports.interviewWithAI = async (req, res) => {
 
         // Create or fetch session
         let session = null;
-        if (user) {
-            if (sessionId) {
-                session = await InterviewSession.findById(sessionId);
-            }
-            if (!session && (!context || context.length === 0)) {
-                session = await InterviewSession.create({
-                    userId: user._id,
-                    mode: mode || 'technical',
-                    targetRole: role || 'Software Engineer',
-                    targetCompany: company || 'General Tech',
-                    totalQuestions: qTotal,
-                    resumeText: resumeText ? resumeText.substring(0, 5000) : '',
-                    status: 'in-progress'
-                });
+        if (sessionId) {
+            session = await InterviewSession.findById(sessionId);
+        }
+        
+        if (!session && (!context || context.length === 0)) {
+            session = await InterviewSession.create({
+                userId: user ? user._id : null,
+                mode: mode || 'technical',
+                targetRole: role || 'Software Engineer',
+                targetCompany: company || 'General Tech',
+                totalQuestions: qTotal,
+                resumeText: resumeText ? resumeText.substring(0, 5000) : '',
+                status: 'in-progress'
+            });
+
+            // Link to submission if this is an exam
+            if (submissionId) {
+                await InterviewSubmission.findByIdAndUpdate(submissionId, { sessionId: session._id });
+                console.log(`🔗 Linked session ${session._id} to submission ${submissionId}`);
             }
         }
 

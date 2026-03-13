@@ -183,18 +183,30 @@ exports.startSubmission = async (req, res) => {
 // ============== COMPLETE INTERVIEW SUBMISSION (After interview ends) ==============
 exports.completeSubmission = async (req, res) => {
     try {
-        const { submissionId, sessionId, overallScore, strengths, improvements, finalFeedback, gdMetrics, duration, questionsAnswered } = req.body;
+        const { 
+            submissionId, 
+            sessionId, 
+            overallScore, 
+            score, 
+            strengths, 
+            improvements, 
+            finalFeedback, 
+            feedback, 
+            gdMetrics, 
+            duration, 
+            questionsAnswered 
+        } = req.body;
 
         if (!submissionId) return res.status(400).json({ success: false, message: "Submission ID required" });
 
         const submission = await InterviewSubmission.findById(submissionId);
         if (!submission) return res.status(404).json({ success: false, message: "Submission not found" });
 
-        submission.sessionId = sessionId || null;
-        submission.overallScore = overallScore || 0;
+        submission.sessionId = sessionId || submission.sessionId;
+        submission.overallScore = overallScore !== undefined ? overallScore : (score !== undefined ? score : 0);
         submission.strengths = strengths || [];
         submission.improvements = improvements || [];
-        submission.finalFeedback = finalFeedback || '';
+        submission.finalFeedback = finalFeedback || feedback || '';
         submission.gdMetrics = gdMetrics || {};
         submission.duration = duration || 0;
         submission.questionsAnswered = questionsAnswered || 0;

@@ -10,6 +10,7 @@ router.delete('/:code', auth, interviewExamController.deleteExam);
 
 // ============== Student / Public Routes ==============
 router.get('/join/:code', interviewExamController.getExamByCode);
+router.post('/join', interviewExamController.startSubmission);
 router.get('/check-reattempt/:code', interviewExamController.checkReAttempt);
 router.post('/start', interviewExamController.startSubmission);
 router.post('/complete', interviewExamController.completeSubmission);
