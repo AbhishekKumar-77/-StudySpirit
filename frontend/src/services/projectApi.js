@@ -96,6 +96,13 @@ export const getUserProjects = async (userId) => {
     return fetchWithAuth(`/projects/user/${userId}`);
 };
 
+// Generate AI README
+export const generateReadme = async (projectId) => {
+    return fetchWithAuth(`/projects/${projectId}/generate-readme`, {
+        method: 'POST'
+    });
+};
+
 export default {
     getMyProjects,
     exploreProjects,
@@ -107,5 +114,6 @@ export default {
     deleteFile,
     toggleStar,
     forkProject,
-    getUserProjects
+    getUserProjects,
+    generateReadme
 };

@@ -390,3 +390,79 @@ exports.getUserProjects = async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch user projects' });
     }
 };
+
+// ─────────────────────────────────────────────────────────────
+// AI README Generator
+// POST /api/projects/:projectId/generate-readme
+// ─────────────────────────────────────────────────────────────
+exports.generateReadme = async (req, res) => {
+    try {
+        const userId = getUserId(req);
+        if (!userId) return res.status(401).json({ message: 'Please login' });
+
+        const { projectId } = req.params;
+        const project = await Project.findById(projectId).populate('owner', 'name');
+
+        if (!project) return res.status(404).json({ message: 'Project not found' });
+        if (project.owner._id.toString() !== userId.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
+
+        const techStr = (project.techStack || []).join(', ') || 'Not specified';
+        const tagsStr = (project.tags || []).join(', ') || '';
+
+        const prompt = `Create a professional, well-structured GitHub README.md for this project:
+
+Project Name: ${project.name}
+Category: ${project.category}
+Description: ${project.description || 'No description provided'}
+Tech Stack: ${techStr}
+Tags: ${tagsStr}
+GitHub URL: ${project.githubUrl || 'N/A'}
+Live Demo: ${project.liveUrl || 'N/A'}
+Status: ${project.status}
+
+Generate a complete README.md with these sections (use proper markdown):
+1. A banner-style header with project name and a one-liner description
+2. Badges for tech stack (use shields.io style markdown badge syntax)
+3. ## ✨ Features — 4-6 bullet points based on the description/category
+4. ## 🛠️ Tech Stack — table or list of technologies used
+5. ## 🚀 Getting Started — Prerequisites, Installation steps, Running locally
+6. ## 📖 Usage — brief usage guide
+7. ## 🤝 Contributing — standard contribution guide
+8. ## 📄 License — MIT License line
+
+Keep it professional, exciting, and well-formatted. Output ONLY the raw markdown, nothing else.`;
+
+        const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: 'You are a technical documentation expert. Write excellent GitHub README files in markdown. Output ONLY raw markdown, no code fences, no wrapper.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.6,
+                max_tokens: 2000
+            })
+        });
+
+        const data = await groqRes.json();
+        const readme = data.choices?.[0]?.message?.content?.trim() || '';
+
+        if (!readme) return res.status(500).json({ message: 'AI generation failed' });
+
+        // Optionally save it back to the project
+        project.readme = readme;
+        await project.save();
+
+        res.json({ success: true, readme });
+    } catch (err) {
+        console.error('❌ generateReadme error:', err);
+        res.status(500).json({ success: false, message: 'README generation failed.' });
+    }
+};

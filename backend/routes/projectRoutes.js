@@ -30,6 +30,9 @@ router.post('/:projectId/star', projectController.toggleStar);
 // Fork
 router.post('/:projectId/fork', projectController.forkProject);
 
+// AI README Generator
+router.post('/:projectId/generate-readme', projectController.generateReadme);
+
 // Get user's public projects
 router.get('/user/:userId', projectController.getUserProjects);
 

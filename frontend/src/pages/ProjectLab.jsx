@@ -162,8 +162,8 @@ export default function ProjectLab() {
                 <div className={`bg-gradient-to-br ${categoryColors[project.category]} p-4 ${viewMode === 'list' ? 'w-20 h-20 flex-shrink-0' : 'h-32'} flex items-center justify-center relative`}>
                     <CategoryIcon className={`text-[var(--text-primary)]/80 ${viewMode === 'list' ? 'w-8 h-8' : 'w-12 h-12'}`} />
                     {project.visibility === 'private' && (
-                        <div className="absolute top-2 right-2 bg-[var(--bg-secondary)]lack/30 p-1 rounded">
-                            <Lock className="w-3 h-3 text-[var(--text-primary)]" />
+                        <div className="absolute top-2 right-2 bg-black/30 p-1 rounded">
+                            <Lock className="w-3 h-3 text-white" />
                         </div>
                     )}
                 </div>
@@ -203,9 +203,7 @@ export default function ProjectLab() {
                         {viewMode !== 'list' && project.techStack?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-3">
                                 {project.techStack.slice(0, 3).map((tech, idx) => (
-                                    <span key={idx} className="px-2 py-0.5 bg-cyan-/20 text-violet-300 text-xs rounded-full">
-                                        {tech}
-                                    </span>
+                                    <span key={idx} className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 text-xs rounded-full">{tech}</span>
                                 ))}
                                 {project.techStack.length > 3 && (
                                     <span className="px-2 py-0.5 bg-white/10 text-[var(--text-secondary)] text-xs rounded-full">
@@ -381,7 +379,7 @@ export default function ProjectLab() {
                     </div>
                 ) : filteredProjects.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-center">
-                        <FolderGit2 className="w-16 h-16 text-[var(--text-primary)] mb-4" />
+                        <FolderGit2 className="w-16 h-16 text-slate-600 mb-4" />
                         <h3 className="text-xl font-semibold text-[var(--text-secondary)] mb-2">No Projects Yet</h3>
                         <p className="text-[var(--text-muted)] mb-4">
                             {activeTab === 'my'
@@ -524,7 +522,7 @@ export default function ProjectLab() {
                                 {newProject.techStack.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         {newProject.techStack.map((tech, idx) => (
-                                            <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-cyan-/20 text-violet-300 text-sm rounded-full">
+                                            <span key={idx} className="flex items-center gap-1 px-2 py-1 bg-cyan-500/20 text-cyan-300 text-sm rounded-full">
                                                 {tech}
                                                 <button onClick={() => removeTechStack(tech)} className="hover:text-red-400">
                                                     <X className="w-3 h-3" />

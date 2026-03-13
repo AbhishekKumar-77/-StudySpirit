@@ -22,6 +22,7 @@ const DiscussVerse = lazy(() => import('./pages/DiscussVerse'));
 const CareerSprint = lazy(() => import('./pages/CareerSprint'));
 const AIInterview = lazy(() => import('./pages/AIInterview'));
 const ProjectLab = lazy(() => import('./pages/ProjectLab'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
 const EventsHub = lazy(() => import('./pages/EventsHub'));
 const Certification = lazy(() => import('./pages/Certification'));
 const Exams = lazy(() => import('./pages/Exams'));
@@ -101,7 +102,7 @@ function App() {
               <Route path="/interview" element={<AIInterview />} />
               <Route path="/career" element={<CareerSprint />} />
               <Route path="/project-lab" element={<ProjectLab />} />
-              <Route path="/project-lab/:projectId" element={<ProjectLab />} />
+              <Route path="/project-lab/:projectId" element={<ProjectDetail />} />
               <Route path="/events" element={<EventsHub />} />
               <Route path="/discuss" element={<DiscussVerse />} />
               <Route path="/certification" element={<Certification />} />
