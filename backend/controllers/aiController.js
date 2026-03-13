@@ -139,7 +139,7 @@ exports.interviewWithAI = async (req, res) => {
         const messages = [{ role: 'system', content: systemPrompt }];
         if (context && Array.isArray(context)) messages.push(...context.slice(-12));
         if (message) messages.push({ role: 'user', content: message });
-        if (isNewResumeSession && !message) messages.push({ role: 'user', content: "Hi Aria! Let's start." });
+        if ((isNewResumeSession || qNum === 1) && !message) messages.push({ role: 'user', content: "Hi Aria! Let's start." });
 
         const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
