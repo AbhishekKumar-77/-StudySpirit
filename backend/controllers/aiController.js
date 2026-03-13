@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const InterviewSession = require('../models/InterviewSession');
 const InterviewSubmission = require('../models/InterviewSubmission');
+const InterviewExam = require('../models/InterviewExam');
 const pdfParse = require('pdf-parse');
 
 // AI Interview - Mock Interviewer with Scoring & History
@@ -8,7 +9,7 @@ exports.interviewWithAI = async (req, res) => {
     console.log("🎤 AI Interview Request Received");
 
     try {
-        let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber, role, company, submissionId } = req.body;
+        let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber, role, company, submissionId, examCode } = req.body;
         const user = req.user ? await User.findById(req.user.id) : null;
         const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
@@ -64,6 +65,14 @@ exports.interviewWithAI = async (req, res) => {
         // Build system prompt with conversational & correction focus
         let systemPrompt = "You are a professional technical interviewer.";
 
+        let customQuestionsList = [];
+        if (examCode) {
+            const exam = await InterviewExam.findOne({ code: examCode });
+            if (exam && exam.customQuestions && exam.customQuestions.get(mode)) {
+                customQuestionsList = exam.customQuestions.get(mode);
+            }
+        }
+
         const commonRules = `
             CRITICAL CONVERSATIONAL RULES:
             1. **BE NATURAL & HUMAN**: You are "Aria", a personal HR interviewer — warm, friendly, but professional. Talk like two people having a real conversation.
@@ -72,7 +81,12 @@ exports.interviewWithAI = async (req, res) => {
             4. **⚠️ STRICTLY ONE QUESTION ONLY ⚠️**: This is the MOST IMPORTANT rule. You MUST ask exactly ONE question per response. NEVER two, NEVER three. Your entire "spokenText" should contain only ONE question mark at the very end. Do NOT ask follow-ups. ONLY ONE question.
             5. **SPOKEN FORMAT**: Write "spokenText" as you would SAY it out loud. Use contractions, natural flow.
             6. **SHORT & FOCUSED**: Keep responses concise — 2-4 sentences of reaction/feedback, then ONE question.
-            7. **ROLE AND COMPANY**: You are interviewing the candidate for the role of "${role || 'Software Engineer'}" at ${company === 'Startup' ? 'a High-Growth Startup' : company === 'General Tech' ? 'a tech company' : company || 'General Tech'}. Frame questions contextually based on this role and company.
+            7. **ROLE AND COMPANY**: You are interviewing the candidate for the role of "${role || 'Software Engineer'}" at ${company === 'Startup' ? 'a High-Growth Startup' : company === 'General Tech' ? 'a tech company' : company || 'General Tech'}. Frame questions contextually based on this role and company.${customQuestionsList.length > 0 ? `
+            
+            ⚠️ TEACHER'S MANDATORY QUESTIONS:
+            The teacher has explicitly requested you to ask the following questions during this interview:
+            ${customQuestionsList.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+            You must prioritize asking these specific questions early in the conversation.` : ''}
         `;
 
         const jsonFormat = `

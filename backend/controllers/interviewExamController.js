@@ -8,7 +8,7 @@ exports.createExam = async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized" });
 
-        const { title, mode, totalQuestions, targetRole, targetCompany, settings, status } = req.body;
+        const { title, modes, customQuestions, totalQuestions, targetRole, targetCompany, settings, status } = req.body;
 
         if (!title || !title.trim()) {
             return res.status(400).json({ success: false, message: "Title is required" });
@@ -20,8 +20,9 @@ exports.createExam = async (req, res) => {
         const exam = await InterviewExam.create({
             title: title.trim(),
             code,
-            mode: mode || 'technical',
-            totalQuestions: Math.min(Math.max(parseInt(totalQuestions) || 5, 3), 20),
+            modes: modes && modes.length > 0 ? modes : ['technical'],
+            customQuestions: customQuestions || {},
+            totalQuestions: Math.min(Math.max(parseInt(totalQuestions) || 5, 3), 50),
             targetRole: targetRole || 'Software Engineer',
             targetCompany: targetCompany || 'General Tech',
             settings: {
@@ -159,7 +160,7 @@ exports.startSubmission = async (req, res) => {
             studentId: req.user ? req.user.id : null,
             studentName: studentName || req.user?.name || 'Student',
             registrationNumber: (registrationNumber || '').trim().toUpperCase(),
-            mode: exam.mode,
+            mode: exam.modes.length === 1 ? exam.modes[0] : 'journey', // Fallback for submission schema
             status: 'in-progress'
         });
 
@@ -168,7 +169,8 @@ exports.startSubmission = async (req, res) => {
             submissionId: submission._id,
             exam: {
                 title: exam.title,
-                mode: exam.mode,
+                modes: exam.modes,
+                customQuestions: exam.customQuestions,
                 totalQuestions: exam.totalQuestions,
                 targetRole: exam.targetRole,
                 targetCompany: exam.targetCompany

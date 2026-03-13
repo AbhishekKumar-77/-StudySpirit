@@ -327,10 +327,10 @@ export default function AIInterview() {
     const [atsResult, setAtsResult] = useState(null);
     const [isCheckingAts, setIsCheckingAts] = useState(false);
 
-    // Journey Mode State
     const [isJourneyMode, setIsJourneyMode] = useState(false);
     const [journeyStep, setJourneyStep] = useState(0); // 1: ATS, 2: HR, 3: GD, 4: Technical
     const [journeyReports, setJourneyReports] = useState([]);
+    const [journeyModesList, setJourneyModesList] = useState(['ats-checker', 'behavioral', 'gd', 'technical']);
 
     const [sessionId, setSessionId] = useState(null);
     const [sessionReport, setSessionReport] = useState(null);
@@ -680,16 +680,27 @@ export default function AIInterview() {
             if (data.success) {
                 setExamData(data.exam);
                 setSubmissionId(data.submissionId);
-                setMode(data.exam.mode);
+                const joinedModes = data.exam.modes && data.exam.modes.length > 0 ? data.exam.modes : [data.exam.mode || 'technical'];
+                setMode(joinedModes[0]);
                 setTotalQuestionsConfig(data.exam.totalQuestions);
                 setTargetRole(data.exam.targetRole);
                 setTargetCompany(data.exam.targetCompany);
                 
-                // Start interview automatically with exam settings
-                startInterview(data.exam.mode, null, data.exam.totalQuestions, {
-                    examCode: data.exam.code,
-                    submissionId: data.submissionId
-                });
+                if (joinedModes.length > 1) {
+                    setIsJourneyMode(true);
+                    setJourneyModesList(joinedModes);
+                    setJourneyStep(1);
+                    setJourneyReports([]);
+                    startInterview(joinedModes[0], null, data.exam.totalQuestions, {
+                        examCode: data.exam.code,
+                        submissionId: data.submissionId
+                    });
+                } else {
+                    startInterview(joinedModes[0], null, data.exam.totalQuestions, {
+                        examCode: data.exam.code,
+                        submissionId: data.submissionId
+                    });
+                }
             } else {
                 alert(data.message || "Failed to join exam");
             }
@@ -750,6 +761,8 @@ export default function AIInterview() {
                 formData.append('company', targetCompany);
                 formData.append('totalQuestions', activeTotalQuestions);
                 formData.append('questionNumber', 1);
+                if (examCtx?.examCode || examCode) formData.append('examCode', examCtx?.examCode || examCode);
+                if (examCtx?.submissionId || submissionId) formData.append('submissionId', examCtx?.submissionId || submissionId);
                 response = await soloApi.startInterview(formData);
             } else {
                 response = await soloApi.startInterview({
@@ -863,16 +876,27 @@ export default function AIInterview() {
                 if (response.success) {
                     setSessionReport(response.report);
                     // If this was a teacher exam, mark it complete in the exam system
-                    if (submissionId) {
+                    // If this was a teacher exam, mark it complete in the exam system only at the end
+                    if (submissionId && (!isJourneyMode || journeyStep === journeyModesList.length)) {
                         try {
+                            // Calculate averages if it's a journey
+                            let finalScore = response.report.overallScore;
+                            let finalFeedback = response.report.finalFeedback;
+                            
+                            if (isJourneyMode && journeyReports.length > 0) {
+                                const allScores = [...journeyReports.map(r => r.overallScore || 0), response.report.overallScore || 0];
+                                finalScore = allScores.reduce((a, b) => a + b, 0) / allScores.length;
+                                finalFeedback = "Journey Completed. Multiple rounds evaluated.\n" + finalFeedback;
+                            }
+
                             await fetch(`${API_BASE}/interview-exam/complete`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     submissionId,
                                     sessionId: response.report._id,
-                                    score: response.report.overallScore,
-                                    feedback: response.report.finalFeedback,
+                                    score: finalScore,
+                                    feedback: finalFeedback,
                                     strengths: response.report.strengths,
                                     improvements: response.report.improvements,
                                     gdMetrics: response.report.gdMetrics,
@@ -902,14 +926,14 @@ export default function AIInterview() {
             }
         };
 
-        if (isJourneyMode && journeyStep < 4) {
+        if (isJourneyMode && journeyStep < journeyModesList.length) {
             // In journey mode, don't show report immediately, move to next step
             await endInterview(); 
             nextJourneyStep();
-        } else if (isJourneyMode && journeyStep === 4) {
+        } else if (isJourneyMode && journeyStep === journeyModesList.length) {
             // Finished journey
             await endInterview();
-            setJourneyStep(5);
+            setJourneyStep(journeyModesList.length + 1);
         } else {
             // Regular interview
             await endInterview();
@@ -952,17 +976,17 @@ export default function AIInterview() {
         const effectiveFile = resumeFile || atsFile;
         if (effectiveFile && !resumeFile) setResumeFile(effectiveFile);
 
-        setTotalQuestionsConfig(10); // Standardize on 10 for Journey mode
+        const numQuestions = examData ? examData.totalQuestions : 10;
+        setTotalQuestionsConfig(numQuestions);
 
-        if (nextStep === 2) {
-            setMode('behavioral');
-            startInterview('behavioral', effectiveFile, 10);
-        } else if (nextStep === 3) {
-            setMode('gd');
-            startInterview('gd', effectiveFile, 10);
-        } else if (nextStep === 4) {
-            setMode('technical');
-            startInterview('technical', effectiveFile, 10);
+        if (nextStep <= journeyModesList.length) {
+            const nextMode = journeyModesList[nextStep - 1];
+            if (nextMode === 'ats-checker') {
+                setView('ats-checker');
+            } else {
+                setMode(nextMode);
+                startInterview(nextMode, effectiveFile, numQuestions, examData ? { examCode: examData.code, submissionId } : null);
+            }
         } else {
             setView('report');
         }
@@ -970,6 +994,7 @@ export default function AIInterview() {
 
     const startJourney = () => {
         setIsJourneyMode(true);
+        setJourneyModesList(['ats-checker', 'behavioral', 'gd', 'technical']);
         setJourneyStep(1);
         setJourneyReports([]);
         setView('ats-checker');
@@ -1051,22 +1076,29 @@ export default function AIInterview() {
                 <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2 z-0" />
                 <div 
                     className="absolute top-1/2 left-0 h-0.5 bg-gradient-to-r from-cyan-500 to-pink-500 -translate-y-1/2 z-0 transition-all duration-1000" 
-                    style={{ width: `${((journeyStep - 1) / 3) * 100}%` }}
+                    style={{ width: `${((journeyStep - 1) / Math.max(1, journeyModesList.length - 1)) * 100}%` }}
                 />
                 
-                {[
-                    { step: 1, label: 'CV Check', icon: <FileText size={16} /> },
-                    { step: 2, label: 'HR Round', icon: <User size={16} /> },
-                    { step: 3, label: 'GD Round', icon: <Users size={16} /> },
-                    { step: 4, label: 'Technical', icon: <Cpu size={16} /> }
-                ].map((item) => (
-                    <div key={item.step} className="relative z-10 flex flex-col items-center gap-2">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-700 ${journeyStep === item.step ? 'bg-gradient-to-br from-cyan-400 to-blue-500 scale-125 shadow-[0_0_20px_rgba(6,182,212,0.6)] animate-pulse' : journeyStep > item.step ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-slate-800 border border-white/10'}`}>
-                            {journeyStep > item.step ? <CheckCircle size={20} className="text-white" /> : item.icon}
+                {journeyModesList.map((mKey, idx) => {
+                    const step = idx + 1;
+                    const labels = {
+                        'ats-checker': { label: 'CV Check', icon: <FileText size={16} /> },
+                        'behavioral': { label: 'HR Round', icon: <User size={16} /> },
+                        'gd': { label: 'GD Round', icon: <Users size={16} /> },
+                        'technical': { label: 'Tech Round', icon: <Cpu size={16} /> },
+                        'resume': { label: 'Resume Round', icon: <FileText size={16} /> }
+                    };
+                    const item = labels[mKey] || { label: mKey.toUpperCase(), icon: <MessageSquare size={16} /> };
+
+                    return (
+                        <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-700 ${journeyStep === step ? 'bg-gradient-to-br from-cyan-400 to-blue-500 scale-125 shadow-[0_0_20px_rgba(6,182,212,0.6)] animate-pulse' : journeyStep > step ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-slate-800 border border-white/10'}`}>
+                                {journeyStep > step ? <CheckCircle size={20} className="text-white" /> : item.icon}
+                            </div>
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${journeyStep === step ? 'text-cyan-400' : journeyStep > step ? 'text-emerald-400' : 'text-slate-500'}`}>{item.label}</span>
                         </div>
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${journeyStep === item.step ? 'text-cyan-400' : journeyStep > item.step ? 'text-emerald-400' : 'text-slate-500'}`}>{item.label}</span>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

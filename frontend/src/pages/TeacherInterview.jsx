@@ -28,10 +28,12 @@ export default function TeacherInterview() {
     // Create exam state
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newExam, setNewExam] = useState({
-        title: '', mode: 'technical', totalQuestions: 5,
+        title: '', modes: ['technical'], totalQuestions: 5,
         targetRole: 'Software Engineer', targetCompany: 'General Tech',
-        scheduledStart: '', scheduledEnd: '', allowReAttempt: false
+        scheduledStart: '', scheduledEnd: '', allowReAttempt: false,
+        customQuestions: { technical: [] }
     });
+    const [tempQuestionInputs, setTempQuestionInputs] = useState({});
     const [creating, setCreating] = useState(false);
 
     // Leaderboard state
@@ -79,7 +81,8 @@ export default function TeacherInterview() {
                 credentials: 'include',
                 body: JSON.stringify({
                     title: newExam.title,
-                    mode: newExam.mode,
+                    modes: newExam.modes,
+                    customQuestions: newExam.customQuestions,
                     totalQuestions: newExam.totalQuestions,
                     targetRole: newExam.targetRole,
                     targetCompany: newExam.targetCompany,
@@ -94,7 +97,8 @@ export default function TeacherInterview() {
             if (data.success) {
                 alert(`✅ Interview Exam Created!\nCode: ${data.examCode}`);
                 setShowCreateModal(false);
-                setNewExam({ title: '', mode: 'technical', totalQuestions: 5, targetRole: 'Software Engineer', targetCompany: 'General Tech', scheduledStart: '', scheduledEnd: '', allowReAttempt: false });
+                setNewExam({ title: '', modes: ['technical'], totalQuestions: 5, targetRole: 'Software Engineer', targetCompany: 'General Tech', scheduledStart: '', scheduledEnd: '', allowReAttempt: false, customQuestions: { technical: [] } });
+                setTempQuestionInputs({});
                 fetchExams();
             } else {
                 alert(data.message || 'Failed to create exam');
@@ -270,12 +274,12 @@ export default function TeacherInterview() {
                             <h2 className="text-xl font-black text-[var(--text-primary)] mb-4">Interview Modes</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                                 {Object.entries(MODES).map(([key, mode]) => {
-                                    const count = myExams.filter(e => e.mode === key).length;
+                                    const count = myExams.filter(e => e.modes?.includes(key)).length;
                                     return (
                                         <div key={key} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 hover:border-rose-500/30 transition-all">
                                             <div className="text-3xl mb-3">{mode.icon}</div>
                                             <div className="font-black text-[var(--text-primary)] text-lg">{mode.label}</div>
-                                            <div className="text-sm text-[var(--text-secondary)]">{count} exam{count !== 1 ? 's' : ''} created</div>
+                                            <div className="text-sm text-[var(--text-secondary)]">Included in {count} exam{count !== 1 ? 's' : ''}</div>
                                         </div>
                                     );
                                 })}
@@ -339,7 +343,7 @@ export default function TeacherInterview() {
                                     <option value="">-- Choose an exam --</option>
                                     {myExams.map(e => (
                                         <option key={e.code} value={e.code}>
-                                            {e.title} ({e.code}) — {MODES[e.mode]?.label || e.mode}
+                                            {e.title} ({e.code}) — {e.modes?.map(m => MODES[m]?.label || m).join(', ') || 'Mixed'}
                                         </option>
                                     ))}
                                 </select>
@@ -431,21 +435,103 @@ export default function TeacherInterview() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2">Interview Mode *</label>
+                                <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2">Interview Modes * <span className="text-xs font-normal opacity-70">(Select one or more for a Complete Journey)</span></label>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {Object.entries(MODES).map(([key, mode]) => (
-                                        <button key={key}
-                                            onClick={() => setNewExam(p => ({ ...p, mode: key }))}
-                                            className={`p-3 rounded-xl border text-left transition-all font-semibold text-sm ${newExam.mode === key
-                                                ? 'border-rose-500 bg-rose-500/10 text-rose-500 shadow-lg shadow-rose-500/10'
-                                                : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:border-rose-500/30'
-                                                }`}
-                                        >
-                                            <span className="text-xl mr-2">{mode.icon}</span>{mode.label}
-                                        </button>
-                                    ))}
+                                    {Object.entries(MODES).map(([key, mode]) => {
+                                        const isSelected = newExam.modes.includes(key);
+                                        return (
+                                            <button key={key}
+                                                onClick={() => {
+                                                    setNewExam(p => {
+                                                        const newModes = isSelected ? p.modes.filter(m => m !== key) : [...p.modes, key];
+                                                        // Ensure at least one is selected
+                                                        if (newModes.length === 0) return p;
+                                                        return { ...p, modes: newModes };
+                                                    });
+                                                }}
+                                                className={`p-3 rounded-xl border text-left transition-all font-semibold text-sm ${isSelected
+                                                    ? 'border-rose-500 bg-rose-500/10 text-rose-500 shadow-lg shadow-rose-500/10'
+                                                    : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:border-rose-500/30'
+                                                    }`}
+                                            >
+                                                <span className="text-xl mr-2">{mode.icon}</span>{mode.label}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
+                            
+                            {newExam.modes.length > 0 && (
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-bold text-[var(--text-primary)] pb-2 border-b border-[var(--border-color)]">Manual Custom Questions (Optional)</h4>
+                                    {newExam.modes.map((mKey) => {
+                                        const customQs = newExam.customQuestions[mKey] || [];
+                                        const currentInput = tempQuestionInputs[mKey] || '';
+                                        
+                                        return (
+                                            <div key={mKey} className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl p-4">
+                                                <div className="font-bold text-sm text-[var(--text-primary)] mb-2 flex items-center gap-2">
+                                                    {MODES[mKey]?.icon} {MODES[mKey]?.label} Round Specific Questions
+                                                </div>
+                                                {customQs.length > 0 && (
+                                                    <ul className="mb-3 space-y-2">
+                                                        {customQs.map((q, idx) => (
+                                                            <li key={idx} className="flex items-start justify-between bg-[var(--bg-secondary)] p-2 rounded-lg text-sm text-[var(--text-secondary)] border border-[var(--border-color)]">
+                                                                <span className="flex-1 pr-2">{idx + 1}. {q}</span>
+                                                                <button onClick={() => {
+                                                                    setNewExam(p => ({
+                                                                        ...p,
+                                                                        customQuestions: {
+                                                                            ...p.customQuestions,
+                                                                            [mKey]: p.customQuestions[mKey].filter((_, i) => i !== idx)
+                                                                        }
+                                                                    }));
+                                                                }} className="text-red-500 hover:bg-red-500/10 p-1 rounded transition-colors"><X size={14} /></button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                                <div className="flex gap-2">
+                                                    <input 
+                                                        value={currentInput}
+                                                        onChange={(e) => setTempQuestionInputs(p => ({ ...p, [mKey]: e.target.value }))}
+                                                        placeholder={`Ask specific questions in the ${MODES[mKey]?.label} round...`}
+                                                        className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg p-2.5 text-sm text-[var(--text-primary)] focus:border-rose-500 outline-none"
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                e.preventDefault();
+                                                                if (!currentInput.trim()) return;
+                                                                setNewExam(p => ({
+                                                                    ...p,
+                                                                    customQuestions: {
+                                                                        ...p.customQuestions,
+                                                                        [mKey]: [...(p.customQuestions[mKey] || []), currentInput.trim()]
+                                                                    }
+                                                                }));
+                                                                setTempQuestionInputs(p => ({ ...p, [mKey]: '' }));
+                                                            }
+                                                        }}
+                                                    />
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (!currentInput.trim()) return;
+                                                            setNewExam(p => ({
+                                                                ...p,
+                                                                customQuestions: {
+                                                                    ...p.customQuestions,
+                                                                    [mKey]: [...(p.customQuestions[mKey] || []), currentInput.trim()]
+                                                                }
+                                                            }));
+                                                            setTempQuestionInputs(p => ({ ...p, [mKey]: '' }));
+                                                        }}
+                                                        className="px-4 py-2 bg-rose-500/10 text-rose-500 font-bold rounded-lg hover:bg-rose-500/20 text-sm whitespace-nowrap"
+                                                    >Add</button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -626,7 +712,8 @@ export default function TeacherInterview() {
 // ── Exam Card Component ──────────────────────────────────────────
 function ExamCard({ exam, onDelete, onViewResults, showFull = false }) {
     const copyCode = () => { navigator.clipboard.writeText(exam.code); alert(`Code "${exam.code}" copied!`); };
-    const mode = MODES[exam.mode] || { label: exam.mode, icon: '🎤', color: 'rose' };
+    const displayModes = exam.modes || [exam.mode];
+    const mode = MODES[displayModes[0]] || { label: displayModes[0] || 'Mixed', icon: '🎤', color: 'rose' };
 
     return (
         <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 hover:border-rose-500/30 hover:shadow-lg transition-all group relative">
@@ -644,7 +731,9 @@ function ExamCard({ exam, onDelete, onViewResults, showFull = false }) {
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)] mb-4">
-                <span className="flex items-center gap-1 bg-rose-500/10 text-rose-500 px-2 py-1 rounded-lg font-bold">{mode.icon} {mode.label}</span>
+                {displayModes.map(m => (
+                    <span key={m} className="flex items-center gap-1 bg-rose-500/10 text-rose-500 px-2 py-1 rounded-lg font-bold">{MODES[m]?.icon || '🎤'} {MODES[m]?.label || m}</span>
+                ))}
                 <span className="flex items-center gap-1 bg-[var(--border-color)] px-2 py-1 rounded-lg"><MessageSquare size={12} /> {exam.totalQuestions} Qs</span>
                 <span className="flex items-center gap-1 bg-[var(--border-color)] px-2 py-1 rounded-lg"><Briefcase size={12} /> {exam.targetRole}</span>
             </div>
