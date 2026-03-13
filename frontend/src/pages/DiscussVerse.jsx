@@ -22,7 +22,7 @@ import { useApp } from '../context/AppContext';
 // const loadData = () => ... (removed)
 
 export default function DiscussVerse() {
-    const { user, setUser } = useApp(); // Access global user context
+    const { user, setUser, loading } = useApp(); // Access global user context
     // Local state for discuss-specific features not yet in global context
     const [localData, setLocalData] = useState({
         bookmarkedPosts: [],
@@ -736,8 +736,14 @@ export default function DiscussVerse() {
         return filtered;
     })();
 
+    useEffect(() => {
+        if (!loading && !user) {
+            navigate('/login');
+        }
+    }, [user, loading, navigate]);
+
     // Guard: if user hasn't loaded yet, show loading
-    if (!user) {
+    if (loading || !user) {
         return (
             <div className="h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
                 <div className="text-center">
