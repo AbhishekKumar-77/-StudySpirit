@@ -443,7 +443,7 @@ exports.addJob = async (req, res) => {
 exports.analyzeMatch = async (req, res) => {
     try {
         const { userSkills, jobTitle, jobDescription, jobTags } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
 
         if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
         if (!jobTitle) return res.status(400).json({ message: 'Job details required.' });
@@ -500,7 +500,7 @@ Return ONLY a JSON object like this:
 exports.generateCoverLetter = async (req, res) => {
     try {
         const { userName, userSkills, jobTitle, company, jobDescription, jobTags } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
 
         if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
         if (!jobTitle || !company) return res.status(400).json({ message: 'Job title and company required.' });

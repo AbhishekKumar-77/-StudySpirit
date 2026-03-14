@@ -18,7 +18,7 @@ exports.chatWithAI = async (req, res) => {
         user.chatHistory.push({ role: 'user', message });
 
         let aiResponse = "";
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY || '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';
 
         // Check if API Key is configured
         if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {

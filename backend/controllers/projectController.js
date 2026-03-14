@@ -408,7 +408,7 @@ exports.generateReadme = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
         if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
 
         const techStr = (project.techStack || []).join(', ') || 'Not specified';

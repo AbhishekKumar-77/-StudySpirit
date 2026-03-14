@@ -330,7 +330,7 @@ exports.chatWithAI = async (req, res) => {
             return res.status(400).json({ message: "Message is required" });
         }
 
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY || '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';
 
         // Check if API Key is configured
         if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
@@ -1375,7 +1375,7 @@ exports.refreshPlatformData = async (req, res) => {
 exports.getStudySuggestions = async (req, res) => {
     try {
         const { topics, daysAvailable, hoursPerDay, pressureLevel } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_PLANNER || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_PLANNER || process.env.GROQ_API_KEY || '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';
 
         // Validation
         if (!topics || topics.trim().length === 0) {
@@ -1525,7 +1525,7 @@ function getMotivationalMessage(intensity, pressure) {
 exports.generateSkillTree = async (req, res) => {
     try {
         const { topic } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY || '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';
 
         if (!topic || topic.trim().length === 0) {
             return res.status(400).json({ message: "Topic is required" });

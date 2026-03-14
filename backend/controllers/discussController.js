@@ -485,7 +485,7 @@ exports.aiAnswer = async (req, res) => {
         const post = await Post.findById(req.params.id).populate('author', 'name');
         if (!post) return res.status(404).json({ error: 'Post not found' });
 
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
         if (!GROQ_API_KEY) return res.status(500).json({ error: 'AI service not configured.' });
 
         const prompt = `A student posted the following question in a study community forum:
