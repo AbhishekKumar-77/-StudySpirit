@@ -11,7 +11,7 @@ const WANDBOX_COMPILERS = {
     'cpp': 'gcc-13.2.0',
     'c++': 'gcc-13.2.0',
     'java': 'openjdk-jdk-22+36',
-    'c': 'gcc-13.2.0',
+    'c': 'gcc-13.2.0-c',
     'typescript': 'nodejs-20.17.0'
 };
 
@@ -495,8 +495,10 @@ exports.verifyCode = async (req, res) => {
                 .join('\n');             // Rejoin
         };
 
-        // Run code against each test case in parallel
-        const results = await Promise.all(testCases.map(async (tc, index) => {
+        // Run code against each test case sequentially to avoid Wandbox rate limiting (HTTP 429)
+        const results = [];
+        for (let index = 0; index < testCases.length; index++) {
+            const tc = testCases[index];
             try {
                 const result = await executeViaWandbox(language || challenge.language || 'python', code, tc.input || '');
                 const run = result.run || {};
@@ -510,7 +512,7 @@ exports.verifyCode = async (req, res) => {
                 const outputMatches = actualOutput === expectedOutput;
                 const passed = hasOutput && outputMatches && exitedCleanly;
 
-                return {
+                results.push({
                     testCase: index + 1,
                     input: tc.input,
                     expectedOutput: expectedOutput,
@@ -518,9 +520,9 @@ exports.verifyCode = async (req, res) => {
                     stderr: run.stderr || '',
                     passed,
                     exitCode: run.code
-                };
+                });
             } catch (err) {
-                return {
+                results.push({
                     testCase: index + 1,
                     input: tc.input,
                     expectedOutput: (tc.output || '').trim(),
@@ -528,10 +530,9 @@ exports.verifyCode = async (req, res) => {
                     stderr: err.message,
                     passed: false,
                     error: true
-                };
+                });
             }
-        }));
-
+        }
         const allPassed = results.every(r => r.passed);
 
         // If all passed, auto-mark as solved

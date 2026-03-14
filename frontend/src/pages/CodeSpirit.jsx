@@ -4,7 +4,7 @@ import { API_BASE } from "../config";
 import {
     ArrowLeft, Send, Sparkles, Terminal, Cpu, Hash, History, CheckCircle, Code,
     Flame, Star, Clock, Trash2, Filter, Search, ChevronRight, Zap, Trophy,
-    Calendar, RefreshCw, X, BookOpen, BarChart3, ChevronDown, ArrowRight
+    Calendar, RefreshCw, X, BookOpen, BarChart3, ChevronDown, ArrowRight, Shield
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
@@ -187,6 +187,7 @@ export default function CodeSpirit() {
     const [questionCount, setQuestionCount] = useState(5);
     const [language, setLanguage] = useState("python");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [secureMode, setSecureMode] = useState(false);
 
     // History State
     const [history, setHistory] = useState([]);
@@ -270,7 +271,7 @@ export default function CodeSpirit() {
             const data = await res.json();
             if (data.success && data.challenges?.length > 0) {
                 navigate('/code-editor', {
-                    state: { sessionId: data.sessionId, challenges: data.challenges, totalCount: data.totalCount, topic: fullTopic, difficulty }
+                    state: { sessionId: data.sessionId, challenges: data.challenges, totalCount: data.totalCount, topic: fullTopic, difficulty, secureMode }
                 });
             } else {
                 alert("Failed to generate: " + (data.message || "Unknown error"));
@@ -293,10 +294,10 @@ export default function CodeSpirit() {
     };
 
     const resumeSession = (session) => {
-        navigate('/code-editor', {
-            state: { sessionId: session._id, challenges: session.challenges, totalCount: session.challenges.length, topic: session.topic, difficulty: session.difficulty }
-        });
-    };
+                navigate('/code-editor', {
+                    state: { sessionId: session._id, challenges: session.challenges, totalCount: session.challenges.length, topic: session.topic, difficulty: session.difficulty, secureMode: false }
+                });
+            };
 
     const timeAgo = (dateStr) => {
         const diff = Date.now() - new Date(dateStr).getTime();
@@ -544,6 +545,22 @@ export default function CodeSpirit() {
                                                     </button>
                                                 ))}
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Secure Mode Toggle */}
+                                    <div className="mt-6 mb-2 p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] flex items-center justify-between cursor-pointer hover:border-cyan-500/50 transition-all" onClick={() => setSecureMode(!secureMode)}>
+                                        <div className="flex gap-4 items-center">
+                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${secureMode ? 'bg-cyan-500 text-white' : 'bg-[var(--border-color)] text-[var(--text-muted)]'}`}>
+                                                <Shield size={20} />
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-[var(--text-primary)]">Strict Interview Mode</div>
+                                                <div className="text-xs text-[var(--text-secondary)]">Disables tab switching, copy-paste, and keyboard shortcuts</div>
+                                            </div>
+                                        </div>
+                                        <div className={`w-10 h-6 rounded-full flex items-center px-1 transition-all ${secureMode ? 'bg-cyan-500 justify-end' : 'bg-[var(--border-color)] justify-start'}`}>
+                                            <div className="w-4 h-4 rounded-full bg-white shadow-md"></div>
                                         </div>
                                     </div>
 
