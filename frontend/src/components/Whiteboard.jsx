@@ -563,7 +563,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
             const tempCtx = tempCanvas.getContext('2d');
             tempCtx.drawImage(canvas, 0, 0);
             textObjects.forEach(textObj => {
-                tempCtx.font = ${textObj.fontSize}px '', sans-serif;
+                tempCtx.font = `${textObj.fontSize}px '${textObj.fontFamily}', sans-serif`;
                 tempCtx.fillStyle = textObj.color;
                 tempCtx.shadowColor = 'rgba(0,0,0,0.5)';
                 tempCtx.shadowBlur = 4;
