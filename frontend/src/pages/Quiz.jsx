@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { API_BASE } from "../config";
 import { connectSocket, getSocket } from "../services/groupAPI";
@@ -15,6 +15,10 @@ import {
 export default function StudySprintQuiz() {
     const { user } = useApp();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    // Preview mode: teacher opened exam with ?preview=1 to see it as a student would
+    const isPreviewMode = searchParams.get('preview') === '1';
+    const previewCode = searchParams.get('code') || '';
 
     // Main Tab State
     const [activeTab, setActiveTab] = useState("teacher");
@@ -68,6 +72,7 @@ export default function StudySprintQuiz() {
     const [isReviewingAnswers, setIsReviewingAnswers] = useState(false);
     const [isTabHidden, setIsTabHidden] = useState(false);
     const [alreadySubmittedError, setAlreadySubmittedError] = useState(""); // Re-attempt block message
+    const [codingSubmissions, setCodingSubmissions] = useState([]); // coding answers to store on submit
     const fullscreenRef = useRef(null);
 
     // AI Practice Mode
@@ -85,6 +90,14 @@ export default function StudySprintQuiz() {
 
     // Leaderboard
     const [leaderboard, setLeaderboard] = useState([]);
+
+    // Auto-enter student tab & pre-fill quiz code when in preview mode
+    useEffect(() => {
+        if (isPreviewMode && previewCode) {
+            setActiveTab('student');
+            setStudentQuizCodeInput(previewCode.toUpperCase());
+        }
+    }, [isPreviewMode, previewCode]);
 
     useEffect(() => {
         if (activeTab === "leaderboard") {
@@ -403,7 +416,7 @@ export default function StudySprintQuiz() {
         setShowResult(true);
 
         try {
-            await fetch(`${API_BASE}/quiz/submit`, {
+            const submitRes = await fetch(`${API_BASE}/quiz/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -414,10 +427,15 @@ export default function StudySprintQuiz() {
                     totalQuestions: quizQs.length,
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft,
                     registrationNumber: studentRegNoInput.trim(),
-                    studentName: user?.name || "Guest", // Pass name in case of guest
-                    userAnswers: userAnswers // 🆕 for question-level analytics
+                    studentName: user?.name || "Guest",
+                    userAnswers: userAnswers,
+                    codingSubmissions: codingSubmissions // 🔍 coding answers for teacher review
                 })
             });
+            const submitData = await submitRes.json();
+            if (!submitRes.ok && submitData.message) {
+                console.warn('Submit result:', submitData.message);
+            }
             // Notify teacher: student submitted (real-time)
             try {
                 const socket = getSocket();
@@ -719,6 +737,20 @@ export default function StudySprintQuiz() {
             <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-cyan-500 /15 rounded-full blur-[100px] z-0 pointer-events-none"></div>
             <div className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[100px] z-0 pointer-events-none"></div>
 
+            {/* Teacher Preview Banner */}
+            {isPreviewMode && (
+                <div className="sticky top-0 z-[100] bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 flex items-center justify-between shadow-lg">
+                    <div className="flex items-center gap-3">
+                        <span className="text-lg">👁️</span>
+                        <span className="font-bold uppercase tracking-wide text-sm">Teacher Preview Mode</span>
+                        <span className="text-amber-100 text-xs">— This is exactly how students see the exam. No answers will be recorded.</span>
+                    </div>
+                    <button onClick={() => window.close()} className="bg-white/20 hover:bg-white/30 px-4 py-1.5 rounded-lg text-sm font-bold transition-all">
+                        Close Preview
+                    </button>
+                </div>
+            )}
+
             {/* Navbar */}
             <nav className="sticky top-0 z-50 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-[var(--border-color)] px-8 py-4 transition-all duration-300">
                 <div className="max-w-[1400px] mx-auto flex items-center">
@@ -728,6 +760,7 @@ export default function StudySprintQuiz() {
                     >
                         <ArrowLeft size={18} /> Back to Dashboard
                     </button>
+
                 </div>
             </nav>
 

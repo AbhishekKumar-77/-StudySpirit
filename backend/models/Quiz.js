@@ -31,6 +31,7 @@ const quizSchema = new mongoose.Schema({
     creatorName: { type: String, default: 'Anonymous' },
     creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, enum: ['draft', 'published'], default: 'published' },
+    isClosed: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
 

@@ -11,6 +11,8 @@ const quizSubmissionSchema = new mongoose.Schema({
     timeTaken: { type: Number },
     // Stores { questionId: chosenOptionIndex } for analytics + student answer review
     userAnswers: { type: mongoose.Schema.Types.Mixed, default: {} },
+    // Stores coding question submissions: [{ questionId, code, language, testsPassed, testsTotal }]
+    codingSubmissions: { type: mongoose.Schema.Types.Mixed, default: [] },
     submittedAt: { type: Date, default: Date.now }
 });
 

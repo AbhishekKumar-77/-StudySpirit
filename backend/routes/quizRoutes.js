@@ -38,7 +38,17 @@ router.get('/:code/analytics', auth, quizController.getQuizAnalytics);
 // Get Specific Quiz Leaderboard
 router.get('/:code/leaderboard', quizController.getSpecificLeaderboard);
 
+// Toggle Close/Open an exam (teacher only)
+router.put('/:code/close', auth, quizController.toggleCloseExam);
+
+// View a specific student's submitted code (teacher only)
+router.get('/:code/submission/:submissionId', auth, quizController.getStudentCode);
+
+// Execute code during an exam (no auth — uses quizCode for validation)
+router.post('/execute-exam', quizController.executeCodeExam);
+
 // Get Quiz by Code (must be LAST — catch-all)
 router.get('/:code', quizController.getQuiz);
 
 module.exports = router;
+

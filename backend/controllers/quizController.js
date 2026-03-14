@@ -435,6 +435,12 @@ exports.submitResult = async (req, res) => {
         if (req.body.quizCode) {
             const regNo = (req.body.registrationNumber || '').trim().toUpperCase();
 
+            // Block submissions if exam is closed
+            const examCheck = await Quiz.findOne({ code: req.body.quizCode.toUpperCase() }).select('isClosed');
+            if (examCheck?.isClosed) {
+                return res.status(403).json({ success: false, message: "This exam has been closed by the teacher." });
+            }
+
             // Block re-attempt: if same regNo already submitted this quiz
             if (regNo) {
                 const existing = await QuizSubmission.findOne({
@@ -450,16 +456,17 @@ exports.submitResult = async (req, res) => {
                 }
             }
 
-            await QuizSubmission.create({
+        await QuizSubmission.create({
                 quizCode: req.body.quizCode,
-                studentId: userId, // Can be null for guests
+                studentId: userId,
                 studentName: displayName,
                 registrationNumber: regNo,
                 score: score,
                 totalQuestions: totalQuestions,
                 percentage: percentage,
                 timeTaken: timeTaken,
-                userAnswers: userAnswers || {} // Save per-question answers for analytics
+                userAnswers: userAnswers || {},
+                codingSubmissions: req.body.codingSubmissions || [] // coding question code
             });
         }
 
@@ -575,6 +582,7 @@ exports.getSpecificLeaderboard = async (req, res) => {
             }
             return {
                 id: sub._id,
+                submissionId: sub._id.toString(), // For teacher "View Code" feature
                 rank: idx + 1,
                 name: sub.studentName || 'Student',
                 registrationNumber: sub.registrationNumber || '',
@@ -582,6 +590,7 @@ exports.getSpecificLeaderboard = async (req, res) => {
                 marks: sub.score || 0,
                 totalMarks: sub.totalQuestions || 0,
                 time: timeStr,
+                hasCodingSubmissions: (sub.codingSubmissions || []).length > 0,
                 isYou: req.user ? (sub.studentId?.toString() === req.user.id) : false
             };
         });
@@ -670,3 +679,77 @@ exports.getQuizAnalytics = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to fetch quiz analytics" });
     }
 };
+
+// ── Toggle Exam Open/Closed ──────────────────────────────────────────────────
+exports.toggleCloseExam = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized" });
+        const { code } = req.params;
+        const quiz = await Quiz.findOne({ code, creatorId: req.user.id });
+        if (!quiz) return res.status(404).json({ success: false, message: "Quiz not found or unauthorized" });
+
+        quiz.isClosed = !quiz.isClosed;
+        await quiz.save();
+
+        res.json({ success: true, isClosed: quiz.isClosed, message: quiz.isClosed ? "Exam closed — students can no longer submit." : "Exam reopened — students can now submit." });
+    } catch (error) {
+        console.error("Toggle Close Exam Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// ── Get a specific student's submitted code (Teacher Only) ───────────────────
+exports.getStudentCode = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized" });
+        const { code, submissionId } = req.params;
+
+        const quiz = await Quiz.findOne({ code, creatorId: req.user.id });
+        if (!quiz) return res.status(403).json({ success: false, message: "Not authorized to view this exam's data" });
+
+        const QuizSubmission = require('../models/QuizSubmission');
+        const submission = await QuizSubmission.findById(submissionId);
+        if (!submission) return res.status(404).json({ success: false, message: "Submission not found" });
+        if (submission.quizCode !== code) return res.status(403).json({ success: false, message: "Submission does not belong to this quiz" });
+
+        res.json({ success: true, submission: {
+            studentName: submission.studentName,
+            registrationNumber: submission.registrationNumber,
+            percentage: submission.percentage,
+            timeTaken: submission.timeTaken,
+            submittedAt: submission.submittedAt,
+            codingSubmissions: submission.codingSubmissions || [],
+            userAnswers: submission.userAnswers || {}
+        }});
+    } catch (error) {
+        console.error("Get Student Code Error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+// ── Execute code during an exam (no auth required, uses quizCode validation) ─
+exports.executeCodeExam = async (req, res) => {
+    try {
+        const { quizCode, language, code, stdin } = req.body;
+        if (!quizCode || !language || !code) {
+            return res.status(400).json({ success: false, message: "quizCode, language and code are required" });
+        }
+
+        // Verify quiz exists and is not closed
+        const quiz = await Quiz.findOne({ code: quizCode.toUpperCase() });
+        if (!quiz) return res.status(404).json({ success: false, message: "Quiz not found" });
+        if (quiz.isClosed) return res.status(403).json({ success: false, message: "This exam is closed" });
+
+        // Reuse Wandbox execution from codeSpiritController
+        const codeSpiritController = require('./codeSpiritController');
+        // Forward to the same execute endpoint logic
+        req.body.language = language;
+        req.body.code = code;
+        req.body.stdin = stdin || '';
+        return codeSpiritController.executeCode(req, res);
+    } catch (error) {
+        console.error("Execute Code Exam Error:", error);
+        res.status(500).json({ success: false, message: "Execution failed: " + error.message });
+    }
+};
+

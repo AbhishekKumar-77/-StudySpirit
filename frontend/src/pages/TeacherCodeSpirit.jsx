@@ -7,7 +7,8 @@ import {
     BookOpen, Code, Trophy, Users, BarChart2, LogOut,
     PlusCircle, Clock, CheckCircle, Copy, Eye, Target,
     ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X, Trash2, Download,
-    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft
+    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft, Lock, Unlock, ExternalLink,
+    FileCode2
 } from 'lucide-react';
 
 export default function TeacherCodeSpirit() {
@@ -77,6 +78,25 @@ export default function TeacherCodeSpirit() {
         } catch (e) {
             console.error(e);
             alert('Error deleting quiz');
+        }
+    };
+
+    const handleToggleClose = async (quizCode) => {
+        try {
+            const res = await fetch(`${API_BASE}/quiz/${quizCode}/close`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setMyQuizzes(prev => prev.map(q =>
+                    q.code === quizCode ? { ...q, isClosed: data.isClosed } : q
+                ));
+            } else {
+                alert(data.message || 'Failed to update exam state');
+            }
+        } catch (e) {
+            alert('Error toggling exam state');
         }
     };
 
@@ -372,7 +392,7 @@ export default function TeacherCodeSpirit() {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                     {myQuizzes.slice(0, 6).map(quiz => (
-                                        <QuizCard key={quiz.code} quiz={quiz} onDelete={handleDeleteQuiz} onNavigate={() => navigate('/codespirit-creator')} onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
+                                        <QuizCard key={quiz.code} quiz={quiz} onDelete={handleDeleteQuiz} onToggleClose={handleToggleClose} onNavigate={() => navigate('/codespirit-creator')} onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
                                     ))}
                                 </div>
                             )}
@@ -394,7 +414,7 @@ export default function TeacherCodeSpirit() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                                 {myQuizzes.map(quiz => (
-                                    <QuizCard key={quiz.code} quiz={quiz} onDelete={handleDeleteQuiz} onNavigate={() => navigate('/codespirit-creator')} showFull onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
+                                    <QuizCard key={quiz.code} quiz={quiz} onDelete={handleDeleteQuiz} onToggleClose={handleToggleClose} onNavigate={() => navigate('/codespirit-creator')} showFull onMonitor={(code) => { setActiveTab('live'); startMonitoring(code); }} />
                                 ))}
                             </div>
                         )}
@@ -697,18 +717,15 @@ function LiveMonitorSection({ monitorCode, setMonitorCode, monitoringCode, liveS
 }
 
 // ── Quiz Card ────────────────────────────────────────────────────
-function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete }) {
+function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete, onToggleClose }) {
     const copyCode = () => { navigator.clipboard.writeText(quiz.code); alert(`Code "${quiz.code}" copied!`); };
+    const isClosed = quiz.isClosed;
 
     return (
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 hover:border-violet-500/30 hover:shadow-lg transition-all group relative">
+        <div className={`bg-[var(--bg-secondary)] border rounded-2xl p-5 hover:shadow-lg transition-all group relative ${isClosed ? 'border-red-500/30' : 'border-[var(--border-color)] hover:border-violet-500/30'}`}>
             {onDelete && (
                 <button
-                    onClick={() => {
-                        if (window.confirm("Are you sure you want to delete this exam?")) {
-                            onDelete(quiz.code);
-                        }
-                    }}
+                    onClick={() => { if (window.confirm("Are you sure you want to delete this exam?")) onDelete(quiz.code); }}
                     className="absolute top-4 right-4 p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-all z-10"
                     title="Delete Exam"
                 >
@@ -717,8 +734,12 @@ function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete }) {
             )}
             <div className="flex items-start justify-between mb-3 pr-8">
                 <h3 className="font-black text-[var(--text-primary)] text-base line-clamp-2 flex-1 group-hover:text-violet-500 transition-colors">{quiz.title}</h3>
-                <span className={`shrink-0 text-xs px-2 py-1 rounded-lg font-bold ${quiz.status === 'published' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'}`}>
-                    {quiz.status === 'published' ? '✓ Live' : '⏳ Draft'}
+                <span className={`shrink-0 text-xs px-2 py-1 rounded-lg font-bold ${
+                    isClosed ? 'bg-red-500/15 text-red-500' :
+                    quiz.status === 'published' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' :
+                    'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                }`}>
+                    {isClosed ? '🔒 Closed' : quiz.status === 'published' ? '✓ Live' : '⏳ Draft'}
                 </span>
             </div>
             <div className="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)] mb-4">
@@ -733,12 +754,27 @@ function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete }) {
                     <button onClick={copyCode} className="p-1.5 hover:bg-violet-500/20 rounded-lg transition-all"><Copy size={14} className="text-violet-500" /></button>
                 </div>
             )}
-            <div className="flex gap-2">
-                <button onClick={() => onNavigate('/quiz')} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--border-color)] hover:bg-violet-500/10 hover:text-violet-500 text-[var(--text-secondary)] rounded-xl text-sm font-semibold transition-all">
-                    <Eye size={15} /> Edit
+            <div className="flex flex-wrap gap-2">
+                <button
+                    onClick={() => window.open(`/quiz?code=${quiz.code}&preview=1`, '_blank')}
+                    title="Preview as Student"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-[var(--border-color)] hover:bg-indigo-500/10 hover:text-indigo-400 text-[var(--text-secondary)] rounded-xl text-xs font-semibold transition-all"
+                >
+                    <ExternalLink size={13} /> Preview
                 </button>
+                {quiz.status === 'published' && onToggleClose && (
+                    <button
+                        onClick={() => onToggleClose(quiz.code)}
+                        title={isClosed ? 'Reopen exam for submissions' : 'Close exam — block new submissions'}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                            isClosed ? 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                        }`}
+                    >
+                        {isClosed ? <><Unlock size={13} /> Reopen</> : <><Lock size={13} /> Close</>}
+                    </button>
+                )}
                 {quiz.status === 'published' && (
-                    <button onClick={() => onMonitor(quiz.code)} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-semibold transition-all">
+                    <button onClick={() => onMonitor(quiz.code)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-semibold transition-all">
                         <Radio size={15} /> Monitor
                     </button>
                 )}
@@ -752,14 +788,12 @@ function LeaderboardSection({ myQuizzes }) {
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedQuiz, setSelectedQuiz] = useState('');
+    const [viewingCode, setViewingCode] = useState(null);
 
     const publishedQuizzes = myQuizzes.filter(q => q.status === 'published');
 
     useEffect(() => {
-        if (!selectedQuiz) {
-            setLeaderboard([]);
-            return;
-        }
+        if (!selectedQuiz) { setLeaderboard([]); return; }
         (async () => {
             setLoading(true);
             try {
@@ -771,58 +805,106 @@ function LeaderboardSection({ myQuizzes }) {
         })();
     }, [selectedQuiz]);
 
+    const handleViewCode = async (entry) => {
+        setViewingCode({ studentName: entry.name, loading: true, codingSubmissions: [], registrationNumber: entry.registrationNumber });
+        try {
+            const res = await fetch(`${API_BASE}/quiz/${selectedQuiz}/submission/${entry.submissionId}`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) {
+                setViewingCode({ studentName: entry.name, loading: false, registrationNumber: entry.registrationNumber, codingSubmissions: data.submission.codingSubmissions || [] });
+            } else {
+                setViewingCode({ studentName: entry.name, loading: false, codingSubmissions: [], error: data.message });
+            }
+        } catch (e) {
+            setViewingCode({ studentName: entry.name, loading: false, codingSubmissions: [], error: e.message });
+        }
+    };
+
     const downloadCSV = () => {
         if (leaderboard.length === 0) return;
-        
-        const formatTimeForExcel = (timeStr) => {
-            if (!timeStr) return "00:00";
-            if (typeof timeStr === 'number') return `${Math.floor(timeStr / 60).toString().padStart(2, '0')}:${(timeStr % 60).toString().padStart(2, '0')}`;
-            if (typeof timeStr === 'string' && timeStr.includes('m')) {
-                const mMatch = timeStr.match(/(\d+)\s*m/);
-                const sMatch = timeStr.match(/(\d+)\s*s/);
-                const m = mMatch ? parseInt(mMatch[1]) : 0;
-                const s = sMatch ? parseInt(sMatch[1]) : 0;
-                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        const fmt = (t) => {
+            if (!t) return '00:00';
+            if (typeof t === 'number') return `${Math.floor(t/60).toString().padStart(2,'0')}:${(t%60).toString().padStart(2,'0')}`;
+            if (typeof t === 'string' && t.includes('m')) {
+                const m = (t.match(/(\d+)\s*m/) || [])[1] || 0;
+                const s = (t.match(/(\d+)\s*s/) || [])[1] || 0;
+                return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
             }
-            return String(timeStr);
+            return String(t);
         };
-
-        const headers = ["Rank", "Registration No", "Student Name", "Correct Answers", "Real Marks", "Total Questions", "Percentage", "Time Taken"];
-        const rows = leaderboard.map(p => {
-            // Calculate real marks exactly based on the final percentage they received
-            const realMarks = ((p.score / 100) * (p.totalMarks || 1)).toFixed(2).replace(/\.00$/, '');
-            return [
-                p.rank,
-                `"${p.registrationNumber || ''}"`,
-                `"${p.name}"`,
-                p.marks || 0,
-                realMarks,
-                p.totalMarks || 0,
-                `${p.score}%`,
-                formatTimeForExcel(p.time)
-            ];
-        });
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `results_quiz_${selectedQuiz}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const headers = ["Rank","Registration No","Student Name","Correct Answers","Real Marks","Total Questions","Percentage","Time Taken","Has Coding Submission"];
+        const rows = leaderboard.map(p => [
+            p.rank, `"${p.registrationNumber||""}"`, `"${p.name}"`, p.marks||0,
+            ((p.score/100)*(p.totalMarks||1)).toFixed(2).replace(/\.00$/,''),
+            p.totalMarks||0, `${p.score}%`, fmt(p.time), p.hasCodingSubmissions ? 'Yes' : 'No'
+        ]);
+        const csv = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const a = document.createElement('a');
+        a.setAttribute('href', encodeURI(csv));
+        a.setAttribute('download', `results_${selectedQuiz}.csv`);
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
     };
 
     return (
-        <div className="space-y-6 max-w-4xl">
+        <div className="space-y-6 max-w-5xl">
+            {/* View Code Modal */}
+            {viewingCode && (
+                <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <div className="flex items-center justify-between p-5 border-b border-[var(--border-color)] sticky top-0 bg-[var(--bg-secondary)] z-10">
+                            <div>
+                                <div className="font-black text-lg text-[var(--text-primary)] flex items-center gap-2"><FileCode2 size={20} className="text-violet-500" /> Submitted Code</div>
+                                <div className="text-sm text-[var(--text-secondary)] mt-0.5">{viewingCode.studentName} {viewingCode.registrationNumber ? `(${viewingCode.registrationNumber})` : ''}</div>
+                            </div>
+                            <button onClick={() => setViewingCode(null)} className="p-2 hover:bg-[var(--border-color)] rounded-xl transition-all"><X size={20} /></button>
+                        </div>
+                        <div className="p-5">
+                            {viewingCode.loading ? (
+                                <div className="text-center py-16 text-[var(--text-muted)]">Loading submission...</div>
+                            ) : viewingCode.error ? (
+                                <div className="text-center py-8 text-red-400 bg-red-500/10 rounded-xl p-4">{viewingCode.error}</div>
+                            ) : viewingCode.codingSubmissions.length === 0 ? (
+                                <div className="text-center py-12 opacity-50">
+                                    <FileCode2 size={40} className="mx-auto mb-3 opacity-40" />
+                                    <p className="font-semibold">No coding submissions found.</p>
+                                    <p className="text-xs mt-1 opacity-70">Coding submissions are captured after this feature was deployed.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-5">
+                                    {viewingCode.codingSubmissions.map((sub, i) => (
+                                        <div key={i} className="border border-[var(--border-color)] rounded-xl overflow-hidden">
+                                            <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-primary)]">
+                                                <span className="font-bold text-sm flex items-center gap-2"><Code size={14} className="text-violet-400" /> Coding Q{i + 1}</span>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-xs font-mono bg-[var(--border-color)] px-2 py-1 rounded">{sub.language || 'unknown'}</span>
+                                                    {sub.testsTotal > 0 && (
+                                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                                            sub.testsPassed === sub.testsTotal ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'
+                                                        }`}>
+                                                            {sub.testsPassed || 0}/{sub.testsTotal} tests ✓
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <pre className="p-4 bg-[#0d1117] text-emerald-300 text-xs font-mono overflow-x-auto whitespace-pre max-h-64">{sub.code || '(empty)'}</pre>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
-                <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2 uppercase tracking-wide">Select Quiz to view Results</label>
+                <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2 uppercase tracking-wide">Select Exam to view Results</label>
                 <div className="flex gap-4">
                     <select
                         value={selectedQuiz}
                         onChange={(e) => setSelectedQuiz(e.target.value)}
                         className="flex-1 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:border-violet-500 outline-none transition-colors"
                     >
-                        <option value="">-- Choose a published quiz --</option>
+                        <option value="">-- Choose a published exam --</option>
                         {publishedQuizzes.map(q => (
                             <option key={q.code} value={q.code}>{q.title} ({q.code})</option>
                         ))}
@@ -842,36 +924,50 @@ function LeaderboardSection({ myQuizzes }) {
             ) : selectedQuiz && leaderboard.length === 0 ? (
                 <div className="text-center py-20 bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl">
                     <Trophy size={64} className="mx-auto mb-4 text-amber-400 opacity-40" />
-                    <p className="text-xl text-[var(--text-muted)]">No students have submitted this exam yet.</p>
+                    <p className="text-xl text-[var(--text-muted)]">No submissions for this exam yet.</p>
                 </div>
             ) : !selectedQuiz ? (
                 <div className="text-center py-20 bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl">
                     <BarChart2 size={64} className="mx-auto mb-4 text-[var(--text-muted)] opacity-40" />
-                    <p className="text-xl text-[var(--text-muted)]">Select a quiz to view its results board.</p>
+                    <p className="text-xl text-[var(--text-muted)]">Select an exam to view results.</p>
                 </div>
             ) : (
                 <div className="space-y-3">
                     {leaderboard.map((p, i) => (
-                        <div key={p.id || i} className={`flex items-center gap-5 p-5 rounded-2xl border transition-all ${i === 0 ? 'bg-amber-500/5 border-amber-500/25' :
+                        <div key={p.id || i} className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
+                            i === 0 ? 'bg-amber-500/5 border-amber-500/25' :
                             i === 1 ? 'bg-slate-400/5 border-slate-400/20' :
-                                i === 2 ? 'bg-orange-500/5 border-orange-400/20' :
-                                    'bg-[var(--bg-secondary)] border-[var(--border-color)]'
-                            }`}>
+                            i === 2 ? 'bg-orange-500/5 border-orange-400/20' :
+                            'bg-[var(--bg-secondary)] border-[var(--border-color)]'
+                        }`}>
                             <div className="w-10 text-center font-black text-xl">
                                 {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : <span className="text-[var(--text-muted)] text-base">#{i + 1}</span>}
                             </div>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-black text-lg shrink-0">
                                 {p.name?.[0]?.toUpperCase()}
                             </div>
-                            <div className="flex-1">
-                                <div className="font-bold text-[var(--text-primary)]">{p.name} {p.registrationNumber ? <span className="text-sm font-normal text-[var(--text-muted)]">({p.registrationNumber})</span> : ''}</div>
-                                <div className="flex gap-4 text-xs text-[var(--text-secondary)] mt-0.5">
-                                    <span>⏱ Time: {p.time}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="font-bold text-[var(--text-primary)] truncate">
+                                    {p.name} {p.registrationNumber ? <span className="text-sm font-normal text-[var(--text-muted)]">({p.registrationNumber})</span> : ''}
+                                </div>
+                                <div className="flex flex-wrap gap-3 text-xs text-[var(--text-secondary)] mt-0.5">
+                                    <span>⏱ {p.time}</span>
+                                    {p.hasCodingSubmissions && <span className="text-violet-400 font-bold">💻 Code submitted</span>}
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="text-2xl font-black text-[var(--text-primary)]">{p.score}%</div>
-                                <div className="text-xs text-[var(--text-secondary)] font-bold">{p.marks !== undefined ? `${p.marks}/${p.totalMarks}` : ''} Marks</div>
+                            <div className="flex items-center gap-3 shrink-0">
+                                {p.submissionId && (
+                                    <button
+                                        onClick={() => handleViewCode(p)}
+                                        className="flex items-center gap-1.5 px-3 py-2 bg-violet-500/10 hover:bg-violet-500/20 text-violet-500 rounded-xl text-xs font-bold transition-all"
+                                    >
+                                        <FileCode2 size={14} /> View Code
+                                    </button>
+                                )}
+                                <div className="text-right">
+                                    <div className="text-2xl font-black text-[var(--text-primary)]">{p.score}%</div>
+                                    <div className="text-xs text-[var(--text-secondary)] font-bold">{p.marks !== undefined ? `${p.marks}/${p.totalMarks}` : ''} Marks</div>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -880,3 +976,4 @@ function LeaderboardSection({ myQuizzes }) {
         </div>
     );
 }
+
