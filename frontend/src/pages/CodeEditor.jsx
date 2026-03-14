@@ -103,7 +103,12 @@ export default function CodeEditor() {
         catch { return []; }
     });
     const [currentFileName, setCurrentFileName] = useState("untitled");
-    const [stdin, setStdin] = useState("");
+    const [stdin, setStdin] = useState(() => {
+        // Auto-fill stdin with first test case input
+        const firstChallenge = (challenges.length > 0 ? challenges : legacyProblem ? [legacyProblem] : [])[0];
+        return firstChallenge?.testCases?.[0]?.input || "";
+    });
+    const [tcOutputs, setTcOutputs] = useState({}); // per-tc output: { tcIndex: {stdout, running} }
 
     // Timer state
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -216,6 +221,10 @@ export default function CodeEditor() {
         setVerificationResults(null);
         setReviewData(null);
         setShowReview(false);
+        setTcOutputs({});
+        // Auto-fill stdin with first test case for new question
+        const ch = allChallenges[currentIndex];
+        if (ch?.testCases?.[0]?.input) setStdin(ch.testCases[0].input);
     }, [currentIndex]);
 
     // Sync code/output when switching questions
@@ -353,6 +362,35 @@ export default function CodeEditor() {
     };
 
     const handleEditorMount = (editor) => { editorRef.current = editor; };
+
+    // Run code with a specific test case's input and store the result inline
+    const runWithTestCase = async (tcIndex, tcInput) => {
+        setTcOutputs(prev => ({ ...prev, [tcIndex]: { running: true, stdout: null, stderr: null } }));
+        try {
+            const res = await fetch(`${API_BASE}/codespirit/execute`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ language: language.id, code, stdin: tcInput || '' })
+            });
+            const result = await res.json();
+            if (result.success && result.run) {
+                setTcOutputs(prev => ({
+                    ...prev,
+                    [tcIndex]: {
+                        running: false,
+                        stdout: result.run.stdout?.trim() || '',
+                        stderr: result.run.stderr?.trim() || '',
+                        exitCode: result.run.exitCode
+                    }
+                }));
+            } else {
+                setTcOutputs(prev => ({ ...prev, [tcIndex]: { running: false, stderr: result.message || 'Error', stdout: null } }));
+            }
+        } catch (e) {
+            setTcOutputs(prev => ({ ...prev, [tcIndex]: { running: false, stderr: e.message, stdout: null } }));
+        }
+    };
 
     const runCode = async () => {
         setIsRunning(true);
@@ -789,15 +827,69 @@ export default function CodeEditor() {
                             </div>
 
                             {currentProblem.testCases && (
-                                <div className={`border rounded-xl p-4 ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-[var(--bg-secondary)]lack/20 border-[var(--border-color)]"}`}>
-                                    <div className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2 opacity-70"><CheckCircle size={14} /> Test Cases</div>
-                                    <div className="space-y-3">
-                                        {currentProblem.testCases.map((tc, i) => (
-                                            <div key={i} className="text-sm font-mono">
-                                                <div className="flex gap-2"><span className="opacity-50">Input:</span> <span>{tc.input}</span></div>
-                                                <div className="flex gap-2"><span className="opacity-50">Output:</span> <span className="text-green-500">{tc.output}</span></div>
-                                            </div>
-                                        ))}
+                                <div className={`border rounded-xl overflow-hidden ${theme === "light" ? "bg-gray-50 border-gray-200" : "bg-[var(--bg-secondary)] border-[var(--border-color)]"}`}>
+                                    <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                                        <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 opacity-70"><CheckCircle size={14} /> Sample Test Cases</span>
+                                        <button
+                                            onClick={() => currentProblem.testCases.forEach((tc, i) => runWithTestCase(i, tc.input))}
+                                            className={`text-xs px-3 py-1 rounded-lg font-bold flex items-center gap-1 transition-all ${theme === 'light' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'}`}
+                                        >
+                                            <Play size={11} /> Run All
+                                        </button>
+                                    </div>
+                                    <div className="divide-y divide-[var(--border-color)]">
+                                        {currentProblem.testCases.map((tc, i) => {
+                                            const tcOut = tcOutputs[i];
+                                            const isPassed = tcOut && !tcOut.running && tcOut.stdout !== null && tcOut.stdout?.trim() === tc.output?.trim();
+                                            const isFailed = tcOut && !tcOut.running && tcOut.stdout !== null && tcOut.stdout?.trim() !== tc.output?.trim();
+                                            return (
+                                                <div key={i} className={`p-4 transition-colors ${
+                                                    isPassed ? (theme === 'light' ? 'bg-emerald-50' : 'bg-emerald-500/5') :
+                                                    isFailed ? (theme === 'light' ? 'bg-red-50' : 'bg-red-500/5') : ''
+                                                }`}>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className={`text-xs font-bold flex items-center gap-1.5 ${
+                                                            isPassed ? 'text-emerald-500' : isFailed ? 'text-red-500' : 'opacity-60'
+                                                        }`}>
+                                                            {isPassed ? <CheckCircle size={12} /> : isFailed ? <XCircle size={12} /> : <Hash size={12} />}
+                                                            Test Case {i + 1}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => { setStdin(tc.input); runWithTestCase(i, tc.input); }}
+                                                            disabled={tcOut?.running}
+                                                            className={`text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition-all disabled:opacity-50 ${
+                                                                theme === 'light' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                                                            }`}
+                                                        >
+                                                            {tcOut?.running ? <Loader size={10} className="animate-spin" /> : <Play size={10} />}
+                                                            {tcOut?.running ? 'Running...' : '▶ Run'}
+                                                        </button>
+                                                    </div>
+                                                    <div className="font-mono text-xs space-y-1">
+                                                        <div className="flex gap-2">
+                                                            <span className="opacity-40 shrink-0">Input:</span>
+                                                            <span className="text-cyan-400 break-all">{tc.input}</span>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <span className="opacity-40 shrink-0">Expected:</span>
+                                                            <span className="text-emerald-400">{tc.output}</span>
+                                                        </div>
+                                                        {tcOut && !tcOut.running && (
+                                                            <div className="flex gap-2 mt-1 pt-1 border-t border-[var(--border-color)]">
+                                                                <span className={`opacity-40 shrink-0`}>Got:</span>
+                                                                {tcOut.stderr && !tcOut.stdout ? (
+                                                                    <span className="text-red-400">{tcOut.stderr}</span>
+                                                                ) : (
+                                                                    <span className={isPassed ? 'text-emerald-400' : 'text-red-400'}>
+                                                                        {tcOut.stdout !== '' ? tcOut.stdout : <span className="opacity-50 italic">(empty output)</span>}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
