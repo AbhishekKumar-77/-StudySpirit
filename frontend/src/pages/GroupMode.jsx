@@ -24,12 +24,7 @@ export default function GroupMode() {
     const [typingUsers, setTypingUsers] = useState([]);
     const [isPiPMode, setIsPiPMode] = useState(false);
     
-    // PiP minimizable
-    const isHost = React.useMemo(() => {
-        if (!liveRooms || !currentRoomId) return false;
-        const currentRoom = liveRooms.find(r => r.id === currentRoomId || r._id === currentRoomId);
-        return currentRoom?.host === user?.name || currentRoom?.hostId === user?._id;
-    }, [liveRooms, currentRoomId, user]);
+    // Removed isHost here to place it lower down
 
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -86,6 +81,13 @@ export default function GroupMode() {
     const [currentRoomId, setCurrentRoomId] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(user?._id || 'user_' + Math.random().toString(36).substr(2, 9));
     const [isWebRTCInitialized, setIsWebRTCInitialized] = useState(false);
+
+    // Host checking logic - placed below dependencies
+    const isHost = React.useMemo(() => {
+        if (!liveRooms || !currentRoomId) return false;
+        const currentRoom = liveRooms.find(r => r.id === currentRoomId || r._id === currentRoomId);
+        return currentRoom?.host === user?.name || currentRoom?.hostId === user?._id;
+    }, [liveRooms, currentRoomId, user]);
 
     // Spotlight and Whiteboard states
     const [spotlightUserId, setSpotlightUserId] = useState(null);
