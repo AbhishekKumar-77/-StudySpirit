@@ -203,8 +203,14 @@ export default function SoloMode() {
     const [currentMood, setCurrentMood] = useState(null);
     const [showMoodTracker, setShowMoodTracker] = useState(false);
     const [showJournal, setShowJournal] = useState(false);
-    const [journalEntry, setJournalEntry] = useState('');
+    const [journalEntry, setJournalEntry] = useState(() => {
+        return localStorage.getItem('studySpirit_journal') || '';
+    });
     const [energyLevel, setEnergyLevel] = useState(75);
+
+    useEffect(() => {
+        localStorage.setItem('studySpirit_journal', journalEntry);
+    }, [journalEntry]);
     const [showBreathing, setShowBreathing] = useState(false);
     const [breathingPhase, setBreathingPhase] = useState('inhale');
     const [showCelebration, setShowCelebration] = useState(false);
@@ -1510,24 +1516,52 @@ export default function SoloMode() {
             {/* Breathing Exercise Modal */}
             {
                 showBreathing && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]" onClick={() => setShowBreathing(false)}>
-                        <div className="bg-gradient-to-br from-slate-900/95 to-emerald-900/95 rounded-3xl p-8 max-w-md w-[90%] border border-emerald-500/30 shadow-2xl text-center relative" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => setShowBreathing(false)} className="absolute top-4 right-4 bg-red-500/20 text-red-400 w-9 h-9 rounded-full flex items-center justify-center hover:bg-red-500/30 transition-all">
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999]" onClick={() => setShowBreathing(false)}>
+                        <div className="bg-[var(--glass-bg)] rounded-[40px] p-10 max-w-sm w-[90%] border border-[var(--border-color)] shadow-[0_0_50px_rgba(16,185,129,0.2)] text-center relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                            {/* Animated Background Glow */}
+                            <div className={`absolute inset-0 opacity-20 transition-all duration-[4000ms] ${
+                                breathingPhase === 'inhale' ? 'bg-emerald-500' :
+                                breathingPhase === 'hold' ? 'bg-amber-500' :
+                                'bg-blue-500'
+                            }`} />
+                            
+                            <button onClick={() => setShowBreathing(false)} className="absolute top-6 right-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-10 h-10 rounded-full flex items-center justify-center transition-all z-10">
                                 <X className="w-5 h-5" />
                             </button>
-                            <h2 className="text-2xl font-black text-[var(--text-primary)] mb-8">Breathing Exercise</h2>
-                            <div className={`w - 44 h - 44 mx - auto rounded - full border - 4 flex items - center justify - center mb - 8 transition - all duration - [4000ms] ${breathingPhase === 'inhale' ? 'border-emerald-500 scale-125 bg-emerald-500/20' :
-                                breathingPhase === 'hold' ? 'border-amber-500 scale-100 bg-amber-500/20' :
-                                    'border-blue-500 scale-75 bg-blue-500/20'
-                                } `}>
-                                <Wind className="w-12 h-12 text-[var(--text-primary)]" />
+                            
+                            <h2 className="text-3xl font-black text-[var(--text-primary)] mb-12 relative z-10">Breathe</h2>
+                            
+                            <div className="relative w-56 h-56 mx-auto mb-12 flex items-center justify-center z-10">
+                                {/* Outer Ripple Elements */}
+                                <div className={`absolute inset-0 rounded-full border border-emerald-500/30 transition-all duration-[4000ms] ease-in-out ${breathingPhase === 'inhale' ? 'scale-150 opacity-0' : breathingPhase === 'hold' ? 'scale-125 opacity-50 border-amber-500/30' : 'scale-50 opacity-0 border-blue-500/30'}`} />
+                                <div className={`absolute inset-0 rounded-full border-2 transition-all duration-[4000ms] ease-in-out ${breathingPhase === 'inhale' ? 'border-emerald-500/40 scale-125' : breathingPhase === 'hold' ? 'border-amber-500/40 scale-110' : 'border-blue-500/40 scale-75'}`} />
+                                
+                                {/* Inner Core */}
+                                <div className={`relative w-full h-full rounded-full flex items-center justify-center transition-all duration-[4000ms] ease-in-out z-10 ${
+                                    breathingPhase === 'inhale' ? 'bg-gradient-to-tr from-emerald-500/40 to-emerald-400/10 shadow-[0_0_40px_rgba(16,185,129,0.5)] scale-100' :
+                                    breathingPhase === 'hold' ? 'bg-gradient-to-tr from-amber-500/40 to-amber-400/10 shadow-[0_0_20px_rgba(245,158,11,0.5)] scale-90' :
+                                    'bg-gradient-to-tr from-blue-500/40 to-blue-400/10 shadow-[0_0_10px_rgba(59,130,246,0.5)] scale-75'
+                                }`}>
+                                    <Wind className={`w-16 h-16 transition-all duration-[4000ms] ${
+                                        breathingPhase === 'inhale' ? 'text-emerald-300 scale-110' :
+                                        breathingPhase === 'hold' ? 'text-amber-300 scale-100' :
+                                        'text-blue-300 scale-90'
+                                    }`} />
+                                </div>
                             </div>
-                            <div className="text-2xl font-black text-[var(--text-primary)] mb-2">
-                                {breathingPhase === 'inhale' && 'Breathe In'}
-                                {breathingPhase === 'hold' && 'Hold'}
-                                {breathingPhase === 'exhale' && 'Breathe Out'}
+                            
+                            <div className="relative z-10 py-3 px-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] inline-flex rounded-2xl items-center justify-center shadow-lg">
+                                <span className={`text-2xl font-black uppercase tracking-widest transition-colors duration-[2000ms] ${
+                                    breathingPhase === 'inhale' ? 'text-emerald-400' :
+                                    breathingPhase === 'hold' ? 'text-amber-400' :
+                                    'text-blue-400'
+                                }`}>
+                                    {breathingPhase === 'inhale' && 'Inhale'}
+                                    {breathingPhase === 'hold' && 'Hold'}
+                                    {breathingPhase === 'exhale' && 'Exhale'}
+                                </span>
                             </div>
-                            <p className="text-[var(--text-secondary)] text-sm">Follow the rhythm to relax</p>
+                            <p className="text-[var(--text-secondary)] text-sm mt-6 font-medium tracking-wide relative z-10">Take a moment for yourself</p>
                         </div>
                     </div>
                 )
@@ -1537,7 +1571,7 @@ export default function SoloMode() {
             {
                 showJournal && (
                     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]" onClick={() => setShowJournal(false)}>
-                        <div className="bg-gradient-to-br from-slate-900/95 to-violet-900/95 rounded-3xl p-8 max-w-2xl w-[90%] border border-cyan-500/30 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-[var(--glass-bg)] rounded-3xl p-8 max-w-2xl w-[90%] border border-[var(--border-color)] shadow-2xl" onClick={(e) => e.stopPropagation()}>
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
                                 <h2 className="text-2xl font-black text-[var(--text-primary)] flex items-center gap-3">
                                     <Edit3 className="w-6 h-6 text-cyan-500600 dark:text-cyan-500400" /> Study Journal
@@ -1550,11 +1584,16 @@ export default function SoloMode() {
                                 value={journalEntry}
                                 onChange={(e) => setJournalEntry(e.target.value)}
                                 placeholder="What did you learn today? What problems did you solve? What concepts are still unclear?"
-                                className="w-full min-h-[250px] p-4 bg-[var(--border-color)]/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] resize-y focus:outline-none focus:border-cyan-500 mb-4"
+                                className="w-full min-h-[250px] p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] resize-y focus:outline-none focus:border-cyan-500 mb-6 shadow-inner text-sm"
                             />
-                            <button onClick={() => { setJournalEntry(''); setShowJournal(false); }} className="w-full py-4 bg-gradient-to-r from-cyan-500500 to-purple-500 rounded-xl text-white font-bold hover:shadow-lg hover:shadow-violet-500/30 transition-all">
-                                Save Entry
-                            </button>
+                            <div className="flex gap-4">
+                                <button onClick={() => { localStorage.removeItem('studySpirit_journal'); setJournalEntry(''); }} className="w-full py-4 bg-red-500/10 text-red-400 border border-red-500/30 rounded-xl font-bold hover:bg-red-500/20 transition-all">
+                                    Clear Journal
+                                </button>
+                                <button onClick={() => setShowJournal(false)} className="w-full py-4 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-xl text-white font-bold hover:shadow-lg transition-all">
+                                    Done
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )
@@ -1626,9 +1665,6 @@ export default function SoloMode() {
                             🎯 SOLO MODE
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={() => setShowMoodTracker(true)} className="bg-pink-500/15 border border-pink-500/30 text-pink-500 p-2.5 rounded-xl hover:bg-pink-500/25 transition-all" title="Track Mood">
-                                <Heart className="w-5 h-5" />
-                            </button>
                             <button onClick={() => setShowBreathing(true)} className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 p-2.5 rounded-xl hover:bg-emerald-500/25 transition-all" title="Breathing">
                                 <Wind className="w-5 h-5" />
                             </button>
