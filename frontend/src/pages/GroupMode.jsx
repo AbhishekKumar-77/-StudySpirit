@@ -21,6 +21,16 @@ export default function GroupMode() {
     const { user } = useApp();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [typingUsers, setTypingUsers] = useState([]);
+    const [isPiPMode, setIsPiPMode] = useState(false);
+    
+    // PiP minimizable
+    const isHost = React.useMemo(() => {
+        if (!liveRooms || !currentRoomId) return false;
+        const currentRoom = liveRooms.find(r => r.id === currentRoomId || r._id === currentRoomId);
+        return currentRoom?.host === user?.name || currentRoom?.hostId === user?._id;
+    }, [liveRooms, currentRoomId, user]);
+
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -435,6 +445,22 @@ export default function GroupMode() {
         });
 
         // Listen for room messages
+        
+        socket.on('room:typing', (data) => {
+            if (data.userId !== currentUserId) {
+                setTypingUsers(prev => {
+                    if (!prev.find(u => u.id === data.userId)) {
+                        return [...prev, { id: data.userId, name: data.userName }];
+                    }
+                    return prev;
+                });
+            }
+        });
+
+        socket.on('room:stopTyping', (data) => {
+            setTypingUsers(prev => prev.filter(u => u.id !== data.userId));
+        });
+
         socket.on('room:newMessage', (msg) => {
             console.log('?? New message received:', msg);
 
@@ -443,7 +469,61 @@ export default function GroupMode() {
             const senderName = msg.sender?.name || msg.sender || 'Someone';
             const senderId = msg.senderId || null;
 
-            if (content === 'SYSTEM:WHITEBOARD_OPEN') {
+            if (content.startsWith('SYSTEM:POMODORO_')) {
+                if (senderName !== (user?.name || 'You')) {
+                    if (content.startsWith('SYSTEM:POMODORO_START')) {
+                        setIsGroupTimerRunning(true);
+                        const parts = content.split('|');
+                        if (parts.length > 1) {
+                            setGroupPomodoroTime(parseInt(parts[1], 10));
+                        }
+                    } else if (content.startsWith('SYSTEM:POMODORO_PAUSE')) {
+                        setIsGroupTimerRunning(false);
+                        const parts = content.split('|');
+                        if (parts.length > 1) {
+                            setGroupPomodoroTime(parseInt(parts[1], 10));
+                        }
+                    } else if (content === 'SYSTEM:POMODORO_RESET') {
+                        setIsGroupTimerRunning(false);
+                        setGroupPomodoroTime(25 * 60);
+                    }
+                }
+                return;
+            }
+
+            
+            if (content === 'SYSTEM:MUTE_ALL') {
+                if (senderName !== (user?.name || 'You')) {
+                    setIsMicOn(false);
+                    // Force the actual hardware disabled
+                    if (window.webrtcService && window.webrtcService.toggleMicrophone) {
+                        window.webrtcService.toggleMicrophone(false);
+                    }
+                }
+                return;
+            }
+
+            if (content === 'SYSTEM:CAMERA_OFF_ALL') {
+                if (senderName !== (user?.name || 'You')) {
+                    setIsCameraOn(false);
+                    // Force actual hardware disabled
+                    if (window.webrtcService && window.webrtcService.toggleCamera) {
+                        window.webrtcService.toggleCamera(false);
+                    }
+                }
+                return;
+            }
+
+            if (content.startsWith('SYSTEM:KICK|')) {
+                const targetId = content.split('|')[1];
+                if (targetId === currentUserId) {
+                    alert('You have been removed from the session by the host.');
+                    leaveWebRTCRoom();
+                    setShowStudyRoom(false);
+                }
+                return;
+            }
+if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                 if (senderName !== (user?.name || 'You')) {
                     setShowWhiteboard(true);
                     setPresenterUserId(senderId || senderName);
@@ -486,12 +566,22 @@ export default function GroupMode() {
             // Transform raw message if needed (handle timestamp)
             const formattedMsg = {
                 id: msg.id || Date.now(),
+                localId: msg.localId,
                 user: msg.sender?.name || msg.sender || 'Unknown',
                 message: content,
                 time: msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 isMe: msg.sender?.name === (user?.name || 'You') || msg.sender === (user?.name || 'You')
             };
-            setChatMessages(prev => [...prev, formattedMsg]);
+
+            setChatMessages(prev => {
+                if (formattedMsg.localId && prev.some(m => m.localId === formattedMsg.localId)) {
+                    return prev.map(m => m.localId === formattedMsg.localId ? { ...formattedMsg, isMe: true } : m);
+                }
+                if (prev.some(m => m.id === formattedMsg.id || (m.message === formattedMsg.message && m.user === formattedMsg.user && m.time === formattedMsg.time))) {
+                    return prev;
+                }
+                return [...prev, formattedMsg];
+            });
         });
 
         // Listen for Pomodoro sync
@@ -727,7 +817,9 @@ export default function GroupMode() {
     const sendMessage = () => {
         if (currentMessage.trim()) {
             const socket = getSocket();
+            const localId = Date.now().toString() + Math.random();
             const msgData = {
+                localId,
                 message: currentMessage,
                 sender: user?.name || 'You',
                 senderAvatar: user?.avatar || '??',
@@ -735,18 +827,21 @@ export default function GroupMode() {
                 createdAt: new Date().toISOString()
             };
 
-            console.log('?? Sending message:', msgData);
+            const formattedMsg = {
+                id: localId,
+                localId,
+                user: user?.name || 'You',
+                avatar: user?.avatar || '??',
+                message: currentMessage,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                isMe: true
+            };
+            setChatMessages(prev => [...prev, formattedMsg]);
 
             // Emit to room
             if (socket) {
                 socket.emit('room:message', msgData);
             }
-
-            // Ideally we wait for server to echo back, but for better UX we might optimistic update
-            // However, we added a listener for room:newMessage which handles the incoming message
-            // So we don't need to manually update local state here if the server echoes it back to sender too.
-            // Backend implementation: io.to(room).emit() sends to everyone including sender? yes usually.
-            // Let's check backend: io.to(...).emit(...) includes sender.
 
             setCurrentMessage('');
         }
@@ -768,9 +863,11 @@ export default function GroupMode() {
             // Apply initial state to tracks
             stream.getAudioTracks().forEach(track => {
                 track.enabled = isMicOn;
+                track.onended = () => setIsMicOn(false);
             });
             stream.getVideoTracks().forEach(track => {
                 track.enabled = isCameraOn;
+                track.onended = () => setIsCameraOn(false);
             });
 
             setLocalStream(stream);
@@ -856,6 +953,7 @@ export default function GroupMode() {
                     console.log('?? Re-acquiring audio stream...');
                     const newStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     const newAudioTrack = newStream.getAudioTracks()[0];
+                    newAudioTrack.onended = () => setIsMicOn(false);
                     if (currentStream) {
                         const oldTrack = currentStream.getAudioTracks()[0];
                         if (oldTrack) currentStream.removeTrack(oldTrack);
@@ -891,7 +989,9 @@ export default function GroupMode() {
                     console.log('?? Re-acquiring camera stream...');
                     const newStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                     const newVideoTrack = newStream.getVideoTracks()[0];
+                    newVideoTrack.onended = () => setIsCameraOn(false);
                     const newAudioTrack = newStream.getAudioTracks()[0];
+                    newAudioTrack.onended = () => setIsMicOn(false);
 
                     if (currentStream) {
                         // Replace dead tracks in existing stream
@@ -980,6 +1080,26 @@ export default function GroupMode() {
     // Leave WebRTC room
     const leaveWebRTCRoom = () => {
         console.log('?? Leaving WebRTC room');
+        if (showWhiteboard && isHost && window.__getWhiteboardSnapshot) {
+            const dataUrl = window.__getWhiteboardSnapshot();
+            if (dataUrl) {
+                // Mock-saving it to sharedResources
+                const autoSaveResource = {
+                    id: Date.now(),
+                    name: `Whiteboard_${new Date().toLocaleDateString().replace(/\//g,'-')}.png`,
+                    uploader: user?.name || 'Host (Auto-save)',
+                    type: 'image',
+                    size: 'Unknown',
+                    downloads: 0,
+                    date: 'Just now',
+                    category: 'Study Session',
+                    url: dataUrl
+                };
+                setSharedResources(prev => [autoSaveResource, ...prev]);
+                // Emit system msg if needed!
+            }
+        }
+        
 
         // Clean up event listeners
         window.removeEventListener('webrtc:remoteStream', handleRemoteStream);
@@ -1154,8 +1274,10 @@ export default function GroupMode() {
     const sendGroupMessage = () => {
         if (!groupMessageInput.trim()) return;
 
+        const localId = Date.now().toString() + Math.random();
         const newMessage = {
-            id: Date.now(),
+            id: localId,
+            localId,
             user: user?.name || 'You',
             avatar: user?.avatar || '??',
             message: groupMessageInput,
@@ -1167,26 +1289,16 @@ export default function GroupMode() {
 
         // Emit to socket
         const socket = getSocket();
-        console.log('?? Socket object:', socket ? 'exists' : 'null');
-        console.log('?? Socket connected:', socket?.connected);
-        console.log('?? Socket id:', socket?.id);
-        console.log('?? Group ID:', groupDetailData?._id);
-
         if (socket?.connected && groupDetailData?._id) {
             const messagePayload = {
+                localId,
                 content: groupMessageInput,
                 groupId: groupDetailData._id,
                 senderId: user?._id,
                 senderName: user?.name,
                 senderAvatar: user?.avatar
             };
-            console.log('?? Sending message:', messagePayload);
             socket.emit('message:send', messagePayload);
-        } else {
-            console.log('? Cannot send - socket not connected or groupId missing');
-            console.log('  Socket exists:', !!socket);
-            console.log('  Socket.connected:', socket?.connected);
-            console.log('  GroupId:', groupDetailData?._id);
         }
 
         setGroupMessageInput('');
@@ -1266,18 +1378,12 @@ export default function GroupMode() {
                 return;
             }
 
-            // Skip only if it's from ME (already added optimistically)
-            if (transformed.isMe) {
-                console.log('?? Skipping own message (already shown)');
-                return;
-            }
-
-            console.log('? Adding message from other user:', transformed.user);
             setGroupMessages(prev => {
-                // Prevent duplicates by checking both id and content+time
+                if (transformed.localId && prev.some(m => m.localId === transformed.localId)) {
+                    return prev.map(m => m.localId === transformed.localId ? { ...transformed, isMe: true } : m);
+                }
                 if (prev.some(m => m.id === transformed.id ||
                     (m.message === transformed.message && m.user === transformed.user && m.time === transformed.time))) {
-                    console.log('?? Duplicate detected, skipping');
                     return prev;
                 }
                 return [...prev, transformed];
@@ -1961,8 +2067,24 @@ export default function GroupMode() {
                                         {formatTime(groupPomodoroTime)}
                                     </div>
                                     <div className="flex gap-3 justify-center">
-                                        <button
-                                            onClick={() => setIsGroupTimerRunning(!isGroupTimerRunning)}
+                                        
+                                        {isHost ? (
+                                            <>
+                                                <button
+                                            onClick={() => {
+                                                const newState = !isGroupTimerRunning;
+                                                setIsGroupTimerRunning(newState);
+                                                const socket = getSocket();
+                                                if (socket && currentRoomId) {
+                                                    socket.emit('room:message', {
+                                                        roomId: currentRoomId,
+                                                        message: `SYSTEM:POMODORO_${newState ? 'START' : 'PAUSE'}|${groupPomodoroTime}`,
+                                                        sender: user?.name,
+                                                        senderId: currentUserId,
+                                                        senderAvatar: user?.avatar
+                                                    });
+                                                }
+                                            }}
                                             className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 ${isGroupTimerRunning
                                                 ? 'bg-red-500/30 text-[var(--text-primary)]'
                                                 : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white'
@@ -1975,12 +2097,27 @@ export default function GroupMode() {
                                             onClick={() => {
                                                 setIsGroupTimerRunning(false);
                                                 setGroupPomodoroTime(25 * 60);
+                                                const socket = getSocket();
+                                                if (socket && currentRoomId) {
+                                                    socket.emit('room:message', {
+                                                        roomId: currentRoomId,
+                                                        message: 'SYSTEM:POMODORO_RESET',
+                                                        sender: user?.name,
+                                                        senderId: currentUserId,
+                                                        senderAvatar: user?.avatar
+                                                    });
+                                                }
                                             }}
                                             className="px-5 py-2.5 bg-[var(--glass-bg)] border border-white/20 rounded-xl font-bold flex items-center gap-2 text-[var(--text-primary)]"
                                         >
                                             <Square size={16} />
                                             Reset
                                         </button>
+                                            </>
+                                        ) : (
+                                            <div className="text-sm text-[var(--text-secondary)]">Only host can control the focus timer</div>
+                                        )}
+
                                     </div>
                                 </div>
 
@@ -2040,9 +2177,27 @@ export default function GroupMode() {
                             {/* Participants & Chat Sidebar */}
                             <div>
                                 <div className="bg-[var(--glass-bg)] rounded-2xl p-5 mb-5 border border-cyan-500/20">
-                                    <h4 className="text-[var(--text-primary)] font-bold mb-4 flex items-center gap-2">
-                                        <Users size={20} className="text-emerald-500" /> Participants ({liveParticipants.length})
-                                    </h4>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-[var(--text-primary)] font-bold flex items-center gap-2">
+                                            <Users size={20} className="text-emerald-500" /> Participants ({liveParticipants.length})
+                                        </h4>
+                                        {isHost && (
+                                            <div className="flex gap-2">
+                                                <button onClick={() => {
+                                                    const socket = getSocket();
+                                                    if(socket) socket.emit('room:message', { roomId: currentRoomId, message: 'SYSTEM:MUTE_ALL', sender: window.user?.name, senderId: currentUserId });
+                                                }} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40" title="Mute All" aria-label="Mute All">
+                                                    <MicOff size={14} />
+                                                </button>
+                                                <button onClick={() => {
+                                                    const socket = getSocket();
+                                                    if(socket) socket.emit('room:message', { roomId: currentRoomId, message: 'SYSTEM:CAMERA_OFF_ALL', sender: window.user?.name, senderId: currentUserId });
+                                                }} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40" title="Turn Off All Cameras" aria-label="Cameras Off">
+                                                    <CameraOff size={14} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="space-y-3">
                                         {liveParticipants.map(user => (
                                             <div key={user.id} className="flex items-center gap-3 p-2.5 bg-[var(--glass-bg)] rounded-xl">
@@ -2055,8 +2210,20 @@ export default function GroupMode() {
                                                     <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[var(--border-color)] ${user.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className="text-sm text-[var(--text-primary)] font-semibold">
-                                                        {user.name || user.userName || 'Participant'}
+                                                    <div className="text-sm text-[var(--text-primary)] font-semibold flex items-center justify-between">
+                                                        <span>{user.name || user.userName || 'Participant'}</span>
+                                                        {isHost && user.id !== currentUserId && (
+                                                            <button 
+                                                                onClick={() => {
+                                                                    const socket = getSocket();
+                                                                    if(socket) socket.emit('room:message', { roomId: currentRoomId, message: `SYSTEM:KICK|${user.id}`, sender: window.user?.name, senderId: currentUserId });
+                                                                }}
+                                                                className="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40"
+                                                                title="Kick from Room"
+                                                            >
+                                                                Kick
+                                                            </button>
+                                                        )}
                                                     </div>
                                                     <div className="text-xs text-[var(--text-secondary)]">{user.studying || 'In room'}</div>
                                                 </div>
@@ -2087,10 +2254,20 @@ export default function GroupMode() {
                                         )}
                                     </div>
                                     <div className="flex gap-2">
-                                        <input
+                                                                                <input
                                             type="text"
                                             value={currentMessage}
-                                            onChange={(e) => setCurrentMessage(e.target.value)}
+                                            onChange={(e) => {
+                                                setCurrentMessage(e.target.value);
+                                                const socket = getSocket();
+                                                if(socket) {
+                                                    socket.emit('room:typing', { roomId: currentRoomId, userId: currentUserId, userName: user?.name });
+                                                    clearTimeout(window._typingTimeout);
+                                                    window._typingTimeout = setTimeout(() => {
+                                                        socket.emit('room:stopTyping', { roomId: currentRoomId, userId: currentUserId });
+                                                    }, 2000);
+                                                }
+                                            }}
                                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                                             placeholder="Type a message..."
                                             className="flex-1 p-2.5 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-lg text-[var(--text-primary)] text-sm focus:outline-none focus:border-cyan-500"

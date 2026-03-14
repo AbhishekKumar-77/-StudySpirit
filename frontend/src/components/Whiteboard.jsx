@@ -551,6 +551,35 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
         }
     };
 
+
+    // Expose snapshot for autosaving
+    useEffect(() => {
+        window.__getWhiteboardSnapshot = () => {
+            const canvas = canvasRef.current;
+            if (!canvas) return null;
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(canvas, 0, 0);
+            textObjects.forEach(textObj => {
+                tempCtx.font = ${textObj.fontSize}px '', sans-serif;
+                tempCtx.fillStyle = textObj.color;
+                tempCtx.shadowColor = 'rgba(0,0,0,0.5)';
+                tempCtx.shadowBlur = 4;
+                tempCtx.shadowOffsetX = 2;
+                tempCtx.shadowOffsetY = 2;
+                const lines = textObj.text.split('\n');
+                lines.forEach((line, index) => {
+                    tempCtx.fillText(line, textObj.x, textObj.y + (index * textObj.fontSize * 1.2));
+                });
+            });
+            return tempCanvas.toDataURL('image/png');
+        };
+        return () => {
+            delete window.__getWhiteboardSnapshot;
+        };
+    }, [textObjects]);
     // Handle keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e) => {
