@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import * as soloApi from '../services/soloApi';
+import { taskAPI } from '../services/plannerApi';
 import confetti from 'canvas-confetti';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
@@ -115,6 +116,32 @@ export default function Dashboard() {
         const fetchDashboardData = async () => {
             try {
                 const data = await soloApi.getStats();
+                
+                let totalTasksForToday = 0;
+                let completedTasksForToday = 0;
+                let hasTasks = false;
+                
+                try {
+                    const tasksRes = await taskAPI.getAll();
+                    if (tasksRes && tasksRes.tasks) {
+                        const todayDateStr = new Date().toDateString();
+                        const dailyTasks = tasksRes.tasks.filter(t => {
+                            if (t.status === 'completed' && t.completedAt) {
+                                return new Date(t.completedAt).toDateString() === todayDateStr;
+                            }
+                            if (t.dueDate) {
+                                return new Date(t.dueDate).toDateString() === todayDateStr;
+                            }
+                            return t.status !== 'completed';
+                        });
+                        totalTasksForToday = dailyTasks.length;
+                        completedTasksForToday = dailyTasks.filter(t => t.status === 'completed').length;
+                        hasTasks = true;
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch tasks', err);
+                }
+
                 if (data && data.user) {
                     setDashboardData(data);
                     setUser(prev => ({
@@ -126,9 +153,18 @@ export default function Dashboard() {
                         xp: data.user.totalXP || 0,
                         reputation: data.user.reputation || 0
                     }));
+                    
+                    const dailyGoalsCount = hasTasks ? totalTasksForToday : (data.user.dailyGoal || 5);
+                    let compRate = 0;
+                    if (hasTasks && totalTasksForToday > 0) {
+                        compRate = Math.round((completedTasksForToday / totalTasksForToday) * 100);
+                    } else if (data.user.problemsSolvedToday) {
+                        compRate = Math.round((data.user.problemsSolvedToday / (data.user.dailyGoal || 5)) * 100);
+                    }
+                    
                     setStats({
-                        dailyGoals: data.user.dailyGoal || 5,
-                        completionRate: Math.round((data.user.problemsSolvedToday / (data.user.dailyGoal || 5)) * 100) || 0
+                        dailyGoals: dailyGoalsCount,
+                        completionRate: compRate
                     });
                     setTodayStudyTime(data.user.todayStudyTime || 0);
                 }
@@ -166,21 +202,24 @@ export default function Dashboard() {
             value: stats?.dailyGoals || 0,
             subtext: 'Missions Today',
             icon: Target,
-            from: '#6366f1', to: '#8b5cf6'
+            from: '#6366f1', to: '#8b5cf6',
+            path: '/planner'
         },
         {
             label: 'Success Rate',
             value: `${stats?.completionRate || 0}%`,
             subtext: 'Keep it going!',
             icon: CheckCircle,
-            from: '#ec4899', to: '#f43f5e'
+            from: '#ec4899', to: '#f43f5e',
+            path: '/planner'
         },
         {
             label: 'Focus Time',
             value: formatStudyTime(todayStudyTime),
             subtext: `Today • ${formatStudyTime((dashboardData?.user?.totalStudyTime || 0))} total`,
             icon: Clock,
-            from: '#f97316', to: '#f59e0b'
+            from: '#f97316', to: '#f59e0b',
+            path: '/solo-mode'
         },
     ];
 
@@ -271,7 +310,12 @@ export default function Dashboard() {
                 {/* Quick Stats Cards */}
                 <div className="quick-stats-container">
                     {quickStats.map((stat, idx) => (
-                        <div key={idx} className="quick-stat-card">
+                        <div 
+                            key={idx} 
+                            className="quick-stat-card" 
+                            style={stat.path ? { cursor: 'pointer' } : {}}
+                            onClick={() => stat.path && navigate(stat.path)}
+                        >
                             <div className="quick-stat-icon" style={{ background: `linear-gradient(135deg, ${stat.from}, ${stat.to})` }}>
                                 <stat.icon size={24} color="#fff" />
                             </div>
@@ -280,7 +324,7 @@ export default function Dashboard() {
                                 <div className="qs-value">{stat.value}</div>
                                 <div className="qs-subtext">{stat.subtext}</div>
                             </div>
-                            <ChevronRight className="qs-arrow" size={20} />
+                            {stat.path && <ChevronRight className="qs-arrow" size={20} />}
                         </div>
                     ))}
                 </div>
