@@ -776,3 +776,143 @@ exports.executeCodeExam = async (req, res) => {
     }
 };
 
+// ── NEW: AI Grade Subjective Answers ─────────────────────────────────────────
+exports.gradeSubjective = async (req, res) => {
+    try {
+        const { question, rubric, studentAnswer } = req.body;
+        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+
+        if (!studentAnswer || !question) return res.status(400).json({ success: false, message: "Missing answer or question parameters" });
+
+        const prompt = `You are an expert Teacher evaluating a short-answer test.
+        Question: "${question}"
+        Teacher's Grading Rubric constraint: "${rubric || 'Evaluate for correctness and understanding of core concepts.'}"
+        Student Answer: "${studentAnswer}"
+
+        Score the answer out of 10.
+        Format your response EXACTLY as this JSON object:
+        {
+          "score": 8,
+          "feedback": "A short, constructive sentence explaining the score and what the student missed."
+        }`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [{ role: 'system', content: 'You evaluate student answers strictly based on the rubric.' }, { role: 'user', content: prompt }],
+                temperature: 0.2, // Low temp for consistent grading
+                response_format: { type: "json_object" }
+            })
+        });
+
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        const grading = JSON.parse(content);
+        
+        res.json({ success: true, grading });
+
+    } catch (error) {
+        console.error("AI Grading Error:", error);
+        res.status(500).json({ success: false, message: "Failed to grade answer" });
+    }
+};
+
+// ── NEW: Post Exam Doubt Resolution ──────────────────────────────────────────
+exports.explainAnswer = async (req, res) => {
+    try {
+        const { question, options, studentAnswer, correctAnswer } = req.body;
+        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+
+        const prompt = `You are a helpful AI Tutor assisting a student who got a multiple-choice question wrong on an exam.
+        Question: "${question}"
+        The student selected: "${studentAnswer}"
+        The correct answer is: "${correctAnswer}"
+
+        Explain concisely (2-3 sentences max):
+        1. Why their answer was incorrect.
+        2. Why the correct answer is the right one.
+        Make it encouraging and educational. Do not output anything except the explanation text.`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.5
+            })
+        });
+
+        const data = await response.json();
+        res.json({ success: true, explanation: data.choices[0].message.content });
+
+    } catch (error) {
+        console.error("AI Explanation Error:", error);
+        res.status(500).json({ success: false, message: "Failed to generate explanation" });
+    }
+};
+
+// ── NEW: Adaptive AI Practice (CAT) ──────────────────────────────────────────
+exports.adaptivePractice = async (req, res) => {
+    try {
+        const { topic, currentDifficulty, wasCorrect } = req.body; // wasCorrect is nullable if first question
+        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+
+        let newDifficulty = currentDifficulty || "medium";
+        
+        // Computerized Adaptive Testing Logic
+        if (wasCorrect === true) {
+            if (currentDifficulty === "easy") newDifficulty = "medium";
+            else if (currentDifficulty === "medium") newDifficulty = "hard";
+        } else if (wasCorrect === false) {
+            if (currentDifficulty === "hard") newDifficulty = "medium";
+            else if (currentDifficulty === "medium") newDifficulty = "easy";
+        }
+
+        const prompt = `You are generating exactly ONE adaptive quiz question about "${topic}".
+        The difficulty level must strictly be: ${newDifficulty.toUpperCase()}.
+
+        Output ONLY a JSON object containing a "questions" array with exactly 1 element.
+        {
+          "questions": [{
+            "type": "mcq",
+            "question": "Question text here",
+            "options": ["Opt A", "Opt B", "Opt C", "Opt D"],
+            "correct": 0,
+            "difficulty": "${newDifficulty}"
+          }]
+        }`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [{ role: 'system', content: 'Output strictly a raw JSON object.' }, { role: 'user', content: prompt }],
+                temperature: 0.7,
+                response_format: { type: "json_object" }
+            })
+        });
+
+        const data = await response.json();
+        let content = data.choices[0].message.content;
+        let parsed = JSON.parse(content);
+
+        // Handle variations in "questions" wrapper
+        let questions = parsed.questions || parsed.quiz || parsed;
+        if (!Array.isArray(questions) && questions.question) questions = [questions];
+
+        res.json({ success: true, newDifficulty, question: questions[0] });
+
+    } catch (error) {
+        console.error("Adaptive AI Gen Error:", error);
+        res.status(500).json({ success: false, message: "Failed to generate adaptive question" });
+    }
+};
+
+

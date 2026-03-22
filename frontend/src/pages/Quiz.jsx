@@ -11,6 +11,8 @@ import {
     BookOpen, Lightbulb, AlertCircle, ChevronRight, Hash, XCircle, Pause,
     Image, Calendar, BarChart2, TrendingDown, Upload
 } from "lucide-react";
+import { BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 export default function StudySprintQuiz() {
     const { user } = useApp();
@@ -44,8 +46,12 @@ export default function StudySprintQuiz() {
         scheduledEnd: "",
     });
 
-    // Image URL for the question being built
+    // Media & Graded content for the question being built
     const [newQImageUrl, setNewQImageUrl] = useState("");
+    const [newQAudioUrl, setNewQAudioUrl] = useState("");
+    const [newQVideoUrl, setNewQVideoUrl] = useState("");
+    const [newQRubric, setNewQRubric] = useState("");
+    const [newQMathFormula, setNewQMathFormula] = useState(""); // LaTeX equation
 
     const [aiTeacherTopic, setAiTeacherTopic] = useState("");
     const [aiQuestionCount, setAiQuestionCount] = useState(10); // Default to 10 questions
@@ -58,6 +64,8 @@ export default function StudySprintQuiz() {
     // Student Exam Mode
     const [studentQuizCodeInput, setStudentQuizCodeInput] = useState(""); // Input for student to join
     const [studentRegNoInput, setStudentRegNoInput] = useState(""); // Input for student reg no
+    const [aiExplanations, setAiExplanations] = useState({}); // For post-exam doubt resolution
+    const [isExplaining, setIsExplaining] = useState({});
     const [joinedQuiz, setJoinedQuiz] = useState(null); // Stores quiz data student has joined
     const [examStarted, setExamStarted] = useState(false);
     const [examSubmitted, setExamSubmitted] = useState(false);
@@ -165,8 +173,12 @@ export default function StudySprintQuiz() {
     // --------------------------- FUNCTIONS ---------------------------
 
     const addQuestion = () => {
-        if (!newQ.trim() || correct === null || options.some(o => !o.trim())) {
-            alert("Please fill all fields correctly!");
+        if (!newQ.trim()) {
+            alert("Please enter a question!");
+            return;
+        }
+        if (questionType !== 'subjective' && (correct === null || options.some(o => !o.trim()))) {
+            alert("Please fill all MCQ options and select the correct one!");
             return;
         }
 
@@ -175,9 +187,13 @@ export default function StudySprintQuiz() {
             {
                 id: Date.now(),
                 question: newQ,
-                imageUrl: newQImageUrl.trim(), // Optional image URL
-                options,
-                correct,
+                imageUrl: newQImageUrl.trim(),
+                audioUrl: newQAudioUrl.trim(),
+                videoUrl: newQVideoUrl.trim(),
+                mathFormula: newQMathFormula.trim(),
+                rubric: newQRubric.trim(),
+                options: questionType !== 'subjective' ? options : [],
+                correct: questionType !== 'subjective' ? correct : null,
                 type: questionType,
                 difficulty: settings.difficulty
             }
@@ -185,6 +201,10 @@ export default function StudySprintQuiz() {
 
         setNewQ("");
         setNewQImageUrl("");
+        setNewQAudioUrl("");
+        setNewQVideoUrl("");
+        setNewQMathFormula("");
+        setNewQRubric("");
         setOptions(["", "", "", ""]);
         setCorrect(null);
         setQuestionType("mcq");
@@ -686,40 +706,49 @@ export default function StudySprintQuiz() {
     };
 
 
-    const generateAIQuestionsForPractice = async () => {
+    const generateAIQuestionsForPractice = async (isNext = false, correct = null) => {
         if (!studentPracticeTopic.trim()) {
             alert("Please enter a topic for AI practice questions.");
             return;
         }
-
+        setIsGeneratingPractice(true);
         try {
-            const res = await fetch(`${API_BASE}/quiz/generate-ai`, {
+            const currentDiff = isNext ? aiQuestions[aiQuestions.length - 1]?.difficulty : studentPracticeDifficulty;
+            const res = await fetch(`${API_BASE}/quiz/adaptive-practice`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     topic: studentPracticeTopic,
-                    difficulty: studentPracticeDifficulty,
-                    type: "mcq",
-                    count: practiceQuestionCount || 5
+                    currentDifficulty: currentDiff,
+                    wasCorrect: correct
                 })
             });
             const data = await res.json();
 
-            if (data.success && data.questions) {
-                setAiQuestions(data.questions);
-                setPracticeStarted(true);
-                setPracticeFinished(false);
-                setPracticeIndex(0);
-                setPracticeScore(0);
-                setPracticeAnswered(false);
-                setLastChosenPracticeOption(null);
-                setUserAnswers({}); // Clear previous answers
+            if (data.success && data.question) {
+                if (!isNext) {
+                    setAiQuestions([data.question]);
+                    setPracticeStarted(true);
+                    setPracticeFinished(false);
+                    setPracticeIndex(0);
+                    setPracticeScore(0);
+                    setPracticeAnswered(false);
+                    setLastChosenPracticeOption(null);
+                    setUserAnswers({}); 
+                } else {
+                    setAiQuestions(prev => [...prev, data.question]);
+                    setPracticeIndex(prev => prev + 1);
+                    setPracticeAnswered(false);
+                    setLastChosenPracticeOption(null);
+                }
             } else {
                 alert("Failed to generate questions: " + (data.message || "Unknown error"));
             }
         } catch (err) {
             console.error("Practice Gen Error:", err);
             alert("Error connecting to AI service.");
+        } finally {
+            setIsGeneratingPractice(false);
         }
     };
 
@@ -736,17 +765,38 @@ export default function StudySprintQuiz() {
     };
 
     const nextPracticeQuestion = () => {
-        // If not answered, consider it skipped for score but allow next
-        if (!practiceAnswered && practiceIndex < aiQuestions.length - 1) {
-            alert("You skipped this question.");
-        }
-
-        if (practiceIndex < aiQuestions.length - 1) {
-            setPracticeIndex(practiceIndex + 1);
-            setPracticeAnswered(false);
-            setLastChosenPracticeOption(null);
-        } else {
+        if (!practiceAnswered) alert("You skipped this question.");
+        
+        if (practiceIndex + 1 >= practiceQuestionCount) {
             setPracticeFinished(true);
+        } else {
+            const wasCorrect = practiceAnswered && lastChosenPracticeOption === aiQuestions[practiceIndex].correct;
+            generateAIQuestionsForPractice(true, wasCorrect);
+        }
+    };
+
+    const handleAskDoubt = async (question) => {
+        setIsExplaining(prev => ({...prev, [question._id || question.id]: true}));
+        try {
+            const userAnswerText = question.type === 'subjective' ? userAnswers[question._id || question.id] || "No answer" : question.options[userAnswers[question._id || question.id]] || "No option selected";
+            const correctAnswerText = question.type === 'subjective' ? question.rubric : question.options[question.correct];
+            const res = await fetch(`${API_BASE}/quiz/explain-answer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: question.question,
+                    studentAnswer: userAnswerText,
+                    correctAnswer: correctAnswerText
+                })
+            });
+            const data = await res.json();
+            if (data.success && data.explanation) {
+                setAiExplanations(prev => ({...prev, [question._id || question.id]: data.explanation}));
+            }
+        } catch (e) {
+            console.error("Doubt error:", e);
+        } finally {
+            setIsExplaining(prev => ({...prev, [question._id || question.id]: false}));
         }
     };
 
@@ -919,6 +969,16 @@ export default function StudySprintQuiz() {
                                                 className="accent-violet-500 w-4 h-4"
                                             /> True/False
                                         </label>
+                                        <label className="flex items-center gap-2 cursor-pointer text-[var(--text-primary)] font-medium hover:text-cyan-400 transition-colors">
+                                            <input
+                                                type="radio"
+                                                name="questionType"
+                                                value="subjective"
+                                                checked={questionType === "subjective"}
+                                                onChange={() => { setQuestionType("subjective"); }}
+                                                className="accent-violet-500 w-4 h-4"
+                                            /> Subjective (AI Graded)
+                                        </label>
                                     </div>
                                 </div>
 
@@ -926,9 +986,26 @@ export default function StudySprintQuiz() {
                                 <textarea
                                     value={newQ}
                                     onChange={(e) => setNewQ(e.target.value)}
-                                    placeholder="Enter your question here..."
+                                    placeholder="Enter your main question text here..."
                                     className="w-full p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-semibold mb-3 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300 resize-y"
                                 />
+
+                                {/* LaTeX Math */}
+                                <div className="mb-4">
+                                    <label className="text-[var(--text-secondary)] text-sm mb-1 block">Math Equation (LaTeX, optional)</label>
+                                    <input
+                                        type="text"
+                                        value={newQMathFormula}
+                                        onChange={(e) => setNewQMathFormula(e.target.value)}
+                                        placeholder="e.g. \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}"
+                                        className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:border-cyan-500 outline-none transition-all font-mono text-sm"
+                                    />
+                                    {newQMathFormula && (
+                                        <div className="mt-2 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] overflow-x-auto text-[var(--text-primary)]">
+                                            <BlockMath math={newQMathFormula} />
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Image URL for question */}
                                 <div className="mb-5">
@@ -950,47 +1027,73 @@ export default function StudySprintQuiz() {
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                                    {options.map((opt, i) => (
-                                        <div key={i} className="relative group">
-                                            <input
-                                                value={opt}
-                                                onChange={(e) => {
-                                                    const newOpts = [...options];
-                                                    newOpts[i] = e.target.value;
-                                                    setOptions(newOpts);
-                                                }}
-                                                placeholder={`Option ${i + 1}`}
-                                                className={`
-                                                    w-full pl-10 pr-4 py-3.5 rounded-xl text-[var(--text-primary)] transition-all duration-300 outline-none border
-                                                    ${correct === i
-                                                        ? "bg-emerald-500/20 border-emerald-500"
-                                                        : "bg-[var(--glass-bg)] border-[var(--border-color)] group-hover:border-cyan-500/50"
-                                                    }
-                                                `}
-                                            />
-                                            {correct === i && <CheckCircle size={20} className="text-emerald-500 absolute left-3 top-3.5" />}
-                                        </div>
-                                    ))}
+                                {/* Audio & Video URLs */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                                    <div>
+                                        <label className="text-[var(--text-secondary)] text-sm mb-1 block">Audio URL (optional, MP3/WAV)</label>
+                                        <input type="url" value={newQAudioUrl} onChange={e => setNewQAudioUrl(e.target.value)} placeholder="https://..." className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-sm focus:border-cyan-500 outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[var(--text-secondary)] text-sm mb-1 block">Video URL (optional, MP4)</label>
+                                        <input type="url" value={newQVideoUrl} onChange={e => setNewQVideoUrl(e.target.value)} placeholder="https://..." className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-sm focus:border-cyan-500 outline-none" />
+                                    </div>
                                 </div>
 
-                                <div className="flex gap-3 mb-6 flex-wrap">
-                                    {options.map((_, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => setCorrect(i)}
-                                            className={`
-                                                px-5 py-3 rounded-xl font-bold transition-all duration-300 shadow-md
-                                                ${correct === i
-                                                    ? "bg-gradient-to-br from-emerald-500 to-emerald-700 text-[var(--text-primary)] shadow-emerald-500/30"
-                                                    : "bg-[var(--border-color)]/50 text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]"
-                                                }
-                                            `}
-                                        >
-                                            Mark {questionType === "mcq" ? `Option ${i + 1}` : options[i]} Correct
-                                        </button>
-                                    ))}
-                                </div>
+                                {questionType === 'subjective' ? (
+                                    <div className="mb-6">
+                                        <label className="text-[var(--text-secondary)] text-sm mb-2 block font-bold">Teacher's Rubric for AI Grading <Sparkles size={14} className="inline text-amber-500 ml-1" /></label>
+                                        <textarea
+                                            value={newQRubric}
+                                            onChange={(e) => setNewQRubric(e.target.value)}
+                                            placeholder="E.g., Award 5 points for mentioning 'photosynthesis', 3 points for 'sunlight'..."
+                                            className="w-full p-4 bg-[var(--bg-secondary)] border border-amber-500/30 rounded-xl text-[var(--text-primary)] min-h-[100px] outline-none"
+                                        />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                                            {options.map((opt, i) => (
+                                                <div key={i} className="relative group">
+                                                    <input
+                                                        value={opt}
+                                                        onChange={(e) => {
+                                                            const newOpts = [...options];
+                                                            newOpts[i] = e.target.value;
+                                                            setOptions(newOpts);
+                                                        }}
+                                                        placeholder={`Option ${i + 1}`}
+                                                        className={`
+                                                            w-full pl-10 pr-4 py-3.5 rounded-xl text-[var(--text-primary)] transition-all duration-300 outline-none border
+                                                            ${correct === i
+                                                                ? "bg-emerald-500/20 border-emerald-500"
+                                                                : "bg-[var(--glass-bg)] border-[var(--border-color)] group-hover:border-cyan-500/50"
+                                                            }
+                                                        `}
+                                                    />
+                                                    {correct === i && <CheckCircle size={20} className="text-emerald-500 absolute left-3 top-3.5" />}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex gap-3 mb-6 flex-wrap">
+                                            {options.map((_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => setCorrect(i)}
+                                                    className={`
+                                                        px-5 py-3 rounded-xl font-bold transition-all duration-300 shadow-md
+                                                        ${correct === i
+                                                            ? "bg-gradient-to-br from-emerald-500 to-emerald-700 text-[var(--text-primary)] shadow-emerald-500/30"
+                                                            : "bg-[var(--border-color)]/50 text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)]"
+                                                        }
+                                                    `}
+                                                >
+                                                    Mark {questionType === "mcq" ? `Option ${i + 1}` : options[i]} Correct
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
 
                                 <button
                                     onClick={addQuestion}
@@ -1214,6 +1317,11 @@ export default function StudySprintQuiz() {
                                                 <p className="text-lg font-medium text-[var(--text-primary)] mb-3">
                                                     {q.question}
                                                 </p>
+                                                {q.mathFormula && (
+                                                    <div className="mb-4 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] overflow-x-auto text-[var(--text-primary)]">
+                                                        <BlockMath math={q.mathFormula} />
+                                                    </div>
+                                                )}
                                                 {q.imageUrl && (
                                                     <div className="mb-3 rounded-xl overflow-hidden border border-cyan-500/20 max-h-32">
                                                         <img src={q.imageUrl} alt="Q" className="object-contain max-h-32 w-full" onError={(e) => e.target.style.display='none'} />
@@ -1458,6 +1566,13 @@ export default function StudySprintQuiz() {
                                             {joinedQuiz.questions[currentQuestionIndex].question}
                                         </h3>
 
+                                        {/* Math Equation */}
+                                        {joinedQuiz.questions[currentQuestionIndex].mathFormula && (
+                                            <div className="mb-6 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] overflow-x-auto text-2xl text-[var(--text-primary)] select-none">
+                                                <BlockMath math={joinedQuiz.questions[currentQuestionIndex].mathFormula} />
+                                            </div>
+                                        )}
+
                                         {/* Question Image */}
                                         {joinedQuiz.questions[currentQuestionIndex].imageUrl && (
                                             <div className="mb-8 rounded-2xl overflow-hidden border border-cyan-500/20 bg-black/10">
@@ -1469,57 +1584,82 @@ export default function StudySprintQuiz() {
                                                 />
                                             </div>
                                         )}
+                                        {joinedQuiz.questions[currentQuestionIndex].audioUrl && (
+                                            <div className="mb-6 w-full max-w-md mx-auto">
+                                                <audio controls className="w-full">
+                                                    <source src={joinedQuiz.questions[currentQuestionIndex].audioUrl} type="audio/mpeg" />
+                                                </audio>
+                                            </div>
+                                        )}
+                                        {joinedQuiz.questions[currentQuestionIndex].videoUrl && (
+                                            <div className="mb-6 rounded-2xl overflow-hidden border border-cyan-500/20 max-h-96 w-full max-w-2xl mx-auto">
+                                                <video controls className="w-full object-contain max-h-96">
+                                                    <source src={joinedQuiz.questions[currentQuestionIndex].videoUrl} type="video/mp4" />
+                                                </video>
+                                            </div>
+                                        )}
 
                                         <div className="grid gap-4">
-                                            {joinedQuiz.questions[currentQuestionIndex].options.map((opt, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => {
-                                                        const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: i };
+                                            {joinedQuiz.questions[currentQuestionIndex].type === 'subjective' ? (
+                                                <textarea
+                                                    value={userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] || ""}
+                                                    onChange={(e) => {
+                                                        const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: e.target.value };
                                                         setUserAnswers(newAnswers);
-
-                                                        // Calculate score so far and emit progress
-                                                        let correctCount = 0;
-                                                        joinedQuiz.questions.forEach((q) => {
-                                                            if (newAnswers[(q._id || q.id)] === q.correct) correctCount++;
-                                                        });
-                                                        try {
-                                                            const socket = getSocket();
-                                                            if (socket && socket.connected) {
-                                                                socket.emit('quiz:progress', {
-                                                                    quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
-                                                                    studentId: user?._id || user?.id || 'guest',
-                                                                    correctAnswers: correctCount,
-                                                                    totalQuestions: joinedQuiz.questions.length
-                                                                });
-                                                            }
-                                                        } catch (e) { console.error("Socket error on progress:", e); }
                                                     }}
-                                                    className={`
-                                                        w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group
-                                                        ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
-                                                            ? "bg-gradient-to-r from-cyan-500 /20 to-cyan-600/20 border-cyan-500 text-[var(--text-primary)] shadow-[0_0_30px_rgba(34,211,238,0.15)] transform scale-[1.01]"
-                                                            : "bg-[var(--glass-bg)] border-transparent hover:bg-[var(--bg-secondary)] hover:border-cyan-500/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                                                        }
-                                                    `}
-                                                >
-                                                    <span className={`
-                                                        inline-flex items-center justify-center w-10 h-10 rounded-lg font-black mr-4 text-lg transition-colors
-                                                        ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
-                                                            ? "bg-cyan-500 text-[var(--text-primary)]"
-                                                            : "bg-[var(--bg-secondary)] text-[var(--text-muted)] group-hover:bg-[var(--border-color)] group-hover:text-[var(--text-secondary)]"}
-                                                    `}>
-                                                        {String.fromCharCode(65 + i)}
-                                                    </span>
-                                                    {opt}
+                                                    placeholder="Type your detailed answer here..."
+                                                    className="w-full p-6 bg-[var(--bg-secondary)] border-2 border-[var(--border-color)] focus:border-cyan-500 rounded-2xl text-[var(--text-primary)] text-lg min-h-[150px] outline-none transition-all shadow-inner"
+                                                />
+                                            ) : (
+                                                joinedQuiz.questions[currentQuestionIndex].options.map((opt, i) => (
+                                                    <button
+                                                        key={i}
+                                                        onClick={() => {
+                                                            const newAnswers = { ...userAnswers, [(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)]: i };
+                                                            setUserAnswers(newAnswers);
 
-                                                    {userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i && (
-                                                        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-cyan-400 animate-fade-in">
-                                                            <CheckCircle size={28} />
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            ))}
+                                                            let correctCount = 0;
+                                                            joinedQuiz.questions.forEach((q) => {
+                                                                if (newAnswers[(q._id || q.id)] === q.correct) correctCount++;
+                                                            });
+                                                            try {
+                                                                const socket = getSocket();
+                                                                if (socket && socket.connected) {
+                                                                    socket.emit('quiz:progress', {
+                                                                        quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
+                                                                        studentId: user?._id || user?.id || 'guest',
+                                                                        correctAnswers: correctCount,
+                                                                        totalQuestions: joinedQuiz.questions.length
+                                                                    });
+                                                                }
+                                                            } catch (e) { console.error("Socket error on progress:", e); }
+                                                        }}
+                                                        className={`
+                                                            w-full p-6 text-left rounded-2xl text-xl font-medium transition-all duration-200 border-2 relative group
+                                                            ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
+                                                                ? "bg-gradient-to-r from-cyan-500 /20 to-cyan-600/20 border-cyan-500 text-[var(--text-primary)] shadow-[0_0_30px_rgba(34,211,238,0.15)] transform scale-[1.01]"
+                                                                : "bg-[var(--glass-bg)] border-transparent hover:bg-[var(--bg-secondary)] hover:border-cyan-500/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                                            }
+                                                        `}
+                                                    >
+                                                        <span className={`
+                                                            inline-flex items-center justify-center w-10 h-10 rounded-lg font-black mr-4 text-lg transition-colors
+                                                            ${userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i
+                                                                ? "bg-cyan-500 text-[var(--text-primary)]"
+                                                                : "bg-[var(--bg-secondary)] text-[var(--text-muted)] group-hover:bg-[var(--border-color)] group-hover:text-[var(--text-secondary)]"}
+                                                        `}>
+                                                            {String.fromCharCode(65 + i)}
+                                                        </span>
+                                                        {opt}
+
+                                                        {userAnswers[(joinedQuiz.questions[currentQuestionIndex]._id || joinedQuiz.questions[currentQuestionIndex].id)] === i && (
+                                                            <div className="absolute right-6 top-1/2 -translate-y-1/2 text-cyan-400 animate-fade-in">
+                                                                <CheckCircle size={28} />
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                ))
+                                            )}
                                         </div>
 
                                         <div className="flex justify-between mt-12 pt-8 border-t border-[var(--border-color)]">
@@ -1630,34 +1770,63 @@ export default function StudySprintQuiz() {
                                                 </h4>
 
                                                 <div className="grid gap-3 ml-12">
-                                                    {q.options.map((opt, optIdx) => {
-                                                        const isThisUserAnswer = userAnswerIdx === optIdx;
-                                                        const isThisCorrectAnswer = q.correct === optIdx;
+                                                    {q.type === 'subjective' ? (
+                                                        <div className="p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl relative flex flex-col">
+                                                            <span className="text-[var(--text-secondary)] font-bold text-sm mb-1 text-cyan-500">Your Answer:</span>
+                                                            <p className="text-[var(--text-primary)] italic mb-4">{userAnswers[(q._id || q.id)] || "Not answered"}</p>
+                                                            <span className="text-[var(--text-secondary)] font-bold text-sm mb-1 text-emerald-500">Grading Rubric / Ideal Answer:</span>
+                                                            <p className="text-[var(--text-primary)] font-medium text-emerald-400">{q.rubric || "No rubric provided."}</p>
+                                                        </div>
+                                                    ) : (
+                                                        q.options.map((opt, optIdx) => {
+                                                            const isThisUserAnswer = userAnswerIdx === optIdx;
+                                                            const isThisCorrectAnswer = q.correct === optIdx;
 
-                                                        let style = "bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-secondary)]"; // Default
-                                                        let icon = null;
+                                                            let style = "bg-[var(--glass-bg)] border-[var(--border-color)] text-[var(--text-secondary)]"; // Default
+                                                            let icon = null;
 
-                                                        if (isThisCorrectAnswer) {
-                                                            style = "bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-300 font-bold";
-                                                            icon = <CheckCircle size={20} className="text-emerald-400 absolute right-4" />;
-                                                        } else if (isThisUserAnswer && !isThisCorrectAnswer) {
-                                                            style = "bg-red-500/20 border-red-500 text-red-600 dark:text-red-300 font-bold";
-                                                            icon = <XCircle size={20} className="text-red-400 absolute right-4" />;
-                                                        }
+                                                            if (isThisCorrectAnswer) {
+                                                                style = "bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-300 font-bold";
+                                                                icon = <CheckCircle size={20} className="text-emerald-400 absolute right-4" />;
+                                                            } else if (isThisUserAnswer && !isThisCorrectAnswer) {
+                                                                style = "bg-red-500/20 border-red-500 text-red-600 dark:text-red-300 font-bold";
+                                                                icon = <XCircle size={20} className="text-red-400 absolute right-4" />;
+                                                            }
 
-                                                        return (
-                                                            <div key={optIdx} className={`p-4 rounded-xl border relative flex items-center transition-all ${style}`}>
-                                                                <span className="font-bold mr-4 opacity-60 w-6">{String.fromCharCode(65 + optIdx)}.</span>
-                                                                {opt}
-                                                                {icon}
-                                                            </div>
-                                                        );
-                                                    })}
+                                                            return (
+                                                                <div key={optIdx} className={`p-4 rounded-xl border relative flex items-center transition-all ${style}`}>
+                                                                    <span className="font-bold mr-4 opacity-60 w-6">{String.fromCharCode(65 + optIdx)}.</span>
+                                                                    {opt}
+                                                                    {icon}
+                                                                </div>
+                                                            );
+                                                        })
+                                                    )}
                                                 </div>
 
                                                 {isSkipped && (
                                                     <div className="ml-12 mt-4 text-amber-500 font-bold flex items-center gap-2">
                                                         <AlertCircle size={18} /> You skipped this question.
+                                                    </div>
+                                                )}
+
+                                                {/* AI Doubt Resolution */}
+                                                {!isCorrect && !isSkipped && q.type !== 'subjective' && (
+                                                    <div className="ml-12 mt-4">
+                                                        {!aiExplanations[(q._id || q.id)] ? (
+                                                            <button 
+                                                                onClick={() => handleAskDoubt(q)}
+                                                                disabled={isExplaining[(q._id || q.id)]}
+                                                                className="flex items-center gap-2 text-sm px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-lg transition-all"
+                                                            >
+                                                                <Bot size={16} /> {isExplaining[(q._id || q.id)] ? "Asking AI..." : "Why is this correct?"}
+                                                            </button>
+                                                        ) : (
+                                                            <div className="p-4 bg-indigo-500/10 border border-indigo-500/30 text-indigo-200 rounded-lg animate-fade-in text-sm leading-relaxed">
+                                                                <div className="font-bold text-indigo-400 mb-1 flex items-center gap-2"><Bot size={16}/> AI Explanation</div>
+                                                                {aiExplanations[(q._id || q.id)]}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

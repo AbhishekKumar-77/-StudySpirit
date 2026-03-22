@@ -12,6 +12,15 @@ router.post('/generate-from-image', quizController.generateFromImage);
 // Create Quiz (Save) - allow drafts, optionally track auth
 router.post('/create', quizController.createQuiz);
 
+// AI Grade Subjective
+router.post('/grade-subjective', quizController.gradeSubjective);
+
+// AI Explain Answer
+router.post('/explain-answer', quizController.explainAnswer);
+
+// AI Adaptive Practice
+router.post('/adaptive-practice', quizController.adaptivePractice);
+
 // Get My Quizzes/Drafts
 router.get('/my-quizzes', auth, quizController.getMyQuizzes);
 

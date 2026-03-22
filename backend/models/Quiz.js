@@ -4,10 +4,14 @@ const questionSchema = new mongoose.Schema({
     id: mongoose.Schema.Types.Mixed,
     question: { type: String, required: true },
     imageUrl: { type: String, default: '' }, // Optional image attached to question
+    audioUrl: { type: String, default: '' }, // Supporting audio snippets
+    videoUrl: { type: String, default: '' }, // Supporting video snippets
+    mathFormula: { type: String, default: '' }, // Supporting KaTeX/LaTeX math strings
     options: [{ type: String }],
-    correct: { type: Number }, // Index of correct option
-    type: { type: String, default: 'mcq' },
+    correct: { type: mongoose.Schema.Types.Mixed }, // Index for MCQ, ideal text for Subjective
+    type: { type: String, default: 'mcq', enum: ['mcq', 'subjective', 'coding', 'true-false'] },
     difficulty: { type: String, default: 'medium' },
+    rubric: { type: String, default: '' }, // Grading criteria for AI evaluating subjective answers
     starterCode: { type: String },
     testCases: [{ input: String, expectedOutput: String, output: String }]
 }, { strict: false });
