@@ -617,7 +617,7 @@ export default function CodeEditor() {
             {/* Navbar */}
             <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 ${theme === "light" ? "bg-white/80 border-gray-200" : "bg-[var(--glass-bg)] border-cyan-500/10"}`}>
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-                    <button onClick={() => navigate(isChallengeMode ? "/codespirit" : "/dashboard")} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === "light" ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-cyan-/10 text-violet-300 hover:bg-cyan-/20"}`}>
+                    <button onClick={() => navigate(isChallengeMode ? "/codespirit" : "/dashboard")} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === "light" ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-cyan-500/10 text-violet-300 hover:bg-cyan-500/20"}`}>
                         <ArrowLeft size={18} /> {isChallengeMode ? "Exit Challenge" : "Back"}
                     </button>
 
@@ -639,7 +639,7 @@ export default function CodeEditor() {
                             <button
                                 onClick={() => setShowQuestionNav(!showQuestionNav)}
                                 className={`px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all ${showQuestionNav
-                                    ? (theme === "light" ? "bg-violet-200 text-violet-800" : "bg-cyan-/30 text-violet-300")
+                                    ? (theme === "light" ? "bg-violet-200 text-violet-800" : "bg-cyan-500/30 text-violet-300")
                                     : (theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--bg-secondary)] hover:bg-[var(--border-color)]")
                                     }`}
                             >
@@ -684,7 +684,7 @@ export default function CodeEditor() {
                                     key={idx}
                                     onClick={() => goToQuestion(idx)}
                                     className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${idx === currentIndex
-                                        ? "bg-cyan- text-[var(--text-primary)] shadow-lg shadow-violet-500/30 scale-110"
+                                        ? "bg-cyan-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30 scale-110"
                                         : completedQuestions[idx]
                                             ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                                             : theme === "light"
@@ -763,7 +763,7 @@ export default function CodeEditor() {
                             >
                                 <ChevronLeft size={18} /> Prev
                             </button>
-                            <span className={`px-3 py-2 rounded-lg font-bold text-sm ${theme === "light" ? "bg-violet-100 text-violet-700" : "bg-cyan-/20 text-violet-300"}`}>
+                            <span className={`px-3 py-2 rounded-lg font-bold text-sm ${theme === "light" ? "bg-violet-100 text-violet-700" : "bg-cyan-500/20 text-violet-300"}`}>
                                 {currentIndex + 1} / {totalQuestions}
                             </span>
                             <button
@@ -808,7 +808,7 @@ export default function CodeEditor() {
                         <div className={`rounded-xl overflow-y-auto p-6 border ${theme === "light" ? "bg-white border-gray-200" : "bg-[var(--glass-bg)] border-[var(--border-color)]"}`}>
                             {/* Question badge */}
                             <div className="flex items-center justify-between mb-4">
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-cyan-/20 text-cyan-`}>
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-cyan-500/20 text-cyan-`}>
                                     {totalQuestions > 1 ? `Question ${currentIndex + 1} of ${totalQuestions}` : "Daily Challenge"}
                                 </span>
                                 {currentProblem.difficulty && (
@@ -1122,7 +1122,7 @@ export default function CodeEditor() {
                                 ) : (
                                     <div className="flex flex-col gap-2 max-h-[200px] overflow-auto">
                                         {savedFiles.map(f => (
-                                            <div key={f.name} className={`p-3 rounded-lg flex justify-between items-center cursor-pointer transition-all ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-[var(--glass-bg)] hover:bg-cyan-/10"}`}>
+                                            <div key={f.name} className={`p-3 rounded-lg flex justify-between items-center cursor-pointer transition-all ${theme === "light" ? "bg-gray-50 hover:bg-gray-100" : "bg-[var(--glass-bg)] hover:bg-cyan-500/10"}`}>
                                                 <div onClick={() => loadFile(f)} className="flex-1">
                                                     <div className="font-semibold text-sm">{f.name}</div>
                                                     <div className="text-xs opacity-50">{LANGUAGES.find(l => l.id === f.language)?.name}</div>
@@ -1144,7 +1144,7 @@ export default function CodeEditor() {
                             </div>
 
                             {/* Tips */}
-                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-violet-50 border border-cyan-200" : "bg-cyan-/10 border border-cyan-500/20"}`}>
+                            <div className={`rounded-xl p-4 ${theme === "light" ? "bg-violet-50 border border-cyan-200" : "bg-cyan-500/10 border border-cyan-500/20"}`}>
                                 <div className="text-sm font-semibold mb-2">💡 Tips</div>
                                 <ul className="text-xs space-y-1 opacity-80">
                                     <li>• Ctrl+S to save</li>

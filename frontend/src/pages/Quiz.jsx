@@ -128,6 +128,40 @@ export default function StudySprintQuiz() {
             fetchDrafts();
         }
     }, [activeTab]);
+
+    // Handle Socket Reconnections for Live Monitoring
+    useEffect(() => {
+        const socket = getSocket();
+        if (!socket) return;
+        
+        const handleReconnect = () => {
+            if (activeTab === "student" && examStarted && !examSubmitted && joinedQuiz) {
+                // Re-emit join
+                socket.emit('quiz:join', {
+                    quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
+                    studentId: user?._id || user?.id || 'guest',
+                    studentName: user?.name || 'Student',
+                    registrationNumber: studentRegNoInput.trim()
+                });
+                
+                // Re-emit progress
+                const correctCount = joinedQuiz.questions.filter(q => userAnswers[q._id || q.id] === q.correct).length;
+                socket.emit('quiz:progress', {
+                    quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
+                    studentId: user?._id || user?.id || 'guest',
+                    correctAnswers: correctCount,
+                    totalQuestions: joinedQuiz.questions.length
+                });
+            }
+        };
+
+        socket.on('connect', handleReconnect);
+        
+        return () => {
+            socket.off('connect', handleReconnect);
+        };
+    }, [activeTab, examStarted, examSubmitted, joinedQuiz, studentQuizCodeInput, studentRegNoInput, user, userAnswers]);
+
     // --------------------------- FUNCTIONS ---------------------------
 
     const addQuestion = () => {
@@ -470,19 +504,18 @@ export default function StudySprintQuiz() {
 
         setIsSaving(true);
         try {
-            // Force IST (+05:30) timezone handling
-            const formatToIST = (dateStr) => {
+            // Convert local datetime-local string to UTC ISO string
+            const formatToUTC = (dateStr) => {
                 if (!dateStr) return null;
-                // dateStr from datetime-local is e.g. "2026-03-11T23:50"
-                return new Date(`${dateStr}+05:30`).toISOString();
+                return new Date(dateStr).toISOString();
             };
 
             const formattedSettings = {
                 ...settings,
                 timeLimit: settings.timeLimit || 30,
                 negativeMarking: settings.negativeMarking || 0,
-                scheduledStart: formatToIST(settings.scheduledStart),
-                scheduledEnd: formatToIST(settings.scheduledEnd)
+                scheduledStart: formatToUTC(settings.scheduledStart),
+                scheduledEnd: formatToUTC(settings.scheduledEnd)
             };
 
             const res = await fetch(`${API_BASE}/quiz/create`, {
@@ -527,16 +560,20 @@ export default function StudySprintQuiz() {
         setQuizCode(quiz.code);
 
         const loadedSettings = { ...quiz.settings };
-        // Safely parse the stored UTC timestamp back into IST local format for the input
-        const formatFromIST = (isoString) => {
+        // Parse UTC timestamp back into local datetime-local format
+        const formatFromUTC = (isoString) => {
             if (!isoString) return '';
             const d = new Date(isoString);
-            d.setMinutes(d.getMinutes() + 330); // Explicitly shift to IST (+05:30)
-            return d.toISOString().slice(0, 16);
+            const yyyy = d.getFullYear();
+            const MM = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
         };
 
-        loadedSettings.scheduledStart = formatFromIST(loadedSettings.scheduledStart);
-        loadedSettings.scheduledEnd = formatFromIST(loadedSettings.scheduledEnd);
+        loadedSettings.scheduledStart = formatFromUTC(loadedSettings.scheduledStart);
+        loadedSettings.scheduledEnd = formatFromUTC(loadedSettings.scheduledEnd);
 
         setSettings(loadedSettings);
         setActiveTab("teacher");

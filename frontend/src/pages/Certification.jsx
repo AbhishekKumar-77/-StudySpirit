@@ -215,11 +215,11 @@ export default function Certification() {
     });
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden font-sans selection:bg-cyan-/30">
+        <div className="min-h-screen bg-[var(--bg-primary)] relative overflow-hidden font-sans selection:bg-cyan-500/30">
             {/* Animated Background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-amber-600/20 rounded-full blur-[80px] animate-float" />
-                <div className="absolute bottom-[10%] right-[10%] w-[700px] h-[700px] bg-cyan-/15 rounded-full blur-[80px] animate-float-reverse" />
+                <div className="absolute bottom-[10%] right-[10%] w-[700px] h-[700px] bg-cyan-500/15 rounded-full blur-[80px] animate-float-reverse" />
                 <div className="absolute top-1/2 right-[5%] w-[500px] h-[500px] bg-pink-500/15 rounded-full blur-[70px] animate-pulse-slow" />
             </div>
 

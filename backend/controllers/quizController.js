@@ -30,16 +30,18 @@ CRITICAL RULES:
 - Each question must have exactly 4 options.
 
 JSON structure:
-[
-  {
-    "question": "Question text here",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correct": 0,
-    "difficulty": "${difficulty}"
-  }
-]
+{
+  "questions": [
+    {
+      "question": "Question text here",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0,
+      "difficulty": "${difficulty}"
+    }
+  ]
+}
 
-Output the JSON array now:`;
+Output the JSON object now:`;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -67,7 +69,8 @@ Output the JSON array now:`;
                     }
                 ],
                 temperature: 0.5,
-                max_tokens: 4000
+                max_tokens: 4000,
+                response_format: { type: "json_object" }
             })
         });
 
@@ -98,9 +101,15 @@ Output the JSON array now:`;
             }
         }
 
-        if (!Array.isArray(questions)) {
+        // Handle response_format wrapper
+        if (questions && typeof questions === 'object' && !Array.isArray(questions)) {
             if (questions.questions) questions = questions.questions;
-            else throw new Error("AI did not return a valid question array.");
+            else if (questions.quiz) questions = questions.quiz;
+            else throw new Error("AI did not return a valid questions array inside the JSON object.");
+        }
+
+        if (!Array.isArray(questions)) {
+            throw new Error("AI did not return a valid question array.");
         }
 
         // Add IDs and shuffle options
@@ -169,12 +178,12 @@ exports.generateAIQuestions = async (req, res) => {
         ALL questions MUST match the ${(difficulty || 'medium').toUpperCase()} difficulty level described above.
         
         CRITICAL RULES:
-        - Return ONLY a raw JSON array. No markdown, no explanation, no extra text.
+        - Return ONLY a JSON object containing a "questions" array. No markdown, no explanation, no extra text.
         - For MCQ questions: vary the correct answer position randomly — do NOT always put the correct answer at index 0 or 2.
         - Each question MUST be strongly relevant to the topic "${topic}".
         - Difficulty MUST be strictly enforced as described above.
 
-        Structure for MCQ questions:
+        Structure inside the "questions" array:
         {
             "type": "mcq",
             "question": "Question text here",
@@ -195,7 +204,7 @@ exports.generateAIQuestions = async (req, res) => {
             "difficulty": "${difficulty || 'medium'}"
         }` : ''}
         
-        Output the JSON array now:`;
+        Output the JSON object now:`;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -206,11 +215,12 @@ exports.generateAIQuestions = async (req, res) => {
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [
-                    { role: 'system', content: 'You are an educational AI assistant. Output strictly valid JSON arrays only. No markdown formatting.' },
+                    { role: 'system', content: 'You are an educational AI assistant. Output format must be a strictly valid JSON object containing a "questions" array. No markdown formatting.' },
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.7,
-                max_tokens: 4000
+                max_tokens: 4000,
+                response_format: { type: "json_object" }
             })
         });
 
@@ -257,9 +267,15 @@ exports.generateAIQuestions = async (req, res) => {
             }
         }
 
-        if (!Array.isArray(questions)) {
+        // Unwrap top level object if present
+        if (questions && typeof questions === 'object' && !Array.isArray(questions)) {
             if (questions.questions) questions = questions.questions;
-            else throw new Error("AI did not return an array");
+            else if (questions.quiz) questions = questions.quiz;
+            else throw new Error("AI did not return a valid questions array inside the JSON object.");
+        }
+
+        if (!Array.isArray(questions)) {
+            throw new Error("AI did not return an array");
         }
 
         questions = questions.map((q, i) => {
@@ -369,8 +385,8 @@ exports.getQuiz = async (req, res) => {
 
         if (!isTeacher) {
             if (quiz.settings.scheduledStart && now < new Date(quiz.settings.scheduledStart)) {
-                const startTime = new Date(quiz.settings.scheduledStart).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-                return res.status(403).json({ success: false, message: `This quiz hasn't started yet. It opens at ${startTime} IST.` });
+                const startTime = new Date(quiz.settings.scheduledStart).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+                return res.status(403).json({ success: false, message: `This quiz hasn't started yet. It opens at ${startTime}.` });
             }
             if (quiz.settings.scheduledEnd && now > new Date(quiz.settings.scheduledEnd)) {
                 return res.status(403).json({ success: false, message: "This quiz has ended and is no longer accepting submissions." });
@@ -507,13 +523,20 @@ exports.submitResult = async (req, res) => {
     }
 };
 
-// Get Global Leaderboard
+// Get Global Leaderboard with Pagination
 exports.getLeaderboard = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const skip = (page - 1) * limit;
+
         const leaderboard = await User.find({ 'quizStats.quizzesTaken': { $gt: 0 } })
             .sort({ 'quizStats.highestScore': -1, 'quizStats.averageScore': -1 })
-            .limit(50)
+            .skip(skip)
+            .limit(limit)
             .select('name avatar quizStats stats');
+
+        const totalUsers = await User.countDocuments({ 'quizStats.quizzesTaken': { $gt: 0 } });
 
         const formatted = leaderboard.map((u, index) => {
             const bt = u.quizStats.bestTime;
@@ -525,7 +548,7 @@ exports.getLeaderboard = async (req, res) => {
             }
             return {
                 id: u._id,
-                rank: index + 1,
+                rank: skip + index + 1,
                 name: u.name,
                 score: u.quizStats.highestScore || 0,
                 time: timeStr,
@@ -537,7 +560,7 @@ exports.getLeaderboard = async (req, res) => {
             };
         });
 
-        res.json({ success: true, leaderboard: formatted });
+        res.json({ success: true, leaderboard: formatted, total: totalUsers, page, limit });
     } catch (error) {
         console.error("Get Leaderboard Error:", error);
         res.status(500).json({ success: false, message: "Failed to fetch leaderboard" });

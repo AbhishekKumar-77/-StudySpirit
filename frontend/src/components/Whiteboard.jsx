@@ -794,7 +794,7 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
                     <div
                         key={textObj.id}
                         className={`absolute cursor-move select-none transition-all ${selectedTextId === textObj.id
-                            ? 'ring-2 ring-violet-500 ring-offset-2 ring-offset-slate-900 bg-cyan-/10 rounded-lg'
+                            ? 'ring-2 ring-violet-500 ring-offset-2 ring-offset-slate-900 bg-cyan-500/10 rounded-lg'
                             : 'hover:ring-2 hover:ring-violet-500/50 hover:rounded-lg'
                             }`}
                         style={{
