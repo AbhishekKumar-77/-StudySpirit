@@ -1,8 +1,21 @@
 const Quiz = require('../models/Quiz');
 const User = require('../models/User');
 
-// Single API key — never hardcode keys, always use env vars
+// Single API key — set GROQ_API_KEY or GROQ_API_KEY_QUIZ in your .env / Render env vars
 const GROQ_API_KEY = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY;
+if (!GROQ_API_KEY) {
+    console.warn('⚠️  WARNING: GROQ_API_KEY is not set. AI quiz features will not work until you add it to your environment variables.');
+}
+
+// Helper: ensures API key is present before making AI calls
+const requireApiKey = (res) => {
+    if (!GROQ_API_KEY) {
+        res.status(503).json({ success: false, message: 'AI service is not configured. Please add GROQ_API_KEY to the server environment variables.' });
+        return false;
+    }
+    return true;
+};
+
 
 // ── Generate MCQ Questions FROM an Image (Vision AI) ──────────────────────────
 exports.generateFromImage = async (req, res) => {
@@ -147,6 +160,7 @@ Output the JSON object now:`;
 // AI Question Generation
 exports.generateAIQuestions = async (req, res) => {
     try {
+        if (!requireApiKey(res)) return;
         const { topic, difficulty, count, mcqCount = count || 5, codingCount = 0 } = req.body;
         const apiKey = GROQ_API_KEY;
 

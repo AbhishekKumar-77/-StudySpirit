@@ -640,6 +640,7 @@ export default function StudySprintQuiz() {
             const res = await fetch(`${API_BASE}/quiz/generate-ai`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     topic: aiTeacherTopic,
                     difficulty: settings.difficulty,
@@ -687,6 +688,7 @@ export default function StudySprintQuiz() {
             const res = await fetch(`${API_BASE}/quiz/generate-from-image`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     imageBase64: base64,
                     mimeType: mimeType,
@@ -725,6 +727,7 @@ export default function StudySprintQuiz() {
             const res = await fetch(`${API_BASE}/quiz/adaptive-practice`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     topic: studentPracticeTopic,
                     currentDifficulty: currentDiff,
@@ -791,6 +794,7 @@ export default function StudySprintQuiz() {
             const res = await fetch(`${API_BASE}/quiz/explain-answer`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     question: question.question,
                     studentAnswer: userAnswerText,
