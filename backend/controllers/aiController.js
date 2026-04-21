@@ -4,6 +4,13 @@ const InterviewSubmission = require('../models/InterviewSubmission');
 const InterviewExam = require('../models/InterviewExam');
 const pdfParse = require('pdf-parse');
 
+// ── Single source of truth for API keys — set these in your .env / Render dashboard ──
+const GROQ_KEY_INTERVIEW  = process.env.GROQ_API_KEY_INTERVIEW  || process.env.GROQ_API_KEY;
+const GROQ_KEY_SOFTSKILLS = process.env.GROQ_API_KEY_SOFTSKILLS || process.env.GROQ_API_KEY;
+
+if (!GROQ_KEY_INTERVIEW)  console.warn('⚠️  GROQ_API_KEY_INTERVIEW not set — AI Interview features will fail.');
+if (!GROQ_KEY_SOFTSKILLS) console.warn('⚠️  GROQ_API_KEY_SOFTSKILLS not set — Soft Skills features will fail.');
+
 // AI Interview - Mock Interviewer with Scoring & History
 exports.interviewWithAI = async (req, res) => {
     console.log("🎤 AI Interview Request Received");
@@ -11,7 +18,7 @@ exports.interviewWithAI = async (req, res) => {
     try {
         let { message, mode, context, resumeText, sessionId, totalQuestions, questionNumber, role, company, submissionId, examCode } = req.body;
         const user = req.user ? await User.findById(req.user.id) : null;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = GROQ_KEY_INTERVIEW;
 
         // Parse context if string
         if (typeof context === 'string') {
@@ -347,114 +354,228 @@ exports.logHeartbeat = async (req, res) => {
 exports.softSkillsAI = async (req, res) => {
     try {
         const { message, previousMessages = [] } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOFTSKILLS || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
+        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured. Add GROQ_API_KEY to environment variables.' });
+
         const context = previousMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
+
+        const systemPrompt = `You are "Aria", a warm and encouraging English communication coach.
+Your goals:
+1. Have a natural, friendly conversation in English to build the student's confidence.
+2. If the student makes a grammar or vocabulary mistake, GENTLY correct it at the end of your reply — never interrupt the flow.
+3. Keep your replies concise — 2-3 sentences max.
+4. Ask a follow-up question to keep the conversation going.
+5. Topics: daily life, career goals, college experiences, opinions on technology, current events.
+
+ALWAYS return valid JSON in this exact format:
+{
+  "correction": "<grammar/vocab correction if any, or null if speech was perfect>",
+  "reply": "<your conversational response + one follow-up question>"
+}`;
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
                 messages: [
-                    { role: 'system', content: 'Wise mentor. Return JSON: {correction, reply}' },
+                    { role: 'system', content: systemPrompt },
                     ...context,
                     { role: 'user', content: message }
                 ],
+                temperature: 0.75,
+                max_tokens: 400,
                 response_format: { type: "json_object" }
             })
         });
         const data = await response.json();
+        if (!data.choices?.[0]?.message?.content) {
+            return res.status(500).json({ message: 'AI response error', reply: 'Sorry, I had trouble responding. Please try again.' });
+        }
         res.json(JSON.parse(data.choices[0].message.content));
-    } catch (error) { res.status(500).json({ message: "Error" }); }
+    } catch (error) {
+        console.error('SoftSkills AI Error:', error);
+        res.status(500).json({ correction: null, reply: 'Sorry, I encountered an error. Please try again.' });
+    }
 };
 
 // Generate Vocabulary List
 exports.generateVocabulary = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
+        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured.' });
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'system', content: 'Generate 50 vocab words in JSON array format.' }],
+                messages: [{
+                    role: 'system',
+                    content: `Generate a list of exactly 50 advanced English vocabulary words useful for professional and academic communication.
+Return ONLY valid JSON in this exact format:
+{
+  "words": [
+    { "word": "Articulate", "meaning": "Able to express ideas clearly and effectively", "usage": "She articulated her concerns with great precision during the meeting.", "context": "Professional" },
+    ... (50 total)
+  ]
+}`
+                }],
+                temperature: 0.6,
                 response_format: { type: "json_object" }
             })
         });
         const data = await response.json();
+        if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI error' });
         res.json(JSON.parse(data.choices[0].message.content));
-    } catch (error) { res.status(500).json({ message: "Error" }); }
+    } catch (error) {
+        console.error('Vocabulary Error:', error);
+        res.status(500).json({ message: 'Error generating vocabulary' });
+    }
 };
 
 // Generate Writing Topic
 exports.generateWritingTopic = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
+        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured.' });
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'system', content: 'Generate 1 writing topic.' }]
+                messages: [{
+                    role: 'system',
+                    content: `Generate 1 professional writing topic suitable for a 5-minute essay by an engineering/tech student.
+The topic should be thought-provoking and relevant to technology, career, or society.
+Return ONLY the topic as a single clean sentence — no numbering, no quotes, no explanation.`
+                }],
+                temperature: 0.8,
+                max_tokens: 80
             })
         });
         const data = await response.json();
-        res.json({ topic: data.choices[0].message.content });
-    } catch (error) { res.status(500).json({ message: "Error" }); }
+        if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI error' });
+        res.json({ topic: data.choices[0].message.content.trim() });
+    } catch (error) {
+        console.error('Writing Topic Error:', error);
+        res.status(500).json({ message: 'Error generating topic' });
+    }
 };
 
 // Evaluate Writing
 exports.evaluateWriting = async (req, res) => {
     try {
         const { topic, essay } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        if (!essay || essay.length < 10) return res.status(400).json({ message: 'Essay is too short to evaluate.' });
+        const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
+        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured.' });
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'system', content: `Eval essay on ${topic}. Return JSON.` }],
+                messages: [{
+                    role: 'system',
+                    content: `You are an expert English writing evaluator. Evaluate the following student essay.
+
+WRITING TOPIC: ${topic}
+
+STUDENT ESSAY:
+${essay}
+
+Return ONLY valid JSON:
+{
+  "score": <number 0-100>,
+  "feedback": "<2-3 sentence overall assessment of the essay quality, coherence, and relevance to topic>",
+  "improvements": ["<specific improvement 1>", "<specific improvement 2>", "<specific improvement 3>"]
+}`
+                }],
+                temperature: 0.4,
                 response_format: { type: "json_object" }
             })
         });
         const data = await response.json();
+        if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI evaluation error' });
         res.json(JSON.parse(data.choices[0].message.content));
-    } catch (error) { res.status(500).json({ message: "Error" }); }
+    } catch (error) {
+        console.error('Writing Evaluate Error:', error);
+        res.status(500).json({ message: 'Error evaluating essay' });
+    }
 };
 
 // Generate Speaking Topic
 exports.generateSpeakingTopic = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
+        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured.' });
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'system', content: 'Generate 1 tech speaking topic.' }]
+                messages: [{
+                    role: 'system',
+                    content: `Generate 1 extempore speaking topic for an engineering or tech student (2 minute talk).
+The topic should be engaging, relevant to technology or society, and suitable for a confident impromptu speech.
+Return ONLY the topic as a single clean sentence — no numbering, no quotes, no extra text.`
+                }],
+                temperature: 0.9,
+                max_tokens: 80
             })
         });
         const data = await response.json();
-        res.json({ topic: data.choices[0].message.content });
-    } catch (error) { res.status(500).json({ message: "Error" }); }
+        if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI error' });
+        res.json({ topic: data.choices[0].message.content.trim() });
+    } catch (error) {
+        console.error('Speaking Topic Error:', error);
+        res.status(500).json({ message: 'Error generating topic' });
+    }
 };
 
 // Evaluate Speaking
 exports.evaluateSpeech = async (req, res) => {
     try {
         const { topic, transcript } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        if (!transcript || transcript.trim().length < 20) return res.status(400).json({ message: 'Transcript is too short to evaluate. Please speak more.' });
+        const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
+        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured.' });
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'system', content: `Eval speech on ${topic}. Return JSON.` }],
+                messages: [{
+                    role: 'system',
+                    content: `You are an expert public speaking coach. Evaluate the following student's extempore speech.
+
+SPEAKING TOPIC: ${topic}
+
+STUDENT'S SPEECH TRANSCRIPT:
+${transcript}
+
+Return ONLY valid JSON:
+{
+  "score": <number 0-100>,
+  "feedback": "<2-3 sentence assessment covering relevance, fluency, content depth, and structure>",
+  "improvements": ["<specific improvement 1>", "<specific improvement 2>", "<specific improvement 3>"]
+}`
+                }],
+                temperature: 0.4,
                 response_format: { type: "json_object" }
             })
         });
         const data = await response.json();
+        if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI evaluation error' });
         res.json(JSON.parse(data.choices[0].message.content));
-    } catch (error) { res.status(500).json({ message: "Error" }); }
+    } catch (error) {
+        console.error('Speech Evaluate Error:', error);
+        res.status(500).json({ message: 'Error evaluating speech' });
+    }
 };
 
 exports.checkATSScore = async (req, res) => {

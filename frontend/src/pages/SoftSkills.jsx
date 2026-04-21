@@ -264,7 +264,11 @@ export default function SoftSkills() {
         if (isWriting && writingTimeLeft > 0) {
             interval = setInterval(() => setWritingTimeLeft(t => t - 1), 1000);
         } else if (writingTimeLeft === 0 && isWriting) {
-            setIsWriting(false); // Time up logic could submit automatically or just pause
+            // Auto-submit essay when time is up
+            setIsWriting(false);
+            if (writingInput.trim().length > 10) {
+                submitEssay();
+            }
         }
         return () => clearInterval(interval);
     }, [isWriting, writingTimeLeft]);
@@ -422,7 +426,12 @@ export default function SoftSkills() {
     const interviewScenarios = [];
 
     // Daily Challenges
-    const dailyChallenges = [];
+    const dailyChallenges = [
+        { id: 'dc1', title: 'Have a 5-message AI conversation', xp: 30, completed: progress.completedChallenges?.includes('dc1') },
+        { id: 'dc2', title: 'Complete an Extempore session', xp: 50, completed: progress.completedChallenges?.includes('dc2') },
+        { id: 'dc3', title: 'Write a 5-minute essay', xp: 50, completed: progress.completedChallenges?.includes('dc3') },
+        { id: 'dc4', title: 'Generate & read 50 vocab words', xp: 20, completed: progress.completedChallenges?.includes('dc4') },
+    ];
 
     // Vocabulary words
 
@@ -1069,7 +1078,14 @@ export default function SoftSkills() {
                                 Achievements
                             </div>
                             <div className="grid grid-cols-3 gap-3">
-                                {[].map((badge, idx) => (
+                                {[
+                                    { icon: Mic, label: 'First Chat', unlocked: progress.interviewsCompleted >= 1 },
+                                    { icon: Volume2, label: 'Speaker', unlocked: (progress.speakingScores?.length || 0) >= 1 },
+                                    { icon: FileText, label: 'Writer', unlocked: (progress.writingScores?.length || 0) >= 1 },
+                                    { icon: BookOpen, label: 'Vocab Pro', unlocked: (progress.vocabSets || 0) >= 3 },
+                                    { icon: Star, label: 'XP 500', unlocked: progress.xp >= 500 },
+                                    { icon: Trophy, label: 'XP 2000', unlocked: progress.xp >= 2000 },
+                                ].map((badge, idx) => (
                                     <div
                                         key={idx}
                                         className={`p-3 rounded-xl text-center ${badge.unlocked
