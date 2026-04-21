@@ -30,7 +30,7 @@ We recommend using **Render** or **Railway** because they support persistent ser
         *   `SESSION_SECRET`: (A long random string)
         *   `GOOGLE_CLIENT_ID`: (From Google Cloud Console)
         *   `GOOGLE_CLIENT_SECRET`: (From Google Cloud Console)
-        *   `FRONTEND_URL`: `https://your-vercel-app-name.vercel.app` (You will get this after deploying frontend, for now put `*` or update later).
+        *   `FRONTEND_URL`: `https://studyspirit.in` (Your custom domain).
         *   `GEMINI_API_KEY`: (Your AI key)
 
 6.  **Deploy**: Click "Create Web Service". Wait for the green "Live" status.
@@ -64,7 +64,7 @@ We recommend using **Render** or **Railway** because they support persistent ser
     *   Add `VITE_API_URL`: Paste your **Backend URL** from Step 1 (e.g., `https://studyspirit-api.onrender.com`).
         *   *Note: Do NOT add a trailing slash `/` at the end.*
 6.  **Deploy**: Click "Deploy".
-7.  **Copy Frontend URL**: Once done, you get a domain like `studyspirit.vercel.app`.
+7.  **Copy Frontend URL**: Once done, set up your custom domain `studyspirit.in` in Vercel's domain settings.
 
 ---
 
@@ -72,13 +72,13 @@ We recommend using **Render** or **Railway** because they support persistent ser
 
 1.  **Update Backend CORS**:
     *   Go back to your Backend Dashboard (Render/Railway).
-    *   Update the `FRONTEND_URL` environment variable to match your new Vercel domain (e.g., `https://studyspirit.vercel.app`).
+    *   Update the `FRONTEND_URL` environment variable to `https://studyspirit.in`.
     *   This ensures only your app can talk to the backend.
 
 2.  **Update Google OAuth RedirectURI**:
     *   Go to [Google Cloud Console](https://console.cloud.google.com/).
     *   Edit your OAuth Client ID.
-    *   Add Authorized JavaScript Origin: `https://studyspirit.vercel.app`
+    *   Add Authorized JavaScript Origin: `https://studyspirit.in`
     *   Add Authorized Redirect URI: `https://studyspirit-api.onrender.com/api/auth/google/callback`
         *   *Note: Redirect URI points to the BACKEND, not frontend.*
 

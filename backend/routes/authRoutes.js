@@ -4,14 +4,9 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const passport = require('passport');
 
-// Determine correct frontend URL — always use custom domain in production
+// Frontend URL — uses custom domain studyspirit.in
 const getFrontendUrl = () => {
-    const specifiedUrl = process.env.FRONTEND_URL;
-    // Always redirect to custom domain, never to Vercel preview/deployment URLs
-    if (specifiedUrl && specifiedUrl.includes('vercel.app')) {
-        return 'https://studyspirit.in';
-    }
-    return specifiedUrl || 'http://localhost:5173';
+    return process.env.FRONTEND_URL || 'https://studyspirit.in';
 };
 
 const FRONTEND_URL = getFrontendUrl();
