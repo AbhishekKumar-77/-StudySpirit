@@ -4,9 +4,14 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const passport = require('passport');
 
-// Frontend URL — uses custom domain studyspirit.in
+// Frontend URL — always use studyspirit.in in production
+// Override any vercel.app URL left in env vars
 const getFrontendUrl = () => {
-    return process.env.FRONTEND_URL || 'https://studyspirit.in';
+    const envUrl = process.env.FRONTEND_URL;
+    if (!envUrl || envUrl.includes('vercel.app')) {
+        return 'https://studyspirit.in';
+    }
+    return envUrl;
 };
 
 const FRONTEND_URL = getFrontendUrl();

@@ -44,7 +44,9 @@ const allowedOrigins = [
     'https://www.studyspirit.in'
 ];
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://studyspirit.in';
+// Force studyspirit.in — override any vercel.app URL left in env vars
+const rawFrontendUrl = process.env.FRONTEND_URL;
+const FRONTEND_URL = (!rawFrontendUrl || rawFrontendUrl.includes('vercel.app')) ? 'https://studyspirit.in' : rawFrontendUrl;
 if (FRONTEND_URL && !allowedOrigins.includes(FRONTEND_URL)) {
     allowedOrigins.push(FRONTEND_URL);
 }
