@@ -998,55 +998,6 @@ export default function StudySprintQuiz() {
                                     className="w-full p-4 bg-[var(--glass-bg)] border border-cyan-500/30 rounded-xl text-[var(--text-primary)] text-lg font-semibold mb-3 min-h-[120px] focus:border-cyan-500 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300 resize-y"
                                 />
 
-                                {/* LaTeX Math */}
-                                <div className="mb-4">
-                                    <label className="text-[var(--text-secondary)] text-sm mb-1 block">Math Equation (LaTeX, optional)</label>
-                                    <input
-                                        type="text"
-                                        value={newQMathFormula}
-                                        onChange={(e) => setNewQMathFormula(e.target.value)}
-                                        placeholder="e.g. \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}"
-                                        className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] focus:border-cyan-500 outline-none transition-all font-mono text-sm"
-                                    />
-                                    {newQMathFormula && (
-                                        <div className="mt-2 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] overflow-x-auto text-[var(--text-primary)]">
-                                            <BlockMath math={newQMathFormula} />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Image URL for question */}
-                                <div className="mb-5">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Image size={16} className="text-cyan-400" />
-                                        <label className="text-[var(--text-secondary)] text-sm">Question Image URL (optional)</label>
-                                    </div>
-                                    <input
-                                        type="url"
-                                        value={newQImageUrl}
-                                        onChange={(e) => setNewQImageUrl(e.target.value)}
-                                        placeholder="https://... (paste any image URL)"
-                                        className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-[var(--text-primary)] text-sm focus:border-cyan-500 outline-none transition-all"
-                                    />
-                                    {newQImageUrl && (
-                                        <div className="mt-2 rounded-xl overflow-hidden border border-cyan-500/20 max-h-48">
-                                            <img src={newQImageUrl} alt="Question preview" className="w-full object-contain max-h-48 bg-black/10" onError={(e) => e.target.style.display='none'} />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Audio & Video URLs */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                                    <div>
-                                        <label className="text-[var(--text-secondary)] text-sm mb-1 block">Audio URL (optional, MP3/WAV)</label>
-                                        <input type="url" value={newQAudioUrl} onChange={e => setNewQAudioUrl(e.target.value)} placeholder="https://..." className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-sm focus:border-cyan-500 outline-none" />
-                                    </div>
-                                    <div>
-                                        <label className="text-[var(--text-secondary)] text-sm mb-1 block">Video URL (optional, MP4)</label>
-                                        <input type="url" value={newQVideoUrl} onChange={e => setNewQVideoUrl(e.target.value)} placeholder="https://..." className="w-full p-3 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-xl text-sm focus:border-cyan-500 outline-none" />
-                                    </div>
-                                </div>
-
                                 {questionType === 'subjective' ? (
                                     <div className="mb-6">
                                         <label className="text-[var(--text-secondary)] text-sm mb-2 block font-bold">Teacher's Rubric for AI Grading <Sparkles size={14} className="inline text-amber-500 ml-1" /></label>
