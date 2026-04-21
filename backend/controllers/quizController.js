@@ -1,11 +1,14 @@
 const Quiz = require('../models/Quiz');
 const User = require('../models/User');
 
+// Single API key — never hardcode keys, always use env vars
+const GROQ_API_KEY = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY;
+
 // ── Generate MCQ Questions FROM an Image (Vision AI) ──────────────────────────
 exports.generateFromImage = async (req, res) => {
     try {
         const { imageBase64, mimeType = 'image/jpeg', count = 5, difficulty = 'medium' } = req.body;
-        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+        const apiKey = GROQ_API_KEY;
 
         if (!imageBase64) {
             return res.status(400).json({ success: false, message: "Image data is required" });
@@ -145,7 +148,7 @@ Output the JSON object now:`;
 exports.generateAIQuestions = async (req, res) => {
     try {
         const { topic, difficulty, count, mcqCount = count || 5, codingCount = 0 } = req.body;
-        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+        const apiKey = GROQ_API_KEY;
 
         if (!topic) return res.status(400).json({ success: false, message: "Topic is required" });
 
@@ -780,7 +783,7 @@ exports.executeCodeExam = async (req, res) => {
 exports.gradeSubjective = async (req, res) => {
     try {
         const { question, rubric, studentAnswer } = req.body;
-        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+        const apiKey = GROQ_API_KEY;
 
         if (!studentAnswer || !question) return res.status(400).json({ success: false, message: "Missing answer or question parameters" });
 
@@ -826,7 +829,7 @@ exports.gradeSubjective = async (req, res) => {
 exports.explainAnswer = async (req, res) => {
     try {
         const { question, options, studentAnswer, correctAnswer } = req.body;
-        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+        const apiKey = GROQ_API_KEY;
 
         const prompt = `You are a helpful AI Tutor assisting a student who got a multiple-choice question wrong on an exam.
         Question: "${question}"
@@ -861,7 +864,7 @@ exports.explainAnswer = async (req, res) => {
 exports.adaptivePractice = async (req, res) => {
     try {
         const { topic, currentDifficulty, wasCorrect } = req.body; // wasCorrect is nullable if first question
-        const apiKey = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY || "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";
+        const apiKey = GROQ_API_KEY;
 
         let newDifficulty = currentDifficulty || "medium";
         

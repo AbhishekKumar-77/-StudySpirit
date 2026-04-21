@@ -3,23 +3,15 @@ const router = express.Router();
 const quizController = require('../controllers/quizController');
 const auth = require('../middleware/auth');
 
-// Generate AI Questions
-router.post('/generate-ai', quizController.generateAIQuestions);
+// ── AI Endpoints (auth required — prevents API key abuse by anonymous users) ──
+router.post('/generate-ai', auth, quizController.generateAIQuestions);
+router.post('/generate-from-image', auth, quizController.generateFromImage);
+router.post('/grade-subjective', auth, quizController.gradeSubjective);
+router.post('/explain-answer', auth, quizController.explainAnswer);
+router.post('/adaptive-practice', auth, quizController.adaptivePractice);
 
-// Generate questions from Image
-router.post('/generate-from-image', quizController.generateFromImage);
-
-// Create Quiz (Save) - allow drafts, optionally track auth
-router.post('/create', quizController.createQuiz);
-
-// AI Grade Subjective
-router.post('/grade-subjective', quizController.gradeSubjective);
-
-// AI Explain Answer
-router.post('/explain-answer', quizController.explainAnswer);
-
-// AI Adaptive Practice
-router.post('/adaptive-practice', quizController.adaptivePractice);
+// Create Quiz (auth required — prevents anonymous DB flooding)
+router.post('/create', auth, quizController.createQuiz);
 
 // Get My Quizzes/Drafts
 router.get('/my-quizzes', auth, quizController.getMyQuizzes);
@@ -30,19 +22,17 @@ router.put('/:code/publish', auth, quizController.publishDraft);
 // Get Global Leaderboard
 router.get('/leaderboard', quizController.getLeaderboard);
 
-// Submit Result
+// Submit Result (no auth — guest students can submit with reg number)
 router.post('/submit', quizController.submitResult);
 
 // Delete a Quiz
 router.delete('/:code', auth, quizController.deleteQuiz);
 
-// ── NEW ENDPOINTS ────────────────────────────────────────────
 // Check if a registration number already submitted this quiz (re-attempt prevention)
 router.get('/:code/check-attempt', quizController.checkReAttempt);
 
 // Get per-question analytics for a quiz (teacher only)
 router.get('/:code/analytics', auth, quizController.getQuizAnalytics);
-// ─────────────────────────────────────────────────────────────
 
 // Get Specific Quiz Leaderboard
 router.get('/:code/leaderboard', quizController.getSpecificLeaderboard);
@@ -60,4 +50,3 @@ router.post('/execute-exam', quizController.executeCodeExam);
 router.get('/:code', quizController.getQuiz);
 
 module.exports = router;
-

@@ -82,6 +82,8 @@ export default function StudySprintQuiz() {
     const [alreadySubmittedError, setAlreadySubmittedError] = useState(""); // Re-attempt block message
     const [codingSubmissions, setCodingSubmissions] = useState([]); // coding answers to store on submit
     const fullscreenRef = useRef(null);
+    // Ref keeps latest userAnswers accessible in timer callback (avoids stale closure)
+    const userAnswersRef = useRef({});
 
     // AI Practice Mode
     const [aiQuestions, setAiQuestions] = useState([]);
@@ -219,12 +221,16 @@ export default function StudySprintQuiz() {
         setQuizCode(code);
     };
 
-    // TIMER EFFECT
+    // Keep ref in sync with latest answers — used by timer to avoid stale closure
+    useEffect(() => {
+        userAnswersRef.current = userAnswers;
+    }, [userAnswers]);
+
+    // TIMER EFFECT — uses userAnswersRef.current so auto-submit never misses last answers
     useEffect(() => {
         if ((examStarted && activeTab === "student") || (practiceStarted && activeTab === "practice")) {
             if (timeLeft <= 0) {
-                if (activeTab === "student") submitExam();
-                // For practice, just let it run out or manage as needed without auto-submit
+                if (activeTab === "student") submitExam(userAnswersRef.current);
                 return;
             }
             const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
@@ -349,18 +355,18 @@ export default function StudySprintQuiz() {
                 if (document.fullscreenElement) {
                     document.exitFullscreen().catch(() => { });
                 }
-            };
 
-            // Cleanup socket room if student leaves the page mid-exam
-            try {
-                const socket = getSocket();
-                if (socket) {
-                    socket.emit("quiz:leave", {
-                        quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
-                        studentId: user?._id || user?.id || "guest"
-                    });
-                }
-            } catch (e) { }
+                // ✅ FIX: socket leave is now INSIDE the cleanup return so it actually fires
+                try {
+                    const socket = getSocket();
+                    if (socket) {
+                        socket.emit("quiz:leave", {
+                            quizCode: (studentQuizCodeInput || "").toUpperCase().trim(),
+                            studentId: user?._id || user?.id || "guest"
+                        });
+                    }
+                } catch (e) { }
+            };
         }
     }, [examStarted, joinedQuiz, activeTab, examSubmitted, showResult]);
 
@@ -448,17 +454,19 @@ export default function StudySprintQuiz() {
         } catch (e) { console.error('Socket join error', e); }
     };
 
-    const submitExam = async () => {
+    // ✅ FIX: accepts latestAnswers param so timer auto-submit passes fresh answers via ref
+    const submitExam = async (latestAnswers) => {
         if (!joinedQuiz) return;
+        const answersToUse = latestAnswers || userAnswers;
         let correctCount = 0;
         let totalScore = 0;
         const quizQs = joinedQuiz.questions;
 
         quizQs.forEach(q => {
-            if (userAnswers[(q._id || q.id)] === q.correct) {
+            if (answersToUse[(q._id || q.id)] === q.correct) {
                 correctCount++;
                 totalScore += 1;
-            } else if (userAnswers[(q._id || q.id)] !== undefined) {
+            } else if (answersToUse[(q._id || q.id)] !== undefined) {
                 totalScore -= joinedQuiz.settings.negativeMarking;
             }
         });
@@ -482,7 +490,7 @@ export default function StudySprintQuiz() {
                     timeTaken: joinedQuiz.settings.timeLimit * 60 - timeLeft,
                     registrationNumber: studentRegNoInput.trim(),
                     studentName: user?.name || "Guest",
-                    userAnswers: userAnswers,
+                    userAnswers: answersToUse,
                     codingSubmissions: codingSubmissions // 🔍 coding answers for teacher review
                 })
             });
