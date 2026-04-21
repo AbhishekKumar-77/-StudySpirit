@@ -46,7 +46,9 @@ const allowedOrigins = [
     'https://www.studyspirit.in'
 ];
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Always use custom domain in production, even if env var still points to Vercel
+const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = rawFrontendUrl.includes('vercel.app') ? 'https://studyspirit.in' : rawFrontendUrl;
 if (FRONTEND_URL && !allowedOrigins.includes(FRONTEND_URL)) {
     allowedOrigins.push(FRONTEND_URL);
 }
