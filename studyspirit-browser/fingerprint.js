@@ -121,7 +121,7 @@ async function registerDevice(deviceId) {
 
       const options = {
         hostname: 'studyspirit.in',
-        path: '/api/device/register',
+        path: '/api/proctor/device/register',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

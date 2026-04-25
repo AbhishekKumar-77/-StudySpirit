@@ -176,6 +176,7 @@ const eventRoutes = require('./routes/eventRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const interviewExamRoutes = require('./routes/interviewExamRoutes');
+const proctorRoutes = require('./routes/proctorRoutes');
 
 // Auth routes get stricter rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
@@ -202,6 +203,9 @@ app.use('/api/admin', adminRoutes);
 
 // Interview Exam routes (Teacher AI Interview system)
 app.use('/api/interview-exam', interviewExamRoutes);
+
+// Proctoring API for StudySpirit Secure Browser
+app.use('/api/proctor', proctorRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
