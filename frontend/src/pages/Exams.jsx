@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../config";
 import { connectSocket, getSocket } from "../services/groupAPI";
+import { useSecureBrowser } from "../hooks/useSecureBrowser";
 import {
     ArrowLeft, FileCheck, ClipboardCheck, Code, Clock, Users, Trophy,
     ChevronRight, Calendar, Shield, Star, Zap, BookOpen, BarChart3,
@@ -14,6 +15,13 @@ import Editor from "@monaco-editor/react";
 export default function Exams() {
     const navigate = useNavigate();
     const { user } = useApp();
+
+    // ── Secure Browser Integration ────────────────────────────
+    const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
+        examId: joinedQuiz?._id || quizCodeInput,
+        studentId: user?._id || user?.id,
+        requireBrowser: joinedQuiz?.settings?.secureMode ?? false
+    });
 
     // Join State
     const [quizCodeInput, setQuizCodeInput] = useState("");
@@ -271,6 +279,12 @@ export default function Exams() {
             alert("No exam joined or no questions available!");
             return;
         }
+
+        // Block exam start if secureMode is on and student is in a regular browser
+        if (joinedQuiz.settings?.secureMode && isSecureBrowser === false) {
+            alert("This exam requires the StudySpirit Secure Browser.\nPlease download it from studyspirit.in/download");
+            return;
+        }
         setTimeLeft(joinedQuiz.settings.timeLimit * 60);
         setExamStarted(true);
         setExamSubmitted(false);
@@ -390,6 +404,15 @@ export default function Exams() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" ref={fullscreenRef}>
+
+            {/* ── Secure Browser Gate: blocks exam if student is in a regular browser ── */}
+            {examStarted && joinedQuiz?.settings?.secureMode && isSecureBrowser === false && (
+                <SecureBrowserGate />
+            )}
+
+            {/* ── Fullscreen exit warning overlay (from Electron main process) ── */}
+            <FullscreenWarning />
+
             {/* ===== EXAM IN PROGRESS (full screen takeover) ===== */}
             {examStarted && joinedQuiz && joinedQuiz.questions[currentQuestionIndex] && (
                 <div className="fixed inset-0 z-[200] bg-[var(--bg-secondary)] flex flex-col items-center p-6 overflow-y-auto pt-8">

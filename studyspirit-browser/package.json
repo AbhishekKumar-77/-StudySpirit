@@ -1,0 +1,82 @@
+{
+  "name": "studyspirit-browser",
+  "version": "1.0.0",
+  "description": "StudySpirit Secure Exam Browser - Anti-cheating locked browser",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac",
+    "build:icons": "node scripts/build-icons.js",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "in.studyspirit.browser",
+    "productName": "StudySpirit Browser",
+    "copyright": "Copyright © 2024 StudySpirit",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "lockdown.js",
+      "network.js",
+      "fingerprint.js",
+      "proctor.js",
+      "splash.html",
+      "assets/**",
+      "node_modules/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "hardenedRuntime": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "StudySpirit Browser"
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://studyspirit.in/api/browser/latest"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.7",
+    "node-machine-id": "^1.1.12",
+    "systeminformation": "^5.21.22"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "sharp": "^0.34.5"
+  }
+}

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { API_BASE } from "../config";
 import { connectSocket, getSocket } from "../services/groupAPI";
+import { useSecureBrowser } from "../hooks/useSecureBrowser";
 import {
     ArrowLeft, FilePlus, Clock, Edit, Sparkles, CheckCircle, Award,
     Trash2, Brain, Users, Send, BarChart, Target, Trophy, Zap,
@@ -21,6 +22,13 @@ export default function StudySprintQuiz() {
     // Preview mode: teacher opened exam with ?preview=1 to see it as a student would
     const isPreviewMode = searchParams.get('preview') === '1';
     const previewCode = searchParams.get('code') || '';
+
+    // ── Secure Browser Integration ────────────────────────────
+    const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
+        examId: joinedQuiz?._id || studentQuizCodeInput,
+        studentId: user?._id || user?.id,
+        requireBrowser: joinedQuiz?.settings?.secureMode ?? false
+    });
 
     // Main Tab State
     const [activeTab, setActiveTab] = useState("teacher");
@@ -434,6 +442,12 @@ export default function StudySprintQuiz() {
             alert("No quiz joined or no questions available!");
             return;
         }
+
+        // Block exam start if secureMode is on and student is in a regular browser
+        if (joinedQuiz.settings?.secureMode && isSecureBrowser === false) {
+            alert("This exam requires the StudySpirit Secure Browser.\nPlease download it from studyspirit.in/download");
+            return;
+        }
         setTimeLeft(joinedQuiz.settings.timeLimit * 60);
         setExamStarted(true);
         setExamSubmitted(false);
@@ -835,6 +849,14 @@ export default function StudySprintQuiz() {
             {/* Background Glow */}
             <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-cyan-500 /15 rounded-full blur-[100px] z-0 pointer-events-none"></div>
             <div className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[100px] z-0 pointer-events-none"></div>
+
+            {/* ── Secure Browser Gate (blocks exam in regular browser when secureMode is on) ── */}
+            {examStarted && activeTab === "student" && joinedQuiz?.settings?.secureMode && isSecureBrowser === false && (
+                <SecureBrowserGate />
+            )}
+
+            {/* ── Fullscreen exit warning (from Electron main process) ── */}
+            <FullscreenWarning />
 
             {/* Teacher Preview Banner */}
             {isPreviewMode && (
