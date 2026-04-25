@@ -160,7 +160,8 @@ export function useSecureBrowser({ examId, studentId, requireBrowser = false } =
         </div>
 
         <a
-          href="https://studyspirit.in/download"
+          href="https://drive.google.com/file/d/1UyB7bAEnJz1L24nS8mYpVHSyO0_4zX1z/view?usp=sharing"
+          target="_blank" rel="noopener noreferrer"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 10,
             padding: '16px 40px',
