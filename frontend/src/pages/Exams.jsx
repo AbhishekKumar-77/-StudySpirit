@@ -16,13 +16,7 @@ export default function Exams() {
     const navigate = useNavigate();
     const { user } = useApp();
 
-    // ── Secure Browser Integration ────────────────────────────
-    const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
-        examId: joinedQuiz?._id || quizCodeInput,
-        studentId: user?._id || user?.id,
-        requireBrowser: joinedQuiz?.settings?.secureMode ?? false
-    });
-
+    // Note: Secure Browser Integration moved below state hooks to fix ReferenceError
     // Join State
     const [quizCodeInput, setQuizCodeInput] = useState("");
     const [regNoInput, setRegNoInput] = useState("");
@@ -42,6 +36,13 @@ export default function Exams() {
     const [isReviewingAnswers, setIsReviewingAnswers] = useState(false);
     const [isTabHidden, setIsTabHidden] = useState(false);
     const fullscreenRef = useRef(null);
+
+    // ── Secure Browser Integration ────────────────────────────
+    const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
+        examId: joinedQuiz?._id || quizCodeInput,
+        studentId: user?._id || user?.id,
+        requireBrowser: joinedQuiz?.settings?.secureMode ?? false
+    });
 
     // Coding Exam State
     const [codeLanguage, setCodeLanguage] = useState("javascript");

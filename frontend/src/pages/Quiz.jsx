@@ -23,13 +23,7 @@ export default function StudySprintQuiz() {
     const isPreviewMode = searchParams.get('preview') === '1';
     const previewCode = searchParams.get('code') || '';
 
-    // ── Secure Browser Integration ────────────────────────────
-    const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
-        examId: joinedQuiz?._id || studentQuizCodeInput,
-        studentId: user?._id || user?.id,
-        requireBrowser: joinedQuiz?.settings?.secureMode ?? false
-    });
-
+    // Note: Secure Browser Integration moved below state hooks to fix ReferenceError
     // Main Tab State
     const [activeTab, setActiveTab] = useState("teacher");
 
@@ -92,6 +86,13 @@ export default function StudySprintQuiz() {
     const fullscreenRef = useRef(null);
     // Ref keeps latest userAnswers accessible in timer callback (avoids stale closure)
     const userAnswersRef = useRef({});
+
+    // ── Secure Browser Integration ────────────────────────────
+    const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
+        examId: joinedQuiz?._id || studentQuizCodeInput,
+        studentId: user?._id || user?.id,
+        requireBrowser: joinedQuiz?.settings?.secureMode ?? false
+    });
 
     // AI Practice Mode
     const [aiQuestions, setAiQuestions] = useState([]);
