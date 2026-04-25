@@ -444,11 +444,8 @@ export default function StudySprintQuiz() {
             return;
         }
 
-        // Block exam start if secureMode is on and student is in a regular browser
-        if (joinedQuiz.settings?.secureMode && isSecureBrowser === false) {
-            alert("This exam requires the StudySpirit Secure Browser.\nPlease download it from studyspirit.in/download");
-            return;
-        }
+        // If secureMode is on and they are in a regular browser, 
+        // we let examStarted=true, which triggers the SecureBrowserGate full-screen block.
         setTimeLeft(joinedQuiz.settings.timeLimit * 60);
         setExamStarted(true);
         setExamSubmitted(false);
