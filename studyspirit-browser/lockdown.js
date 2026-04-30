@@ -37,6 +37,12 @@ const DANGEROUS_PROCESSES = [
   { name: 'winvnc.exe',       label: 'VNC Server' },
   { name: 'tvnserver.exe',    label: 'TightVNC' },
   { name: 'UltraVNC.exe',     label: 'UltraVNC' },
+  // Web Browsers (to prevent looking up answers in background)
+  { name: 'chrome.exe',       label: 'Google Chrome' },
+  { name: 'firefox.exe',      label: 'Mozilla Firefox' },
+  { name: 'msedge.exe',       label: 'Microsoft Edge' },
+  { name: 'brave.exe',        label: 'Brave Browser' },
+  { name: 'opera.exe',        label: 'Opera Browser' },
 ];
 
 // Partial-name matches (process names containing these strings)

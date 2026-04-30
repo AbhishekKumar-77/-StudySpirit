@@ -118,7 +118,15 @@ function createMainWindow() {
 
   // Handle accidental fullscreen exit
   mainWindow.on('leave-full-screen', () => {
-    if (isExamMode) handleFullscreenExit();
+    if (isExamMode) handleFocusLoss('Fullscreen Exit');
+  });
+
+  // Handle window losing focus (Alt+Tab, Task Switch)
+  mainWindow.on('blur', () => {
+    if (isExamMode) {
+      handleFocusLoss('Window Focus Lost (Alt+Tab)');
+      mainWindow.focus(); // Force focus back to exam
+    }
   });
 
   // Setup network lockdown (filters during exam mode only)
@@ -275,21 +283,22 @@ async function deactivateExamMode() {
 }
 
 // ─────────────────────────────────────────────
-// FULLSCREEN EXIT HANDLER
+// SECURITY VIOLATION HANDLER (Focus Loss / Fullscreen Exit)
 // ─────────────────────────────────────────────
-function handleFullscreenExit() {
+function handleFocusLoss(reason) {
   proctor.incrementFullscreenExits();
   const count = proctor.getSessionFlags().fullscreenExits;
-  console.warn(`[StudySpirit] Fullscreen exit #${count} detected!`);
+  console.warn(`[StudySpirit] Violation: ${reason}. Count: #${count}`);
 
   // Re-enter kiosk immediately
   mainWindow.setKiosk(true);
+  mainWindow.focus();
 
   // Notify the website (shows overlay warning to student)
-  mainWindow.webContents.send('exam:fullscreen-exit-warning', { count });
+  mainWindow.webContents.send('exam:fullscreen-exit-warning', { count, reason });
 
   // Log the violation
-  proctor.log('fullscreen_exit', { count });
+  proctor.log('focus_loss', { count, reason });
 }
 
 // ─────────────────────────────────────────────
