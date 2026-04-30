@@ -124,7 +124,7 @@ export function useSecureBrowser({ examId, studentId, requireBrowser = false } =
           boxShadow: '0 0 60px rgba(124,58,237,0.5)'
         }}>
           <svg viewBox="0 0 24 24" width="52" height="52" fill="white">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
           </svg>
         </div>
 
@@ -160,7 +160,8 @@ export function useSecureBrowser({ examId, studentId, requireBrowser = false } =
         </div>
 
         <a
-          href="https://drive.google.com/file/d/1UyB7bAEnJz1L24nS8mYpVHSyO0_4zX1z/view?usp=sharing"
+          href="https://drive.google.com/file/d/1Vo0PKm3ZCFqbldnv1wGwDQgt2onQlE2k/view?usp=sharing"
+
           target="_blank" rel="noopener noreferrer"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 10,
