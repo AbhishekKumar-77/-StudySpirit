@@ -1546,7 +1546,7 @@ export default function StudySprintQuiz() {
 
                                 {/* Download CTA */}
                                 <a
-                                    href="https://drive.google.com/file/d/1Vo0PKm3ZCFqbldnv1wGwDQgt2onQlE2k/view?usp=sharing"
+                                    href="https://drive.google.com/file/d/1naGslyoYbMmDT9jFr_-Qm-7aRwPbsFPW/view?usp=sharing"
                                     target="_blank" rel="noopener noreferrer"
                                     style={{
                                         display: 'inline-flex', alignItems: 'center', gap: 12,
