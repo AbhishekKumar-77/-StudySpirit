@@ -9,7 +9,7 @@
  *   - registerExamShortcutBlocks(): kept for exam-mode extra enforcement
  */
 
-const { globalShortcut, dialog, clipboard } = require('electron');
+const { app, globalShortcut, dialog, clipboard } = require('electron');
 const { exec } = require('child_process');
 const proctor = require('./proctor');
 
@@ -173,6 +173,12 @@ function registerGlobalLockdownShortcuts() {
   for (const shortcut of SYSTEM_SHORTCUTS) {
     try {
       globalShortcut.register(shortcut, () => {
+        // Allow standard close shortcuts ONLY before the exam starts
+        if (shortcut === 'Alt+F4' || shortcut === 'CommandOrControl+W') {
+          console.log(`[Lockdown] ${shortcut} pressed outside exam — quitting app.`);
+          app.exit(0);
+          return;
+        }
         console.warn(`[Lockdown] System shortcut blocked at boot level: ${shortcut}`);
       });
       blockedCount++;

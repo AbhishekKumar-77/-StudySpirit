@@ -170,6 +170,46 @@ function createMainWindow() {
   // Load the environment check page first, then redirect to BASE_URL
   mainWindow.loadURL(BASE_URL);
 
+  // Inject a visual "Close Browser" button when outside of exam mode
+  mainWindow.webContents.on('dom-ready', () => {
+    if (!isExamMode && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.executeJavaScript(`
+        if (!document.getElementById('ss-close-btn')) {
+          const btn = document.createElement('button');
+          btn.id = 'ss-close-btn';
+          btn.innerHTML = '✕ Close Browser';
+          btn.style.position = 'fixed';
+          btn.style.top = '20px';
+          btn.style.right = '20px';
+          btn.style.zIndex = '2147483647'; // absolute top
+          btn.style.padding = '10px 18px';
+          btn.style.background = 'rgba(239, 68, 68, 0.95)';
+          btn.style.color = 'white';
+          btn.style.border = '1px solid rgba(255,255,255,0.3)';
+          btn.style.borderRadius = '8px';
+          btn.style.fontFamily = 'system-ui, sans-serif';
+          btn.style.fontWeight = '800';
+          btn.style.fontSize = '14px';
+          btn.style.cursor = 'pointer';
+          btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
+          btn.style.backdropFilter = 'blur(4px)';
+          btn.style.transition = 'all 0.2s ease';
+          
+          btn.onmouseover = () => { btn.style.background = '#dc2626'; btn.style.transform = 'scale(1.05)'; };
+          btn.onmouseout  = () => { btn.style.background = 'rgba(239, 68, 68, 0.95)'; btn.style.transform = 'scale(1)'; };
+          
+          btn.onclick = () => {
+            if (window.studySpiritBrowser && window.studySpiritBrowser.forceQuit) {
+              window.studySpiritBrowser.forceQuit();
+            }
+          };
+          
+          document.documentElement.appendChild(btn);
+        }
+      `).catch(err => console.error('[StudySpirit] Failed to inject close button:', err));
+    }
+  });
+
   mainWindow.once('ready-to-show', () => {
     if (splashWindow && !splashWindow.isDestroyed()) splashWindow.destroy();
     // Immediately enter kiosk mode — AMCAT style: locked from the very first moment
@@ -264,6 +304,14 @@ async function activateExamMode() {
   isExamMode = true;
 
   try {
+    // 0. Remove the Close Browser button immediately
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.executeJavaScript(`
+        const btn = document.getElementById('ss-close-btn');
+        if (btn) btn.remove();
+      `).catch(() => {});
+    }
+
     // 1. Verify device
     const currentId = await fingerprint.getDeviceId();
     const valid = await fingerprint.verifyDevice(currentId);
@@ -390,6 +438,14 @@ function setupIpcHandlers() {
     currentExamId    = examId;
     currentStudentId = studentId;
     console.log(`[StudySpirit] Session: exam=${examId}, student=${studentId}`);
+  });
+
+  // Force quit from the injected UI button (only allowed outside exam)
+  ipcMain.on('app:force-quit', () => {
+    if (!isExamMode) {
+      console.log('[StudySpirit] Force quitting via UI button.');
+      app.exit(0); // completely terminate the app
+    }
   });
 
   // Renderer requests device ID

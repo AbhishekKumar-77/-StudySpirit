@@ -1,6 +1,6 @@
 {
   "name": "studyspirit-browser",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "StudySpirit Secure Exam Browser - Anti-cheating locked browser",
   "main": "main.js",
   "scripts": {

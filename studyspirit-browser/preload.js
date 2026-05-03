@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld('studySpiritBrowser', {
     ipcRenderer.send('exam:set-session', { examId, studentId });
   },
 
+  // Quit the browser completely (only works if NOT in exam)
+  forceQuit: () => ipcRenderer.send('app:force-quit'),
+
   // Fetch the device fingerprint ID
   getDeviceId: () => ipcRenderer.invoke('device:get-id'),
 
