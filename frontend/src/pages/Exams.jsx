@@ -40,7 +40,7 @@ export default function Exams() {
 
     // ── Secure Browser Integration ────────────────────────────
     const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
-        examId: joinedQuiz?._id || quizCodeInput,
+        examId: (examStarted && !examSubmitted) ? (joinedQuiz?._id || quizCodeInput) : null,
         studentId: user?._id || user?.id,
         requireBrowser: joinedQuiz?.settings?.secureMode ?? false
     });

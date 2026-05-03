@@ -298,19 +298,11 @@ function setupSecurityHeaders(ses) {
 }
 
 // ─────────────────────────────────────────────
-// URL NAVIGATION — EXAM START / END DETECTION
+// URL NAVIGATION
 // ─────────────────────────────────────────────
 function handleNavigation(url) {
-  const wasExam = isExamMode;
-  const isExam  = EXAM_PATTERN.test(url);
-
-  if (!wasExam && isExam) {
-    console.log('[StudySpirit] Exam URL detected. Starting lockdown...');
-    activateExamMode();
-  } else if (wasExam && !isExam) {
-    console.log('[StudySpirit] Left exam URL. Deactivating lockdown...');
-    deactivateExamMode();
-  }
+  // Navigation handling is no longer used for exam locking.
+  // We strictly rely on the 'exam:set-session' IPC event from the React app.
 }
 
 // ─────────────────────────────────────────────
@@ -453,7 +445,19 @@ function setupIpcHandlers() {
   ipcMain.on('exam:set-session', (_, { examId, studentId }) => {
     currentExamId    = examId;
     currentStudentId = studentId;
-    console.log(`[StudySpirit] Session: exam=${examId}, student=${studentId}`);
+    console.log(`[StudySpirit] IPC Session update: exam=${examId}, student=${studentId}`);
+    
+    if (examId && examId !== 'null') {
+      if (!isExamMode) {
+        console.log('[StudySpirit] IPC triggered lockdown activation.');
+        activateExamMode();
+      }
+    } else {
+      if (isExamMode) {
+        console.log('[StudySpirit] IPC triggered lockdown deactivation.');
+        deactivateExamMode();
+      }
+    }
   });
 
   // Force quit from the injected UI button (only allowed outside exam)

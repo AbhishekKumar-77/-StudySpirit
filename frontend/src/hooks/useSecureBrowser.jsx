@@ -73,12 +73,14 @@ export function useSecureBrowser({ examId, studentId, requireBrowser = false } =
 
   // ── Step 2: Send exam session to Electron when exam starts ─
   useEffect(() => {
-    if (isSecureBrowser && examId && studentId) {
-      window.studySpiritBrowser.setExamSession(
-        String(examId),
-        String(studentId)
-      );
-      console.log('[SecureBrowser] Exam session set:', { examId, studentId });
+    if (isSecureBrowser) {
+      if (examId && studentId) {
+        window.studySpiritBrowser.setExamSession(String(examId), String(studentId));
+        console.log('[SecureBrowser] Exam session set:', { examId, studentId });
+      } else {
+        window.studySpiritBrowser.setExamSession('null', 'null');
+        console.log('[SecureBrowser] Exam session cleared.');
+      }
     }
   }, [isSecureBrowser, examId, studentId]);
 

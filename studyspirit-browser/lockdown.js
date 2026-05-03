@@ -60,7 +60,8 @@ const DANGEROUS_PROCESSES = [
 const DANGEROUS_KEYWORDS = [
   'screencap', 'screenrecord', 'remote', 'vnc',
   'camtasia', 'fraps', 'bandicam', 'xsplit',
-  'teamviewer', 'anydesk', 'parsec', 'rustdesk'
+  'teamviewer', 'anydesk', 'parsec', 'rustdesk',
+  'getscreen', 'logmein', 'supremo', 'ammyy'
 ];
 
 // ── Detect Dangerous Processes ─────────────────────────────

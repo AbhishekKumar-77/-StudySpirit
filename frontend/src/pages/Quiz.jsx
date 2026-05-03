@@ -90,7 +90,7 @@ export default function StudySprintQuiz() {
 
     // ── Secure Browser Integration ────────────────────────────
     const { isSecureBrowser, SecureBrowserGate, FullscreenWarning } = useSecureBrowser({
-        examId: joinedQuiz?._id || studentQuizCodeInput,
+        examId: (examStarted && !examSubmitted) ? (joinedQuiz?._id || studentQuizCodeInput) : null,
         studentId: user?._id || user?.id,
         requireBrowser: joinedQuiz?.settings?.secureMode ?? false
     });
