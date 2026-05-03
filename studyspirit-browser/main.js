@@ -3,9 +3,12 @@
 /**
  * StudySpirit Browser - Main Process
  * ====================================
- * Orchestrates all security modules.
- * Handles: Window management, URL monitoring (exam start/end),
- *          security header injection, IPC handlers, auto-updates.
+ * AMCAT-style full lockdown from launch:
+ *  - Kiosk mode enabled immediately (no title bar, no close button)
+ *  - All system shortcuts blocked globally on startup
+ *  - Background process killer runs every 10 seconds
+ *  - Environment check gate before exam starts
+ *  - Zero tab switching, zero Alt+Tab, zero window switching
  */
 
 const {
@@ -15,6 +18,7 @@ const {
 } = require('electron');
 const path   = require('path');
 const https  = require('https');
+const { exec } = require('child_process');
 const { autoUpdater } = require('electron-updater');
 
 const lockdown    = require('./lockdown');
@@ -26,8 +30,11 @@ const proctor     = require('./proctor');
 // CONSTANTS
 // ─────────────────────────────────────────────
 const BASE_URL     = 'https://studyspirit.in';
-const EXAM_PATTERN = /^https:\/\/(www\.)?studyspirit\.in\/exam\//;
+const EXAM_PATTERN = /^\/exam\//;
 const IS_DEV       = process.argv.includes('--dev');
+
+// How often to scan & kill dangerous processes (even outside exam)
+const BACKGROUND_SCAN_INTERVAL_MS = 10_000; // 10 seconds
 
 const SECURITY_HEADERS = {
   'X-StudySpirit-Browser': 'true',
@@ -37,13 +44,15 @@ const SECURITY_HEADERS = {
 // ─────────────────────────────────────────────
 // APP STATE
 // ─────────────────────────────────────────────
-let mainWindow       = null;
-let splashWindow     = null;
-let isExamMode       = false;
-let powerBlockerId   = null;
-let currentExamId    = null;
-let currentStudentId = null;
-let deviceId         = null;
+let mainWindow         = null;
+let splashWindow       = null;
+let isExamMode         = false;
+let powerBlockerId     = null;
+let currentExamId      = null;
+let currentStudentId   = null;
+let deviceId           = null;
+let bgScanTimer        = null;   // background process scanner
+let envCheckPassed     = false;  // true after environment gate passes
 
 // ─────────────────────────────────────────────
 // SINGLE INSTANCE LOCK
@@ -75,18 +84,29 @@ function createSplashWindow() {
 // MAIN WINDOW
 // ─────────────────────────────────────────────
 function createMainWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.bounds; // use full screen bounds, not workArea
 
   mainWindow = new BrowserWindow({
+    x: primaryDisplay.bounds.x,
+    y: primaryDisplay.bounds.y,
     width, height,
     show: false,
-    title: 'StudySpirit Browser',
+    title: 'StudySpirit Secure Browser',
     icon: path.join(__dirname, 'assets', 'icon.png'),
     backgroundColor: '#0a0a1a',
+    frame: false,           // ← Remove title bar / close/min/max buttons entirely
+    resizable: false,       // ← Cannot resize
+    movable: false,         // ← Cannot move the window
+    minimizable: false,     // ← Cannot minimize
+    maximizable: false,     // ← Cannot maximize (already fullscreen)
+    closable: false,        // ← Close button disabled
+    skipTaskbar: false,     // Keep in taskbar so it shows as running
+    alwaysOnTop: true,      // ← Always on top of everything
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,   // SECURITY: isolate renderer context
-      nodeIntegration: false,   // SECURITY: no Node.js in renderer
+      contextIsolation: true,
+      nodeIntegration: false,
       sandbox: false,
       webSecurity: true,
       allowRunningInsecureContent: false,
@@ -94,18 +114,16 @@ function createMainWindow() {
     }
   });
 
-  // Block new popups / window.open calls
+  // Block ALL new popups / window.open calls
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
-  // Disable context menu in exam mode
-  mainWindow.webContents.on('context-menu', (e) => {
-    if (isExamMode) e.preventDefault();
-  });
+  // Disable context menu always
+  mainWindow.webContents.on('context-menu', (e) => e.preventDefault());
 
-  // Prevent closing during exam
+  // Prevent closing ALWAYS (only allowed via explicit exam-end flow)
   mainWindow.on('close', (e) => {
+    e.preventDefault();
     if (isExamMode) {
-      e.preventDefault();
       dialog.showMessageBox(mainWindow, {
         type: 'warning',
         title: 'Exam in Progress',
@@ -114,19 +132,25 @@ function createMainWindow() {
         buttons: ['OK']
       });
     }
+    // Outside exam mode: also prevent close to avoid students escaping the browser
+    // Students must use the logout/exit flow provided in the app
   });
 
-  // Handle accidental fullscreen exit
+  // Handle fullscreen exit — re-enter kiosk immediately
   mainWindow.on('leave-full-screen', () => {
+    mainWindow.setKiosk(true);  // snap back immediately
     if (isExamMode) handleFocusLoss('Fullscreen Exit');
   });
 
-  // Handle window losing focus (Alt+Tab, Task Switch)
+  // Handle ANY focus loss — grab focus back instantly
   mainWindow.on('blur', () => {
-    if (isExamMode) {
-      handleFocusLoss('Window Focus Lost (Alt+Tab)');
-      mainWindow.focus(); // Force focus back to exam
-    }
+    setTimeout(() => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.focus();
+        mainWindow.setKiosk(true);
+      }
+    }, 50);
+    if (isExamMode) handleFocusLoss('Window Focus Lost (Alt+Tab)');
   });
 
   // Setup network lockdown (filters during exam mode only)
@@ -139,18 +163,69 @@ function createMainWindow() {
   // Inject security headers on all studyspirit.in requests
   setupSecurityHeaders(mainWindow.webContents.session);
 
-  // Watch URL changes
+  // Watch URL changes to detect exam start/end
   mainWindow.webContents.on('did-navigate', (_, url) => handleNavigation(url));
   mainWindow.webContents.on('did-navigate-in-page', (_, url) => handleNavigation(url));
 
+  // Load the environment check page first, then redirect to BASE_URL
   mainWindow.loadURL(BASE_URL);
 
   mainWindow.once('ready-to-show', () => {
     if (splashWindow && !splashWindow.isDestroyed()) splashWindow.destroy();
+    // Immediately enter kiosk mode — AMCAT style: locked from the very first moment
+    mainWindow.setKiosk(true);
+    mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
     mainWindow.show();
-    mainWindow.maximize();
+    mainWindow.focus();
     if (!IS_DEV) mainWindow.setMenu(null);
   });
+}
+
+// ─────────────────────────────────────────────
+// BACKGROUND PROCESS SCANNER (runs every 10s even outside exam)
+// ─────────────────────────────────────────────
+function startBackgroundProcessScanner() {
+  // Run once immediately
+  runBackgroundScan();
+  // Then every 10 seconds
+  bgScanTimer = setInterval(runBackgroundScan, BACKGROUND_SCAN_INTERVAL_MS);
+  console.log('[StudySpirit] Background process scanner started (every 10s).');
+}
+
+async function runBackgroundScan() {
+  try {
+    const killed = await lockdown.killDangerousProcesses();
+    if (killed.length > 0) {
+      console.warn('[StudySpirit] Background scan killed:', killed);
+      // If exam is active, log it
+      if (isExamMode) {
+        proctor.log('background_kill', { killed });
+        // Show a brief warning overlay to the student
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('exam:app-killed', { killed });
+        }
+      } else {
+        // Not in exam yet — show a dialog so student knows what was closed
+        dialog.showMessageBox(mainWindow, {
+          type: 'warning',
+          title: 'StudySpirit — Environment Check',
+          message: 'The following apps were closed to maintain exam integrity:',
+          detail: killed.map(k => `• ${k}`).join('\n'),
+          buttons: ['OK']
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[StudySpirit] Background scan error:', err.message);
+  }
+}
+
+function stopBackgroundProcessScanner() {
+  if (bgScanTimer) {
+    clearInterval(bgScanTimer);
+    bgScanTimer = null;
+    console.log('[StudySpirit] Background process scanner stopped.');
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -200,7 +275,7 @@ async function activateExamMode() {
       );
     }
 
-    // 2. Kill dangerous processes
+    // 2. Kill dangerous processes (final sweep before exam)
     const killed = await lockdown.killDangerousProcesses();
     if (killed.length > 0) {
       dialog.showMessageBox(mainWindow, {
@@ -212,20 +287,20 @@ async function activateExamMode() {
       });
     }
 
-    // 3. Kiosk fullscreen
+    // 3. Kiosk is ALREADY active — reinforce it
     mainWindow.setKiosk(true);
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+    mainWindow.focus();
 
-    // 4. Block system keyboard shortcuts
-    lockdown.registerExamShortcutBlocks(mainWindow);
-
-    // 5. Clear clipboard
+    // 4. Clear clipboard
     clipboard.clear();
 
-    // 6. Prevent screen sleep
-    powerBlockerId = powerSaveBlocker.start('prevent-display-sleep');
+    // 5. Prevent screen sleep
+    if (powerBlockerId === null) {
+      powerBlockerId = powerSaveBlocker.start('prevent-display-sleep');
+    }
 
-    // 7. Start heartbeat
+    // 6. Start heartbeat
     proctor.startHeartbeat({
       getExamId:    () => currentExamId,
       getStudentId: () => currentStudentId,
@@ -233,10 +308,10 @@ async function activateExamMode() {
       getFlags:     () => proctor.getSessionFlags()
     });
 
-    // 8. Log exam start
+    // 7. Log exam start
     proctor.log('exam_start', { deviceId, examId: currentExamId });
 
-    console.log('[StudySpirit] ✅ Exam lockdown ACTIVE.');
+    console.log('[StudySpirit] ✅ Exam lockdown ACTIVE (AMCAT-style).');
   } catch (err) {
     console.error('[StudySpirit] activateExamMode error:', err);
   }
@@ -249,20 +324,17 @@ async function deactivateExamMode() {
   isExamMode = false;
 
   try {
-    // 1. Exit kiosk
-    mainWindow.setKiosk(false);
-    mainWindow.setAlwaysOnTop(false);
+    // NOTE: In AMCAT style — kiosk mode stays ON even after exam ends.
+    // The student remains locked inside the browser. Only the exam session is reset.
+    // Kiosk is NOT disabled here. It was enabled on boot and stays on.
 
-    // 2. Restore keyboard shortcuts
-    lockdown.unregisterExamShortcutBlocks();
-
-    // 3. Stop sleep prevention
+    // 1. Stop sleep prevention (power blocker only needed during exam)
     if (powerBlockerId !== null) {
       powerSaveBlocker.stop(powerBlockerId);
       powerBlockerId = null;
     }
 
-    // 4. Stop heartbeat + send final report
+    // 2. Stop heartbeat + send final report
     await proctor.stopHeartbeat();
     await proctor.sendSessionEnd({
       examId: currentExamId,
@@ -270,13 +342,21 @@ async function deactivateExamMode() {
       deviceId
     });
 
-    // 5. Reset session state
+    // 3. Reset session state
     proctor.resetSessionFlags();
     network.resetBlockedCount();
     currentExamId    = null;
     currentStudentId = null;
 
-    console.log('[StudySpirit] ✅ Exam lockdown RELEASED. Normal browsing restored.');
+    // 4. Restore global lockdown shortcuts (exam-specific proctor callbacks → boot-level silent blocks)
+    lockdown.unregisterExamShortcutBlocks();
+
+    // 5. Keep kiosk + alwaysOnTop alive — student is still inside the browser
+    mainWindow.setKiosk(true);
+    mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+    mainWindow.focus();
+
+    console.log('[StudySpirit] ✅ Exam session ended. Browser still in lockdown (AMCAT-style).');
   } catch (err) {
     console.error('[StudySpirit] deactivateExamMode error:', err);
   }
@@ -375,11 +455,14 @@ function setupAutoUpdater() {
 // APP LIFECYCLE
 // ─────────────────────────────────────────────
 app.whenReady().then(async () => {
-  console.log('[StudySpirit] Starting...');
+  console.log('[StudySpirit] Starting — AMCAT-style lockdown browser...');
+
+  // ── Step 1: Block ALL system shortcuts immediately, before window even opens
+  lockdown.registerGlobalLockdownShortcuts();
 
   createSplashWindow();
 
-  // App integrity
+  // ── Step 2: App integrity check
   const integrityOk = await checkAppIntegrity();
   if (!integrityOk) {
     if (splashWindow) splashWindow.destroy();
@@ -390,7 +473,7 @@ app.whenReady().then(async () => {
     return app.quit();
   }
 
-  // VM check
+  // ── Step 3: VM check
   const isVM = await fingerprint.checkVirtualMachine();
   if (isVM) {
     if (splashWindow) splashWindow.destroy();
@@ -401,14 +484,27 @@ app.whenReady().then(async () => {
     return app.quit();
   }
 
-  // Register device fingerprint
+  // ── Step 4: Kill dangerous processes BEFORE showing main window
+  console.log('[StudySpirit] Running pre-launch environment check...');
+  const preKilled = await lockdown.killDangerousProcesses();
+  if (preKilled.length > 0) {
+    console.log('[StudySpirit] Pre-launch killed:', preKilled);
+  }
+
+  // ── Step 5: Register device fingerprint
   deviceId = await fingerprint.getDeviceId();
   await fingerprint.registerDevice(deviceId);
 
-  // Setup IPC + window + updater
+  // ── Step 6: Setup IPC + create main window (in kiosk mode from the start)
   setupIpcHandlers();
   createMainWindow();
   setupAutoUpdater();
+
+  // ── Step 7: Start continuous background process scanner
+  // Runs every 10 seconds — kills any banned apps that are opened after launch
+  mainWindow.once('ready-to-show', () => {
+    startBackgroundProcessScanner();
+  });
 });
 
 app.on('window-all-closed', () => {
@@ -420,9 +516,14 @@ app.on('activate', () => {
 });
 
 app.on('before-quit', () => {
+  stopBackgroundProcessScanner();
   globalShortcut.unregisterAll();
   if (powerBlockerId !== null) powerSaveBlocker.stop(powerBlockerId);
 });
+
+// Prevent accidental app quit via process signals
+process.on('SIGTERM', () => console.warn('[StudySpirit] SIGTERM ignored — exam in progress.'));
+process.on('SIGINT',  () => console.warn('[StudySpirit] SIGINT ignored — exam in progress.'));
 
 process.on('uncaughtException', err => {
   console.error('[StudySpirit] Uncaught exception:', err);

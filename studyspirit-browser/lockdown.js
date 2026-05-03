@@ -3,10 +3,10 @@
 /**
  * StudySpirit Browser - Lockdown Module
  * =======================================
- * Handles:
- *   - Killing dangerous screen-sharing / recording processes
- *   - Blocking system-level keyboard shortcuts (screenshot, Alt+F4, etc.)
- *   - Re-enabling shortcuts after exam ends
+ * AMCAT-style lockdown:
+ *   - registerGlobalLockdownShortcuts(): blocks ALL shortcuts from app BOOT
+ *   - killDangerousProcesses(): kills banned apps (runs every 10s in background)
+ *   - registerExamShortcutBlocks(): kept for exam-mode extra enforcement
  */
 
 const { globalShortcut, dialog, clipboard } = require('electron');
@@ -16,39 +16,51 @@ const proctor = require('./proctor');
 // ── Processes to Kill During Exam ──────────────────────────
 const DANGEROUS_PROCESSES = [
   // Screen Recording
-  { name: 'obs64.exe',        label: 'OBS Studio' },
-  { name: 'obs32.exe',        label: 'OBS Studio' },
-  { name: 'obs.exe',          label: 'OBS Studio' },
-  { name: 'ShareX.exe',       label: 'ShareX' },
-  { name: 'Snagit32.exe',     label: 'Snagit' },
-  { name: 'Snagit64.exe',     label: 'Snagit' },
-  { name: 'Lightshot.exe',    label: 'Lightshot' },
+  { name: 'obs64.exe',              label: 'OBS Studio' },
+  { name: 'obs32.exe',              label: 'OBS Studio' },
+  { name: 'obs.exe',                label: 'OBS Studio' },
+  { name: 'ShareX.exe',             label: 'ShareX' },
+  { name: 'Snagit32.exe',           label: 'Snagit' },
+  { name: 'Snagit64.exe',           label: 'Snagit' },
+  { name: 'Lightshot.exe',          label: 'Lightshot' },
   // Remote Desktop / Screen Sharing
-  { name: 'anydesk.exe',      label: 'AnyDesk' },
-  { name: 'TeamViewer.exe',   label: 'TeamViewer' },
+  { name: 'anydesk.exe',            label: 'AnyDesk' },
+  { name: 'TeamViewer.exe',         label: 'TeamViewer' },
   { name: 'TeamViewer_Service.exe', label: 'TeamViewer' },
-  { name: 'chrrd.exe',        label: 'Chrome Remote Desktop' },
-  { name: 'remoting_host.exe',label: 'Chrome Remote Desktop' },
+  { name: 'chrrd.exe',              label: 'Chrome Remote Desktop' },
+  { name: 'remoting_host.exe',      label: 'Chrome Remote Desktop' },
   // Video Conferencing
-  { name: 'Zoom.exe',         label: 'Zoom' },
-  { name: 'Teams.exe',        label: 'Microsoft Teams' },
-  { name: 'Discord.exe',      label: 'Discord' },
+  { name: 'Zoom.exe',               label: 'Zoom' },
+  { name: 'Teams.exe',              label: 'Microsoft Teams' },
+  { name: 'Discord.exe',            label: 'Discord' },
   // VNC
-  { name: 'winvnc.exe',       label: 'VNC Server' },
-  { name: 'tvnserver.exe',    label: 'TightVNC' },
-  { name: 'UltraVNC.exe',     label: 'UltraVNC' },
-  // Web Browsers (to prevent looking up answers in background)
-  { name: 'chrome.exe',       label: 'Google Chrome' },
-  { name: 'firefox.exe',      label: 'Mozilla Firefox' },
-  { name: 'msedge.exe',       label: 'Microsoft Edge' },
-  { name: 'brave.exe',        label: 'Brave Browser' },
-  { name: 'opera.exe',        label: 'Opera Browser' },
+  { name: 'winvnc.exe',             label: 'VNC Server' },
+  { name: 'tvnserver.exe',          label: 'TightVNC' },
+  { name: 'UltraVNC.exe',           label: 'UltraVNC' },
+  // Web Browsers (prevent looking up answers)
+  { name: 'chrome.exe',             label: 'Google Chrome' },
+  { name: 'firefox.exe',            label: 'Mozilla Firefox' },
+  { name: 'msedge.exe',             label: 'Microsoft Edge' },
+  { name: 'brave.exe',              label: 'Brave Browser' },
+  { name: 'opera.exe',              label: 'Opera Browser' },
+  // Task Manager (students try to kill the browser process)
+  { name: 'Taskmgr.exe',            label: 'Task Manager' },
+  // AI / Chat assistants
+  { name: 'ChatGPT.exe',            label: 'ChatGPT App' },
+  { name: 'claude.exe',             label: 'Claude App' },
+  { name: 'copilot.exe',            label: 'Microsoft Copilot' },
+  // Communication that can share screens
+  { name: 'slack.exe',              label: 'Slack' },
+  { name: 'skype.exe',              label: 'Skype' },
+  { name: 'telegram.exe',           label: 'Telegram' },
+  { name: 'whatsapp.exe',           label: 'WhatsApp' },
 ];
 
 // Partial-name matches (process names containing these strings)
 const DANGEROUS_KEYWORDS = [
   'screencap', 'screenrecord', 'remote', 'vnc',
-  'camtasia', 'fraps', 'bandicam', 'xsplit'
+  'camtasia', 'fraps', 'bandicam', 'xsplit',
+  'teamviewer', 'anydesk', 'parsec', 'rustdesk'
 ];
 
 // ── Kill Dangerous Processes ───────────────────────────────
@@ -140,47 +152,83 @@ const SYSTEM_SHORTCUTS = [
   'F11',             // Fullscreen toggle (managed by app)
 ];
 
-function registerExamShortcutBlocks(mainWindow) {
+// ── Global Lockdown Shortcuts (runs from APP BOOT, not just exam mode) ─────
+// These are the AMCAT-style blocks: the moment the browser opens, all
+// system navigation, screenshot, and Alt+Tab shortcuts are disabled.
+function registerGlobalLockdownShortcuts() {
   let blockedCount = 0;
 
   // Block screenshot shortcuts
+  for (const shortcut of SCREENSHOT_SHORTCUTS) {
+    try {
+      const ok = globalShortcut.register(shortcut, () => {
+        clipboard.clear();
+        console.warn(`[Lockdown] Screenshot blocked at boot level: ${shortcut}`);
+      });
+      if (ok) blockedCount++;
+    } catch (e) { /* skip */ }
+  }
+
+  // Block all system navigation shortcuts
+  for (const shortcut of SYSTEM_SHORTCUTS) {
+    try {
+      globalShortcut.register(shortcut, () => {
+        console.warn(`[Lockdown] System shortcut blocked at boot level: ${shortcut}`);
+      });
+      blockedCount++;
+    } catch (e) { /* skip */ }
+  }
+
+  console.log(`[Lockdown] ✅ Global lockdown active from boot — ${blockedCount} shortcuts blocked.`);
+}
+
+// ── Exam-mode shortcut blocks (reinforces boot-level blocks with proctor reporting)
+function registerExamShortcutBlocks(mainWindow) {
+  // In AMCAT style, shortcuts are already blocked at boot via registerGlobalLockdownShortcuts.
+  // This function is kept for any exam-specific extra handling (e.g. proctor reporting).
+  // The global blocks are already in place — just reinforce with exam-specific callbacks.
+  globalShortcut.unregisterAll(); // clear boot-level registrations
+
+  let blockedCount = 0;
+
+  // Re-register screenshot shortcuts with proctor reporting
   for (const shortcut of SCREENSHOT_SHORTCUTS) {
     try {
       const registered = globalShortcut.register(shortcut, () => {
         clipboard.clear();
         proctor.incrementScreenshotAttempts();
         proctor.log('screenshot_attempt', { shortcut });
-        mainWindow.webContents.send('exam:screenshot-blocked', { shortcut });
-        console.warn(`[Lockdown] Screenshot attempt blocked: ${shortcut}`);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('exam:screenshot-blocked', { shortcut });
+        }
+        console.warn(`[Lockdown] Screenshot attempt blocked (exam mode): ${shortcut}`);
       });
       if (registered) blockedCount++;
-    } catch (e) {
-      // Some shortcuts may not be registerable on all platforms
-    }
+    } catch (e) { /* skip */ }
   }
 
-  // Block system navigation shortcuts
+  // Re-register system shortcuts
   for (const shortcut of SYSTEM_SHORTCUTS) {
     try {
       globalShortcut.register(shortcut, () => {
-        console.warn(`[Lockdown] System shortcut blocked: ${shortcut}`);
-        // Silently block — no action
+        console.warn(`[Lockdown] System shortcut blocked (exam mode): ${shortcut}`);
       });
-    } catch (e) {
-      // Skip unregisterable shortcuts
-    }
+    } catch (e) { /* skip */ }
   }
 
-  console.log(`[Lockdown] Registered ${blockedCount} exam shortcut blocks.`);
+  console.log(`[Lockdown] Exam shortcut blocks active — ${blockedCount} screenshot blocks.`);
 }
 
 function unregisterExamShortcutBlocks() {
   globalShortcut.unregisterAll();
-  console.log('[Lockdown] All shortcut blocks removed. Normal keyboard restored.');
+  // Restore global boot-level lockdown (we're out of exam but still in the browser)
+  registerGlobalLockdownShortcuts();
+  console.log('[Lockdown] Exam-mode blocks replaced by global lockdown.');
 }
 
 module.exports = {
   killDangerousProcesses,
+  registerGlobalLockdownShortcuts,
   registerExamShortcutBlocks,
   unregisterExamShortcutBlocks
 };
