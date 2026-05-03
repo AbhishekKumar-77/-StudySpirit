@@ -25,6 +25,7 @@ export default function Exams() {
     const [joinedQuiz, setJoinedQuiz] = useState(null);
     const [examStarted, setExamStarted] = useState(false);
     const [examSubmitted, setExamSubmitted] = useState(false);
+    const [secureBrowserRequired, setSecureBrowserRequired] = useState(false);
     const [timeLeft, setTimeLeft] = useState(0);
     const [userAnswers, setUserAnswers] = useState({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -238,13 +239,15 @@ export default function Exams() {
             alert("Please enter both the Exam Code and your Registration Number!");
             return;
         }
+        setSecureBrowserRequired(false);
         try {
             const res = await fetch(`${API_BASE}/quiz/${quizCodeInput.trim().toUpperCase()}`);
             const data = await res.json();
             if (data.success) {
+                const quizSettings = data.quiz.settings;
                 setJoinedQuiz({
-                    questions: data.quiz.settings?.randomizeQuestions ? [...data.quiz.questions].sort(() => Math.random() - 0.5) : data.quiz.questions,
-                    settings: data.quiz.settings,
+                    questions: quizSettings?.randomizeQuestions ? [...data.quiz.questions].sort(() => Math.random() - 0.5) : data.quiz.questions,
+                    settings: quizSettings,
                     title: data.quiz.title
                 });
                 setExamSubmitted(false);
@@ -253,6 +256,12 @@ export default function Exams() {
                 setShowResult(false);
                 setIsReviewingAnswers(false);
                 setWarnings(0);
+
+                // ── Secure Mode Gate: check BEFORE showing Start Exam button
+                if (quizSettings?.secureMode && !window.studySpiritBrowser?.isBrowser) {
+                    setSecureBrowserRequired(true);
+                    return; // don't join socket yet
+                }
 
                 try {
                     const socket = connectSocket();
@@ -403,7 +412,7 @@ export default function Exams() {
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans" ref={fullscreenRef}>
 
-            {/* ── Secure Browser Gate: blocks exam if student is in a regular browser ── */}
+            {/* ── Secure Browser Gate (fallback if somehow started in regular browser) ── */}
             {examStarted && joinedQuiz?.settings?.secureMode && isSecureBrowser === false && (
                 <SecureBrowserGate />
             )}
@@ -770,8 +779,91 @@ export default function Exams() {
                             </>
                         )}
 
-                        {/* ===== PRE-EXAM SCREEN (quiz joined, not started) ===== */}
-                        {joinedQuiz && !examStarted && !showResult && (
+                        {/* ── PRE-START SECURE BROWSER GATE ── */}
+                        {secureBrowserRequired && joinedQuiz && !examStarted && !showResult && (
+                            <div style={{
+                                position: 'fixed', inset: 0, zIndex: 9999,
+                                background: 'linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1628 100%)',
+                                display: 'flex', flexDirection: 'column',
+                                alignItems: 'center', justifyContent: 'center',
+                                fontFamily: 'system-ui, sans-serif', color: '#fff',
+                                padding: '24px', textAlign: 'center'
+                            }}>
+                                <div style={{
+                                    width: 110, height: 110, borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    marginBottom: 28, boxShadow: '0 0 80px rgba(124,58,237,0.6)'
+                                }}>
+                                    <svg viewBox="0 0 24 24" width="58" height="58" fill="white">
+                                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                                    </svg>
+                                </div>
+                                <p style={{ fontSize: 14, letterSpacing: 3, color: '#a78bfa', textTransform: 'uppercase', marginBottom: 12, fontWeight: 700 }}>
+                                    🎓 Welcome, {user?.name || 'Student'}!
+                                </p>
+                                <h1 style={{
+                                    fontSize: 34, fontWeight: 900, marginBottom: 14,
+                                    background: 'linear-gradient(90deg, #a78bfa, #60a5fa)',
+                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+                                }}>Secure Exam Detected</h1>
+                                <div style={{
+                                    display: 'inline-flex', gap: 12, marginBottom: 20,
+                                    padding: '10px 24px', background: 'rgba(124,58,237,0.15)',
+                                    border: '1px solid rgba(124,58,237,0.3)',
+                                    borderRadius: 99, fontSize: 14, color: '#c4b5fd', fontWeight: 600
+                                }}>
+                                    <span>📋 {joinedQuiz.title}</span>
+                                    <span>•</span>
+                                    <span>⏱ {joinedQuiz.settings.timeLimit} min</span>
+                                    <span>•</span>
+                                    <span>❓ {joinedQuiz.questions.length} Questions</span>
+                                </div>
+                                <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.65)', maxWidth: 500, marginBottom: 10, lineHeight: 1.6 }}>
+                                    Your teacher has enabled <strong style={{ color: '#a78bfa' }}>Secure Mode</strong> for this exam.
+                                    This exam must be taken inside the <strong style={{ color: '#60a5fa' }}> StudySpirit Secure Browser</strong>.
+                                </p>
+                                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.38)', marginBottom: 36, maxWidth: 440 }}>
+                                    Download the browser, open it, and enter exam code <strong style={{ color: 'rgba(255,255,255,0.6)' }}>{quizCodeInput.toUpperCase()}</strong>.
+                                </p>
+                                <div style={{ display: 'flex', gap: 10, marginBottom: 36, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                    {['🔒 No Tab Switching', '🖥️ Kiosk Mode', '📋 Clipboard Guard', '🚫 Process Killer'].map(f => (
+                                        <span key={f} style={{ padding: '7px 14px', background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 99, fontSize: 12, color: '#c4b5fd' }}>{f}</span>
+                                    ))}
+                                </div>
+                                <a
+                                    href="https://drive.google.com/file/d/1Vo0PKm3ZCFqbldnv1wGwDQgt2onQlE2k/view?usp=sharing"
+                                    target="_blank" rel="noopener noreferrer"
+                                    style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 12,
+                                        padding: '16px 44px', background: 'linear-gradient(135deg, #7c3aed, #2563eb)',
+                                        color: '#fff', borderRadius: 16, fontWeight: 800, fontSize: 18,
+                                        textDecoration: 'none', boxShadow: '0 8px 40px rgba(124,58,237,0.5)',
+                                        transition: 'transform 0.2s', marginBottom: 16
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                                >
+                                    ⬇️ Download StudySpirit Browser
+                                </a>
+                                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', marginBottom: 24 }}>Free download · Windows · Same as AMCAT secure browser</p>
+                                <button
+                                    onClick={() => { setSecureBrowserRequired(false); setJoinedQuiz(null); }}
+                                    style={{
+                                        background: 'none', border: '1px solid rgba(255,255,255,0.15)',
+                                        color: 'rgba(255,255,255,0.4)', padding: '10px 24px',
+                                        borderRadius: 10, cursor: 'pointer', fontSize: 13
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
+                                    onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+                                >
+                                    ← Go Back
+                                </button>
+                            </div>
+                        )}
+
+                        {/* ===== PRE-EXAM SCREEN (quiz joined, not started, not secure-gated) ===== */}
+                        {joinedQuiz && !examStarted && !showResult && !secureBrowserRequired && (
                             <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-16 border border-[var(--border-color)] shadow-xl text-center max-w-3xl mx-auto mt-6">
                                 <Trophy size={80} className="text-amber-500 mx-auto mb-6 animate-pulse" />
                                 <h2 className="text-4xl font-black mb-4">Ready to Start?</h2>
