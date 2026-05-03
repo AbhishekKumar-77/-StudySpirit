@@ -235,24 +235,40 @@ function startBackgroundProcessScanner() {
 async function runBackgroundScan() {
   try {
     const killed = await lockdown.killDangerousProcesses();
-    if (killed.length > 0) {
-      console.warn('[StudySpirit] Background scan killed:', killed);
-      // If exam is active, log it
+    
+    // Double-check if any apps resisted the kill command (e.g. system services like TightVNC)
+    const stillRunning = await lockdown.getRunningDangerousProcesses();
+
+    if (stillRunning.length > 0) {
+      if (isExamMode) {
+        // Fatal security violation during exam
+        proctor.log('background_kill_failed', { apps: stillRunning });
+        dialog.showMessageBoxSync({
+          type: 'error',
+          title: 'StudySpirit — Security Violation',
+          message: 'A forbidden background application was detected and could not be closed automatically.',
+          detail: `Detected: ${stillRunning.join(', ')}\n\nYour session has been terminated to maintain exam integrity. You must uninstall this app to continue.`,
+          buttons: ['Quit Browser']
+        });
+        app.exit(0);
+      } else {
+        // Just a warning outside of exam mode
+        dialog.showMessageBox(mainWindow, {
+          type: 'warning',
+          title: 'StudySpirit — Environment Warning',
+          message: 'A forbidden background application is running:',
+          detail: `${stillRunning.join(', ')}\n\nYou will NOT be able to start an exam until this is uninstalled or closed.`,
+          buttons: ['OK']
+        });
+      }
+    } else if (killed.length > 0) {
+      // Process was successfully killed automatically
+      console.warn('[StudySpirit] Background scan successfully killed:', killed);
       if (isExamMode) {
         proctor.log('background_kill', { killed });
-        // Show a brief warning overlay to the student
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send('exam:app-killed', { killed });
         }
-      } else {
-        // Not in exam yet — show a dialog so student knows what was closed
-        dialog.showMessageBox(mainWindow, {
-          type: 'warning',
-          title: 'StudySpirit — Environment Check',
-          message: 'The following apps were closed to maintain exam integrity:',
-          detail: killed.map(k => `• ${k}`).join('\n'),
-          buttons: ['OK']
-        });
       }
     }
   } catch (err) {
@@ -542,9 +558,26 @@ app.whenReady().then(async () => {
 
   // ── Step 4: Kill dangerous processes BEFORE showing main window
   console.log('[StudySpirit] Running pre-launch environment check...');
-  const preKilled = await lockdown.killDangerousProcesses();
-  if (preKilled.length > 0) {
-    console.log('[StudySpirit] Pre-launch killed:', preKilled);
+  
+  // Try to kill automatically first
+  await lockdown.killDangerousProcesses();
+  
+  // Double-check if any survived
+  const stillRunning = await lockdown.getRunningDangerousProcesses();
+  if (stillRunning.length > 0) {
+    if (splashWindow) splashWindow.destroy();
+    
+    dialog.showMessageBoxSync({
+      type: 'error',
+      title: 'StudySpirit Browser — Environment Check Failed',
+      message: 'Forbidden Background Applications Detected',
+      detail: 'The following applications are running in the background and violate exam security:\n\n' +
+              stillRunning.map(app => `• ${app}`).join('\n') +
+              '\n\nThe secure browser cannot automatically close them. You MUST manually CLOSE or UNINSTALL these applications from your computer before you can open StudySpirit.',
+      buttons: ['Quit Browser']
+    });
+    
+    return app.quit();
   }
 
   // ── Step 5: Register device fingerprint

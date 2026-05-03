@@ -63,6 +63,38 @@ const DANGEROUS_KEYWORDS = [
   'teamviewer', 'anydesk', 'parsec', 'rustdesk'
 ];
 
+// ── Detect Dangerous Processes ─────────────────────────────
+async function getRunningDangerousProcesses() {
+  return new Promise((resolve) => {
+    exec('tasklist /fo csv /nh', (err, stdout) => {
+      if (err) return resolve([]);
+
+      const runningProcesses = stdout.split('\n')
+        .map(line => line.replace(/"/g, '').split(',')[0]?.trim().toLowerCase())
+        .filter(Boolean);
+
+      const found = new Set();
+
+      for (const proc of DANGEROUS_PROCESSES) {
+        if (runningProcesses.includes(proc.name.toLowerCase())) {
+          found.add(proc.label);
+        }
+      }
+
+      for (const procName of runningProcesses) {
+        for (const keyword of DANGEROUS_KEYWORDS) {
+          if (procName.includes(keyword)) {
+            // Capitalize keyword for better display
+            found.add(procName);
+          }
+        }
+      }
+
+      resolve(Array.from(found));
+    });
+  });
+}
+
 // ── Kill Dangerous Processes ───────────────────────────────
 async function killDangerousProcesses() {
   const killed = [];
@@ -233,6 +265,7 @@ function unregisterExamShortcutBlocks() {
 }
 
 module.exports = {
+  getRunningDangerousProcesses,
   killDangerousProcesses,
   registerGlobalLockdownShortcuts,
   registerExamShortcutBlocks,
