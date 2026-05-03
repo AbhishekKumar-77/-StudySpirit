@@ -160,7 +160,7 @@ export function useSecureBrowser({ examId, studentId, requireBrowser = false } =
         </div>
 
         <a
-          href="https://drive.google.com/file/d/19C6U1dezJt1baMJhzcjfwpu_oY7rOghK/view?usp=sharing"
+          href="https://drive.google.com/file/d/1_wovUk4Vy8MmggqlrhLIk-wmjm1913bB/view?usp=sharing"
 
           target="_blank" rel="noopener noreferrer"
           style={{
