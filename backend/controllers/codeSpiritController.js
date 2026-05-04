@@ -551,6 +551,36 @@ exports.verifyCode = async (req, res) => {
                     user.reputation = (user.reputation || 0) + 5;
                     await user.save();
                 }
+
+                // --- Update CareerProfile Skill Passport ---
+                const CareerProfile = require('../models/CareerProfile');
+                let profile = await CareerProfile.findOne({ user: req.user.id });
+                if (!profile) profile = new CareerProfile({ user: req.user.id });
+
+                let level = 'Beginner';
+                if (session.difficulty === 'hard') level = 'Expert';
+                else if (session.difficulty === 'medium') level = 'Intermediate';
+
+                const skillName = `${session.language} (${session.topic.replace('Daily: ', '')})`;
+                const score = session.difficulty === 'hard' ? 95 : session.difficulty === 'medium' ? 80 : 65;
+
+                const skillIndex = profile.verifiedSkills.findIndex(s => s.skillName === skillName);
+                if (skillIndex > -1) {
+                    if (score > profile.verifiedSkills[skillIndex].score) {
+                        profile.verifiedSkills[skillIndex].score = score;
+                        profile.verifiedSkills[skillIndex].level = level;
+                        profile.verifiedSkills[skillIndex].verifiedDate = new Date();
+                    }
+                } else {
+                    profile.verifiedSkills.push({
+                        skillName: skillName,
+                        score: score,
+                        verifiedBy: 'CodeSpirit Module',
+                        level: level
+                    });
+                }
+                await profile.save();
+                // -----------------------------------------
             }
 
             await session.save();

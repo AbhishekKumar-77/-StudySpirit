@@ -409,6 +409,96 @@ function SkillsModal({ initialSkills, onSave, onClose }) {
     );
 }
 
+// ─── Skill Passport View ──────────────────────────────────────
+function SkillPassportView({ profile }) {
+    if (!profile) return <div className="p-12 text-center text-slate-400 animate-pulse flex flex-col items-center gap-4"><Loader size={24} className="animate-spin" /> Fetching your verified stats...</div>;
+
+    return (
+        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-cyan-500/30 rounded-3xl p-6 sm:p-10 max-w-5xl mx-auto shadow-2xl shadow-cyan-500/10 backdrop-blur-xl animate-fade-in">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10 pb-6 border-b border-white/10">
+                <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center text-3xl shadow-lg shadow-cyan-500/20">
+                        🎓
+                    </div>
+                    <div>
+                        <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Verified Skill Passport</h2>
+                        <p className="text-cyan-400 text-sm font-bold flex items-center gap-1.5 mt-1">
+                            <CheckCircle size={14} /> StudySpirit Authenticated Profile
+                        </p>
+                    </div>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold text-white transition-all w-full sm:w-auto justify-center">
+                    <ExternalLink size={15} /> Public Link
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Technical Skills */}
+                <div className="bg-black/20 rounded-2xl p-6 sm:p-8 border border-white/5 flex flex-col">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                        <Zap size={16} className="text-cyan-400" /> Technical Verification
+                    </h3>
+                    {profile.verifiedSkills && profile.verifiedSkills.length > 0 ? (
+                        <div className="space-y-5 flex-1">
+                            {profile.verifiedSkills.map((s, i) => (
+                                <div key={i} className="group">
+                                    <div className="flex justify-between items-end mb-2">
+                                        <div>
+                                            <span className="text-white font-bold block leading-tight">{s.skillName}</span>
+                                            <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">via {s.verifiedBy}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-cyan-400 font-black text-lg leading-none block">{s.score}%</span>
+                                            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">{s.level}</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                        <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full transition-all duration-1000 ease-out group-hover:opacity-80" style={{ width: `${s.score}%` }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center py-8 text-slate-500 text-sm">
+                            <BookOpen size={32} className="mb-3 opacity-30" />
+                            <p className="font-bold mb-1 text-slate-400">No skills verified yet</p>
+                            <p className="text-xs text-center max-w-[200px]">Take CodeSpirit Exams or Quizzes to build your technical passport.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Soft Skills */}
+                <div className="bg-black/20 rounded-2xl p-6 sm:p-8 border border-white/5 flex flex-col">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                        <Globe size={16} className="text-purple-400" /> Communication & Soft Skills
+                    </h3>
+                    <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 mb-6 flex-1">
+                        <DonutScore score={profile.softSkillsProfile?.communicationScore || 0} size={100} />
+                        <div className="space-y-4 text-center sm:text-left">
+                            <div>
+                                <p className="text-white font-black text-lg leading-tight">AI Communication Score</p>
+                                <p className="text-sm text-slate-400">Analyzed via Extempore & Interviews</p>
+                            </div>
+                            <div className="inline-block px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                                <p className="text-[10px] font-black uppercase tracking-wider text-purple-400 mb-0.5">CEFR English Level</p>
+                                <p className="text-xl font-black text-white">{profile.softSkillsProfile?.vocabularyLevel || 'Unrated'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {(!profile.softSkillsProfile || profile.softSkillsProfile.communicationScore === 0) && (
+                        <div className="mt-auto p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-start gap-3">
+                            <AlertCircle size={16} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-yellow-300/90 leading-relaxed">
+                                Stand out to recruiters by completing the AI Extempore module to unlock your communication badge.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function CareerSprint() {
     const navigate = useNavigate();
@@ -424,7 +514,8 @@ export default function CareerSprint() {
     const [coverLetterJob, setCoverLetterJob] = useState(null);
     const [userSkills, setUserSkills] = useState(() => loadJSON(USER_SKILLS_KEY, []));
     const [showSkillsModal, setShowSkillsModal] = useState(false);
-    const [mainView, setMainView] = useState('browse'); // browse | tracker
+    const [mainView, setMainView] = useState('browse'); // browse | tracker | passport
+    const [careerProfile, setCareerProfile] = useState(null);
 
     useEffect(() => { saveJSON(STORAGE_KEY, bookmarks); }, [bookmarks]);
     useEffect(() => { saveJSON(USER_SKILLS_KEY, userSkills); }, [userSkills]);
@@ -442,7 +533,18 @@ export default function CareerSprint() {
         finally { setLoading(false); }
     };
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { 
+        fetchData(); 
+        // Fetch Verified Skill Passport
+        const fetchProfile = async () => {
+            try {
+                const res = await fetch(`${API_BASE}/career/profile`, { credentials: 'include' });
+                const data = await res.json();
+                if (data.success) setCareerProfile(data.profile);
+            } catch (err) { console.error('Failed to load profile', err); }
+        };
+        fetchProfile();
+    }, []);
 
     const toggleBookmark = (id) => {
         setBookmarks(prev => prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]);
@@ -524,6 +626,10 @@ export default function CareerSprint() {
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mainView === 'tracker' ? 'bg-cyan-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
                                 <span className="flex items-center gap-1"><Columns size={12} /> Tracker</span>
                             </button>
+                            <button onClick={() => setMainView('passport')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mainView === 'passport' ? 'bg-cyan-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>
+                                <span className="flex items-center gap-1"><CheckCircle size={12} /> Passport</span>
+                            </button>
                         </div>
 
                         <button onClick={() => fetchData(true)} disabled={loading}
@@ -538,6 +644,8 @@ export default function CareerSprint() {
 
                 {mainView === 'tracker' ? (
                     <AppTracker listings={listings} />
+                ) : mainView === 'passport' ? (
+                    <SkillPassportView profile={careerProfile} />
                 ) : (
                     <>
                         {/* Hero Banner */}
@@ -774,9 +882,16 @@ export default function CareerSprint() {
                                                         <FileText size={11} /> Letter
                                                     </button>
                                                     {/* Apply */}
-                                                    <button onClick={() => window.open(item.link, '_blank', 'noopener')}
+                                                    <button onClick={() => {
+                                                            if (item.isInternalHackathon) {
+                                                                if (item.hackathonQuizCode) navigate(`/quiz/join?code=${item.hackathonQuizCode}`);
+                                                                else navigate('/quiz/join');
+                                                            } else {
+                                                                window.open(item.link, '_blank', 'noopener');
+                                                            }
+                                                        }}
                                                         className={`flex items-center gap-1.5 text-sm font-bold px-4 py-1.5 rounded-xl bg-gradient-to-r ${tc.color} text-white hover:opacity-90 transition-all shadow-lg`}>
-                                                        Apply <ExternalLink size={12} />
+                                                        {item.isInternalHackathon ? 'Start Hackathon' : 'Apply'} {item.isInternalHackathon ? <Zap size={12} /> : <ExternalLink size={12} />}
                                                     </button>
                                                 </div>
                                             </div>

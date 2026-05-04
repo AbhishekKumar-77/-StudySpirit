@@ -1,4 +1,5 @@
 const JobListing = require('../models/JobListing');
+const CareerProfile = require('../models/CareerProfile');
 
 // In-memory cache
 let cachedJobs = [];
@@ -448,12 +449,24 @@ exports.analyzeMatch = async (req, res) => {
         if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
         if (!jobTitle) return res.status(400).json({ message: 'Job details required.' });
 
-        const skillsStr = Array.isArray(userSkills) ? userSkills.join(', ') : (userSkills || 'Not specified');
+        let skillsStr = Array.isArray(userSkills) ? userSkills.join(', ') : (userSkills || 'Not specified');
+        let verifiedContext = '';
+
+        if (req.isAuthenticated && req.isAuthenticated()) {
+            const CareerProfile = require('../models/CareerProfile');
+            const profile = await CareerProfile.findOne({ user: req.user._id });
+            if (profile && profile.verifiedSkills && profile.verifiedSkills.length > 0) {
+                const verifiedStr = profile.verifiedSkills.map(s => `${s.skillName} (${s.score}% - ${s.level})`).join(', ');
+                skillsStr = `${skillsStr}\nVERIFIED PLATFORM SKILLS: ${verifiedStr}`;
+                verifiedContext = `\nNOTE: The 'VERIFIED PLATFORM SKILLS' are verified through our proctored exams. Give high weightage to these verified skills over the self-reported ones.`;
+            }
+        }
+
         const tagsStr = Array.isArray(jobTags) ? jobTags.join(', ') : (jobTags || '');
 
         const prompt = `You are an expert tech career coach and recruiter. Analyze how well this candidate matches the job.
 
-CANDIDATE SKILLS: ${skillsStr}
+CANDIDATE SKILLS: ${skillsStr} ${verifiedContext}
 
 JOB TITLE: ${jobTitle}
 JOB TAGS/REQUIRED SKILLS: ${tagsStr}
@@ -505,13 +518,25 @@ exports.generateCoverLetter = async (req, res) => {
         if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
         if (!jobTitle || !company) return res.status(400).json({ message: 'Job title and company required.' });
 
-        const skillsStr = Array.isArray(userSkills) ? userSkills.join(', ') : (userSkills || 'various technical skills');
+        let skillsStr = Array.isArray(userSkills) ? userSkills.join(', ') : (userSkills || 'various technical skills');
+        let verifiedContext = '';
+
+        if (req.isAuthenticated && req.isAuthenticated()) {
+            const CareerProfile = require('../models/CareerProfile');
+            const profile = await CareerProfile.findOne({ user: req.user._id });
+            if (profile && profile.verifiedSkills && profile.verifiedSkills.length > 0) {
+                const verifiedStr = profile.verifiedSkills.map(s => `${s.skillName} (${s.score}% verified)`).join(', ');
+                skillsStr = `${skillsStr}\nVERIFIED PLATFORM SKILLS: ${verifiedStr}`;
+                verifiedContext = `\nIMPORTANT: Mention that the 'VERIFIED PLATFORM SKILLS' are verified through rigorous proctored exams on our platform. Emphasize these verified skills.`;
+            }
+        }
+
         const tagsStr = Array.isArray(jobTags) ? jobTags.join(', ') : (jobTags || '');
 
         const prompt = `Write a compelling, personalized cover letter for the following:
 
 CANDIDATE NAME: ${userName || 'the candidate'}
-CANDIDATE SKILLS: ${skillsStr}
+CANDIDATE SKILLS: ${skillsStr} ${verifiedContext}
 APPLYING FOR: ${jobTitle} at ${company}
 REQUIRED SKILLS: ${tagsStr}
 JOB DESCRIPTION SNIPPET: ${(jobDescription || '').substring(0, 500)}
@@ -542,5 +567,24 @@ Do NOT include addresses or dates. Start directly with "Dear Hiring Manager,". B
     } catch (err) {
         console.error('❌ generateCoverLetter error:', err);
         res.status(500).json({ success: false, message: 'Cover letter generation failed.' });
+    }
+};
+
+// ──────────────────────────────────────────
+// GET /api/career/profile - Get User's Skill Passport
+// ──────────────────────────────────────────
+exports.getCareerProfile = async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    try {
+        let profile = await CareerProfile.findOne({ user: req.user._id });
+        if (!profile) {
+            // Auto generate basic profile
+            profile = new CareerProfile({ user: req.user._id });
+            await profile.save();
+        }
+        res.json({ success: true, profile });
+    } catch (err) {
+        console.error('Error fetching career profile:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };

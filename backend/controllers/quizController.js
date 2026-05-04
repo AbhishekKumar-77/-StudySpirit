@@ -469,10 +469,11 @@ exports.submitResult = async (req, res) => {
             const regNo = (req.body.registrationNumber || '').trim().toUpperCase();
 
             // Block submissions if exam is closed
-            const examCheck = await Quiz.findOne({ code: req.body.quizCode.toUpperCase() }).select('isClosed');
+            const examCheck = await Quiz.findOne({ code: req.body.quizCode.toUpperCase() }).select('isClosed title');
             if (examCheck?.isClosed) {
                 return res.status(403).json({ success: false, message: "This exam has been closed by the teacher." });
             }
+            req.examTitle = examCheck?.title || 'General Quiz';
 
             // Block re-attempt: if same regNo already submitted this quiz
             if (regNo) {
@@ -526,6 +527,37 @@ exports.submitResult = async (req, res) => {
             user.stats.xp = (user.stats.xp || 0) + (score * 10) + 50;
 
             await user.save();
+
+            // --- Update CareerProfile Skill Passport ---
+            const CareerProfile = require('../models/CareerProfile');
+            let profile = await CareerProfile.findOne({ user: userId });
+            if (!profile) profile = new CareerProfile({ user: userId });
+            
+            // Determine level based on percentage
+            let level = 'Beginner';
+            if (percentage >= 90) level = 'Expert';
+            else if (percentage >= 75) level = 'Intermediate';
+            
+            // Update or add the skill
+            const skillIndex = profile.verifiedSkills.findIndex(s => s.skillName === req.examTitle);
+            if (skillIndex > -1) {
+                // Only update if the new score is better
+                if (percentage > profile.verifiedSkills[skillIndex].score) {
+                    profile.verifiedSkills[skillIndex].score = percentage;
+                    profile.verifiedSkills[skillIndex].level = level;
+                    profile.verifiedSkills[skillIndex].verifiedDate = new Date();
+                }
+            } else if (percentage >= 60) {
+                // Only add new skill if score is >= 60%
+                profile.verifiedSkills.push({
+                    skillName: req.examTitle,
+                    score: percentage,
+                    verifiedBy: 'Quiz Module',
+                    level: level
+                });
+            }
+            await profile.save();
+            // -----------------------------------------
         }
 
         res.json({ 

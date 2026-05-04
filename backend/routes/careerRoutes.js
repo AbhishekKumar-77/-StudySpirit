@@ -12,4 +12,7 @@ router.post('/', careerController.addJob);
 router.post('/analyze-match', careerController.analyzeMatch);
 router.post('/cover-letter', careerController.generateCoverLetter);
 
+// Skill Passport / Career Profile
+router.get('/profile', careerController.getCareerProfile);
+
 module.exports = router;

@@ -12,6 +12,18 @@ const JobListingSchema = new mongoose.Schema({
     logo: { type: String },
     tags: [{ type: String }],
     link: { type: String }, // Apply link
+    
+    // New fields for AI Matchmaker and Internal Hackathons
+    description: { type: String },
+    requiredSkills: [{
+        skillName: { type: String },
+        minimumScore: { type: Number, default: 0 } // Used for Reality Check
+    }],
+    isInternalHackathon: { type: Boolean, default: false },
+    hackathonChallengeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Challenge' },
+    hackathonQuizCode: { type: String },
+    applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    
     createdAt: { type: Date, default: Date.now }
 });
 
