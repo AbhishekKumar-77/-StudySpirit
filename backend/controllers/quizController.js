@@ -529,34 +529,44 @@ exports.submitResult = async (req, res) => {
             await user.save();
 
             // --- Update CareerProfile Skill Passport ---
-            const CareerProfile = require('../models/CareerProfile');
-            let profile = await CareerProfile.findOne({ user: userId });
-            if (!profile) profile = new CareerProfile({ user: userId });
-            
-            // Determine level based on percentage
-            let level = 'Beginner';
-            if (percentage >= 90) level = 'Expert';
-            else if (percentage >= 75) level = 'Intermediate';
-            
-            // Update or add the skill
-            const skillIndex = profile.verifiedSkills.findIndex(s => s.skillName === req.examTitle);
-            if (skillIndex > -1) {
-                // Only update if the new score is better
-                if (percentage > profile.verifiedSkills[skillIndex].score) {
-                    profile.verifiedSkills[skillIndex].score = percentage;
-                    profile.verifiedSkills[skillIndex].level = level;
-                    profile.verifiedSkills[skillIndex].verifiedDate = new Date();
+            try {
+                const CareerProfile = require('../models/CareerProfile');
+                let profile = await CareerProfile.findOne({ user: userId });
+                if (!profile) profile = new CareerProfile({ user: userId });
+                
+                // Determine level based on percentage
+                let level = 'Beginner';
+                if (percentage >= 90) level = 'Pro';
+                else if (percentage >= 75) level = 'Advanced';
+                else if (percentage >= 60) level = 'Intermediate';
+                
+                const examTitle = req.examTitle || req.body.quizCode || 'General Quiz';
+                console.log(`[Passport] Updating skill: "${examTitle}" score=${percentage} level=${level} userId=${userId}`);
+
+                // Update or add the skill
+                const skillIndex = profile.verifiedSkills.findIndex(s => s.skillName === examTitle);
+                if (skillIndex > -1) {
+                    // Only update if the new score is better
+                    if (percentage > profile.verifiedSkills[skillIndex].score) {
+                        profile.verifiedSkills[skillIndex].score = percentage;
+                        profile.verifiedSkills[skillIndex].level = level;
+                        profile.verifiedSkills[skillIndex].lastTestedAt = new Date();
+                    }
+                } else if (percentage > 0) {
+                    // Add skill as long as score > 0
+                    profile.verifiedSkills.push({
+                        skillName: examTitle,
+                        score: percentage,
+                        verifiedBy: 'Quiz Module',
+                        level: level,
+                        lastTestedAt: new Date()
+                    });
                 }
-            } else if (percentage > 0) {
-                // Add skill as long as score > 0
-                profile.verifiedSkills.push({
-                    skillName: req.examTitle,
-                    score: percentage,
-                    verifiedBy: 'Quiz Module',
-                    level: level
-                });
+                await profile.save();
+                console.log(`[Passport] Saved successfully for userId=${userId}`);
+            } catch (passportErr) {
+                console.error('[Passport] Failed to update Skill Passport:', passportErr);
             }
-            await profile.save();
             // -----------------------------------------
         }
 
