@@ -482,6 +482,33 @@ exports.submitResult = async (req, res) => {
                     registrationNumber: regNo
                 });
                 if (existing) {
+                    // Still update the career passport for logged-in users on re-attempts
+                    if (req.user) {
+                        const CareerProfile = require('../models/CareerProfile');
+                        const userId2 = req.user.id;
+                        let profile2 = await CareerProfile.findOne({ user: userId2 });
+                        if (!profile2) profile2 = new CareerProfile({ user: userId2 });
+                        const pct = req.body.percentage || 0;
+                        if (pct > 0) {
+                            let lvl = 'Beginner';
+                            if (pct >= 90) lvl = 'Pro';
+                            else if (pct >= 75) lvl = 'Advanced';
+                            else if (pct >= 60) lvl = 'Intermediate';
+                            const titleKey = req.examTitle || req.body.quizCode;
+                            const idx2 = profile2.verifiedSkills.findIndex(s => s.skillName === titleKey);
+                            if (idx2 > -1) {
+                                if (pct > profile2.verifiedSkills[idx2].score) {
+                                    profile2.verifiedSkills[idx2].score = pct;
+                                    profile2.verifiedSkills[idx2].level = lvl;
+                                    profile2.verifiedSkills[idx2].lastTestedAt = new Date();
+                                }
+                            } else {
+                                profile2.verifiedSkills.push({ skillName: titleKey, score: pct, verifiedBy: 'Quiz Module', level: lvl, lastTestedAt: new Date() });
+                            }
+                            await profile2.save();
+                            console.log(`[Passport] Updated on re-attempt for userId=${userId2}`);
+                        }
+                    }
                     return res.status(409).json({
                         success: false,
                         message: "You have already submitted this quiz.",

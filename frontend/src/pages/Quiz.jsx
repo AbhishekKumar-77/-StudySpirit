@@ -1812,7 +1812,7 @@ export default function StudySprintQuiz() {
                                 <h2 className="text-6xl font-black text-emerald-400 mb-4">{score}%</h2>
                                 <p className="text-2xl text-[var(--text-primary)] font-bold mb-2">Excellent Work!</p>
                                 <p className="text-xl text-[var(--text-secondary)] mb-8">
-                                    You answered <span className="text-[var(--text-primary)] font-bold">{Object.values(userAnswers).filter((a, idx) => a === joinedQuiz.questions[idx]?.correct).length}</span> out of {joinedQuiz.questions.length} correctly.
+                                    You answered <span className="text-[var(--text-primary)] font-bold">{joinedQuiz.questions.filter(q => userAnswers[(q._id || q.id)] === q.correct).length}</span> out of {joinedQuiz.questions.length} correctly.
                                 </p>
                                 <div className="flex gap-4 justify-center">
                                     {joinedQuiz.settings.allowReview && (
