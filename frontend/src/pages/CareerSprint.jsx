@@ -884,8 +884,8 @@ export default function CareerSprint() {
                                                     {/* Apply */}
                                                     <button onClick={() => {
                                                             if (item.isInternalHackathon) {
-                                                                if (item.hackathonQuizCode) navigate(`/quiz/join?code=${item.hackathonQuizCode}`);
-                                                                else navigate('/quiz/join');
+                                                                if (item.hackathonQuizCode) navigate(`/quiz?preview=1&code=${item.hackathonQuizCode}`);
+                                                                else navigate('/quiz');
                                                             } else {
                                                                 window.open(item.link, '_blank', 'noopener');
                                                             }
