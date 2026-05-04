@@ -547,8 +547,8 @@ exports.submitResult = async (req, res) => {
                     profile.verifiedSkills[skillIndex].level = level;
                     profile.verifiedSkills[skillIndex].verifiedDate = new Date();
                 }
-            } else if (percentage >= 60) {
-                // Only add new skill if score is >= 60%
+            } else if (percentage > 0) {
+                // Add skill as long as score > 0
                 profile.verifiedSkills.push({
                     skillName: req.examTitle,
                     score: percentage,
