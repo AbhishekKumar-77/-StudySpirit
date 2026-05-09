@@ -474,3 +474,57 @@ exports.deleteChallenge = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to delete challenge', error: error.message });
     }
 };
+
+// Duplicate challenge (Teacher Version Control)
+exports.duplicateChallenge = async (req, res) => {
+    try {
+        const { challengeId } = req.params;
+        const challenge = await Challenge.findById(challengeId);
+        if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+        
+        const duplicate = new Challenge({
+            title: challenge.title + ' (Copy)',
+            description: challenge.description,
+            challengeType: challenge.challengeType,
+            target: challenge.target,
+            unit: challenge.unit,
+            reward: challenge.reward,
+            deadline: challenge.deadline, // Teacher will likely edit this later
+            visibility: challenge.visibility,
+            category: challenge.category,
+            creator: req.user._id,
+            parentChallenge: challenge._id,
+            participants: [] // reset participants
+        });
+        await duplicate.save();
+        res.status(201).json({ success: true, challenge: duplicate });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to duplicate challenge', error: err.message });
+    }
+};
+
+// Archive challenge (Teacher Version Control)
+exports.archiveChallenge = async (req, res) => {
+    try {
+        const { challengeId } = req.params;
+        const challenge = await Challenge.findById(challengeId);
+        if (!challenge) return res.status(404).json({ success: false, message: 'Challenge not found' });
+        
+        if (challenge.creator.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Not authorized' });
+        }
+        
+        challenge.isArchived = true;
+        challenge.status = 'cancelled';
+        challenge.editHistory.push({
+            editedAt: new Date(),
+            editor: req.user._id,
+            changes: 'Archived challenge'
+        });
+        await challenge.save();
+        
+        res.json({ success: true, message: 'Challenge archived successfully' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to archive challenge', error: err.message });
+    }
+};

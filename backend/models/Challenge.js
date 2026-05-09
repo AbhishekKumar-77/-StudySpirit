@@ -97,6 +97,21 @@ const challengeSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // Version Control for Teacher CodeSpirit Creator
+    isArchived: {
+        type: Boolean,
+        default: false
+    },
+    parentChallenge: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Challenge',
+        default: null
+    },
+    editHistory: [{
+        editedAt: { type: Date, default: Date.now },
+        editor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        changes: String
+    }],
     createdAt: {
         type: Date,
         default: Date.now
