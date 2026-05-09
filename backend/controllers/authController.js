@@ -147,7 +147,13 @@ exports.login = async (req, res) => {
             if (err) return res.status(500).json({ message: 'Session login failed' });
 
             // --- Streak Logic ---
-            if (!user.stats) user.stats = { streak: 0, level: 1, xp: 0 };
+            if (!user.stats) {
+                user.stats = { streak: 0, level: 1, xp: 0 };
+            }
+            if (typeof user.stats.streak !== 'number' || isNaN(user.stats.streak)) {
+                user.stats.streak = 0;
+            }
+
             const now = new Date();
             const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate) : null;
 
@@ -173,7 +179,13 @@ exports.login = async (req, res) => {
             }
 
             user.lastLoginDate = now;
-            await user.save();
+
+            try {
+                await user.save();
+            } catch (saveErr) {
+                console.error("Save Error during login:", saveErr);
+                // Return login successful anyway since session is established
+            }
 
             res.json({
                 message: 'Login successful',
