@@ -193,6 +193,56 @@ exports.login = async (req, res) => {
     }
 };
 
+exports.updateProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        user.avatar = req.body.avatar || user.avatar;
+        user.name = req.body.name || user.name;
+        user.university = req.body.university || user.university;
+        user.course = req.body.course || user.course;
+        user.studyGoal = req.body.studyGoal || user.studyGoal;
+        user.difficultyLevel = req.body.difficultyLevel || user.difficultyLevel;
+        
+        await user.save();
+        res.json({ message: "Profile updated successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+exports.getNotifications = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('notifications');
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        // Sort notifications by newest first
+        const notifications = user.notifications ? user.notifications.sort((a, b) => b.createdAt - a.createdAt) : [];
+        res.json({ success: true, notifications });
+    } catch (error) {
+        console.error('Get notifications error:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+exports.markNotificationsRead = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        
+        if (user.notifications) {
+            user.notifications.forEach(n => n.read = true);
+            await user.save();
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Mark notifications read error:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 exports.socialLogin = async (req, res) => {
     try {
         const { provider, email, name, providerId } = req.body;

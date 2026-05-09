@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import * as soloApi from '../services/soloApi';
 import { taskAPI } from '../services/plannerApi';
 import { getRecentPages } from '../hooks/usePageTracker';
+import NotificationBell from '../components/NotificationBell';
 import confetti from 'canvas-confetti';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
@@ -270,6 +271,7 @@ export default function Dashboard() {
                                 <Shield size={16} /> ADMIN
                             </button>
                         )}
+                        <NotificationBell />
                         <div className="nav-profile">
                             <div className="streak">
                                 <span>🔥</span> <strong>{user?.streak || 0}</strong>

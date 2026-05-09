@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const Goal = require('../models/Goal');
+const User = require('../models/User');
 
 // ================== TASKS ==================
 
@@ -74,6 +75,31 @@ exports.updateTask = async (req, res) => {
             new: true,
             runValidators: true
         });
+
+        // Sync with feature progress if completed
+        if (task.status === 'completed') {
+            const user = await User.findById(req.user._id);
+            if (user && user.learningPath && user.learningPath.topics) {
+                let updated = false;
+                user.learningPath.topics.forEach(topic => {
+                    // Simple keyword match (e.g., "Solve 3 Graph Problems" -> matches "Trees & Graphs")
+                    const topicKeywords = topic.name.toLowerCase().split(/[ &\/\-]+/);
+                    const taskTitle = task.title.toLowerCase();
+                    if (topicKeywords.some(kw => kw.length > 2 && taskTitle.includes(kw))) {
+                        topic.completed = Math.min(topic.total, topic.completed + 1);
+                        updated = true;
+                    }
+                });
+                
+                if (updated) {
+                    // Update overall progress
+                    const totalTasks = user.learningPath.topics.reduce((acc, t) => acc + t.total, 0);
+                    const completedTasks = user.learningPath.topics.reduce((acc, t) => acc + t.completed, 0);
+                    user.learningPath.overallProgress = Math.round((completedTasks / totalTasks) * 100);
+                    await user.save();
+                }
+            }
+        }
 
         res.status(200).json({
             success: true,

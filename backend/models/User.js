@@ -224,10 +224,54 @@ const userSchema = new mongoose.Schema({
         message: { type: String, required: true },
         timestamp: { type: Date, default: Date.now }
     }],
+    badges: [{
+        name: { type: String, required: true },
+        icon: { type: String, default: '🏆' },
+        description: String,
+        dateEarned: { type: Date, default: Date.now }
+    }],
+    notifications: [{
+        message: String,
+        type: { type: String, enum: ['quiz', 'exam', 'group', 'forum', 'system'], default: 'system' },
+        read: { type: Boolean, default: false },
+        link: String,
+        createdAt: { type: Date, default: Date.now }
+    }],
     createdAt: {
         type: Date,
         default: Date.now
     }
+});
+
+// Auto-award badges based on milestones
+userSchema.pre('save', function(next) {
+    const user = this;
+    if (!user.badges) user.badges = [];
+    
+    const awardBadge = (name, icon, description) => {
+        if (!user.badges.some(b => b.name === name)) {
+            user.badges.push({ name, icon, description, dateEarned: new Date() });
+            
+            // Also generate a notification for the new badge
+            if (!user.notifications) user.notifications = [];
+            user.notifications.push({
+                message: `🎉 Milestone Reached: You earned the "${name}" badge!`,
+                type: 'system',
+                read: false,
+                link: '/career',
+                createdAt: new Date()
+            });
+        }
+    };
+
+    if (user.stats) {
+        if (user.stats.level >= 5) awardBadge('Rookie Coder', '🌟', 'Reached Level 5. Unlock Group Mode challenges.');
+        if (user.stats.level >= 10) awardBadge('Code Warrior', '⚔️', 'Reached Level 10. Unlock exclusive code rooms.');
+        if (user.stats.streak >= 7) awardBadge('Week Warrior', '🔥', 'Maintained a 7-day study streak.');
+        if (user.stats.streak >= 30) awardBadge('Iron Will', '🛡️', 'Maintained a 30-day study streak.');
+    }
+
+    next();
 });
 
 module.exports = mongoose.model('User', userSchema);

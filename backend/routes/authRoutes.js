@@ -117,4 +117,15 @@ router.get('/logout', (req, res, next) => {
     });
 });
 
+// Notifications
+router.get('/notifications', (req, res, next) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    authController.getNotifications(req, res);
+});
+
+router.post('/notifications/read', (req, res, next) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
+    authController.markNotificationsRead(req, res);
+});
+
 module.exports = router;

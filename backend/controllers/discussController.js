@@ -383,6 +383,7 @@ exports.getComments = async (req, res) => {
 exports.postComment = async (req, res) => {
     try {
         const Comment = require('../models/Comment');
+        const User = require('../models/User');
         const { content } = req.body;
         const newComment = new Comment({
             post: req.params.postId,
@@ -391,6 +392,23 @@ exports.postComment = async (req, res) => {
         });
         await newComment.save();
         const populated = await newComment.populate('author', 'name avatar status');
+
+        // Notify post author
+        const post = await Post.findById(req.params.postId);
+        if (post && post.author.toString() !== req.user._id.toString()) {
+            const author = await User.findById(post.author);
+            if (author) {
+                if (!author.notifications) author.notifications = [];
+                author.notifications.push({
+                    message: `${req.user.name} replied to your post: "${post.title}"`,
+                    type: 'forum',
+                    read: false,
+                    link: `/discuss`,
+                    createdAt: new Date()
+                });
+                await author.save();
+            }
+        }
 
         res.status(201).json({
             ...populated.toObject(),

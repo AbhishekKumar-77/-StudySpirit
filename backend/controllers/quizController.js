@@ -1,5 +1,6 @@
 const Quiz = require('../models/Quiz');
 const User = require('../models/User');
+const Task = require('../models/Task');
 
 // Single API key — set GROQ_API_KEY or GROQ_API_KEY_QUIZ in your .env / Render env vars
 const GROQ_API_KEY = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY;
@@ -593,6 +594,24 @@ exports.submitResult = async (req, res) => {
                 console.log(`[Passport] Saved successfully for userId=${userId}`);
             } catch (passportErr) {
                 console.error('[Passport] Failed to update Skill Passport:', passportErr);
+            }
+            // -----------------------------------------
+
+            // --- Sync with Planner Task ---
+            try {
+                const pendingQuizTasks = await Task.find({
+                    user: userId,
+                    status: { $ne: 'completed' },
+                    title: { $regex: /quiz/i }
+                });
+                
+                for (let t of pendingQuizTasks) {
+                    t.status = 'completed';
+                    t.completedAt = new Date();
+                    await t.save();
+                }
+            } catch (taskErr) {
+                console.error('[Planner] Failed to sync Quiz Task:', taskErr);
             }
             // -----------------------------------------
         }
