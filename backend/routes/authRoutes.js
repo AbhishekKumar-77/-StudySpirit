@@ -37,7 +37,8 @@ router.get('/google/callback',
             avatar: req.user.avatar,
             stats: req.user.stats
         }));
-        res.redirect(`${FRONTEND_URL}/dashboard?user=${userData}`);
+        const targetPath = req.user.role === 'teacher' ? '/teacher-dashboard' : req.user.role === 'recruiter' ? '/career' : '/dashboard';
+        res.redirect(`${FRONTEND_URL}${targetPath}?user=${userData}`);
     }
 );
 
@@ -57,7 +58,8 @@ router.get('/github/callback',
             stats: req.user.stats,
             githubProfile: req.user.githubProfile
         }));
-        res.redirect(`${FRONTEND_URL}/dashboard?user=${userData}`);
+        const targetPath = req.user.role === 'teacher' ? '/teacher-dashboard' : req.user.role === 'recruiter' ? '/career' : '/dashboard';
+        res.redirect(`${FRONTEND_URL}${targetPath}?user=${userData}`);
     }
 );
 
