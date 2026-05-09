@@ -302,6 +302,13 @@ export default function SoloMode() {
                     setDailyGoal(data.user.dailyGoal || 5);
                     setProblemsSolvedToday(data.user.problemsSolvedToday || 0);
                     if (data.user.studyStreak) setHighestStreak(Math.max(15, data.user.studyStreak));
+                    
+                    if (data.chatHistory && data.chatHistory.length > 0) {
+                        setChatHistory(data.chatHistory.map(msg => ({
+                            type: msg.role === 'ai' ? 'ai' : 'user',
+                            message: msg.message
+                        })));
+                    }
                 }
             } catch (err) {
                 console.error('Failed to fetch dashboard', err);
@@ -413,10 +420,18 @@ export default function SoloMode() {
     ];
 
     const [chatHistory, setChatHistory] = useState([
-        { type: 'ai', message: "Hello! I'm your AI coding mentor. Based on your LeetCode profile, I can see you're doing great with Arrays. Want me to suggest some challenging Graph problems to improve that skill? 🚀" },
-        { type: 'user', message: 'Yes, please suggest some graph problems!' },
-        { type: 'ai', message: 'Great choice! Based on your current level, I recommend:\n\n1. **Number of Islands** (Medium) - Classic BFS/DFS\n2. **Course Schedule** (Medium) - Topological Sort\n3. **Clone Graph** (Medium) - Graph traversal\n\nStart with Number of Islands - it has a 97% similarity with your solved Tree problems. Would you like detailed hints?' }
+        { type: 'ai', message: "Hello! I'm your AI coding mentor. Ask me to explain a concept or give a hint if you're stuck! 🚀" }
     ]);
+
+    const handleGetHint = (taskTitle) => {
+        setChatMessage(`I'm stuck on my task: "${taskTitle}". Can you give me a hint or explain it step by step?`);
+        setShowFullscreenAI(true);
+        // We delay the send slightly so the UI opens first
+        setTimeout(() => {
+            const btn = document.getElementById('send-ai-msg-btn');
+            if (btn) btn.click();
+        }, 300);
+    };
 
     const moods = [
         { id: 'productive', icon: Zap, color: 'emerald', label: 'Productive' },
@@ -1242,12 +1257,19 @@ export default function SoloMode() {
                                 {tasks.filter(t => !t.completed).slice(0, 5).map(task => (
                                     <div
                                         key={task.id}
-                                        onClick={() => toggleTask(task.id)}
-                                        className={`flex-shrink-0 px-5 py-3 rounded-xl cursor-pointer transition-all flex items-center gap-3 ${focusedTaskId === task.id ? 'bg-cyan-500/20 border-2 border-cyan-500' : 'bg-[var(--border-color)] border-2 border-transparent hover:border-[var(--border-color)]'}`}
+                                        className={`flex-shrink-0 px-5 py-3 rounded-xl transition-all flex items-center gap-3 ${focusedTaskId === task.id ? 'bg-cyan-500/20 border-2 border-cyan-500' : 'bg-[var(--border-color)] border-2 border-transparent hover:border-[var(--border-color)]'}`}
                                     >
-                                        <Circle className="w-5 h-5 text-[var(--text-secondary)]" />
-                                        <span className="text-[var(--text-primary)]">{task.title}</span>
-                                        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">+{task.xp} XP</span>
+                                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => toggleTask(task.id)}>
+                                            <Circle className="w-5 h-5 text-[var(--text-secondary)]" />
+                                            <span className="text-[var(--text-primary)]">{task.title}</span>
+                                            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">+{task.xp} XP</span>
+                                        </div>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); handleGetHint(task.title); }}
+                                            className="ml-2 px-3 py-1 text-xs font-bold bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded-lg transition-all flex items-center gap-1"
+                                        >
+                                            <Brain className="w-3 h-3" /> Get Hint
+                                        </button>
                                     </div>
                                 ))}
                                 {tasks.filter(t => !t.completed).length === 0 && (
@@ -1380,6 +1402,7 @@ export default function SoloMode() {
                                         className="w-full pl-4 pr-12 py-3 bg-[var(--bg-secondary)] rounded-xl text-[var(--text-primary)] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                                     />
                                     <button
+                                        id="send-ai-msg-btn"
                                         onClick={handleSendMessage}
                                         disabled={!chatMessage.trim() || isSendingMessage}
                                         className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-cyan-500 text-[var(--text-primary)] rounded-lg hover:bg-cyan-500 disabled:opacity-50 transition-all"

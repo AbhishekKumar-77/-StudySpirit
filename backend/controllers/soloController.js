@@ -25,19 +25,61 @@ exports.getDashboardData = async (req, res) => {
 
         // Initialize learning path if missing
         if (!user.learningPath || !user.learningPath.topics || user.learningPath.topics.length === 0) {
-            user.learningPath = {
-                currentTopic: 'Arrays & Hashing',
-                overallProgress: 0,
-                topics: [
-                    { name: 'Arrays & Hashing', completed: 0, total: 40, status: 'active' },
-                    { name: 'Two Pointers', completed: 0, total: 25, status: 'locked' },
-                    { name: 'Sliding Window', completed: 0, total: 20, status: 'locked' },
-                    { name: 'Stack & Queue', completed: 0, total: 30, status: 'locked' },
-                    { name: 'Binary Search', completed: 0, total: 25, status: 'locked' },
-                    { name: 'Linked Lists', completed: 0, total: 30, status: 'locked' },
-                    { name: 'Trees & Graphs', completed: 0, total: 50, status: 'locked' },
-                    { name: 'Dynamic Programming', completed: 0, total: 60, status: 'locked' }
+            const learningTracks = {
+                dsa: [
+                    { name: 'Arrays & Hashing', completed: 0, total: 40, status: 'active', task: 'Solve Array Two-Sum', xp: 50 },
+                    { name: 'Two Pointers', completed: 0, total: 25, status: 'locked', task: 'Master Two Pointers', xp: 75 },
+                    { name: 'Sliding Window', completed: 0, total: 20, status: 'locked', task: 'Sliding Window Maximum', xp: 100 },
+                    { name: 'Stack & Queue', completed: 0, total: 30, status: 'locked', task: 'Valid Parentheses', xp: 50 },
+                    { name: 'Binary Search', completed: 0, total: 25, status: 'locked', task: 'Search 2D Matrix', xp: 75 },
+                    { name: 'Linked Lists', completed: 0, total: 30, status: 'locked', task: 'Reverse Linked List', xp: 50 },
+                    { name: 'Trees & Graphs', completed: 0, total: 50, status: 'locked', task: 'Invert Binary Tree', xp: 75 },
+                    { name: 'Dynamic Programming', completed: 0, total: 60, status: 'locked', task: 'Climbing Stairs', xp: 100 }
+                ],
+                'web dev': [
+                    { name: 'HTML/CSS', completed: 0, total: 20, status: 'active', task: 'Build a Portfolio Layout', xp: 50 },
+                    { name: 'JavaScript Basics', completed: 0, total: 30, status: 'locked', task: 'JS DOM Manipulation', xp: 75 },
+                    { name: 'React Fundamentals', completed: 0, total: 40, status: 'locked', task: 'Create React Components', xp: 100 },
+                    { name: 'Node.js & Express', completed: 0, total: 35, status: 'locked', task: 'Build a REST API', xp: 100 },
+                    { name: 'Databases (MongoDB/SQL)', completed: 0, total: 30, status: 'locked', task: 'Connect to Database', xp: 75 },
+                    { name: 'Advanced React', completed: 0, total: 25, status: 'locked', task: 'State Management', xp: 100 },
+                    { name: 'Deployment', completed: 0, total: 10, status: 'locked', task: 'Deploy to Vercel/Render', xp: 150 }
+                ],
+                'ai/ml': [
+                    { name: 'Python Basics', completed: 0, total: 30, status: 'active', task: 'Python Data Structures', xp: 50 },
+                    { name: 'NumPy/Pandas', completed: 0, total: 35, status: 'locked', task: 'Data Manipulation', xp: 75 },
+                    { name: 'Data Visualization', completed: 0, total: 20, status: 'locked', task: 'Plotting with Matplotlib', xp: 50 },
+                    { name: 'ML Algorithms', completed: 0, total: 45, status: 'locked', task: 'Linear Regression', xp: 100 },
+                    { name: 'Deep Learning', completed: 0, total: 50, status: 'locked', task: 'Build a Neural Network', xp: 150 },
+                    { name: 'NLP / Computer Vision', completed: 0, total: 40, status: 'locked', task: 'Text Classification', xp: 150 },
+                    { name: 'MLOps', completed: 0, total: 20, status: 'locked', task: 'Deploy ML Model', xp: 150 }
+                ],
+                'system design': [
+                    { name: 'Scalability Basics', completed: 0, total: 15, status: 'active', task: 'Vertical vs Horizontal', xp: 50 },
+                    { name: 'Databases & Sharding', completed: 0, total: 25, status: 'locked', task: 'SQL vs NoSQL', xp: 75 },
+                    { name: 'Caching', completed: 0, total: 20, status: 'locked', task: 'Redis Architecture', xp: 75 },
+                    { name: 'Load Balancers', completed: 0, total: 15, status: 'locked', task: 'Consistent Hashing', xp: 100 },
+                    { name: 'Microservices', completed: 0, total: 30, status: 'locked', task: 'API Gateways', xp: 100 },
+                    { name: 'Message Queues', completed: 0, total: 20, status: 'locked', task: 'Kafka/RabbitMQ', xp: 100 }
+                ],
+                competitive: [
+                    { name: 'Time Complexity', completed: 0, total: 10, status: 'active', task: 'Big-O Analysis', xp: 50 },
+                    { name: 'Number Theory', completed: 0, total: 25, status: 'locked', task: 'Sieve & Modulo Arithmetic', xp: 75 },
+                    { name: 'Greedy Algorithms', completed: 0, total: 30, status: 'locked', task: 'Interval Scheduling', xp: 75 },
+                    { name: 'Advanced DP', completed: 0, total: 50, status: 'locked', task: 'Digit DP & Bitmasking', xp: 150 },
+                    { name: 'Graph Theory', completed: 0, total: 45, status: 'locked', task: 'Dijkstra & MST', xp: 150 },
+                    { name: 'Segment Trees', completed: 0, total: 35, status: 'locked', task: 'Range Queries', xp: 150 }
                 ]
+            };
+
+            const goal = (user.studyGoal || 'dsa').toLowerCase();
+            const trackKey = Object.keys(learningTracks).find(k => goal.includes(k)) || 'dsa';
+            const selectedTrack = learningTracks[trackKey];
+
+            user.learningPath = {
+                currentTopic: selectedTrack[0].name,
+                overallProgress: 0,
+                topics: selectedTrack
             };
             await user.save();
         }
@@ -337,18 +379,21 @@ exports.chatWithAI = async (req, res) => {
             return res.json({ response: `⚠️ **AI Brain Missing!**\n\nTo answer your questions, I need a **Groq API Key** (free & unlimited!).\n\n**Get it in 30 seconds:**\n1. Visit: https://console.groq.com/keys\n2. Sign up (free, no credit card)\n3. Click "Create API Key"\n4. Copy the key (starts with gsk_...)\n5. Add to backend/.env: GROQ_API_KEY=gsk_...\n6. Restart backend\n\nGroq is FREE, FAST, and has NO rate limits! 🚀` });
         }
 
-        // Try to load user (optional - for chat history)
         let user = null;
         let recentHistory = [];
+        let currentTopic = '';
         try {
             if (req.user && req.user.id) {
                 user = await User.findById(req.user.id);
                 if (user) {
                     user.chatHistory.push({ role: 'user', message });
-                    recentHistory = user.chatHistory.slice(-4).map(msg => ({
+                    recentHistory = user.chatHistory.slice(-6).map(msg => ({
                         role: msg.role === 'user' ? 'user' : 'assistant',
                         content: msg.message
                     }));
+                    if (user.learningPath && user.learningPath.currentTopic) {
+                        currentTopic = user.learningPath.currentTopic;
+                    }
                 }
             }
         } catch (userErr) {
@@ -373,7 +418,7 @@ exports.chatWithAI = async (req, res) => {
                         messages: [
                             {
                                 role: 'system',
-                                content: 'You are an expert study mentor. Answer questions clearly with examples. Be concise but helpful.'
+                                content: `You are an expert study mentor for StudySpirit. ${currentTopic ? `The student is currently learning "${currentTopic}". Be proactive and suggest relevant problems or concepts related to this topic if appropriate.` : 'Answer questions clearly with examples.'} Be concise but highly helpful. Use markdown.`
                             },
                             ...recentHistory,
                             {
