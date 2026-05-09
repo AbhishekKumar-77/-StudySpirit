@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import * as soloApi from '../services/soloApi';
 import { taskAPI } from '../services/plannerApi';
+import { getRecentPages } from '../hooks/usePageTracker';
 import confetti from 'canvas-confetti';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
-    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck
+    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck, History, Map
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -19,6 +20,11 @@ export default function Dashboard() {
     const [isLight, setIsLight] = useState(false);
     const [rewardClaimed, setRewardClaimed] = useState(false);
     const [todayMission, setTodayMission] = useState(null);
+    const [recentPages, setRecentPages] = useState([]);
+
+    useEffect(() => {
+        setRecentPages(getRecentPages());
+    }, []);
 
     // Fireworks & Confetti Burst
     const fireConfetti = useCallback(() => {
@@ -345,22 +351,45 @@ export default function Dashboard() {
                     ))}
                 </div>
 
-                {/* Today's Mission Card — shown when user has a roadmap */}
-                {todayMission && user?.onboardingCompleted && (
-                    <div className="today-mission-card" onClick={() => navigate('/solo-mode')} style={{ cursor: 'pointer' }}>
+                {/* Smart Action Area */}
+                <div className="action-area">
+                    {/* Today's Mission Card — Smart fallback if no roadmap */}
+                    <div className="today-mission-card" onClick={() => navigate(todayMission ? '/solo-mode' : '/planner')} style={{ cursor: 'pointer' }}>
                         <div className="mission-left">
                             <div className="mission-badge">⚡ TODAY'S MISSION</div>
-                            <h3 className="mission-title">{todayMission.title}</h3>
-                            <p className="mission-task">{todayMission.task}</p>
+                            <h3 className="mission-title">{todayMission ? todayMission.title : 'Establish Your Foundation'}</h3>
+                            <p className="mission-task">{todayMission ? todayMission.task : 'Set up your daily goals in the Planner to track your progress.'}</p>
                             <div className="mission-meta">
-                                <span className="mission-xp">+{todayMission.xp} XP</span>
-                                <span className="mission-tag">{todayMission.tag}</span>
-                                {todayMission.day && <span className="mission-day">Day {todayMission.day}</span>}
+                                <span className="mission-xp">+{todayMission ? todayMission.xp : 50} XP</span>
+                                <span className="mission-tag">{todayMission ? todayMission.tag : 'planning'}</span>
+                                {todayMission?.day && <span className="mission-day">Day {todayMission.day}</span>}
                             </div>
                         </div>
                         <div className="mission-arrow">→</div>
                     </div>
-                )}
+
+                    {/* Continue Where You Left Off */}
+                    {recentPages.length > 0 && (
+                        <div className="recent-pages-section">
+                            <div className="recent-header">
+                                <h3><History size={16} /> Continue Where You Left Off</h3>
+                                <p>Jump right back into your active sessions.</p>
+                            </div>
+                            <div className="recent-grid">
+                                {recentPages.map((page, i) => (
+                                    <div key={i} className="recent-card" onClick={() => navigate(page.path)}>
+                                        <div className="recent-icon">{page.icon}</div>
+                                        <div className="recent-info">
+                                            <h4>{page.name}</h4>
+                                            <span className="recent-time">Visited recently</span>
+                                        </div>
+                                        <ArrowRight size={14} className="recent-arrow" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Goal Badge — shown when user has a study goal */}
                 {user?.studyGoal && user?.onboardingCompleted && (

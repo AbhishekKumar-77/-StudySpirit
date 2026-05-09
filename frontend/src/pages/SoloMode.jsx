@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import * as soloApi from '../services/soloApi';
 import { taskAPI } from '../services/plannerApi';
+import { usePageTracker } from '../hooks/usePageTracker';
 
 // Helper to format AI messages with markdown-like rendering
 function FormatAIMessage({ text }) {
@@ -193,6 +194,7 @@ function formatInlineText(text) {
 
 export default function SoloMode() {
     const navigate = useNavigate();
+    usePageTracker('Solo Mode', '/solo-mode', '📖');
     const [activeTab, setActiveTab] = useState('dashboard');
     const [pomodoroTime, setPomodoroTime] = useState(25 * 60);
     const [isTimerRunning, setIsTimerRunning] = useState(false);

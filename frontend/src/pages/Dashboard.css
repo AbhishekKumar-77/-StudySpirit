@@ -1489,4 +1489,167 @@
 .light-mode .change-goal-btn:hover {
     color: #6366f1;
     background: rgba(99,102,241,0.08);
-}
+}
+
+/* ==================== ACTION AREA & RECENT PAGES ==================== */
+.action-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (min-width: 900px) {
+    .action-area {
+        flex-direction: row;
+        align-items: stretch;
+    }
+    
+    .action-area .today-mission-card {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .recent-pages-section {
+        flex: 1.2;
+    }
+}
+
+.recent-pages-section {
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dark-mode .recent-pages-section {
+    background: rgba(13, 17, 23, 0.6);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.light-mode .recent-pages-section {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+.recent-header {
+    margin-bottom: 16px;
+}
+
+.recent-header h3 {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.dark-mode .recent-header h3 { color: #f0f6fc; }
+.light-mode .recent-header h3 { color: #1e293b; }
+
+.recent-header p {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.dark-mode .recent-header p { color: rgba(240,246,252,0.4); }
+.light-mode .recent-header p { color: #64748b; }
+
+.recent-grid {
+    display: flex;
+    gap: 12px;
+}
+
+.recent-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 0;
+}
+
+.dark-mode .recent-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.04);
+}
+
+.dark-mode .recent-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(99,102,241,0.3);
+    transform: translateY(-2px);
+}
+
+.light-mode .recent-card {
+    background: #f8fafc;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.light-mode .recent-card:hover {
+    background: #ffffff;
+    border-color: rgba(99,102,241,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    transform: translateY(-2px);
+}
+
+.recent-icon {
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dark-mode .recent-icon { background: rgba(0,0,0,0.2); }
+.light-mode .recent-icon { background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+.recent-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.recent-info h4 {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dark-mode .recent-info h4 { color: #f0f6fc; }
+.light-mode .recent-info h4 { color: #334155; }
+
+.recent-time {
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.dark-mode .recent-time { color: rgba(240,246,252,0.3); }
+.light-mode .recent-time { color: #94a3b8; }
+
+.recent-arrow {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+.dark-mode .recent-arrow { color: rgba(240,246,252,0.2); }
+.light-mode .recent-arrow { color: #cbd5e1; }
+
+.recent-card:hover .recent-arrow {
+    transform: translateX(3px);
+}
+
+.dark-mode .recent-card:hover .recent-arrow { color: #818cf8; }
+.light-mode .recent-card:hover .recent-arrow { color: #6366f1; }

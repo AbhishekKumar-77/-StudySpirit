@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import soloApi from '../services/soloApi';
 import AriaAvatar from '../components/AriaAvatar';
 import { API_BASE } from '../config';
+import { usePageTracker } from '../hooks/usePageTracker';
 import {
     Mic, MicOff, Send, StopCircle, User, Cpu, FileText,
     Settings, Play, ArrowLeft, Loader,
@@ -297,6 +298,7 @@ const ResumeTemplate = ({ data, template }) => {
 export default function AIInterview() {
     const { user } = useApp();
     const navigate = useNavigate();
+    usePageTracker('Interview Prep', '/interview', '🎤');
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [resumeText, setResumeText] = useState('');

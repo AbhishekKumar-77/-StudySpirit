@@ -7,6 +7,7 @@ import {
     Calendar, RefreshCw, X, BookOpen, BarChart3, ChevronDown, ArrowRight, Shield
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
+import { usePageTracker } from "../hooks/usePageTracker";
 
 // ============== SUBJECTS WITH SYLLABUS ==============
 const SUBJECTS = [
@@ -177,6 +178,7 @@ const SUBJECTS = [
 export default function CodeSpirit() {
     const navigate = useNavigate();
     const { user } = useApp();
+    usePageTracker('CodeSpirit', '/codespirit', '🧠');
 
     const [activeTab, setActiveTab] = useState("generate");
 

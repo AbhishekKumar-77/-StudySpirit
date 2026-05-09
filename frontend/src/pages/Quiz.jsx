@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import { API_BASE } from "../config";
 import { connectSocket, getSocket } from "../services/groupAPI";
 import { useSecureBrowser } from "../hooks/useSecureBrowser";
+import { usePageTracker } from "../hooks/usePageTracker";
 import {
     ArrowLeft, FilePlus, Clock, Edit, Sparkles, CheckCircle, Award,
     Trash2, Brain, Users, Send, BarChart, Target, Trophy, Zap,
@@ -18,6 +19,7 @@ import 'katex/dist/katex.min.css';
 export default function StudySprintQuiz() {
     const { user } = useApp();
     const navigate = useNavigate();
+    usePageTracker('Quizzes', '/quiz', '📝');
     const [searchParams] = useSearchParams();
     // Preview mode: teacher opened exam with ?preview=1 to see it as a student would
     const isPreviewMode = searchParams.get('preview') === '1';
