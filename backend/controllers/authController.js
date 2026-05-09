@@ -147,6 +147,7 @@ exports.login = async (req, res) => {
             if (err) return res.status(500).json({ message: 'Session login failed' });
 
             // --- Streak Logic ---
+            if (!user.stats) user.stats = { streak: 0, level: 1, xp: 0 };
             const now = new Date();
             const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate) : null;
 
