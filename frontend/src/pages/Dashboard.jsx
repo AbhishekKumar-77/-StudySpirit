@@ -18,6 +18,7 @@ export default function Dashboard() {
     const [todayStudyTime, setTodayStudyTime] = useState(0);
     const [isLight, setIsLight] = useState(false);
     const [rewardClaimed, setRewardClaimed] = useState(false);
+    const [todayMission, setTodayMission] = useState(null);
 
     // Fireworks & Confetti Burst
     const fireConfetti = useCallback(() => {
@@ -167,6 +168,21 @@ export default function Dashboard() {
                         completionRate: compRate
                     });
                     setTodayStudyTime(data.user.todayStudyTime || 0);
+
+                    // Pull today's mission from learning path roadmap
+                    const lp = data.learningPath;
+                    if (lp && lp.topics && lp.topics.length > 0) {
+                        const activeTopic = lp.topics.find(t => t.status === 'active') || lp.topics[0];
+                        if (activeTopic) {
+                            setTodayMission({
+                                title: activeTopic.name || 'Study Session',
+                                task: activeTopic.task || `Study ${activeTopic.name} today`,
+                                xp: activeTopic.xp || 50,
+                                tag: activeTopic.tag || 'concept',
+                                day: activeTopic.day || 1
+                            });
+                        }
+                    }
                 }
             } catch (err) { }
         };
@@ -328,6 +344,36 @@ export default function Dashboard() {
                         </div>
                     ))}
                 </div>
+
+                {/* Today's Mission Card — shown when user has a roadmap */}
+                {todayMission && user?.onboardingCompleted && (
+                    <div className="today-mission-card" onClick={() => navigate('/solo-mode')} style={{ cursor: 'pointer' }}>
+                        <div className="mission-left">
+                            <div className="mission-badge">⚡ TODAY'S MISSION</div>
+                            <h3 className="mission-title">{todayMission.title}</h3>
+                            <p className="mission-task">{todayMission.task}</p>
+                            <div className="mission-meta">
+                                <span className="mission-xp">+{todayMission.xp} XP</span>
+                                <span className="mission-tag">{todayMission.tag}</span>
+                                {todayMission.day && <span className="mission-day">Day {todayMission.day}</span>}
+                            </div>
+                        </div>
+                        <div className="mission-arrow">→</div>
+                    </div>
+                )}
+
+                {/* Goal Badge — shown when user has a study goal */}
+                {user?.studyGoal && user?.onboardingCompleted && (
+                    <div className="goal-badge-row">
+                        <div className="goal-badge">
+                            <span className="goal-icon">🎯</span>
+                            <span className="goal-text">{user.studyGoal}</span>
+                            <span className="goal-divider">•</span>
+                            <span className="goal-level">{user.difficultyLevel || 'Student'}</span>
+                        </div>
+                        <button className="change-goal-btn" onClick={() => navigate('/onboarding')}>Change Goal</button>
+                    </div>
+                )}
 
                 {/* Streak Reward Alert */}
                 {user?.streak > 0 && (

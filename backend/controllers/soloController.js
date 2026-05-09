@@ -1637,3 +1637,134 @@ For each Topic, list key **Subtopics**.
 
 
 exports.logHeartbeat = async (req, res) => { res.status(200).json({ success: true, message: 'Heartbeat logged' }); };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/solo/onboarding
+// Saves student goal/difficulty/university/course and generates AI roadmap
+// ─────────────────────────────────────────────────────────────────────────────
+exports.completeOnboarding = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+
+        const { studyGoal, difficultyLevel, university, course } = req.body;
+
+        if (!studyGoal || !difficultyLevel) {
+            return res.status(400).json({ message: 'studyGoal and difficultyLevel are required' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Save profile fields
+        user.studyGoal = studyGoal;
+        user.difficultyLevel = difficultyLevel;
+        if (university) user.university = university;
+        if (course) user.course = course;
+        user.onboardingCompleted = true;
+
+        // ── Generate AI Roadmap via Groq ──────────────────────────────────
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
+        let roadmap = null;
+
+        if (GROQ_API_KEY) {
+            try {
+                const prompt = `You are an expert study planner. Create a structured 30-day study roadmap for a ${difficultyLevel} level student who wants to master "${studyGoal}".
+
+Return ONLY a valid JSON object in exactly this format — no markdown, no explanation:
+{
+  "title": "30-Day ${studyGoal} Roadmap for ${difficultyLevel}s",
+  "goal": "${studyGoal}",
+  "level": "${difficultyLevel}",
+  "weeks": [
+    {
+      "week": 1,
+      "theme": "Foundation",
+      "days": [
+        { "day": 1, "title": "Topic Name", "task": "What to study today (1 sentence)", "xp": 50, "tag": "concept" },
+        { "day": 2, "title": "Topic Name", "task": "What to study today (1 sentence)", "xp": 60, "tag": "practice" }
+      ]
+    }
+  ],
+  "milestones": [
+    { "day": 7, "label": "Week 1 Complete", "badge": "🌱 Seedling" },
+    { "day": 14, "label": "Week 2 Complete", "badge": "⚡ Builder" },
+    { "day": 21, "label": "Week 3 Complete", "badge": "🔥 Grinder" },
+    { "day": 30, "label": "Roadmap Complete", "badge": "🏆 Master" }
+  ],
+  "todayMission": {
+    "title": "Day 1 Mission",
+    "task": "The exact first day task from the roadmap",
+    "xp": 50,
+    "tag": "concept"
+  }
+}
+
+Generate 4 weeks × 7 days = 28 day entries (days 1–28), then 2 bonus days (days 29–30) for revision. Each day must have unique, actionable content specific to ${studyGoal} at ${difficultyLevel} level.`;
+
+                const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: 'You are an expert study planner. Output ONLY valid JSON. No markdown, no extra text.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: 0.6,
+                        max_tokens: 4000,
+                        response_format: { type: 'json_object' }
+                    })
+                });
+
+                const data = await groqRes.json();
+                if (data.choices?.[0]?.message?.content) {
+                    roadmap = JSON.parse(data.choices[0].message.content);
+                }
+            } catch (aiErr) {
+                console.error('❌ Onboarding AI roadmap error:', aiErr.message);
+                // Non-fatal: continue without roadmap
+            }
+        }
+
+        // Store roadmap on user if generated
+        if (roadmap) {
+            user.learningPath = {
+                currentTopic: roadmap.weeks?.[0]?.days?.[0]?.title || studyGoal,
+                overallProgress: 0,
+                roadmap: roadmap, // full roadmap stored
+                topics: (roadmap.weeks || []).flatMap(w =>
+                    (w.days || []).map(d => ({
+                        name: d.title,
+                        completed: 0,
+                        total: 1,
+                        status: d.day === 1 ? 'active' : 'locked',
+                        day: d.day,
+                        task: d.task,
+                        xp: d.xp,
+                        tag: d.tag
+                    }))
+                ).slice(0, 30)
+            };
+        }
+
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Onboarding complete! Your roadmap is ready.',
+            onboardingCompleted: true,
+            studyGoal,
+            difficultyLevel,
+            roadmap: roadmap || null,
+            todayMission: roadmap?.todayMission || null
+        });
+
+    } catch (error) {
+        console.error('Onboarding Error:', error);
+        res.status(500).json({ message: 'Server error during onboarding' });
+    }
+};
+

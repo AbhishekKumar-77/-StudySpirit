@@ -93,9 +93,13 @@ router.get('/me', async (req, res) => {
                     university: freshUser.university,
                     course: freshUser.course,
                     isVerified: freshUser.isVerified,
-                    isAdmin: freshUser.isAdmin || false
+                    isAdmin: freshUser.isAdmin || false,
+                    onboardingCompleted: freshUser.onboardingCompleted || false,
+                    studyGoal: freshUser.studyGoal || '',
+                    difficultyLevel: freshUser.difficultyLevel || ''
                 }
             });
+
         } catch (err) {
             console.error('Error fetching user:', err);
             res.status(500).json({ message: 'Server error' });

@@ -21,10 +21,12 @@ const upload = multer({
 // All routes require authentication (handled by middleware in main app)
 
 // Dashboard & Stats
-
-// Dashboard & Stats
 router.get('/stats', soloController.getDashboardData);
 router.post('/heartbeat', soloController.logHeartbeat);
+
+// Onboarding (first-time user setup + AI roadmap generation)
+router.post('/onboarding', aiLimiter, soloController.completeOnboarding);
+
 
 // Study Sessions
 router.post('/session/start', soloController.startStudySession);

@@ -139,6 +139,14 @@ export const generateSkillTree = async (topic) => {
     });
 };
 
+// Complete Onboarding (first-time setup + AI roadmap)
+export const completeOnboarding = async (data) => {
+    return fetchWithAuth('/solo/onboarding', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+};
+
 export default {
     getStats,
     startStudySession,

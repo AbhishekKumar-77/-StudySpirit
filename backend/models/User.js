@@ -24,6 +24,21 @@ const userSchema = new mongoose.Schema({
         enum: ['student', 'teacher', 'recruiter'],
         default: 'student'
     },
+    // Onboarding
+    onboardingCompleted: {
+        type: Boolean,
+        default: false
+    },
+    studyGoal: {
+        type: String,
+        enum: ['DSA', 'Web Dev', 'AI/ML', 'Interview Prep', 'Competitive', ''],
+        default: ''
+    },
+    difficultyLevel: {
+        type: String,
+        enum: ['Beginner', 'Intermediate', 'Advanced', ''],
+        default: ''
+    },
     isAdmin: {
         type: Boolean,
         default: false

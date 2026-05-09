@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 import { AppProvider } from './context/AppContext';
+import { useApp } from './context/AppContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import ThemeToggle from './components/ThemeToggle';
 
@@ -32,6 +33,7 @@ const TeacherToolkit = lazy(() => import('./pages/TeacherToolkit'));
 const TeacherCodeSpirit = lazy(() => import('./pages/TeacherCodeSpirit'));
 const TeacherInterview = lazy(() => import('./pages/TeacherInterview'));
 const CodeSpiritCreator = lazy(() => import('./pages/CodeSpiritCreator'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
 
 // ============== GAMING LOADING SCREEN ==============
 const PageLoader = () => (
@@ -81,6 +83,20 @@ const PageLoader = () => (
   </div>
 );
 
+// Guard: redirect new students to onboarding
+function OnboardingGuard({ children }) {
+  const { user, loading } = useApp();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!loading && user && user.role === 'student' && user.onboardingCompleted === false) {
+      navigate('/onboarding', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  return children;
+}
+
 function App() {
   return (
     <AppProvider>
@@ -90,9 +106,10 @@ function App() {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/login" element={<Login />} />
               <Route path="/login/:role" element={<Login />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard" element={<OnboardingGuard><Dashboard /></OnboardingGuard>} />
               <Route path="/solo-mode" element={<SoloMode />} />
               <Route path="/group-mode" element={<GroupMode />} />
               <Route path="/planner" element={<Planner />} />
