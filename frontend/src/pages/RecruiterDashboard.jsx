@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Users, Briefcase, Calendar, TrendingUp, Star, Filter, MapPin, GraduationCap, ArrowRight, Download, Eye, Save } from 'lucide-react';
+import { Search, Users, Briefcase, Calendar, TrendingUp, Star, Filter, MapPin, GraduationCap, ArrowRight, Download, Eye, Save, Plus, Sparkles, BrainCircuit } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { API_URL } from '../config';
 import './Dashboard.css'; // Reuse some styles or add new ones
@@ -9,16 +9,48 @@ const RecruiterDashboard = () => {
   const [activeTab, setActiveTab] = useState('explore');
   const [students, setStudents] = useState([]);
   const [savedCandidates, setSavedCandidates] = useState([]);
+  const [myJobs, setMyJobs] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({ university: '', skill: '', minScore: '' });
+  const [isPostingJob, setIsPostingJob] = useState(false);
+  const [aiMatches, setAiMatches] = useState({ jobId: null, results: [] });
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   useEffect(() => {
     fetchAnalytics();
     fetchStudents();
     fetchSavedCandidates();
+    fetchMyJobs();
   }, []);
+
+  const fetchMyJobs = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/career`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Filter jobs posted by this recruiter/company
+        const companyName = user?.recruiterProfile?.companyName;
+        setMyJobs(data.data.filter(j => j.company === companyName || j.source === 'StudySpirit'));
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const runReverseMatch = async (jobId) => {
+    setIsAiLoading(true);
+    setAiMatches({ jobId, results: [] });
+    try {
+      const res = await fetch(`${API_URL}/api/recruiter/jobs/${jobId}/reverse-match`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) setAiMatches({ jobId, results: data.topMatches });
+    } catch (err) { console.error(err); }
+    setIsAiLoading(false);
+  };
 
   const fetchAnalytics = async () => {
     try {
@@ -206,7 +238,80 @@ const RecruiterDashboard = () => {
           </section>
         )}
 
-        {/* Add more tab content for saved, jobs, drives here */}
+        {activeTab === 'jobs' && (
+          <section className="jobs-section fade-in">
+             <div className="section-header-row">
+                <h2>Your Job Postings</h2>
+                <button className="btn-primary" onClick={() => setIsPostingJob(true)}>
+                   <Plus size={18} /> Post New Job
+                </button>
+             </div>
+
+             <div className="jobs-grid">
+                {myJobs.map((job) => (
+                  <div key={job.id} className="job-recruiter-card premium-card">
+                     <div className="job-header">
+                        <h3>{job.title}</h3>
+                        <span className="job-tag">{job.type}</span>
+                     </div>
+                     <p className="job-location"><MapPin size={14} /> {job.location}</p>
+                     <div className="job-applicants-count">
+                        <strong>{job.applicants?.length || 0}</strong> Applicants
+                     </div>
+                     <div className="job-actions-recruiter">
+                        <button className="btn-ai" onClick={() => runReverseMatch(job.id)}>
+                           <Sparkles size={16} /> AI Reverse Match
+                        </button>
+                        <button className="btn-outline">Manage Applicants</button>
+                     </div>
+
+                     {aiMatches.jobId === job.id && (
+                       <div className="ai-results-dropdown fade-in">
+                          <h4><BrainCircuit size={16} /> Top AI Recommendations</h4>
+                          {isAiLoading ? (
+                            <p className="text-xs italic">AI is scanning Skill Passports...</p>
+                          ) : aiMatches.results.length > 0 ? (
+                            aiMatches.results.map((res, i) => (
+                              <div key={i} className="ai-match-item">
+                                 <div className="match-info">
+                                    <strong>{res.name}</strong>
+                                    <span className="match-pct">{res.matchPercentage}% Match</span>
+                                 </div>
+                                 <p className="match-reason">{res.reason}</p>
+                                 <button className="btn-mini" onClick={() => window.open(`/profile/${res.id}`, '_blank')}>View Profile</button>
+                              </div>
+                            ))
+                          ) : <p className="text-xs">No matches found.</p>}
+                       </div>
+                     )}
+                  </div>
+                ))}
+             </div>
+          </section>
+        )}
+
+        {/* Modal for posting job (simulated) */}
+        {isPostingJob && (
+          <div className="modal-overlay">
+             <div className="modal-card">
+                <h2>Post a New Opportunity</h2>
+                <div className="modal-form">
+                   <input type="text" placeholder="Job Title (e.g. React Developer)" />
+                   <div className="form-row">
+                      <select><option>Full-Time</option><option>Internship</option></select>
+                      <input type="text" placeholder="Location" />
+                   </div>
+                   <input type="text" placeholder="Salary (e.g. 12-18 LPA)" />
+                   <textarea placeholder="Job Description & Requirements"></textarea>
+                   <div className="modal-actions">
+                      <button className="btn-secondary" onClick={() => setIsPostingJob(false)}>Cancel</button>
+                      <button className="btn-primary" onClick={() => { setIsPostingJob(false); alert('Job posted successfully! It is now live in CareerSprint.'); fetchMyJobs(); }}>Publish Listing</button>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
+
         {activeTab === 'saved' && (
           <section className="saved-section fade-in">
              <h2>Shortlisted Candidates ({savedCandidates.length})</h2>

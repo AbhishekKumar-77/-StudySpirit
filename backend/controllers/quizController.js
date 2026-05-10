@@ -1,6 +1,8 @@
 const Quiz = require('../models/Quiz');
 const User = require('../models/User');
 const Task = require('../models/Task');
+const BadgeVerification = require('../models/BadgeVerification');
+const crypto = require('crypto');
 
 // Single API key — set GROQ_API_KEY or GROQ_API_KEY_QUIZ in your .env / Render env vars
 const GROQ_API_KEY = process.env.GROQ_API_KEY_QUIZ || process.env.GROQ_API_KEY;
@@ -592,6 +594,40 @@ exports.submitResult = async (req, res) => {
                 }
                 await profile.save();
                 console.log(`[Passport] Saved successfully for userId=${userId}`);
+
+                // --- Verify & Issue Digital Badge ---
+                if (percentage >= 85) {
+                    const quizCode = req.body.quizCode?.toUpperCase() || 'GENERAL';
+                    const verificationCode = `SS-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+                    
+                    const newBadge = new BadgeVerification({
+                        badgeId: `${quizCode}-ADV`,
+                        name: `${examTitle} Specialist`,
+                        icon: '🎓',
+                        student: userId,
+                        score: percentage,
+                        totalScore: 100,
+                        verificationCode: verificationCode,
+                        verifiedBy: 'StudySpirit Proctored Exam',
+                        metadata: {
+                            examType: 'Quiz',
+                            quizCode: quizCode,
+                            examId: req.body.quizId || null
+                        }
+                    });
+                    await newBadge.save();
+                    
+                    if (!user.badges) user.badges = [];
+                    user.badges.push({
+                        name: newBadge.name,
+                        icon: newBadge.icon,
+                        earnedAt: new Date(),
+                        description: `Scored ${percentage}% in ${examTitle}`,
+                        verificationCode: verificationCode
+                    });
+                    await user.save();
+                    console.log(`[Badge] Issued digital badge: ${verificationCode}`);
+                }
             } catch (passportErr) {
                 console.error('[Passport] Failed to update Skill Passport:', passportErr);
             }

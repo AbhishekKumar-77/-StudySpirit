@@ -535,7 +535,6 @@ export default function CareerSprint() {
 
     useEffect(() => { 
         fetchData(); 
-        // Fetch Verified Skill Passport
         const fetchProfile = async () => {
             try {
                 const res = await fetch(`${API_BASE}/career/profile`, { credentials: 'include' });
@@ -545,6 +544,48 @@ export default function CareerSprint() {
         };
         fetchProfile();
     }, []);
+
+    const handleApplyToJob = async (jobId) => {
+        try {
+            const res = await fetch(`${API_BASE}/recruiter/jobs/apply`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ jobId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('Application submitted with your Skill Passport! Recruiter will see your verified scores.');
+            } else {
+                alert(data.error || 'Failed to apply');
+            }
+        } catch (err) {
+            alert('Service unavailable');
+        }
+    };
+
+    const handleApplyToJob = async (jobId) => {
+        try {
+            const res = await fetch(`${API_BASE}/recruiter/jobs/apply`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ jobId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('Application submitted with your Skill Passport! Recruiter will see your verified scores.');
+            } else {
+                alert(data.error || 'Failed to apply');
+            }
+        } catch (err) {
+            alert('Service unavailable');
+        }
+    };
 
     const toggleBookmark = (id) => {
         setBookmarks(prev => prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]);

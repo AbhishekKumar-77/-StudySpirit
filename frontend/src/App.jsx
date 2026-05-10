@@ -36,6 +36,7 @@ const CodeSpiritCreator = lazy(() => import('./pages/CodeSpiritCreator'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const RecruiterDashboard = lazy(() => import('./pages/RecruiterDashboard'));
 const PublicProfile = lazy(() => import('./pages/PublicProfile'));
+const BadgeVerificationPage = lazy(() => import('./pages/BadgeVerificationPage'));
 
 // ============== GAMING LOADING SCREEN ==============
 const PageLoader = () => (
@@ -136,6 +137,7 @@ function App() {
               <Route path="/codespirit-creator" element={<CodeSpiritCreator />} />
               <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
               <Route path="/profile/:id" element={<PublicProfile />} />
+              <Route path="/verify/badge/:code" element={<BadgeVerificationPage />} />
             </Routes>
           </Suspense>
         </Router>
