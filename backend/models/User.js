@@ -253,7 +253,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Auto-award badges based on milestones
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function() {
     const user = this;
     if (!user.badges) user.badges = [];
     
@@ -280,7 +280,6 @@ userSchema.pre('save', function(next) {
         if (user.stats.streak >= 30) awardBadge('Iron Will', '🛡️', 'Maintained a 30-day study streak.');
     }
 
-    next();
 });
 
 module.exports = mongoose.model('User', userSchema);
