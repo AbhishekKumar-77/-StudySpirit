@@ -8,7 +8,7 @@ import NotificationBell from '../components/NotificationBell';
 import confetti from 'canvas-confetti';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
-    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck, History, Map
+    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck, History, Map, Share2, Award, Copy
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -22,6 +22,14 @@ export default function Dashboard() {
     const [rewardClaimed, setRewardClaimed] = useState(false);
     const [todayMission, setTodayMission] = useState(null);
     const [recentPages, setRecentPages] = useState([]);
+    const [copied, setCopied] = useState(false);
+
+    const copyProfileLink = () => {
+        const link = `${window.location.origin}/profile/${user?._id}`;
+        navigator.clipboard.writeText(link);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     useEffect(() => {
         setRecentPages(getRecentPages());
@@ -330,6 +338,44 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+
+                {/* Skill Passport Share Section */}
+                <div className="profile-share-card">
+                    <div className="ps-content">
+                        <div className="ps-icon"><Shield size={24} color="#6366f1" /></div>
+                        <div className="ps-info">
+                            <h3>Your Skill Passport is Active</h3>
+                            <p>Recruiters can now see your verified scores and streak.</p>
+                        </div>
+                    </div>
+                    <div className="ps-actions">
+                        <button className="btn-outline" onClick={() => navigate(`/profile/${user?._id}`)}>
+                            <Eye size={16} /> View
+                        </button>
+                        <button className="btn-primary" onClick={copyProfileLink}>
+                            {copied ? <CheckCircle size={16} /> : <Share2 size={16} />}
+                            {copied ? 'Copied!' : 'Share Link'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Badges Section */}
+                {user?.badges?.length > 0 && (
+                    <div className="badges-section">
+                        <div className="badges-header">
+                            <h3><Award size={18} className="text-primary" /> Your Milestones</h3>
+                            <span className="badge-count">{user.badges.length} Unlocked</span>
+                        </div>
+                        <div className="badges-row">
+                            {user.badges.map((badge, i) => (
+                                <div key={i} className="badge-item" title={badge.description}>
+                                    <span className="badge-icon">{badge.icon}</span>
+                                    <span className="badge-name">{badge.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Quick Stats Cards */}
                 <div className="quick-stats-container">

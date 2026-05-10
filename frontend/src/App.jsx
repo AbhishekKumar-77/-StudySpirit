@@ -34,6 +34,8 @@ const TeacherCodeSpirit = lazy(() => import('./pages/TeacherCodeSpirit'));
 const TeacherInterview = lazy(() => import('./pages/TeacherInterview'));
 const CodeSpiritCreator = lazy(() => import('./pages/CodeSpiritCreator'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
+const RecruiterDashboard = lazy(() => import('./pages/RecruiterDashboard'));
+const PublicProfile = lazy(() => import('./pages/PublicProfile'));
 
 // ============== GAMING LOADING SCREEN ==============
 const PageLoader = () => (
@@ -132,6 +134,8 @@ function App() {
               <Route path="/teacher-codespirit" element={<TeacherCodeSpirit />} />
               <Route path="/teacher-interview" element={<TeacherInterview />} />
               <Route path="/codespirit-creator" element={<CodeSpiritCreator />} />
+              <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
+              <Route path="/profile/:id" element={<PublicProfile />} />
             </Routes>
           </Suspense>
         </Router>

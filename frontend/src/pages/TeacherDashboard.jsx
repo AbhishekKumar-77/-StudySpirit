@@ -7,7 +7,7 @@ import {
     BookOpen, FileQuestion, Trophy, Users, BarChart2, LogOut,
     PlusCircle, Clock, CheckCircle, Copy, Eye, Target,
     ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X, Trash2, Download,
-    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft, BarChart, TrendingDown, TrendingUp
+    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft, BarChart, TrendingDown, TrendingUp, Megaphone, School
 } from 'lucide-react';
 
 export default function TeacherDashboard() {
@@ -236,6 +236,8 @@ export default function TeacherDashboard() {
         { id: 'analytics', label: 'Q-Analytics', icon: BarChart },
         { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+        { id: 'classrooms', label: 'Classrooms', icon: School },
+        { id: 'announcements', label: 'Announcements', icon: Megaphone },
     ];
 
     return (
@@ -444,6 +446,132 @@ export default function TeacherDashboard() {
                         setAnalyticsQuiz={setAnalyticsQuiz}
                     />
                 )}
+
+                {/* ── CLASSROOMS ── */}
+                {activeTab === 'classrooms' && <ClassroomSection />}
+
+                {/* ── ANNOUNCEMENTS ── */}
+                {activeTab === 'announcements' && <AnnouncementSection />}
+            </div>
+        </div>
+    );
+}
+
+// ── Classroom Section ──────────────────────────────────────────
+function ClassroomSection() {
+    const [classrooms, setClassrooms] = useState([]);
+    const [name, setName] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => { fetchClassrooms(); }, []);
+
+    const fetchClassrooms = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) setClassrooms(data.classrooms);
+        } catch (e) { console.error(e); }
+        setLoading(false);
+    };
+
+    const createClassroom = async () => {
+        if (!name) return;
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setName('');
+                fetchClassrooms();
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
+                <h3 className="font-black mb-4">Create New Batch</h3>
+                <div className="flex gap-4">
+                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Batch Name e.g. CS-2024-B" className="flex-1 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none" />
+                    <button onClick={createClassroom} className="px-6 py-3 bg-violet-600 text-white font-bold rounded-xl">Create</button>
+                </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {classrooms.map(c => (
+                    <div key={c._id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
+                        <h4 className="font-bold text-lg">{c.name}</h4>
+                        <div className="mt-2 text-sm text-[var(--text-secondary)]">Join Code: <span className="font-mono font-bold text-violet-500">{c.code}</span></div>
+                        <div className="mt-4 flex justify-between text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                            <span>{c.students?.length || 0} Students</span>
+                            <span>{c.assignments?.length || 0} Assignments</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// ── Announcement Section ──────────────────────────────────────────
+function AnnouncementSection() {
+    const [announcements, setAnnouncements] = useState([]);
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => { fetchAnnouncements(); }, []);
+
+    const fetchAnnouncements = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/teacher/announcement`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) setAnnouncements(data.announcements);
+        } catch (e) { console.error(e); }
+        setLoading(false);
+    };
+
+    const postAnnouncement = async () => {
+        if (!title || !content) return;
+        try {
+            const res = await fetch(`${API_BASE}/teacher/announcement`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setTitle(''); setContent('');
+                fetchAnnouncements();
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
+                <h3 className="font-black mb-4">Broadcast New Announcement</h3>
+                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="w-full mb-3 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none" />
+                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="What's happening?" className="w-full mb-3 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none min-h-[100px]" />
+                <button onClick={postAnnouncement} className="w-full py-3 bg-violet-600 text-white font-bold rounded-xl">Broadcast to All Batches</button>
+            </div>
+            <div className="space-y-4">
+                {announcements.map(a => (
+                    <div key={a._id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
+                        <div className="flex items-center gap-2 text-violet-500 font-bold text-xs uppercase tracking-widest mb-1">
+                            <Megaphone size={14} /> Global Announcement
+                        </div>
+                        <h4 className="font-bold text-lg mb-2">{a.title}</h4>
+                        <p className="text-[var(--text-secondary)] text-sm">{a.content}</p>
+                        <div className="mt-4 text-[var(--text-muted)] text-xs">{new Date(a.createdAt).toLocaleString()}</div>
+                    </div>
+                ))}
             </div>
         </div>
     );
