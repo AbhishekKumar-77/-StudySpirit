@@ -1,10 +1,27 @@
 const JobListing = require('../models/JobListing');
 const CareerProfile = require('../models/CareerProfile');
 
-// In-memory cache
-let cachedJobs = [];
-let cacheTimestamp = 0;
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+const { createClient } = require('redis');
+
+// Initialize Redis Client
+const redisClient = createClient({
+    url: process.env.REDIS_URI || 'redis://localhost:6379'
+});
+
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+// Only connect if we want to use Redis. If it fails, we fall back to a local map.
+let useRedis = false;
+redisClient.connect().then(() => {
+    useRedis = true;
+    console.log('✅ Connected to Redis for Career Jobs Cache');
+}).catch(err => {
+    console.warn('⚠️ Redis not running or configured. Falling back to in-memory cache.');
+});
+
+// Fallback in-memory cache if Redis is down
+let fallbackCache = { jobs: [], timestamp: 0 };
+const CACHE_DURATION_SEC = 30 * 60; // 30 minutes in seconds
 
 // ──────────────────────────────────────────
 // 1. Remotive API — Free, no key needed
@@ -344,16 +361,37 @@ function formatPostedDate(dateStr) {
 exports.getJobs = async (req, res) => {
     try {
         const { forceRefresh } = req.query;
-        const now = Date.now();
+        const now = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
 
-        // Serve from cache if fresh
-        if (cachedJobs.length > 0 && (now - cacheTimestamp) < CACHE_DURATION && !forceRefresh) {
-            console.log('📦 Serving cached jobs:', cachedJobs.length);
+        let cachedApiJobs = [];
+        let isCached = false;
+
+        if (!forceRefresh) {
+            if (useRedis) {
+                try {
+                    const data = await redisClient.get('career_jobs_cache');
+                    if (data) {
+                        cachedApiJobs = JSON.parse(data);
+                        isCached = true;
+                    }
+                } catch (err) {
+                    console.error('Redis GET error:', err);
+                }
+            } else {
+                if (fallbackCache.jobs.length > 0 && (now - fallbackCache.timestamp) < CACHE_DURATION_SEC) {
+                    cachedApiJobs = fallbackCache.jobs;
+                    isCached = true;
+                }
+            }
+        }
+
+        if (isCached) {
+            console.log('📦 Serving cached jobs:', cachedApiJobs.length);
             const dbJobs = await JobListing.find().sort({ createdAt: -1 }).lean();
             return res.status(200).json({
                 success: true,
-                count: dbJobs.length + cachedJobs.length,
-                data: [...dbJobs, ...cachedJobs],
+                count: dbJobs.length + cachedApiJobs.length,
+                data: [...dbJobs, ...cachedApiJobs],
                 sources: ['cache', 'database'],
                 cached: true
             });
@@ -397,8 +435,17 @@ exports.getJobs = async (req, res) => {
         const allJobs = [...db, ...apiJobs, ...curated];
 
         // Cache API results
-        cachedJobs = [...apiJobs, ...curated];
-        cacheTimestamp = now;
+        const cachePayload = [...apiJobs, ...curated];
+        if (useRedis) {
+            try {
+                await redisClient.setEx('career_jobs_cache', CACHE_DURATION_SEC, JSON.stringify(cachePayload));
+            } catch (err) {
+                console.error('Redis SET error:', err);
+            }
+        } else {
+            fallbackCache.jobs = cachePayload;
+            fallbackCache.timestamp = now;
+        }
 
         const activeSources = [...new Set(allJobs.map(j => j.source).filter(Boolean))];
 
@@ -428,7 +475,11 @@ exports.addJob = async (req, res) => {
             logo: `https://logo.clearbit.com/${company.toLowerCase().replace(/\s/g, '')}.com`
         });
         await newJob.save();
-        cacheTimestamp = 0; // Invalidate cache
+        
+        // Only API jobs are cached, DB jobs are fetched fresh.
+        // So we don't strictly need to invalidate the cache, but let's clear it just in case.
+        if (useRedis) await redisClient.del('career_jobs_cache');
+        else fallbackCache = { jobs: [], timestamp: 0 };
         res.status(201).json({ success: true, data: newJob });
     } catch (error) {
         console.error('Error adding job:', error);
@@ -444,7 +495,7 @@ exports.addJob = async (req, res) => {
 exports.analyzeMatch = async (req, res) => {
     try {
         const { userSkills, jobTitle, jobDescription, jobTags } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
         if (!jobTitle) return res.status(400).json({ message: 'Job details required.' });
@@ -513,7 +564,7 @@ Return ONLY a JSON object like this:
 exports.generateCoverLetter = async (req, res) => {
     try {
         const { userName, userSkills, jobTitle, company, jobDescription, jobTags } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
         if (!GROQ_API_KEY) return res.status(500).json({ message: 'AI service not configured.' });
         if (!jobTitle || !company) return res.status(400).json({ message: 'Job title and company required.' });

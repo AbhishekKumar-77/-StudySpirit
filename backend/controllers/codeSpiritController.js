@@ -1,7 +1,7 @@
 const CodeSession = require('../models/CodeSession');
 const User = require('../models/User');
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY_CODESPIRIT || process.env.GROQ_API_KEY || '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';
+const GROQ_API_KEY = process.env.GROQ_API_KEY_CODESPIRIT || process.env.GROQ_API_KEY;
 
 // ============== WANDBOX API FOR REAL CODE EXECUTION ==============
 const WANDBOX_API = 'https://wandbox.org/api/compile.json';

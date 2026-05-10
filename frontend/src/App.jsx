@@ -100,6 +100,27 @@ function OnboardingGuard({ children }) {
   return children;
 }
 
+// Guard: role-based access control
+function RoleGuard({ children, allowedRoles }) {
+  const { user, loading } = useApp();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!loading && user && !allowedRoles.includes(user.role)) {
+      // Redirect based on their actual role
+      if (user.role === 'teacher') navigate('/teacher-dashboard', { replace: true });
+      else if (user.role === 'recruiter') navigate('/recruiter-dashboard', { replace: true });
+      else navigate('/dashboard', { replace: true });
+    }
+  }, [user, loading, navigate, allowedRoles]);
+
+  if (loading || (user && !allowedRoles.includes(user.role))) {
+      return <PageLoader />;
+  }
+
+  return children;
+}
+
 function App() {
   return (
     <AppProvider>
@@ -129,13 +150,13 @@ function App() {
               <Route path="/soft-skills" element={<SoftSkills />} />
               <Route path="/exams" element={<Exams />} />
               <Route path="/code-editor" element={<CodeEditor />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/teacher-toolkit" element={<TeacherToolkit />} />
-              <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-              <Route path="/teacher-codespirit" element={<TeacherCodeSpirit />} />
-              <Route path="/teacher-interview" element={<TeacherInterview />} />
-              <Route path="/codespirit-creator" element={<CodeSpiritCreator />} />
-              <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
+              <Route path="/admin" element={<RoleGuard allowedRoles={['admin']}><AdminPanel /></RoleGuard>} />
+              <Route path="/teacher-toolkit" element={<RoleGuard allowedRoles={['teacher', 'admin']}><TeacherToolkit /></RoleGuard>} />
+              <Route path="/teacher-dashboard" element={<RoleGuard allowedRoles={['teacher', 'admin']}><TeacherDashboard /></RoleGuard>} />
+              <Route path="/teacher-codespirit" element={<RoleGuard allowedRoles={['teacher', 'admin']}><TeacherCodeSpirit /></RoleGuard>} />
+              <Route path="/teacher-interview" element={<RoleGuard allowedRoles={['teacher', 'admin']}><TeacherInterview /></RoleGuard>} />
+              <Route path="/codespirit-creator" element={<RoleGuard allowedRoles={['teacher', 'admin']}><CodeSpiritCreator /></RoleGuard>} />
+              <Route path="/recruiter-dashboard" element={<RoleGuard allowedRoles={['recruiter', 'admin']}><RecruiterDashboard /></RoleGuard>} />
               <Route path="/profile/:id" element={<PublicProfile />} />
               <Route path="/verify/badge/:code" element={<BadgeVerificationPage />} />
             </Routes>

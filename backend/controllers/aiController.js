@@ -225,7 +225,7 @@ exports.interviewWithAI = async (req, res) => {
 exports.endInterview = async (req, res) => {
     try {
         const { sessionId, lastAnswer, lastQuestion, lastQuestionNumber } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
         if (!sessionId) return res.status(400).json({ message: "Session ID is required" });
         const session = await InterviewSession.findById(sessionId);
@@ -580,7 +580,7 @@ Return ONLY valid JSON:
 
 exports.checkATSScore = async (req, res) => {
     try {
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
         const { jobDescription } = req.body;
 
         if (!GROQ_API_KEY) return res.status(500).json({ message: "Groq API Key missing" });

@@ -280,6 +280,17 @@ userSchema.pre('save', function() {
         if (user.stats.streak >= 30) awardBadge('Iron Will', '🛡️', 'Maintained a 30-day study streak.');
     }
 
+    // 🔴 Prevent MongoDB Document Bloat (16MB Limit) by capping array sizes
+    if (user.chatHistory && user.chatHistory.length > 50) user.chatHistory = user.chatHistory.slice(-50);
+    if (user.activityLog && user.activityLog.length > 365) user.activityLog = user.activityLog.slice(-365);
+    if (user.studySessions && user.studySessions.length > 100) user.studySessions = user.studySessions.slice(-100);
+    if (user.tasks && user.tasks.length > 100) user.tasks = user.tasks.slice(-100);
+    if (user.notifications && user.notifications.length > 100) user.notifications = user.notifications.slice(-100);
+    if (user.contestReminders && user.contestReminders.length > 50) user.contestReminders = user.contestReminders.slice(-50);
+
 });
+
+userSchema.index({ email: 1 });
+userSchema.index({ 'stats.xp': -1 }); // For leaderboard
 
 module.exports = mongoose.model('User', userSchema);

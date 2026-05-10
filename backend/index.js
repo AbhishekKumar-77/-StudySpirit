@@ -121,9 +121,7 @@ mongoose.set('strictQuery', false);
 mongoose.connect(process.env.MONGODB_URI, {
     serverSelectionTimeoutMS: 5000,
     tls: true,
-    tlsAllowInvalidCertificates: true,
-    tlsAllowInvalidHostnames: true,
-    // Connection pool for handling many concurrent users
+    // Secure production settings - invalid cert bypass removed
     maxPoolSize: 100, // Supports ~10000 concurrent DB operations
     minPoolSize: 10,
     socketTimeoutMS: 45000,

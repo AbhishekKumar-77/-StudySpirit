@@ -43,4 +43,6 @@ const quizSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+quizSchema.index({ code: 1 });
+
 module.exports = mongoose.model('Quiz', quizSchema);

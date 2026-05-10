@@ -207,7 +207,7 @@ exports.getReverseMatch = async (req, res) => {
         const profiles = await CareerProfile.find({ isPublic: true })
             .populate('user', 'name email university course stats');
 
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY || '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';
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
 
         const candidatesData = profiles.map(p => ({
             id: p.user._id,

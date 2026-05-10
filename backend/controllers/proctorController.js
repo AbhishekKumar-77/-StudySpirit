@@ -1,12 +1,19 @@
 const DeviceFingerprint = require('../models/DeviceFingerprint');
 const ProctorSession = require('../models/ProctorSession');
 
+const SECURE_BROWSER_TOKEN = process.env.SECURE_BROWSER_TOKEN;
+
 // Middleware to verify StudySpirit Browser Header
 exports.verifySecureBrowser = (req, res, next) => {
     const isBrowser = req.headers['x-studyspirit-browser'];
     const token = req.headers['x-studyspirit-token'];
 
-    if (!isBrowser || token !== 'SSB-2024-SECURE-TOKEN-XK9P2M7Q4N') {
+    if (!SECURE_BROWSER_TOKEN) {
+        console.warn('⚠️  SECURE_BROWSER_TOKEN env var not set — proctor verification disabled!');
+        return next(); // Soft fail in dev if not configured
+    }
+
+    if (!isBrowser || token !== SECURE_BROWSER_TOKEN) {
         return res.status(403).json({ success: false, message: 'Forbidden: Requests must originate from StudySpirit Secure Browser.' });
     }
     next();
