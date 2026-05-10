@@ -96,6 +96,16 @@ export default function Landing() {
             glow: 'rgba(124,58,237,0.2)',
             borderHover: 'rgba(124,58,237,0.5)',
         },
+        {
+            role: 'recruiter',
+            emoji: '💼',
+            title: 'I\'m a Recruiter',
+            subtitle: 'Hire top talent with verified Skill Passports',
+            features: ['AI Reverse Matching', 'Verified Skill Badges', 'Campus Drive Management', 'One-Click Apply Pipeline'],
+            color: '#06b6d4',
+            glow: 'rgba(6,182,212,0.2)',
+            borderHover: 'rgba(6,182,212,0.5)',
+        },
     ];
 
     return (
@@ -132,7 +142,11 @@ export default function Landing() {
                         <button
                             onClick={() => navigate('/login/teacher')}
                             style={{ padding: '10px 24px', borderRadius: 999, background: 'rgba(124,58,237,0.15)', border: `1px solid rgba(124,58,237,0.35)`, color: '#a78bfa', fontWeight: 700, fontSize: 13, letterSpacing: '0.12em', cursor: 'pointer', textTransform: 'uppercase', backdropFilter: 'blur(12px)', transition: 'all 0.3s ease' }}
-                        >Teacher Login</button>
+                        >Teacher</button>
+                        <button
+                            onClick={() => navigate('/login/recruiter')}
+                            style={{ padding: '10px 24px', borderRadius: 999, background: 'rgba(6,182,212,0.15)', border: `1px solid rgba(6,182,212,0.35)`, color: '#67e8f9', fontWeight: 700, fontSize: 13, letterSpacing: '0.12em', cursor: 'pointer', textTransform: 'uppercase', backdropFilter: 'blur(12px)', transition: 'all 0.3s ease' }}
+                        >Recruiter</button>
                     </div>
                 </nav>
 
@@ -238,6 +252,12 @@ export default function Landing() {
                             onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
                             onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
                         >Join as Teacher →</button>
+                        <button
+                            onClick={() => navigate('/login/recruiter')}
+                            style={{ padding: '18px 44px', borderRadius: 999, background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.35)', color: '#67e8f9', fontWeight: 700, fontSize: 15, letterSpacing: '0.08em', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+                        >Join as Recruiter →</button>
                     </div>
                 </div>
             </div>

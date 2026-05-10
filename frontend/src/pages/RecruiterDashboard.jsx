@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Users, Briefcase, Calendar, TrendingUp, Star, Filter, MapPin, GraduationCap, ArrowRight, Download, Eye, Save, Plus, Sparkles, BrainCircuit } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { API_URL } from '../config';
-import './Dashboard.css'; // Reuse some styles or add new ones
+import './RecruiterDashboard.css';
 
 const RecruiterDashboard = () => {
   const { user } = useApp();

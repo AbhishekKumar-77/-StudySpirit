@@ -8,7 +8,7 @@ import NotificationBell from '../components/NotificationBell';
 import confetti from 'canvas-confetti';
 import {
     BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
-    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck, History, Map, Share2, Award, Copy
+    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck, History, Map, Share2, Award, Copy, Eye
 } from 'lucide-react';
 import './Dashboard.css';
 

@@ -70,6 +70,7 @@ const Login = () => {
             loginUser({ ...data.user, role: finalRole });
             if (data.user.isAdmin) navigate('/admin');
             else if (finalRole === 'teacher') navigate('/teacher-dashboard');
+            else if (finalRole === 'recruiter') navigate('/recruiter-dashboard');
             else navigate('/dashboard');
         } catch (err) {
             setError(err.message || (isLogin ? 'Authentication failed' : 'Registration failed'));
