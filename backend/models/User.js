@@ -237,6 +237,15 @@ const userSchema = new mongoose.Schema({
         link: String,
         createdAt: { type: Date, default: Date.now }
     }],
+    recruiterProfile: {
+        companyName: String,
+        designation: String,
+        savedCandidates: [{
+            candidate: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            savedAt: { type: Date, default: Date.now },
+            notes: String
+        }]
+    },
     createdAt: {
         type: Date,
         default: Date.now

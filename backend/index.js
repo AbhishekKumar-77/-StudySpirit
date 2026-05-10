@@ -178,6 +178,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const interviewExamRoutes = require('./routes/interviewExamRoutes');
 const proctorRoutes = require('./routes/proctorRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
+const recruiterRoutes = require('./routes/recruiterRoutes');
 
 // Auth routes get stricter rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
@@ -204,6 +205,9 @@ app.use('/api/admin', adminRoutes);
 
 // Teacher portal API
 app.use('/api/teacher', teacherRoutes);
+
+// Recruiter portal API
+app.use('/api/recruiter', recruiterRoutes);
 
 // Interview Exam routes (Teacher AI Interview system)
 app.use('/api/interview-exam', interviewExamRoutes);
