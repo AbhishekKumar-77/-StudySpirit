@@ -6,7 +6,7 @@ import {
   Share2, Download, CheckCircle2, MessageCircle
 } from 'lucide-react';
 import { API_URL } from '../config';
-import './Dashboard.css';
+import './PublicProfile.css';
 
 const PublicProfile = () => {
   const { id } = useParams();
