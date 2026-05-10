@@ -25,6 +25,7 @@ router.get('/drives', auth, isRecruiter, recruiterController.getCampusDrives);
 
 // Post a Job / Internship
 router.post('/jobs', auth, isRecruiter, recruiterController.createJob);
+router.get('/my-jobs', auth, isRecruiter, recruiterController.getMyJobs);
 router.get('/jobs/:jobId/reverse-match', auth, isRecruiter, recruiterController.getReverseMatch);
 router.post('/jobs/apply', auth, recruiterController.applyToJob); // Open to students
 

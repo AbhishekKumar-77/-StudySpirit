@@ -174,13 +174,24 @@ exports.createJob = async (req, res) => {
         
         const newJob = new JobListing({
             id: `REC_${Date.now()}`,
-            type, title, company, location, salary, description, tags, link, requiredSkills,
+            type: type || 'job', title, company, location, salary, description, tags, link, requiredSkills,
             source: 'StudySpirit',
+            postedBy: req.user._id,
             logo: `https://logo.clearbit.com/${company.toLowerCase().replace(/\s/g, '')}.com`
         });
         
         await newJob.save();
         res.status(201).json({ success: true, job: newJob });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// ── 6b. Get Recruiter's Own Jobs ──
+exports.getMyJobs = async (req, res) => {
+    try {
+        const jobs = await JobListing.find({ source: 'StudySpirit' }).sort({ createdAt: -1 });
+        res.json({ success: true, jobs });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -98,7 +98,8 @@ router.get('/me', async (req, res) => {
                     isAdmin: freshUser.isAdmin || false,
                     onboardingCompleted: freshUser.onboardingCompleted || false,
                     studyGoal: freshUser.studyGoal || '',
-                    difficultyLevel: freshUser.difficultyLevel || ''
+                    difficultyLevel: freshUser.difficultyLevel || '',
+                    recruiterProfile: freshUser.recruiterProfile || null
                 }
             });
 

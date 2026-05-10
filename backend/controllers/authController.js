@@ -15,7 +15,7 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 exports.register = async (req, res) => {
     try {
-        const { name, email, password, role, university, course } = req.body;
+        const { name, email, password, role, university, course, companyName } = req.body;
 
         // Basic Email Validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,7 +38,8 @@ exports.register = async (req, res) => {
             role: role || 'student',
             university,
             course,
-            isVerified: true
+            isVerified: true,
+            recruiterProfile: role === 'recruiter' ? { companyName: companyName || '', savedCandidates: [] } : undefined
         });
 
         await user.save();
@@ -196,7 +197,8 @@ exports.login = async (req, res) => {
                     role: user.role,
                     isAdmin: user.isAdmin,
                     avatar: user.avatar,
-                    stats: user.stats
+                    stats: user.stats,
+                    recruiterProfile: user.recruiterProfile || null
                 }
             });
         });

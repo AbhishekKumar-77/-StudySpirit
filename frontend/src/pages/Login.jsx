@@ -17,6 +17,7 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [university, setUniversity] = useState('');
     const [course, setCourse] = useState('');
+    const [companyName, setCompanyName] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isLight, setIsLight] = useState(false);
@@ -59,7 +60,7 @@ const Login = () => {
             } else {
                 const userRole = role || 'student';
                 data = await import('../services/api').then(module =>
-                    module.register(name, email, password, userRole, university, course)
+                    module.register(name, email, password, userRole, university, course, companyName)
                 );
             }
 
@@ -172,23 +173,32 @@ const Login = () => {
                         </div>
                     </div>
 
-                    {!isLogin && (
+                    {!isLogin && role !== 'recruiter' && (
                         <>
                             <div className="input-group">
                                 <label>University / College</label>
                                 <input
                                     type="text" value={university} onChange={e => setUniversity(e.target.value)}
-                                    required={!isLogin} placeholder="Your institution"
+                                    required={!isLogin && role !== 'recruiter'} placeholder="Your institution"
                                 />
                             </div>
                             <div className="input-group">
                                 <label>Course / Major</label>
                                 <input
                                     type="text" value={course} onChange={e => setCourse(e.target.value)}
-                                    required={!isLogin} placeholder="e.g. Computer Science"
+                                    required={!isLogin && role !== 'recruiter'} placeholder="e.g. Computer Science"
                                 />
                             </div>
                         </>
+                    )}
+                    {!isLogin && role === 'recruiter' && (
+                        <div className="input-group">
+                            <label>Company Name</label>
+                            <input
+                                type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
+                                required placeholder="Your company name"
+                            />
+                        </div>
                     )}
 
                     <button type="submit" className="login-submit" disabled={isLoading}>
