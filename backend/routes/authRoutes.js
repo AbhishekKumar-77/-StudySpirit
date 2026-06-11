@@ -32,12 +32,16 @@ router.get('/google/callback',
             id: req.user._id,
             name: req.user.name,
             email: req.user.email,
-            role: req.user.role,
-            isAdmin: req.user.isAdmin,
+            role: req.user.isAdmin ? 'admin' : req.user.role,
+            isAdmin: req.user.isAdmin || false,
             avatar: req.user.avatar,
             stats: req.user.stats
         }));
-        const targetPath = req.user.role === 'teacher' ? '/teacher-dashboard' : req.user.role === 'recruiter' ? '/career' : '/dashboard';
+        // Admin check MUST come first
+        const targetPath = req.user.isAdmin ? '/admin'
+            : req.user.role === 'teacher' ? '/teacher-dashboard'
+            : req.user.role === 'recruiter' ? '/recruiter-dashboard'
+            : '/dashboard';
         res.redirect(`${FRONTEND_URL}${targetPath}?user=${userData}`);
     }
 );
@@ -52,13 +56,17 @@ router.get('/github/callback',
             id: req.user._id,
             name: req.user.name,
             email: req.user.email,
-            role: req.user.role,
-            isAdmin: req.user.isAdmin,
+            role: req.user.isAdmin ? 'admin' : req.user.role,
+            isAdmin: req.user.isAdmin || false,
             avatar: req.user.avatar,
             stats: req.user.stats,
             githubProfile: req.user.githubProfile
         }));
-        const targetPath = req.user.role === 'teacher' ? '/teacher-dashboard' : req.user.role === 'recruiter' ? '/career' : '/dashboard';
+        // Admin check MUST come first
+        const targetPath = req.user.isAdmin ? '/admin'
+            : req.user.role === 'teacher' ? '/teacher-dashboard'
+            : req.user.role === 'recruiter' ? '/recruiter-dashboard'
+            : '/dashboard';
         res.redirect(`${FRONTEND_URL}${targetPath}?user=${userData}`);
     }
 );

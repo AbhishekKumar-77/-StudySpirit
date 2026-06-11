@@ -12,12 +12,22 @@ export const AppProvider = ({ children }) => {
 
     // On app load: fetch real user from backend session (database)
     useEffect(() => {
+        const normalizeUser = (userData) => {
+            if (!userData) return null;
+            // Admins have isAdmin:true but role may be 'student'/'teacher' in DB
+            // Normalize to role:'admin' so RoleGuard works correctly
+            if (userData.isAdmin === true) {
+                return { ...userData, role: 'admin' };
+            }
+            return userData;
+        };
+
         const fetchUser = async () => {
             try {
                 // Try to get user from backend session first (real database)
                 const response = await api.get('/auth/me');
                 if (response.data?.user) {
-                    const userData = response.data.user;
+                    const userData = normalizeUser(response.data.user);
                     setUser(userData);
                     localStorage.setItem('studySpiritUser', JSON.stringify(userData));
                 } else {
@@ -39,7 +49,7 @@ export const AppProvider = ({ children }) => {
         const storedUser = localStorage.getItem('studySpiritUser');
         if (storedUser && storedUser !== 'undefined') {
             try {
-                setUser(JSON.parse(storedUser));
+                setUser(normalizeUser(JSON.parse(storedUser)));
             } catch (err) {
                 localStorage.removeItem('studySpiritUser');
             }

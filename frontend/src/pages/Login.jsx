@@ -67,9 +67,12 @@ const Login = () => {
             if (data.token) {
                 localStorage.setItem('token', data.token);
             }
-            const finalRole = data.user?.role || role || 'student';
-            loginUser({ ...data.user, role: finalRole });
-            if (data.user.isAdmin) navigate('/admin');
+            // Normalize role: admin users have isAdmin:true in DB but role may be 'student'/'teacher'
+            const isAdmin = data.user?.isAdmin === true;
+            const finalRole = isAdmin ? 'admin' : (data.user?.role || role || 'student');
+            loginUser({ ...data.user, role: finalRole, isAdmin });
+            // Admin check MUST come first — before role checks
+            if (isAdmin) navigate('/admin');
             else if (finalRole === 'teacher') navigate('/teacher-dashboard');
             else if (finalRole === 'recruiter') navigate('/recruiter-dashboard');
             else navigate('/dashboard');
