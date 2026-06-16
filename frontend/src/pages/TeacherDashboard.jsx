@@ -7,7 +7,8 @@ import {
     BookOpen, FileQuestion, Trophy, Users, BarChart2, LogOut,
     PlusCircle, Clock, CheckCircle, Copy, Eye, Target,
     ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X, Trash2, Download,
-    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft, BarChart, TrendingDown, TrendingUp, Megaphone, School
+    ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft, BarChart, TrendingDown, TrendingUp, Megaphone, School,
+    Calendar, Video
 } from 'lucide-react';
 
 export default function TeacherDashboard() {
@@ -461,9 +462,31 @@ export default function TeacherDashboard() {
 function ClassroomSection() {
     const [classrooms, setClassrooms] = useState([]);
     const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
+    
+    // Drill-down states
+    const [selectedClassroom, setSelectedClassroom] = useState(null);
+    const [classroomDetails, setClassroomDetails] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [activeDetailTab, setActiveDetailTab] = useState('lectures');
+    
+    // Lectures tab states
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [lectureTitle, setLectureTitle] = useState('');
+    const [lectureDesc, setLectureDesc] = useState('');
+    const [lectureStart, setLectureStart] = useState('');
+    const [lectureDuration, setLectureDuration] = useState('60');
+    
+    // Announcements tab states
+    const [announcements, setAnnouncements] = useState([]);
+    const [announcementTitle, setAnnouncementTitle] = useState('');
+    const [announcementContent, setAnnouncementContent] = useState('');
+    const [announcementsLoading, setAnnouncementsLoading] = useState(false);
 
-    useEffect(() => { fetchClassrooms(); }, []);
+    useEffect(() => {
+        fetchClassrooms();
+    }, []);
 
     const fetchClassrooms = async () => {
         setLoading(true);
@@ -478,41 +501,586 @@ function ClassroomSection() {
     const createClassroom = async () => {
         if (!name) return;
         try {
+            const code = 'CL-' + Math.random().toString(36).substring(2, 8).toUpperCase();
             const res = await fetch(`${API_BASE}/teacher/classroom`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name }),
+                body: JSON.stringify({ name, description, code }),
                 credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {
                 setName('');
+                setDescription('');
                 fetchClassrooms();
             }
         } catch (e) { console.error(e); }
     };
 
-    return (
-        <div className="space-y-6">
-            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
-                <h3 className="font-black mb-4">Create New Batch</h3>
-                <div className="flex gap-4">
-                    <input value={name} onChange={e => setName(e.target.value)} placeholder="Batch Name e.g. CS-2024-B" className="flex-1 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none" />
-                    <button onClick={createClassroom} className="px-6 py-3 bg-violet-600 text-white font-bold rounded-xl">Create</button>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {classrooms.map(c => (
-                    <div key={c._id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6">
-                        <h4 className="font-bold text-lg">{c.name}</h4>
-                        <div className="mt-2 text-sm text-[var(--text-secondary)]">Join Code: <span className="font-mono font-bold text-violet-500">{c.code}</span></div>
-                        <div className="mt-4 flex justify-between text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                            <span>{c.students?.length || 0} Students</span>
-                            <span>{c.assignments?.length || 0} Assignments</span>
+    const fetchClassroomDetails = async (id) => {
+        setDetailLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/${id}`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) {
+                setClassroomDetails(data.classroom);
+                if (activeDetailTab === 'announcements') {
+                    fetchClassroomAnnouncements(id);
+                }
+            }
+        } catch (e) { console.error(e); }
+        setDetailLoading(false);
+    };
+
+    const fetchClassroomAnnouncements = async (classId) => {
+        setAnnouncementsLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/${classId}/announcements`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) setAnnouncements(data.announcements);
+        } catch (e) { console.error(e); }
+        setAnnouncementsLoading(false);
+    };
+
+    const handleSelectClassroom = (classroom) => {
+        setSelectedClassroom(classroom);
+        fetchClassroomDetails(classroom._id);
+    };
+
+    const handleBackToGrid = () => {
+        setSelectedClassroom(null);
+        setClassroomDetails(null);
+        fetchClassrooms();
+    };
+
+    // Lectures handlers
+    const handleScheduleLecture = async (e) => {
+        e.preventDefault();
+        if (!lectureTitle || !lectureStart) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/${selectedClassroom._id}/lecture`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: lectureTitle,
+                    description: lectureDesc,
+                    scheduledStart: lectureStart,
+                    duration: parseInt(lectureDuration) || 60
+                }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setLectureTitle('');
+                setLectureDesc('');
+                setLectureStart('');
+                setLectureDuration('60');
+                setShowScheduleModal(false);
+                fetchClassroomDetails(selectedClassroom._id);
+            }
+        } catch (error) { console.error(error); }
+    };
+
+    const handleDeleteLecture = async (lectureId) => {
+        if (!window.confirm("Are you sure you want to delete this lecture?")) return;
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/${selectedClassroom._id}/lecture/${lectureId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchClassroomDetails(selectedClassroom._id);
+            }
+        } catch (error) { console.error(error); }
+    };
+
+    const handleStartLecture = async (lectureId) => {
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/${selectedClassroom._id}/lecture/${lectureId}/start`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchClassroomDetails(selectedClassroom._id);
+                window.open(`/group-mode?roomId=${data.liveRoomId}`, '_blank');
+            }
+        } catch (error) { console.error(error); }
+    };
+
+    const handleStopLecture = async (lectureId) => {
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/${selectedClassroom._id}/lecture/${lectureId}/stop`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                fetchClassroomDetails(selectedClassroom._id);
+            }
+        } catch (error) { console.error(error); }
+    };
+
+    // Announcements handlers
+    const handlePostAnnouncement = async (e) => {
+        e.preventDefault();
+        if (!announcementTitle || !announcementContent) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/teacher/announcement`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: announcementTitle,
+                    content: announcementContent,
+                    classroomId: selectedClassroom._id
+                }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setAnnouncementTitle('');
+                setAnnouncementContent('');
+                fetchClassroomAnnouncements(selectedClassroom._id);
+            }
+        } catch (error) { console.error(error); }
+    };
+
+    const handleTabChange = (tab) => {
+        setActiveDetailTab(tab);
+        if (tab === 'announcements' && selectedClassroom) {
+            fetchClassroomAnnouncements(selectedClassroom._id);
+        }
+    };
+
+    const copyInviteCode = (code) => {
+        navigator.clipboard.writeText(code);
+        alert(`Class code "${code}" copied to clipboard!`);
+    };
+
+    const copyStudentLink = (liveRoomId) => {
+        const joinLink = `${window.location.origin}/group-mode?roomId=${liveRoomId}`;
+        navigator.clipboard.writeText(joinLink);
+        alert(`Student Invite Link copied to clipboard:\n${joinLink}`);
+    };
+
+    // If detail view is active, render detailed dashboard
+    if (selectedClassroom) {
+        const details = classroomDetails || selectedClassroom;
+        const studentsList = details.students || [];
+        const lecturesList = details.lectures || [];
+
+        return (
+            <div className="space-y-6">
+                {/* Detail Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 shadow-lg animate-fade-in">
+                    <div className="space-y-1">
+                        <button onClick={handleBackToGrid} className="flex items-center gap-2 text-sm font-bold text-violet-500 hover:text-violet-600 transition-colors mb-2">
+                            <ArrowLeft size={16} /> Back to Batches
+                        </button>
+                        <h2 className="text-2xl font-black text-[var(--text-primary)]">{details.name}</h2>
+                        {details.description && <p className="text-[var(--text-secondary)] text-sm">{details.description}</p>}
+                        <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
+                            <span className="bg-violet-500/10 text-violet-500 border border-violet-500/20 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5">
+                                Join Code: <span className="font-mono">{details.code}</span>
+                                <button onClick={() => copyInviteCode(details.code)} className="hover:text-violet-600 transition-colors"><Copy size={12} /></button>
+                            </span>
+                            <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2.5 py-1 rounded-lg font-bold">
+                                {studentsList.length} Students Enrolled
+                            </span>
+                            <span className="bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 px-2.5 py-1 rounded-lg font-bold">
+                                {lecturesList.length} Scheduled Lectures
+                            </span>
                         </div>
                     </div>
-                ))}
+                </div>
+
+                {/* Sub-tab Switcher */}
+                <div className="flex border-b border-[var(--border-color)]">
+                    {[
+                        { id: 'lectures', label: '📅 Lectures & Live Classes' },
+                        { id: 'students', label: '🎓 Enrolled Students' },
+                        { id: 'announcements', label: '📢 Batch Announcements' }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabChange(tab.id)}
+                            className={`px-6 py-3 font-bold text-sm border-b-2 transition-all ${
+                                activeDetailTab === tab.id
+                                    ? 'border-violet-500 text-violet-500 font-extrabold'
+                                    : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+
+                {detailLoading ? (
+                    <div className="text-center py-12 text-[var(--text-muted)]">Loading batch details...</div>
+                ) : (
+                    <div className="space-y-6">
+                        {/* ── LECTURES TAB ── */}
+                        {activeDetailTab === 'lectures' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="font-black text-lg text-[var(--text-primary)]">Lecture Schedule</h3>
+                                    <button
+                                        onClick={() => setShowScheduleModal(true)}
+                                        className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl text-sm shadow-md hover:scale-[1.02] transition-all"
+                                    >
+                                        <PlusCircle size={16} /> Schedule Class
+                                    </button>
+                                </div>
+
+                                {/* Schedule Modal */}
+                                {showScheduleModal && (
+                                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+                                        <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl w-full max-w-md p-6 relative shadow-2xl">
+                                            <button
+                                                onClick={() => setShowScheduleModal(false)}
+                                                className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                            >
+                                                <X size={18} />
+                                            </button>
+                                            <h3 className="text-lg font-black mb-4 text-[var(--text-primary)]">Schedule Live Class</h3>
+                                            <form onSubmit={handleScheduleLecture} className="space-y-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-bold text-[var(--text-secondary)] uppercase">Class Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={lectureTitle}
+                                                        onChange={e => setLectureTitle(e.target.value)}
+                                                        placeholder="e.g. Intro to Dynamic Programming"
+                                                        className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-bold text-[var(--text-secondary)] uppercase">Description (Optional)</label>
+                                                    <textarea
+                                                        value={lectureDesc}
+                                                        onChange={e => setLectureDesc(e.target.value)}
+                                                        placeholder="What topics will be covered..."
+                                                        className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm min-h-[80px] text-[var(--text-primary)]"
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1">
+                                                        <label className="text-xs font-bold text-[var(--text-secondary)] uppercase">Start Date & Time</label>
+                                                        <input
+                                                            type="datetime-local"
+                                                            value={lectureStart}
+                                                            onChange={e => setLectureStart(e.target.value)}
+                                                            className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <label className="text-xs font-bold text-[var(--text-secondary)] uppercase">Duration (mins)</label>
+                                                        <select
+                                                            value={lectureDuration}
+                                                            onChange={e => setLectureDuration(e.target.value)}
+                                                            className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
+                                                        >
+                                                            <option value="30">30 mins</option>
+                                                            <option value="45">45 mins</option>
+                                                            <option value="60">60 mins</option>
+                                                            <option value="90">90 mins</option>
+                                                            <option value="120">120 mins</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="submit"
+                                                    className="w-full py-3 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl text-sm mt-2"
+                                                >
+                                                    Confirm Schedule
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Lectures List */}
+                                {lecturesList.length === 0 ? (
+                                    <div className="bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl p-12 text-center">
+                                        <Calendar size={48} className="mx-auto mb-3 text-[var(--text-muted)] opacity-50" />
+                                        <p className="text-[var(--text-muted)] mb-4">No classes scheduled yet for this batch.</p>
+                                        <button
+                                            onClick={() => setShowScheduleModal(true)}
+                                            className="px-5 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors"
+                                        >
+                                            Schedule Your First Lecture
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {lecturesList.map(lecture => (
+                                            <div
+                                                key={lecture._id}
+                                                className={`bg-[var(--bg-secondary)] border rounded-2xl p-5 relative group transition-all ${
+                                                    lecture.isLive
+                                                        ? 'border-red-500/50 shadow-md shadow-red-500/5 bg-gradient-to-br from-red-500/5 to-transparent'
+                                                        : 'border-[var(--border-color)] hover:border-violet-500/30'
+                                                }`}
+                                            >
+                                                {/* Delete button */}
+                                                <button
+                                                    onClick={() => handleDeleteLecture(lecture._id)}
+                                                    className="absolute top-4 right-4 p-1.5 bg-red-500/10 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="Delete Class"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+
+                                                <div className="pr-6 space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        {lecture.isLive ? (
+                                                            <span className="flex items-center gap-1.5 px-2.5 py-0.5 bg-red-500 text-white text-xs font-black rounded-lg uppercase tracking-wider animate-pulse">
+                                                                <span className="w-1.5 h-1.5 bg-white rounded-full" /> LIVE NOW
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-2.5 py-0.5 bg-[var(--border-color)] text-[var(--text-secondary)] text-xs font-bold rounded-lg uppercase">
+                                                                Scheduled
+                                                            </span>
+                                                        )}
+                                                        <span className="text-xs text-[var(--text-muted)] font-semibold flex items-center gap-1">
+                                                            <Clock size={12} /> {lecture.duration} mins
+                                                        </span>
+                                                    </div>
+
+                                                    <h4 className="font-bold text-lg text-[var(--text-primary)] group-hover:text-violet-500 transition-colors">
+                                                        {lecture.title}
+                                                    </h4>
+                                                    {lecture.description && (
+                                                        <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
+                                                            {lecture.description}
+                                                        </p>
+                                                    )}
+
+                                                    <div className="text-xs text-[var(--text-muted)] pt-1 border-t border-[var(--border-color)]">
+                                                        🗓 {new Date(lecture.scheduledStart).toLocaleString()}
+                                                    </div>
+
+                                                    {/* Control Buttons */}
+                                                    <div className="flex flex-wrap gap-2 pt-2">
+                                                        {lecture.isLive ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => window.open(`/group-mode?roomId=${lecture.liveRoomId}`, '_blank')}
+                                                                    className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md"
+                                                                >
+                                                                    <Video size={14} /> Join stream
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleStopLecture(lecture._id)}
+                                                                    className="py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-xl text-xs transition-colors"
+                                                                >
+                                                                    End Class
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => copyStudentLink(lecture.liveRoomId)}
+                                                                    className="py-2 px-3 bg-violet-500/15 hover:bg-violet-500/25 text-violet-500 font-bold rounded-xl text-xs transition-colors"
+                                                                    title="Copy Join Link for Students"
+                                                                >
+                                                                    Invite
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleStartLecture(lecture._id)}
+                                                                className="flex-1 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+                                                            >
+                                                                <Radio size={14} /> Start Live Session
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── STUDENTS TAB ── */}
+                        {activeDetailTab === 'students' && (
+                            <div className="space-y-4">
+                                <h3 className="font-black text-lg text-[var(--text-primary)]">Enrolled Student Directory</h3>
+                                {studentsList.length === 0 ? (
+                                    <div className="bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl p-12 text-center text-[var(--text-muted)]">
+                                        No students have joined this batch yet. Invite them using code: <span className="font-mono font-bold text-violet-500">{details.code}</span>
+                                    </div>
+                                ) : (
+                                    <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl overflow-hidden shadow">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr className="bg-[var(--border-color)]/30 border-b border-[var(--border-color)] text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                                        <th className="p-4">Name</th>
+                                                        <th className="p-4">Email</th>
+                                                        <th className="p-4 text-center">Level</th>
+                                                        <th className="p-4 text-center">XP</th>
+                                                        <th className="p-4 text-center">Streak</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-[var(--border-color)]">
+                                                    {studentsList.map(student => (
+                                                        <tr key={student._id} className="hover:bg-[var(--border-color)]/10 transition-colors text-sm">
+                                                            <td className="p-4 flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-violet-500/10 flex items-center justify-center font-bold text-violet-500">
+                                                                    {student.avatar || student.name?.[0]?.toUpperCase() || 'S'}
+                                                                </div>
+                                                                <span className="font-semibold text-[var(--text-primary)]">{student.name}</span>
+                                                            </td>
+                                                            <td className="p-4 text-[var(--text-secondary)] font-medium">{student.email}</td>
+                                                            <td className="p-4 text-center font-bold text-indigo-500">Lv.{student.stats?.level || 1}</td>
+                                                            <td className="p-4 text-center text-cyan-600 dark:text-cyan-400 font-bold">{student.stats?.xp || 0}</td>
+                                                            <td className="p-4 text-center text-amber-500 font-black">🔥 {student.stats?.streak || 0}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── ANNOUNCEMENTS TAB ── */}
+                        {activeDetailTab === 'announcements' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Left pane: announcement compose */}
+                                <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 h-fit shadow">
+                                    <h3 className="font-black text-[var(--text-primary)] mb-4 flex items-center gap-1.5">
+                                        <Megaphone size={16} className="text-violet-500" /> Broadcast to Batch
+                                    </h3>
+                                    <form onSubmit={handlePostAnnouncement} className="space-y-4">
+                                        <input
+                                            value={announcementTitle}
+                                            onChange={e => setAnnouncementTitle(e.target.value)}
+                                            placeholder="Announcement Title"
+                                            className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
+                                            required
+                                        />
+                                        <textarea
+                                            value={announcementContent}
+                                            onChange={e => setAnnouncementContent(e.target.value)}
+                                            placeholder="Compose announcement..."
+                                            className="w-full p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm min-h-[120px] text-[var(--text-primary)]"
+                                            required
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-sm transition-colors"
+                                        >
+                                            Broadcast Announcement
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* Right pane: list of announcements */}
+                                <div className="lg:col-span-2 space-y-4">
+                                    <h3 className="font-black text-[var(--text-primary)] text-lg">Timeline</h3>
+                                    {announcementsLoading ? (
+                                        <div className="text-center py-8 text-[var(--text-muted)]">Loading announcements...</div>
+                                    ) : announcements.length === 0 ? (
+                                        <div className="bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl p-8 text-center text-[var(--text-muted)]">
+                                            No announcements posted to this batch yet.
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {announcements.map(ann => (
+                                                <div key={ann._id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 shadow-sm">
+                                                    <h4 className="font-bold text-[var(--text-primary)] text-base mb-1">{ann.title}</h4>
+                                                    <p className="text-[var(--text-secondary)] text-sm whitespace-pre-wrap">{ann.content}</p>
+                                                    <div className="mt-3 pt-2 border-t border-[var(--border-color)] flex justify-between text-[var(--text-muted)] text-xs">
+                                                        <span>By: {ann.teacher?.name || 'Instructor'}</span>
+                                                        <span>{new Date(ann.createdAt).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* Create Batch Card */}
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 shadow-md">
+                <h3 className="font-black text-lg mb-4 text-[var(--text-primary)]">Create New Batch</h3>
+                <div className="flex flex-col md:flex-row gap-3">
+                    <input
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Batch Name e.g. CS-2024-B"
+                        className="flex-1 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
+                    />
+                    <input
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                        placeholder="Batch Description e.g. Algorithms class"
+                        className="flex-[1.5] p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
+                    />
+                    <button
+                        onClick={createClassroom}
+                        className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-sm transition-colors"
+                    >
+                        Create
+                    </button>
+                </div>
+            </div>
+
+            {/* Grid of Classrooms */}
+            {loading ? (
+                <div className="text-center py-12 text-[var(--text-muted)]">Loading batches...</div>
+            ) : classrooms.length === 0 ? (
+                <div className="bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl p-12 text-center">
+                    <School size={48} className="mx-auto mb-3 text-[var(--text-muted)] opacity-50" />
+                    <p className="text-[var(--text-muted)] mb-4">You have not created any batches yet.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {classrooms.map(c => (
+                        <div
+                            key={c._id}
+                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 hover:border-violet-500/30 hover:shadow-lg transition-all flex flex-col justify-between"
+                        >
+                            <div className="space-y-2">
+                                <h4 className="font-black text-lg text-[var(--text-primary)]">{c.name}</h4>
+                                {c.description && <p className="text-xs text-[var(--text-secondary)] line-clamp-2">{c.description}</p>}
+                                <div className="flex items-center gap-1.5 pt-1 text-xs">
+                                    <span className="text-[var(--text-muted)] font-semibold">Join Code:</span>
+                                    <span className="font-mono font-black text-violet-500">{c.code}</span>
+                                    <button onClick={() => copyInviteCode(c.code)} className="text-[var(--text-muted)] hover:text-violet-500 transition-colors"><Copy size={12} /></button>
+                                </div>
+                            </div>
+                            <div className="mt-5 border-t border-[var(--border-color)] pt-4 flex items-center justify-between">
+                                <div className="flex gap-4 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                    <span>👥 {c.students?.length || 0} Students</span>
+                                    <span>🗓 {c.lectures?.length || 0} Lectures</span>
+                                </div>
+                                <button
+                                    onClick={() => handleSelectClassroom(c)}
+                                    className="px-3.5 py-1.5 bg-violet-500/10 hover:bg-violet-500 text-violet-500 hover:text-white rounded-lg text-xs font-bold transition-all"
+                                >
+                                    Manage
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

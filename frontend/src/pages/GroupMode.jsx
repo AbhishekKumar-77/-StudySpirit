@@ -18,7 +18,7 @@ import Whiteboard from '../components/Whiteboard';
 import { useApp } from '../context/AppContext';
 
 export default function GroupMode() {
-    const { user } = useApp();
+    const { user, loading: appLoading } = useApp();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [typingUsers, setTypingUsers] = useState([]);
@@ -131,6 +131,19 @@ export default function GroupMode() {
             setCurrentUserId(user._id);
         }
     }, [user]);
+
+    // Auto-join from URL roomId query param if present
+    useEffect(() => {
+        if (appLoading) return;
+        const params = new URLSearchParams(window.location.search);
+        const autoRoomId = params.get('roomId');
+        if (autoRoomId && !currentRoomId) {
+            console.log('🔗 URL query param roomId detected. Auto-joining:', autoRoomId);
+            setTimeout(() => {
+                joinStudyRoomWithWebRTC(autoRoomId);
+            }, 600);
+        }
+    }, [appLoading, user]);
 
 
     // Sample data (used as fallback when not connected to backend)

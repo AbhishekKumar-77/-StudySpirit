@@ -14,10 +14,20 @@ const isTeacher = (req, res, next) => {
 router.post('/classroom', auth, isTeacher, teacherController.createClassroom);
 router.post('/classroom/join', auth, teacherController.joinClassroom); // Students can hit this
 router.get('/classrooms', auth, teacherController.getClassrooms);
+router.get('/classroom', auth, teacherController.getClassrooms); // Fallback GET
+
+// Classroom Sub-Routes for Details, Lectures, Announcements
+router.get('/classroom/:classroomId', auth, isTeacher, teacherController.getClassroomDetails);
+router.post('/classroom/:classroomId/lecture', auth, isTeacher, teacherController.scheduleLecture);
+router.delete('/classroom/:classroomId/lecture/:lectureId', auth, isTeacher, teacherController.deleteLecture);
+router.post('/classroom/:classroomId/lecture/:lectureId/start', auth, isTeacher, teacherController.startLecture);
+router.post('/classroom/:classroomId/lecture/:lectureId/stop', auth, isTeacher, teacherController.stopLecture);
+router.get('/classroom/:classroomId/announcements', auth, teacherController.getClassroomAnnouncements);
 
 // Announcement Routes
 router.post('/announcement', auth, isTeacher, teacherController.createAnnouncement);
 router.get('/announcements', auth, teacherController.getAnnouncements);
+router.get('/announcement', auth, teacherController.getAnnouncements); // Fallback GET
 
 // AI Insight
 router.post('/quiz-insight', auth, isTeacher, teacherController.getQuizInsight);
