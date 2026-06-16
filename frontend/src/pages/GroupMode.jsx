@@ -86,7 +86,7 @@ export default function GroupMode() {
     const isHost = React.useMemo(() => {
         if (!liveRooms || !currentRoomId) return false;
         const currentRoom = liveRooms.find(r => r.id === currentRoomId || r._id === currentRoomId);
-        return currentRoom?.host === user?.name || currentRoom?.hostId === user?._id;
+        return currentRoom?.host === user?.name || currentRoom?.hostId === user?._id || user?.role === 'teacher';
     }, [liveRooms, currentRoomId, user]);
 
     // Spotlight and Whiteboard states
@@ -99,6 +99,7 @@ export default function GroupMode() {
     const [presenterName, setPresenterName] = useState(''); // Presenter's name
     const [isViewerFullscreen, setIsViewerFullscreen] = useState(false); // Am I a viewer seeing presenter's content
     const [presenterType, setPresenterType] = useState(null); // 'whiteboard' or 'screenshare'
+    const [isHandRaised, setIsHandRaised] = useState(false);
 
     // Challenge Management States
     const [showCreateChallengeModal, setShowCreateChallengeModal] = useState(false);
@@ -877,7 +878,7 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
             setIsWebRTCInitialized(true);
 
             // Join WebRTC room
-            webrtcService.joinRoom(roomId, currentUserId);
+            await webrtcService.joinRoom(roomId, currentUserId);
 
             // Listen for remote streams
             window.addEventListener('webrtc:remoteStream', handleRemoteStream);
@@ -1118,6 +1119,7 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
         setIsMicOn(false);
         setIsCameraOn(false);
         setIsScreenSharing(false);
+        setIsHandRaised(false);
 
         // Clean up presenter/viewer states
         setPresenterUserId(null);
@@ -1126,6 +1128,21 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
         setIsViewerFullscreen(false);
         setShowWhiteboard(false);
         setIsWhiteboardFullscreen(false);
+    };
+
+    // Toggle Hand Raise
+    const toggleRaiseHand = () => {
+        const socket = getSocket();
+        const newState = !isHandRaised;
+        setIsHandRaised(newState);
+
+        if (socket && currentRoomId) {
+            socket.emit('room:updateStatus', {
+                roomId: currentRoomId,
+                userId: currentUserId,
+                status: { handRaised: newState }
+            });
+        }
     };
 
     // Handle joining study room with WebRTC
@@ -2060,6 +2077,20 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         <Edit size={20} />
                                         Whiteboard
                                     </button>
+
+                                    {!isHost && (
+                                        <button
+                                            onClick={toggleRaiseHand}
+                                            disabled={!isWebRTCInitialized}
+                                            className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isHandRaised
+                                                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/30'
+                                                : 'bg-[var(--glass-bg)] border-cyan-500/30 text-[var(--text-primary)]'
+                                                } disabled:opacity-50`}
+                                        >
+                                            <Flame size={20} className={isHandRaised ? 'animate-bounce' : ''} />
+                                            {isHandRaised ? 'Lower Hand' : 'Raise Hand'}
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Group Pomodoro Timer */}
@@ -2213,7 +2244,14 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="text-sm text-[var(--text-primary)] font-semibold flex items-center justify-between">
-                                                        <span>{user.name || user.userName || 'Participant'}</span>
+                                                        <span className="flex items-center gap-1.5">
+                                                            {user.name || user.userName || 'Participant'}
+                                                            {user.handRaised && (
+                                                                <span className="text-amber-500 font-bold animate-bounce" title="Hand Raised">
+                                                                    ✋
+                                                                </span>
+                                                            )}
+                                                        </span>
                                                         {isHost && user.id !== currentUserId && (
                                                             <button 
                                                                 onClick={() => {

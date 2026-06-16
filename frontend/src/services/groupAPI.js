@@ -378,6 +378,18 @@ export const activityAPI = {
     }
 };
 
+const webrtcApiInstance = axios.create({
+    baseURL: `${API_BASE}/webrtc`,
+    withCredentials: true
+});
+
+export const webrtcAPI = {
+    getToken: async (roomName, userId, userName) => {
+        const response = await webrtcApiInstance.post('/token', { roomName, userId, userName });
+        return response.data;
+    }
+};
+
 export default {
     groupAPI,
     roomAPI,
@@ -385,6 +397,7 @@ export default {
     resourceAPI,
     messageAPI,
     activityAPI,
+    webrtcAPI,
     connectSocket,
     getSocket,
     disconnectSocket

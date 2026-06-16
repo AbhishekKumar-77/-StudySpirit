@@ -21,8 +21,12 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['student', 'teacher', 'recruiter'],
+        enum: ['student', 'teacher', 'recruiter', 'admin'],
         default: 'student'
+    },
+    institution: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Institution'
     },
     // Onboarding
     onboardingCompleted: {

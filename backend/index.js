@@ -177,6 +177,7 @@ const interviewExamRoutes = require('./routes/interviewExamRoutes');
 const proctorRoutes = require('./routes/proctorRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const recruiterRoutes = require('./routes/recruiterRoutes');
+const webrtcRoutes = require('./routes/webrtcRoutes');
 
 // Auth routes get stricter rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
@@ -212,6 +213,9 @@ app.use('/api/interview-exam', interviewExamRoutes);
 
 // Proctoring API for StudySpirit Secure Browser
 app.use('/api/proctor', proctorRoutes);
+
+// WebRTC LiveKit API
+app.use('/api/webrtc', webrtcRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

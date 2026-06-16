@@ -1,11 +1,11 @@
-import Peer from 'simple-peer';
-import { getSocket } from './groupAPI';
+import { Room, RoomEvent } from 'livekit-client';
+import { webrtcAPI } from './groupAPI';
 
 class WebRTCService {
     constructor() {
+        this.room = null;
         this.localStream = null;
         this.screenStream = null;
-        this.peers = new Map(); // Map of userId -> Peer instance
         this.currentRoomId = null;
         this.currentUserId = null;
     }
@@ -34,6 +34,11 @@ class WebRTCService {
                 track.enabled = enabled;
             });
         }
+        if (this.room && this.room.localParticipant) {
+            this.room.localParticipant.setMicrophoneEnabled(enabled).catch(err => {
+                console.error('Error toggling microphone in LiveKit:', err);
+            });
+        }
     }
 
     // Toggle camera
@@ -43,31 +48,33 @@ class WebRTCService {
                 track.enabled = enabled;
             });
         }
+        if (this.room && this.room.localParticipant) {
+            this.room.localParticipant.setCameraEnabled(enabled).catch(err => {
+                console.error('Error toggling camera in LiveKit:', err);
+            });
+        }
     }
 
     // Start screen sharing
     async startScreenShare() {
         try {
+            if (this.room && this.room.localParticipant) {
+                // Enable screen share track in LiveKit SFU
+                const screenShareTracks = await this.room.localParticipant.setScreenShareEnabled(true);
+                // Return a MediaStream from the track to keep return type contract intact
+                const track = screenShareTracks?.track;
+                if (track) {
+                    this.screenStream = new MediaStream([track.mediaStreamTrack]);
+                    return this.screenStream;
+                }
+            }
+
+            // Fallback for demo/unconfigured rooms
             const screenStream = await navigator.mediaDevices.getDisplayMedia({
-                video: {
-                    cursor: 'always'
-                },
+                video: { cursor: 'always' },
                 audio: false
             });
-
             this.screenStream = screenStream;
-
-            // Add screen stream to all peer connections instead of replacing
-            this.peers.forEach((peer) => {
-                peer.addStream(screenStream);
-            });
-
-            // Listen for screen share stop
-            const videoTrack = screenStream.getVideoTracks()[0];
-            videoTrack.onended = () => {
-                this.stopScreenShare();
-            };
-
             return screenStream;
         } catch (error) {
             console.error('Error starting screen share:', error);
@@ -77,241 +84,124 @@ class WebRTCService {
 
     // Stop screen sharing
     stopScreenShare() {
-        if (this.screenStream) {
-            this.peers.forEach((peer) => {
-                try {
-                    peer.removeStream(this.screenStream);
-                } catch (e) {
-                    console.error('Error removing screen stream:', e);
-                }
+        if (this.room && this.room.localParticipant) {
+            this.room.localParticipant.setScreenShareEnabled(false).catch(err => {
+                console.error('Error stopping screen share in LiveKit:', err);
             });
-
+        }
+        if (this.screenStream) {
             this.screenStream.getTracks().forEach(track => track.stop());
             this.screenStream = null;
         }
     }
 
-    // Join a room and set up WebRTC connections
-    joinRoom(roomId, userId) {
+    // Join a room and connect to LiveKit SFU
+    async joinRoom(roomId, userId) {
         this.currentRoomId = roomId;
         this.currentUserId = userId;
 
-        const socket = getSocket();
-        if (!socket) {
-            console.error('Socket not connected');
-            return;
-        }
+        try {
+            console.log(`🎥 LiveKit: Joining room ${roomId} (user: ${userId})`);
 
-        // Request to join room
-        socket.emit('webrtc:join', { roomId, userId });
+            // Fetch token from our backend API
+            const tokenRes = await webrtcAPI.getToken(roomId, userId, userId);
+            if (!tokenRes.success) {
+                throw new Error(tokenRes.message || 'Failed to generate token');
+            }
 
-        // Listen for existing users in the room
-        socket.on('webrtc:existingUsers', (userIds) => {
-            console.log('Existing users in room:', userIds);
-            // Create peer connections to existing users (we initiate)
-            userIds.forEach(existingUserId => {
-                if (existingUserId !== userId) {
-                    this.createPeer(existingUserId, true);
+            const { token, serverUrl, isMock } = tokenRes;
+
+            if (isMock) {
+                console.warn('⚠️ LiveKit credentials are not configured. Standard mock connections only.');
+                return;
+            }
+
+            // Create LiveKit Room
+            this.room = new Room({
+                adaptiveStream: true, // Optimizes bandwidth dynamically based on video tile size
+                dynacast: true       // Automatically pauses publishing when video is off-screen
+            });
+
+            // Track subscribed handler
+            this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+                if (track.kind === 'video' || track.kind === 'audio') {
+                    console.log(`📡 LiveKit: Subscribed to track (${track.kind}) from ${participant.identity}`);
+
+                    // Build a unified MediaStream for the participant (or reuse track stream)
+                    const stream = new MediaStream([track.mediaStreamTrack]);
+
+                    // Dispatch event matching the existing interface to update GroupMode.jsx UI
+                    const event = new CustomEvent('webrtc:remoteStream', {
+                        detail: { userId: participant.identity, stream }
+                    });
+                    window.dispatchEvent(event);
+
+                    const trackEvent = new CustomEvent('webrtc:remoteTrack', {
+                        detail: { userId: participant.identity, stream, track }
+                    });
+                    window.dispatchEvent(trackEvent);
                 }
             });
-        });
 
-        // Listen for new user joining
-        socket.on('webrtc:userJoined', (data) => {
-            console.log('New user joined:', data.userId);
-            if (data.userId !== userId) {
-                // Don't create peer yet, wait for them to send offer
-            }
-        });
+            // Track unsubscribed handler
+            this.room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+                console.log(`📡 LiveKit: Unsubscribed track (${track.kind}) from ${participant.identity}`);
+                // Trigger left event to clean up player
+                const event = new CustomEvent('webrtc:userLeft', {
+                    detail: { userId: participant.identity }
+                });
+                window.dispatchEvent(event);
+            });
 
-        // Listen for WebRTC offer
-        socket.on('webrtc:offer', async (data) => {
-            console.log('Received offer from:', data.from);
-            if (data.to === userId) {
-                this.handleOffer(data.from, data.offer);
-            }
-        });
+            // Participant connected/disconnected events
+            this.room.on(RoomEvent.ParticipantConnected, (participant) => {
+                console.log(`👤 Participant connected to SFU: ${participant.identity}`);
+            });
 
-        // Listen for WebRTC answer
-        socket.on('webrtc:answer', (data) => {
-            console.log('Received answer from:', data.from);
-            if (data.to === userId) {
-                this.handleAnswer(data.from, data.answer);
-            }
-        });
+            this.room.on(RoomEvent.ParticipantDisconnected, (participant) => {
+                console.log(`👤 Participant left SFU: ${participant.identity}`);
+                const event = new CustomEvent('webrtc:userLeft', {
+                    detail: { userId: participant.identity }
+                });
+                window.dispatchEvent(event);
+            });
 
-        // Listen for ICE candidate
-        socket.on('webrtc:iceCandidate', (data) => {
-            if (data.to === userId) {
-                this.handleIceCandidate(data.from, data.candidate);
-            }
-        });
+            // Connect to LiveKit server
+            await this.room.connect(serverUrl, token);
+            console.log('✅ Connected to LiveKit Room successfully!');
 
-        // Listen for user leaving
-        socket.on('webrtc:userLeft', (data) => {
-            console.log('User left:', data.userId);
-            this.removePeer(data.userId);
-        });
-    }
-
-    // Create a peer connection
-    createPeer(userId, initiator) {
-        console.log(`Creating peer for ${userId}, initiator: ${initiator}`);
-
-        const peer = new Peer({
-            initiator,
-            stream: this.localStream,
-            trickle: true,
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' },
-                    {
-                        urls: "turn:openrelay.metered.ca:80",
-                        username: "openrelayproject",
-                        credential: "openrelayproject"
-                    },
-                    {
-                        urls: "turn:openrelay.metered.ca:443",
-                        username: "openrelayproject",
-                        credential: "openrelayproject"
-                    },
-                    {
-                        urls: "turn:openrelay.metered.ca:443?transport=tcp",
-                        username: "openrelayproject",
-                        credential: "openrelayproject"
+            // If we have an existing localStream from initializeLocalMedia, publish those tracks
+            if (this.localStream) {
+                console.log('📡 LiveKit: Publishing existing media tracks...');
+                for (const track of this.localStream.getTracks()) {
+                    if (track.kind === 'video') {
+                        await this.room.localParticipant.publishTrack(track, { name: 'camera' });
+                    } else if (track.kind === 'audio') {
+                        await this.room.localParticipant.publishTrack(track, { name: 'microphone' });
                     }
-                ]
-            }
-        });
-
-        // Handle signals (offer/answer/ice candidates)
-        peer.on('signal', (signal) => {
-            const socket = getSocket();
-            if (signal.type === 'offer') {
-                socket.emit('webrtc:offer', {
-                    from: this.currentUserId,
-                    to: userId,
-                    offer: signal,
-                    roomId: this.currentRoomId
-                });
-            } else if (signal.type === 'answer') {
-                socket.emit('webrtc:answer', {
-                    from: this.currentUserId,
-                    to: userId,
-                    answer: signal,
-                    roomId: this.currentRoomId
-                });
+                }
             } else {
-                // ICE candidate
-                socket.emit('webrtc:iceCandidate', {
-                    from: this.currentUserId,
-                    to: userId,
-                    candidate: signal,
-                    roomId: this.currentRoomId
-                });
+                // Otherwise fallback to enabling directly
+                await this.room.localParticipant.enableCameraAndMicrophone();
             }
-        });
 
-        // Handle incoming stream
-        peer.on('stream', (stream) => {
-            console.log('Received stream from:', userId);
-            // Emit event for UI to handle
-            const event = new CustomEvent('webrtc:remoteStream', {
-                detail: { userId, stream }
-            });
-            window.dispatchEvent(event);
-        });
-
-        // Some modern browsers fire track events instead of populating stream beforehand
-        peer.on('track', (track, stream) => {
-            console.log(`Received track (${track.kind}) from:`, userId);
-            const event = new CustomEvent('webrtc:remoteTrack', {
-                detail: { userId, stream, track }
-            });
-            window.dispatchEvent(event);
-        });
-
-        // Handle connection
-        peer.on('connect', () => {
-            console.log('Peer connected:', userId);
-        });
-
-        // Handle errors
-        peer.on('error', (err) => {
-            console.error('Peer error:', userId, err);
-        });
-
-        // Handle close
-        peer.on('close', () => {
-            console.log('Peer closed:', userId);
-            this.removePeer(userId);
-        });
-
-        this.peers.set(userId, peer);
-        return peer;
-    }
-
-    // Handle incoming offer
-    handleOffer(fromUserId, offer) {
-        console.log('Handling offer from:', fromUserId);
-
-        // Create peer if doesn't exist (we are not initiator)
-        if (!this.peers.has(fromUserId)) {
-            const peer = this.createPeer(fromUserId, false);
-            peer.signal(offer);
-        } else {
-            this.peers.get(fromUserId).signal(offer);
-        }
-    }
-
-    // Handle incoming answer
-    handleAnswer(fromUserId, answer) {
-        console.log('Handling answer from:', fromUserId);
-        const peer = this.peers.get(fromUserId);
-        if (peer) {
-            peer.signal(answer);
-        }
-    }
-
-    // Handle ICE candidate
-    handleIceCandidate(fromUserId, candidate) {
-        const peer = this.peers.get(fromUserId);
-        if (peer) {
-            peer.signal(candidate);
-        }
-    }
-
-    // Remove peer
-    removePeer(userId) {
-        const peer = this.peers.get(userId);
-        if (peer) {
-            peer.destroy();
-            this.peers.delete(userId);
-
-            // Emit event for UI to remove video element
-            const event = new CustomEvent('webrtc:userLeft', {
-                detail: { userId }
-            });
-            window.dispatchEvent(event);
+        } catch (error) {
+            console.error('❌ LiveKit connection error:', error);
+            // Fallback for development if local node-server or token generation errors out
+            alert('Could not establish LiveKit SFU connection. Falling back to local/demo streaming.');
         }
     }
 
     // Leave room
     leaveRoom() {
-        const socket = getSocket();
-        if (socket && this.currentRoomId) {
-            socket.emit('webrtc:leave', {
-                roomId: this.currentRoomId,
-                userId: this.currentUserId
-            });
+        if (this.room) {
+            try {
+                this.room.disconnect();
+            } catch (err) {
+                console.error('Error disconnecting from LiveKit room:', err);
+            }
+            this.room = null;
         }
-
-        // Clean up all peers
-        this.peers.forEach((peer, userId) => {
-            peer.destroy();
-        });
-        this.peers.clear();
 
         // Stop local streams
         if (this.localStream) {
@@ -326,26 +216,29 @@ class WebRTCService {
 
         this.currentRoomId = null;
         this.currentUserId = null;
-
-        // Remove socket listeners
-        if (socket) {
-            socket.off('webrtc:existingUsers');
-            socket.off('webrtc:userJoined');
-            socket.off('webrtc:offer');
-            socket.off('webrtc:answer');
-            socket.off('webrtc:iceCandidate');
-            socket.off('webrtc:userLeft');
-        }
     }
 
     // Get all remote streams
     getRemoteStreams() {
         const streams = new Map();
-        this.peers.forEach((peer, userId) => {
-            if (peer.streams && peer.streams.length > 0) {
-                streams.set(userId, peer.streams[0]);
-            }
-        });
+        if (this.room) {
+            this.room.participants.forEach((participant, identity) => {
+                const videoPub = participant.getTrackPublication('camera');
+                const audioPub = participant.getTrackPublication('microphone');
+                
+                const tracks = [];
+                if (videoPub && videoPub.track?.mediaStreamTrack) {
+                    tracks.push(videoPub.track.mediaStreamTrack);
+                }
+                if (audioPub && audioPub.track?.mediaStreamTrack) {
+                    tracks.push(audioPub.track.mediaStreamTrack);
+                }
+
+                if (tracks.length > 0) {
+                    streams.set(identity, new MediaStream(tracks));
+                }
+            });
+        }
         return streams;
     }
 
