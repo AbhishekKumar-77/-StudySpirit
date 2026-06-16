@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 
 import { groupAPI, roomAPI, challengeAPI, resourceAPI, activityAPI, messageAPI, connectSocket, getSocket, disconnectSocket, setCurrentGroupId, isSocketConnected } from '../services/groupAPI';
+import { API_BASE } from '../config';
 import webrtcService from '../services/webrtcService';
 import VideoGrid from '../components/VideoGrid';
 import Whiteboard from '../components/Whiteboard';
@@ -50,7 +51,8 @@ export default function GroupMode() {
     // Loading and error states
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [inviteCode, setInviteCode] = useState(''); // For joining
+    const [inviteCode, setInviteCode] = useState(''); // For joining groups
+    const [classroomCode, setClassroomCode] = useState(''); // For joining classrooms
     const [copiedCode, setCopiedCode] = useState(false);
     const [joinRequests, setJoinRequests] = useState([]); // Admin requests
 
@@ -133,15 +135,20 @@ export default function GroupMode() {
     }, [user]);
 
     // Auto-join from URL roomId query param if present
+    const autoJoinedRef = React.useRef(false);
     useEffect(() => {
         if (appLoading) return;
+        if (!user?._id) return; // Must be authenticated
+        if (autoJoinedRef.current) return; // Prevent duplicate auto-joins
+
         const params = new URLSearchParams(window.location.search);
         const autoRoomId = params.get('roomId');
         if (autoRoomId && !currentRoomId) {
+            autoJoinedRef.current = true;
             console.log('🔗 URL query param roomId detected. Auto-joining:', autoRoomId);
             setTimeout(() => {
                 joinStudyRoomWithWebRTC(autoRoomId);
-            }, 600);
+            }, 800);
         }
     }, [appLoading, user]);
 
@@ -741,6 +748,35 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
         }
     };
 
+    // Join a teacher's classroom via class code
+    const handleJoinClassroom = async () => {
+        if (!classroomCode.trim()) return;
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/join`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: classroomCode.trim().toUpperCase() }),
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setClassroomCode('');
+                setShowCreateModal(false);
+                alert(`✅ Successfully joined classroom: ${data.classroom?.name || 'Classroom'}!`);
+            } else {
+                setError(data.error || data.message || 'Invalid classroom code');
+                setTimeout(() => setError(null), 4000);
+            }
+        } catch (err) {
+            console.error('Join classroom error:', err);
+            setError('Failed to join classroom. Please check the code and try again.');
+            setTimeout(() => setError(null), 4000);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleJoinGroup = async () => {
         if (!inviteCode.trim()) return;
 
@@ -803,27 +839,33 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
         setLiveParticipants([]);
         setChatMessages([]);
 
-        let joinedViaApi = false;
-        try {
-            const res = await roomAPI.join(roomId);
-            if (res.success) {
-                joinedViaApi = true;
-                console.log('? Joined room via API');
+        // Only attempt the StudyRoom DB join if the roomId looks like a valid MongoDB ObjectId.
+        // Classroom lecture liveRoomIds are composite strings (e.g. "CODE-lectureId") and will
+        // crash the StudyRoom.findById() call with a CastError. We skip silently for those.
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(roomId);
+        if (isObjectId) {
+            try {
+                const res = await roomAPI.join(roomId);
+                if (res.success) {
+                    console.log('✅ Joined room via StudyRoom API');
+                }
+            } catch (err) {
+                console.log('ℹ️ Room not found in StudyRoom DB (could be a classroom lecture):', err.message);
             }
-        } catch (err) {
-            console.error('Failed to join room via API (might be sample room):', err);
+        } else {
+            console.log('ℹ️ roomId is not a MongoDB ObjectId — skipping StudyRoom API join (classroom lecture mode)');
         }
 
-        // Connect socket to room regardless of API success (to support demo/sample rooms)
+        // Connect socket to room regardless of API success (to support classroom lectures, demo rooms, etc.)
         const socket = getSocket();
         if (socket) {
-            console.log('?? Joining socket room:', roomId, 'User:', currentUserId);
+            console.log('🔌 Joining socket room:', roomId, 'User:', currentUserId);
             console.log('User data:', { name: user?.name, avatar: user?.avatar });
             socket.emit('room:join', {
                 roomId,
                 userId: currentUserId,
                 userName: user?.name || 'Guest User',
-                userAvatar: user?.avatar || '??'
+                userAvatar: user?.avatar || '👤'
             });
         }
         setCurrentRoomId(roomId);
@@ -1694,23 +1736,48 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                             />
                         </div>
 
-                        {/* Invide Code Section (for Joining) - To be implemented fully later */}
-                        <div className="mb-6 border-t border-[var(--border-color)] pt-6">
-                            <label className="text-[var(--text-secondary)] text-sm mb-2 block">Or Join with Invite Code</label>
+                        {/* Join by Group Invite Code */}
+                        <div className="mb-4 border-t border-[var(--border-color)] pt-6">
+                            <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">📎 Join Study Group by Code</label>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
                                     value={inviteCode}
                                     onChange={(e) => setInviteCode(e.target.value)}
-                                    placeholder="Enter Code (e.g. DSA12345)"
+                                    placeholder="Enter group code (e.g. DSA12345)"
                                     className="flex-1 p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-emerald-500 transition-all"
                                 />
                                 <button
                                     onClick={handleJoinGroup}
                                     disabled={loading || !inviteCode}
-                                    className="px-6 bg-[var(--border-color)] hover:bg-emerald-600 rounded-xl text-[var(--text-primary)] font-bold transition-colors disabled:opacity-50"
+                                    className="px-6 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl font-bold transition-all disabled:opacity-50"
                                 >
                                     Join
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Join by Classroom Code */}
+                        <div className="mb-6 p-4 border border-violet-500/30 rounded-2xl bg-violet-500/5">
+                            <label className="text-violet-400 text-sm mb-2 block font-bold flex items-center gap-2">
+                                🎓 Join a Teacher's Classroom
+                            </label>
+                            <p className="text-xs text-[var(--text-secondary)] mb-3">Enter the class code given by your teacher to join their classroom batch.</p>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={classroomCode}
+                                    onChange={(e) => setClassroomCode(e.target.value.toUpperCase())}
+                                    placeholder="Enter class code (e.g. CS2024)"
+                                    className="flex-1 p-4 bg-[var(--glass-bg)] border border-violet-500/30 rounded-xl text-[var(--text-primary)] text-base focus:outline-none focus:border-violet-500 transition-all uppercase tracking-widest"
+                                    maxLength={20}
+                                />
+                                <button
+                                    onClick={handleJoinClassroom}
+                                    disabled={loading || !classroomCode.trim()}
+                                    className="px-6 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+                                >
+                                    {loading ? '...' : 'Join'}
                                 </button>
                             </div>
                         </div>

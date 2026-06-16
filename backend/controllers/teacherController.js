@@ -9,11 +9,14 @@ const fetch = require('node-fetch');
 exports.createClassroom = async (req, res) => {
     try {
         const { name, description, code } = req.body;
-        const existing = await Classroom.findOne({ code });
+        const normalizedCode = (code || '').trim().toUpperCase();
+        if (!normalizedCode) return res.status(400).json({ success: false, error: 'Class code is required' });
+        
+        const existing = await Classroom.findOne({ code: normalizedCode });
         if (existing) return res.status(400).json({ success: false, error: 'Class code already exists' });
         
         const newClass = new Classroom({
-            name, description, code, teacher: req.user._id, students: []
+            name, description, code: normalizedCode, teacher: req.user._id, students: []
         });
         await newClass.save();
         res.status(201).json({ success: true, classroom: newClass });
@@ -25,14 +28,19 @@ exports.createClassroom = async (req, res) => {
 exports.joinClassroom = async (req, res) => {
     try {
         const { code } = req.body;
-        const classroom = await Classroom.findOne({ code });
-        if (!classroom) return res.status(404).json({ success: false, error: 'Class not found' });
+        if (!code) return res.status(400).json({ success: false, error: 'Class code is required' });
         
-        if (!classroom.students.includes(req.user._id)) {
+        const classroom = await Classroom.findOne({ code: code.trim().toUpperCase() });
+        if (!classroom) return res.status(404).json({ success: false, error: 'Class not found. Please check the code and try again.' });
+        
+        const userId = req.user._id.toString();
+        const alreadyEnrolled = classroom.students.some(s => s.toString() === userId);
+        
+        if (!alreadyEnrolled) {
             classroom.students.push(req.user._id);
             await classroom.save();
         }
-        res.json({ success: true, classroom });
+        res.json({ success: true, classroom, alreadyEnrolled });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
