@@ -4,20 +4,33 @@ const CareerProfile = require('../models/CareerProfile');
 const { createClient } = require('redis');
 
 // Initialize Redis Client
-const redisClient = createClient({
-    url: process.env.REDIS_URI || 'redis://localhost:6379'
-});
-
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
-
-// Only connect if we want to use Redis. If it fails, we fall back to a local map.
+let redisClient = null;
 let useRedis = false;
-redisClient.connect().then(() => {
-    useRedis = true;
-    console.log('✅ Connected to Redis for Career Jobs Cache');
-}).catch(err => {
-    console.warn('⚠️ Redis not running or configured. Falling back to in-memory cache.');
-});
+
+// Connect to Redis if REDIS_URI is provided, or if in development
+const shouldConnectRedis = process.env.NODE_ENV !== 'production' || process.env.REDIS_URI;
+
+if (shouldConnectRedis) {
+    redisClient = createClient({
+        url: process.env.REDIS_URI || 'redis://localhost:6379',
+        socket: {
+            reconnectStrategy: false // Disable infinite retry to prevent crash loops
+        }
+    });
+
+    redisClient.on('error', (err) => {
+        // Prevent crashing from unhandled error events
+    });
+
+    redisClient.connect().then(() => {
+        useRedis = true;
+        console.log('✅ Connected to Redis for Career Jobs Cache');
+    }).catch(err => {
+        console.warn('⚠️ Redis connection failed. Falling back to in-memory cache.');
+    });
+} else {
+    console.warn('⚠️ No REDIS_URI provided. Falling back to in-memory cache.');
+}
 
 // Fallback in-memory cache if Redis is down
 let fallbackCache = { jobs: [], timestamp: 0 };
