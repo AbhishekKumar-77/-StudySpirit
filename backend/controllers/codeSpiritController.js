@@ -3,16 +3,16 @@ const User = require('../models/User');
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY_CODESPIRIT || process.env.GROQ_API_KEY;
 
-// ============== WANDBOX API FOR REAL CODE EXECUTION ==============
-const WANDBOX_API = 'https://wandbox.org/api/compile.json';
-const WANDBOX_COMPILERS = {
-    'python': 'cpython-3.12.7',
-    'javascript': 'nodejs-20.17.0',
-    'cpp': 'gcc-13.2.0',
-    'c++': 'gcc-13.2.0',
-    'java': 'openjdk-jdk-22+36',
-    'c': 'gcc-13.2.0-c',
-    'typescript': 'nodejs-20.17.0'
+// ============== PISTON API FOR REAL CODE EXECUTION ==============
+const PISTON_API = 'https://emkc.org/api/v2/piston/execute';
+const PISTON_RUNTIMES = {
+    'python': { language: 'python', version: '3.10.0' },
+    'javascript': { language: 'javascript', version: '18.15.0' },
+    'cpp': { language: 'c++', version: '10.2.0' },
+    'c++': { language: 'c++', version: '10.2.0' },
+    'java': { language: 'java', version: '15.0.2' },
+    'c': { language: 'c', version: '10.2.0' },
+    'typescript': { language: 'typescript', version: '5.0.3' }
 };
 
 // Curated topic categories
@@ -37,27 +37,20 @@ const TOPIC_CATEGORIES = {
 
 const DAILY_TOPICS = Object.keys(TOPIC_CATEGORIES);
 
-// ============== HELPER: EXECUTE CODE VIA WANDBOX API ==============
-async function executeViaWandbox(language, code, stdin = '') {
+// ============== HELPER: EXECUTE CODE VIA PISTON API ==============
+async function executeViaPiston(language, code, stdin = '') {
     const langKey = language.toLowerCase();
-    const compiler = WANDBOX_COMPILERS[langKey];
-    if (!compiler) {
-        throw new Error(`Unsupported language: ${language}. Supported: ${Object.keys(WANDBOX_COMPILERS).join(', ')}`);
+    const runtime = PISTON_RUNTIMES[langKey];
+    if (!runtime) {
+        throw new Error(`Unsupported language: ${language}. Supported: ${Object.keys(PISTON_RUNTIMES).join(', ')}`);
     }
 
-    // TypeScript needs transpilation hint — run as JS via Node
+    // TypeScript needs transpilation hint
     let finalCode = code;
     if (langKey === 'typescript') {
-        // Strip type annotations for basic TS execution via Node
         finalCode = code.replace(/:\s*(string|number|boolean|any|void|object|never|unknown)(\[\])?/g, '')
             .replace(/interface\s+\w+\s*\{[^}]*\}/g, '')
             .replace(/<[^>]+>/g, '');
-    }
-
-    // For C language, use C-specific options
-    let options = '';
-    if (langKey === 'c') {
-        options = '-lm'; // Link math library for C
     }
 
     const controller = new AbortController();
@@ -65,16 +58,19 @@ async function executeViaWandbox(language, code, stdin = '') {
 
     let response;
     try {
-        response = await fetch(WANDBOX_API, {
+        response = await fetch(PISTON_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             signal: controller.signal,
             body: JSON.stringify({
-                code: finalCode,
-                compiler: compiler,
+                language: runtime.language,
+                version: runtime.version,
+                files: [{ name: 'main', content: finalCode }],
                 stdin: stdin || '',
-                options: options,
-                'compiler-option-raw': langKey === 'c' ? '-std=c17' : (langKey === 'cpp' || langKey === 'c++') ? '-std=c++20' : ''
+                compile_timeout: 10000,
+                run_timeout: 5000,
+                compile_memory_limit: -1,
+                run_memory_limit: -1
             })
         });
     } catch (err) {
@@ -88,18 +84,18 @@ async function executeViaWandbox(language, code, stdin = '') {
 
     if (!response.ok) {
         const errText = await response.text().catch(() => '');
-        throw new Error(`Wandbox API error (${response.status}): ${errText}`);
+        throw new Error(`Piston API error (${response.status}): ${errText}`);
     }
 
     const data = await response.json();
 
-    // Normalize Wandbox response to a standard format
+    // Normalize Piston response to match existing standard format
     return {
         run: {
-            stdout: data.program_output || '',
-            stderr: data.program_error || data.compiler_error || '',
-            code: parseInt(data.status) || 0,
-            signal: data.signal || null
+            stdout: data.run?.stdout || '',
+            stderr: (data.compile?.stderr || '') + (data.run?.stderr || ''),
+            code: data.run?.code != null ? data.run.code : 0,
+            signal: data.run?.signal || null
         }
     };
 }
@@ -407,7 +403,7 @@ exports.executeCode = async (req, res) => {
             return res.status(400).json({ success: false, message: "Code is required" });
         }
 
-        const result = await executeViaWandbox(language || 'python', code, stdin);
+        const result = await executeViaPiston(language || 'python', code, stdin);
 
         const run = result.run || {};
         res.json({
@@ -445,7 +441,7 @@ exports.executeCodeExam = async (req, res) => {
             return res.status(403).json({ success: false, message: "Invalid or unpublished exam code" });
         }
 
-        const result = await executeViaWandbox(language || 'python', code, stdin);
+        const result = await executeViaPiston(language || 'python', code, stdin);
 
         const run = result.run || {};
         res.json({
@@ -495,12 +491,10 @@ exports.verifyCode = async (req, res) => {
                 .join('\n');             // Rejoin
         };
 
-        // Run code against each test case sequentially to avoid Wandbox rate limiting (HTTP 429)
-        const results = [];
-        for (let index = 0; index < testCases.length; index++) {
-            const tc = testCases[index];
+        // Run code against all test cases concurrently using Promise.all for speed (Piston can handle it)
+        const results = await Promise.all(testCases.map(async (tc, index) => {
             try {
-                const result = await executeViaWandbox(language || challenge.language || 'python', code, tc.input || '');
+                const result = await executeViaPiston(language || challenge.language || 'python', code, tc.input || '');
                 const run = result.run || {};
                 const actualOutput = normalizeOutput(run.stdout);
                 const expectedOutput = normalizeOutput(tc.output);
@@ -512,7 +506,7 @@ exports.verifyCode = async (req, res) => {
                 const outputMatches = actualOutput === expectedOutput;
                 const passed = hasOutput && outputMatches && exitedCleanly;
 
-                results.push({
+                return {
                     testCase: index + 1,
                     input: tc.input,
                     expectedOutput: expectedOutput,
@@ -520,9 +514,9 @@ exports.verifyCode = async (req, res) => {
                     stderr: run.stderr || '',
                     passed,
                     exitCode: run.code
-                });
+                };
             } catch (err) {
-                results.push({
+                return {
                     testCase: index + 1,
                     input: tc.input,
                     expectedOutput: (tc.output || '').trim(),
@@ -530,9 +524,9 @@ exports.verifyCode = async (req, res) => {
                     stderr: err.message,
                     passed: false,
                     error: true
-                });
+                };
             }
-        }
+        }));
         const allPassed = results.every(r => r.passed);
 
         // If all passed, auto-mark as solved
