@@ -10,6 +10,16 @@ import {
     Loader, Shield, Star, XCircle
 } from "lucide-react";
 
+const normalizeOutput = (str) => {
+    return (str || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .trim()
+        .split('\n')
+        .map(line => line.trim())
+        .join('\n');
+};
+
 const LANGUAGES = [
     { id: "javascript", name: "JavaScript", ext: "js", defaultCode: '// JavaScript\nconsole.log("Hello, World!");\n\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet("StudySpirit"));' },
     { id: "python", name: "Python", ext: "py", defaultCode: '# Python\nprint("Hello, World!")\n\ndef greet(name):\n    return f"Hello, {name}!"\n\nprint(greet("StudySpirit"))' },
@@ -840,8 +850,8 @@ export default function CodeEditor() {
                                     <div className="divide-y divide-[var(--border-color)]">
                                         {currentProblem.testCases.map((tc, i) => {
                                             const tcOut = tcOutputs[i];
-                                            const isPassed = tcOut && !tcOut.running && tcOut.stdout !== null && tcOut.stdout?.trim() === tc.output?.trim();
-                                            const isFailed = tcOut && !tcOut.running && tcOut.stdout !== null && tcOut.stdout?.trim() !== tc.output?.trim();
+                                            const isPassed = tcOut && !tcOut.running && tcOut.stdout !== null && normalizeOutput(tcOut.stdout) === normalizeOutput(tc.output);
+                                            const isFailed = tcOut && !tcOut.running && tcOut.stdout !== null && normalizeOutput(tcOut.stdout) !== normalizeOutput(tc.output);
                                             return (
                                                 <div key={i} className={`p-4 transition-colors ${
                                                     isPassed ? (theme === 'light' ? 'bg-emerald-50' : 'bg-emerald-500/5') :

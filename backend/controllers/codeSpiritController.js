@@ -702,7 +702,7 @@ Provide a detailed code review in this exact JSON format (no markdown, no extra 
 {
     "timeComplexity": "O(...) with brief explanation",
     "spaceComplexity": "O(...) with brief explanation",
-    "score": 85,
+    "score": <calculated numerical score between 0 and 100 based on code correctness and quality>,
     "strengths": ["strength 1", "strength 2"],
     "improvements": ["improvement 1", "improvement 2"],
     "bugs": ["bug description if any"],

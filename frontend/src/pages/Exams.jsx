@@ -12,6 +12,16 @@ import {
 import { useApp } from "../context/AppContext";
 import Editor from "@monaco-editor/react";
 
+const normalizeOutput = (str) => {
+    return (str || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .trim()
+        .split('\n')
+        .map(line => line.trim())
+        .join('\n');
+};
+
 export default function Exams() {
     const navigate = useNavigate();
     const { user } = useApp();
@@ -217,7 +227,7 @@ export default function Exams() {
                 const out = (result.run?.stdout || "").trim();
                 const errOut = (result.run?.stderr || "").trim();
                 const expected = (tc.expectedOutput || tc.output || "").trim();
-                const passed = expected ? (out === expected && !errOut) : (out.length > 0 && !errOut);
+                const passed = expected ? (normalizeOutput(out) === normalizeOutput(expected) && !errOut) : (out.length > 0 && !errOut);
                 results.push({
                     pass: passed,
                     actual: out || (errOut ? "(see error below)" : "No output generated"),
