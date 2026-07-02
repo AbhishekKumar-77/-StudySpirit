@@ -37,6 +37,69 @@ const TOPIC_CATEGORIES = {
 
 const DAILY_TOPICS = Object.keys(TOPIC_CATEGORIES);
 
+// ============== IN-MEMORY QUEUE FOR CONCURRENCY GATE ==============
+class MemoryQueue {
+    constructor(concurrencyLimit = 3) {
+        this.concurrencyLimit = concurrencyLimit;
+        this.activeCount = 0;
+        this.queue = [];
+    }
+
+    add(fn) {
+        return new Promise((resolve, reject) => {
+            this.queue.push({ fn, resolve, reject });
+            this.next();
+        });
+    }
+
+    next() {
+        if (this.activeCount >= this.concurrencyLimit || this.queue.length === 0) {
+            return;
+        }
+
+        const { fn, resolve, reject } = this.queue.shift();
+        this.activeCount++;
+
+        fn()
+            .then(resolve)
+            .catch(reject)
+            .finally(() => {
+                this.activeCount--;
+                this.next();
+            });
+    }
+}
+
+const wandboxQueue = new MemoryQueue(3); // Process max 3 requests concurrently to avoid Wandbox rate limits
+
+// ============== IN-MEMORY CACHE FOR SAME CODE EXECUTION ==============
+const executionCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache lifetime
+
+function getCachedResult(language, code, stdin) {
+    const key = `${language.toLowerCase()}:${code.trim()}:${(stdin || '').trim()}`;
+    const cached = executionCache.get(key);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+        return cached.result;
+    }
+    // Clean up stale cache entry if expired
+    if (cached) {
+        executionCache.delete(key);
+    }
+    return null;
+}
+
+function setCachedResult(language, code, stdin, result) {
+    const key = `${language.toLowerCase()}:${code.trim()}:${(stdin || '').trim()}`;
+    executionCache.set(key, { result, timestamp: Date.now() });
+
+    // Eviction policy: Keep maximum 1000 records in cache to prevent RAM exhaustion
+    if (executionCache.size > 1000) {
+        const oldestKey = executionCache.keys().next().value;
+        executionCache.delete(oldestKey);
+    }
+}
+
 // ============== HELPER: EXECUTE CODE VIA WANDBOX API ==============
 async function executeViaWandbox(language, code, stdin = '') {
     const langKey = language.toLowerCase();
@@ -60,48 +123,65 @@ async function executeViaWandbox(language, code, stdin = '') {
         options = '-lm'; // Link math library for C
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second execution timeout limit
-
-    let response;
-    try {
-        response = await fetch(WANDBOX_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
-            body: JSON.stringify({
-                code: finalCode,
-                compiler: compiler,
-                stdin: stdin || '',
-                options: options,
-                'compiler-option-raw': langKey === 'c' ? '-std=c17' : (langKey === 'cpp' || langKey === 'c++') ? '-std=c++20' : ''
-            })
-        });
-    } catch (err) {
-        if (err.name === 'AbortError') {
-            throw new Error("Execution Time Limit Exceeded (8s timeout) - Possible Infinite Loop.");
-        }
-        throw err;
-    } finally {
-        clearTimeout(timeoutId);
+    // Check Cache first
+    const cached = getCachedResult(language, code, stdin);
+    if (cached) {
+        return cached;
     }
 
-    if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        throw new Error(`Wandbox API error (${response.status}): ${errText}`);
-    }
+    // Wrap execution in a task function to be executed by the Memory Queue
+    const executeTask = async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second execution timeout limit
 
-    const data = await response.json();
-
-    // Normalize Wandbox response to a standard format
-    return {
-        run: {
-            stdout: data.program_output || '',
-            stderr: data.program_error || data.compiler_error || '',
-            code: parseInt(data.status) || 0,
-            signal: data.signal || null
+        let response;
+        try {
+            response = await fetch(WANDBOX_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                signal: controller.signal,
+                body: JSON.stringify({
+                    code: finalCode,
+                    compiler: compiler,
+                    stdin: stdin || '',
+                    options: options,
+                    'compiler-option-raw': langKey === 'c' ? '-std=c17' : (langKey === 'cpp' || langKey === 'c++') ? '-std=c++20' : ''
+                })
+            });
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                throw new Error("Execution Time Limit Exceeded (8s timeout) - Possible Infinite Loop.");
+            }
+            throw err;
+        } finally {
+            clearTimeout(timeoutId);
         }
+
+        if (!response.ok) {
+            const errText = await response.text().catch(() => '');
+            throw new Error(`Wandbox API error (${response.status}): ${errText}`);
+        }
+
+        const data = await response.json();
+
+        // Normalize Wandbox response to a standard format
+        const result = {
+            run: {
+                stdout: data.program_output || '',
+                stderr: data.program_error || data.compiler_error || '',
+                code: parseInt(data.status) || 0,
+                signal: data.signal || null
+            }
+        };
+
+        // Cache the result
+        setCachedResult(language, code, stdin, result);
+
+        return result;
     };
+
+    // Add task to queue and wait for its completion
+    return wandboxQueue.add(executeTask);
 }
 
 // ============== HELPER: UPDATE USER STATS & STREAK ==============
