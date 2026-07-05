@@ -68,4 +68,46 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
         };
         io.to(`room:${roomId}`).emit('room:newMessage', messageData);
     });
+
+    // ============== COLLABORATIVE WHITEBOARD EVENT SYNC ==============
+    socket.on('room:whiteboardDraw', (data) => {
+        const { roomId, startPoint, endPoint, color, brushSize, tool } = data;
+        socket.to(`room:${roomId}`).emit('room:whiteboardDraw', { startPoint, endPoint, color, brushSize, tool });
+    });
+
+    socket.on('room:whiteboardClear', (data) => {
+        const { roomId } = data;
+        socket.to(`room:${roomId}`).emit('room:whiteboardClear');
+    });
+
+    socket.on('room:whiteboardText', (data) => {
+        const { roomId, text, x, y, color, fontSize, fontFamily, id } = data;
+        socket.to(`room:${roomId}`).emit('room:whiteboardText', { text, x, y, color, fontSize, fontFamily, id });
+    });
+
+    socket.on('room:whiteboardDeleteText', (data) => {
+        const { roomId, id } = data;
+        socket.to(`room:${roomId}`).emit('room:whiteboardDeleteText', { id });
+    });
+
+    // ============== COLLABORATIVE CODE EDITOR SYNC ==============
+    socket.on('room:codeUpdate', (data) => {
+        const { roomId, code, language, senderId, senderName } = data;
+        socket.to(`room:${roomId}`).emit('room:codeUpdate', { code, language, senderId, senderName });
+    });
+
+    socket.on('room:codeOutput', (data) => {
+        const { roomId, stdout, stderr, runCleanly, senderName } = data;
+        socket.to(`room:${roomId}`).emit('room:codeOutput', { stdout, stderr, runCleanly, senderName });
+    });
+
+    socket.on('room:requestStudentCode', (data) => {
+        const { roomId, studentId, teacherId } = data;
+        socket.to(`room:${roomId}`).emit('room:requestStudentCode', { studentId, teacherId });
+    });
+
+    socket.on('room:replyStudentCode', (data) => {
+        const { roomId, teacherId, studentId, studentName, code, language } = data;
+        socket.to(`room:${roomId}`).emit('room:replyStudentCode', { teacherId, studentId, studentName, code, language });
+    });
 };

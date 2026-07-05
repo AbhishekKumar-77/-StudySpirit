@@ -251,6 +251,11 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
         setTextObjects([]);
         setSelectedTextId(null);
         saveToHistory();
+
+        // Emit clear to room
+        if (socket && roomId) {
+            socket.emit('room:whiteboardClear', { roomId });
+        }
     };
 
     // Download canvas as image
@@ -409,6 +414,17 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
             if (tool === 'highlighter') ctx.globalAlpha = 0.3;
             ctx.fill();
             ctx.globalAlpha = 1;
+
+            if (socket && roomId) {
+                socket.emit('room:whiteboardDraw', {
+                    roomId,
+                    startPoint: pos,
+                    endPoint: pos,
+                    color,
+                    brushSize,
+                    tool
+                });
+            }
         }
     };
 
@@ -436,6 +452,16 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
         if (tool === 'pen' || tool === 'marker' || tool === 'highlighter' || tool === 'eraser') {
             if (lastPoint) {
                 drawModernStroke(ctx, lastPoint, pos, velocity);
+                if (socket && roomId) {
+                    socket.emit('room:whiteboardDraw', {
+                        roomId,
+                        startPoint: lastPoint,
+                        endPoint: pos,
+                        color,
+                        brushSize,
+                        tool
+                    });
+                }
             }
             setLastPoint(pos);
         }
@@ -446,6 +472,15 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
         // End text dragging
         if (isDraggingText) {
             setIsDraggingText(false);
+            if (socket && roomId && selectedTextId) {
+                const draggedText = textObjects.find(t => t.id === selectedTextId);
+                if (draggedText) {
+                    socket.emit('room:whiteboardText', {
+                        roomId,
+                        ...draggedText
+                    });
+                }
+            }
             return;
         }
 
@@ -517,6 +552,17 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
             ctx.stroke();
         }
 
+        if (socket && roomId && ['line', 'arrow', 'rectangle', 'circle', 'triangle'].includes(tool)) {
+            socket.emit('room:whiteboardDraw', {
+                roomId,
+                startPoint: startPos,
+                endPoint: pos,
+                color,
+                brushSize,
+                tool
+            });
+        }
+
         setIsDrawing(false);
         setLastPoint(null);
         saveToHistory();
@@ -537,6 +583,14 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
         };
 
         setTextObjects(prev => [...prev, newTextObject]);
+
+        if (socket && roomId) {
+            socket.emit('room:whiteboardText', {
+                roomId,
+                ...newTextObject
+            });
+        }
+
         setTextInput('');
         setShowTextInput(false);
         setTextPosition(null);
@@ -547,6 +601,9 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
     const handleDeleteSelectedText = () => {
         if (selectedTextId) {
             setTextObjects(prev => prev.filter(t => t.id !== selectedTextId));
+            if (socket && roomId) {
+                socket.emit('room:whiteboardDeleteText', { roomId, id: selectedTextId });
+            }
             setSelectedTextId(null);
         }
     };
@@ -600,6 +657,158 @@ const Whiteboard = ({ isOpen, onClose, isFullscreen, onToggleFullscreen, socket,
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedTextId, tool, isBrowserFullscreen]);
+
+    // Collaborative Socket Sync Listener
+    useEffect(() => {
+        if (!socket || !roomId) return;
+
+        const handleRemoteDraw = (data) => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            ctx.beginPath();
+            if (['line', 'arrow', 'rectangle', 'circle', 'triangle'].includes(data.tool)) {
+                // Draw remote shapes
+                if (data.tool === 'line') {
+                    ctx.moveTo(data.startPoint.x, data.startPoint.y);
+                    ctx.lineTo(data.endPoint.x, data.endPoint.y);
+                    ctx.strokeStyle = data.color;
+                    ctx.lineWidth = data.brushSize;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                } else if (data.tool === 'arrow') {
+                    ctx.moveTo(data.startPoint.x, data.startPoint.y);
+                    ctx.lineTo(data.endPoint.x, data.endPoint.y);
+                    ctx.strokeStyle = data.color;
+                    ctx.lineWidth = data.brushSize;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+
+                    const angle = Math.atan2(data.endPoint.y - data.startPoint.y, data.endPoint.x - data.startPoint.x);
+                    const headLength = 15 + data.brushSize * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(data.endPoint.x, data.endPoint.y);
+                    ctx.lineTo(
+                        data.endPoint.x - headLength * Math.cos(angle - Math.PI / 6),
+                        data.endPoint.y - headLength * Math.sin(angle - Math.PI / 6)
+                    );
+                    ctx.moveTo(data.endPoint.x, data.endPoint.y);
+                    ctx.lineTo(
+                        data.endPoint.x - headLength * Math.cos(angle + Math.PI / 6),
+                        data.endPoint.y - headLength * Math.sin(angle + Math.PI / 6)
+                    );
+                    ctx.stroke();
+                } else if (data.tool === 'rectangle') {
+                    ctx.strokeStyle = data.color;
+                    ctx.lineWidth = data.brushSize;
+                    ctx.strokeRect(data.startPoint.x, data.startPoint.y, data.endPoint.x - data.startPoint.x, data.endPoint.y - data.startPoint.y);
+                } else if (data.tool === 'circle') {
+                    const radius = Math.sqrt(
+                        Math.pow(data.endPoint.x - data.startPoint.x, 2) + Math.pow(data.endPoint.y - data.startPoint.y, 2)
+                    );
+                    ctx.arc(data.startPoint.x, data.startPoint.y, radius, 0, 2 * Math.PI);
+                    ctx.strokeStyle = data.color;
+                    ctx.lineWidth = data.brushSize;
+                    ctx.stroke();
+                } else if (data.tool === 'triangle') {
+                    ctx.moveTo(data.startPoint.x + (data.endPoint.x - data.startPoint.x) / 2, data.startPoint.y);
+                    ctx.lineTo(data.endPoint.x, data.endPoint.y);
+                    ctx.lineTo(data.startPoint.x, data.endPoint.y);
+                    ctx.closePath();
+                    ctx.strokeStyle = data.color;
+                    ctx.lineWidth = data.brushSize;
+                    ctx.stroke();
+                }
+            } else {
+                // Draw freehand drawing lines or dots
+                if (data.startPoint.x === data.endPoint.x && data.startPoint.y === data.endPoint.y) {
+                    ctx.arc(data.startPoint.x, data.startPoint.y, data.brushSize / 2, 0, Math.PI * 2);
+                    ctx.fillStyle = data.tool === 'eraser' ? '#1e293b' : data.color;
+                    if (data.tool === 'highlighter') ctx.globalAlpha = 0.3;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                } else {
+                    ctx.moveTo(data.startPoint.x, data.startPoint.y);
+                    ctx.lineTo(data.endPoint.x, data.endPoint.y);
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.lineWidth = data.brushSize;
+
+                    if (data.tool === 'highlighter') {
+                        ctx.globalAlpha = 0.3;
+                        ctx.strokeStyle = data.color;
+                        ctx.lineWidth = data.brushSize * 3;
+                    } else if (data.tool === 'marker') {
+                        ctx.globalAlpha = 0.85;
+                        ctx.strokeStyle = data.color;
+                        ctx.shadowColor = data.color;
+                        ctx.shadowBlur = 3;
+                    } else {
+                        ctx.globalAlpha = 1;
+                        ctx.strokeStyle = data.tool === 'eraser' ? '#1e293b' : data.color;
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.stroke();
+                }
+            }
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+        };
+
+        const handleRemoteClear = () => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Redraw grid
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 0.5;
+            const gridSize = 40;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            setTextObjects([]);
+            setSelectedTextId(null);
+        };
+
+        const handleRemoteText = (data) => {
+            setTextObjects(prev => {
+                if (prev.some(t => t.id === data.id)) {
+                    return prev.map(t => t.id === data.id ? data : t);
+                }
+                return [...prev, data];
+            });
+        };
+
+        const handleRemoteDeleteText = (data) => {
+            setTextObjects(prev => prev.filter(t => t.id !== data.id));
+        };
+
+        socket.on('room:whiteboardDraw', handleRemoteDraw);
+        socket.on('room:whiteboardClear', handleRemoteClear);
+        socket.on('room:whiteboardText', handleRemoteText);
+        socket.on('room:whiteboardDeleteText', handleRemoteDeleteText);
+
+        return () => {
+            socket.off('room:whiteboardDraw', handleRemoteDraw);
+            socket.off('room:whiteboardClear', handleRemoteClear);
+            socket.off('room:whiteboardText', handleRemoteText);
+            socket.off('room:whiteboardDeleteText', handleRemoteDeleteText);
+        };
+    }, [socket, roomId]);
 
     if (!isOpen) return null;
 

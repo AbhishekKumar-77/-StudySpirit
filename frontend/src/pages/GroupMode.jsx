@@ -8,7 +8,7 @@ import {
     Flame, Radio, Users2, Loader2, RefreshCw, Copy, Check,
     X, Play, Pause, Square, Folder, Download, FileText,
     Settings, Crown, Shield, UserMinus, LogOut, Hash, Maximize2, Minimize2, PenTool,
-    Trophy, Globe, Lock, Eye, Calendar, Zap, Medal, TrendingDown, Bell
+    Trophy, Globe, Lock, Eye, Calendar, Zap, Medal, TrendingDown, Bell, Terminal
 } from 'lucide-react';
 
 import { groupAPI, roomAPI, challengeAPI, resourceAPI, activityAPI, messageAPI, connectSocket, getSocket, disconnectSocket, setCurrentGroupId, isSocketConnected } from '../services/groupAPI';
@@ -17,6 +17,7 @@ import webrtcService from '../services/webrtcService';
 import VideoGrid from '../components/VideoGrid';
 import Whiteboard from '../components/Whiteboard';
 import { useApp } from '../context/AppContext';
+import Editor from '@monaco-editor/react';
 
 export default function GroupMode() {
     const { user, loading: appLoading } = useApp();
@@ -102,6 +103,34 @@ export default function GroupMode() {
     const [isViewerFullscreen, setIsViewerFullscreen] = useState(false); // Am I a viewer seeing presenter's content
     const [presenterType, setPresenterType] = useState(null); // 'whiteboard' or 'screenshare'
     const [isHandRaised, setIsHandRaised] = useState(false);
+
+    // Collaborative Coding Board States
+    const [showCodingBoard, setShowCodingBoard] = useState(false);
+    const [codingCode, setCodingCode] = useState('// Write your code here...');
+    const [codingLanguage, setCodingLanguage] = useState('javascript');
+    const [codingOutput, setCodingOutput] = useState({ stdout: '', stderr: '', error: '' });
+    const [isCompilingCode, setIsCompilingCode] = useState(false);
+    const [broadcastEnabled, setBroadcastEnabled] = useState(false);
+    const [followTeacher, setFollowTeacher] = useState(true);
+
+    // Monitor student states (Host/Teacher only)
+    const [monitoredStudentId, setMonitoredStudentId] = useState('');
+    const [monitoredStudentName, setMonitoredStudentName] = useState('');
+    const [monitoredStudentCode, setMonitoredStudentCode] = useState('');
+    const [monitoredStudentLanguage, setMonitoredStudentLanguage] = useState('javascript');
+
+    // Refs/Window tracking to prevent stale closures in socket events
+    useEffect(() => {
+        window._followTeacher = followTeacher;
+    }, [followTeacher]);
+
+    useEffect(() => {
+        window._currentCode = codingCode;
+    }, [codingCode]);
+
+    useEffect(() => {
+        window._currentLanguage = codingLanguage;
+    }, [codingLanguage]);
 
     // Challenge Management States
     const [showCreateChallengeModal, setShowCreateChallengeModal] = useState(false);
@@ -612,6 +641,47 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
             // Sync state if needed
         });
 
+        // Listen for Collaborative Coding events
+        socket.on('room:codeUpdate', (data) => {
+            if (data.senderId !== currentUserId) {
+                if (window._followTeacher) {
+                    setCodingCode(data.code);
+                    setCodingLanguage(data.language);
+                }
+            }
+        });
+
+        socket.on('room:codeOutput', (data) => {
+            if (window._followTeacher && data.senderName !== user?.name) {
+                setCodingOutput({
+                    stdout: data.stdout,
+                    stderr: data.stderr,
+                    error: data.runCleanly ? '' : 'Process terminated with non-zero exit code'
+                });
+            }
+        });
+
+        socket.on('room:requestStudentCode', (data) => {
+            if (data.studentId === currentUserId) {
+                socket.emit('room:replyStudentCode', {
+                    roomId: currentRoomId,
+                    teacherId: data.teacherId,
+                    studentId: currentUserId,
+                    studentName: user?.name || 'Student',
+                    code: window._currentCode || '// Write your code here...',
+                    language: window._currentLanguage || 'javascript'
+                });
+            }
+        });
+
+        socket.on('room:replyStudentCode', (data) => {
+            if (data.teacherId === currentUserId) {
+                setMonitoredStudentCode(data.code);
+                setMonitoredStudentLanguage(data.language);
+                setMonitoredStudentName(data.studentName);
+            }
+        });
+
         return () => {
             socket.off('message:receive');
             socket.off('users:online');
@@ -619,6 +689,10 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
             socket.off('room:participantUpdate');
             socket.off('room:newMessage');
             socket.off('room:pomodoroSync');
+            socket.off('room:codeUpdate');
+            socket.off('room:codeOutput');
+            socket.off('room:requestStudentCode');
+            socket.off('room:replyStudentCode');
             // Don't disconnect socket here - it's needed for real-time messaging across the app
         };
     }, [selectedGroup, user]);
@@ -2158,6 +2232,22 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         Whiteboard
                                     </button>
 
+                                    <button
+                                        onClick={() => {
+                                            setShowCodingBoard(!showCodingBoard);
+                                            if (!showCodingBoard) {
+                                                setShowWhiteboard(false);
+                                            }
+                                        }}
+                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showCodingBoard
+                                            ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
+                                            : 'bg-[var(--glass-bg)] border-cyan-500/30'
+                                            } text-white`}
+                                    >
+                                        <Code size={20} />
+                                        Coding Board
+                                    </button>
+
                                     {!isHost && (
                                         <button
                                             onClick={toggleRaiseHand}
@@ -2281,7 +2371,321 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                             isFullscreen={isWhiteboardFullscreen}
                                             onToggleFullscreen={() => setIsWhiteboardFullscreen(!isWhiteboardFullscreen)}
                                             roomId={currentRoomId}
+                                            socket={getSocket()}
                                         />
+                                    </div>
+                                )}
+
+                                {/* Coding Board Section */}
+                                {showCodingBoard && (
+                                    <div className="mt-6 bg-[var(--glass-bg)] border border-cyan-500/20 rounded-2xl p-6">
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between mb-4 flex-wrap gap-3 pb-3 border-b border-[var(--border-color)]">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-lg text-white">
+                                                    <Code size={20} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-[var(--text-primary)] font-bold text-lg">Interactive Coding Board</h4>
+                                                    <p className="text-[var(--text-secondary)] text-xs">Collaborative programming workspace with live execution</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Sync controls */}
+                                            <div className="flex items-center gap-3 flex-wrap">
+                                                {isHost ? (
+                                                    <label className="flex items-center gap-2 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 rounded-lg text-sm text-violet-300 font-semibold cursor-pointer">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={broadcastEnabled} 
+                                                            onChange={(e) => {
+                                                                setBroadcastEnabled(e.target.checked);
+                                                                if (e.target.checked) {
+                                                                    const socket = getSocket();
+                                                                    if (socket && currentRoomId) {
+                                                                        socket.emit('room:codeUpdate', {
+                                                                            roomId: currentRoomId,
+                                                                            code: codingCode,
+                                                                            language: codingLanguage,
+                                                                            senderId: currentUserId,
+                                                                            senderName: user?.name
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="rounded border-violet-500 text-violet-500 focus:ring-violet-500" 
+                                                        />
+                                                        Broadcast Code to Students
+                                                    </label>
+                                                ) : (
+                                                    <label className="flex items-center gap-2 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 font-semibold cursor-pointer">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={followTeacher} 
+                                                            onChange={(e) => {
+                                                                setFollowTeacher(e.target.checked);
+                                                            }}
+                                                            className="rounded border-cyan-500 text-cyan-500 focus:ring-cyan-500" 
+                                                        />
+                                                        Follow Teacher's Code
+                                                    </label>
+                                                )}
+
+                                                <select 
+                                                    value={codingLanguage} 
+                                                    onChange={(e) => {
+                                                        const lang = e.target.value;
+                                                        setCodingLanguage(lang);
+                                                        if (isHost && broadcastEnabled) {
+                                                            const socket = getSocket();
+                                                            if (socket && currentRoomId) {
+                                                                socket.emit('room:codeUpdate', {
+                                                                    roomId: currentRoomId,
+                                                                    code: codingCode,
+                                                                    language: lang,
+                                                                    senderId: currentUserId,
+                                                                    senderName: user?.name
+                                                                });
+                                                            }
+                                                        }
+                                                    }}
+                                                    disabled={!isHost && followTeacher}
+                                                    className="bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-violet-500"
+                                                >
+                                                    <option value="javascript">JavaScript</option>
+                                                    <option value="python">Python</option>
+                                                    <option value="cpp">C++</option>
+                                                    <option value="java">Java</option>
+                                                    <option value="c">C</option>
+                                                </select>
+
+                                                <button
+                                                    onClick={() => setShowCodingBoard(false)}
+                                                    className="p-1.5 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Editor and Output split */}
+                                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                                            {/* Editor Panel */}
+                                            <div className="xl:col-span-2 flex flex-col h-[450px] border border-[var(--border-color)] rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
+                                                <Editor
+                                                    height="100%"
+                                                    language={codingLanguage}
+                                                    theme="vs-dark"
+                                                    value={codingCode}
+                                                    onChange={(value) => {
+                                                        setCodingCode(value || '');
+                                                        if (isHost && broadcastEnabled) {
+                                                            const socket = getSocket();
+                                                            if (socket && currentRoomId) {
+                                                                socket.emit('room:codeUpdate', {
+                                                                    roomId: currentRoomId,
+                                                                    code: value || '',
+                                                                    language: codingLanguage,
+                                                                    senderId: currentUserId,
+                                                                    senderName: user?.name
+                                                                });
+                                                            }
+                                                        }
+                                                    }}
+                                                    options={{
+                                                        readOnly: !isHost && followTeacher,
+                                                        minimap: { enabled: false },
+                                                        fontSize: 14,
+                                                        lineHeight: 20,
+                                                        fontFamily: 'Fira Code, Courier New, monospace',
+                                                        scrollBeyondLastLine: false,
+                                                        automaticLayout: true
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Output Panel / Console */}
+                                            <div className="flex flex-col h-[450px] border border-[var(--border-color)] rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
+                                                {/* Tabs/Actions */}
+                                                <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--border-color)]/30 border-b border-[var(--border-color)] flex-shrink-0">
+                                                    <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] flex items-center gap-1.5">
+                                                        <Terminal size={14} className="text-violet-400" /> Output & Stdin
+                                                    </span>
+
+                                                    <button
+                                                        onClick={async () => {
+                                                            setIsCompilingCode(true);
+                                                            setCodingOutput({ stdout: '⏳ Executing...', stderr: '', error: '' });
+                                                            try {
+                                                                const res = await fetch(`${API_BASE}/codespirit/execute`, {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    credentials: 'include',
+                                                                    body: JSON.stringify({
+                                                                        language: codingLanguage,
+                                                                        code: codingCode,
+                                                                        stdin: window._stdinVal || ''
+                                                                    })
+                                                                });
+                                                                const result = await res.json();
+                                                                if (result.success && result.run) {
+                                                                    const outData = {
+                                                                        stdout: result.run.stdout || '',
+                                                                        stderr: result.run.stderr || '',
+                                                                        error: result.run.exitCode !== 0 ? 'Process terminated with non-zero exit code' : ''
+                                                                    };
+                                                                    setCodingOutput(outData);
+
+                                                                    if (isHost && broadcastEnabled) {
+                                                                        const socket = getSocket();
+                                                                        if (socket && currentRoomId) {
+                                                                            socket.emit('room:codeOutput', {
+                                                                                roomId: currentRoomId,
+                                                                                stdout: outData.stdout,
+                                                                                stderr: outData.stderr,
+                                                                                runCleanly: !outData.error,
+                                                                                senderName: user?.name
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                } else {
+                                                                    setCodingOutput({ stdout: '', stderr: result.message || 'Execution failed', error: 'Error' });
+                                                                }
+                                                            } catch (err) {
+                                                                setCodingOutput({ stdout: '', stderr: err.message, error: 'Connection Error' });
+                                                            } finally {
+                                                                setIsCompilingCode(false);
+                                                            }
+                                                        }}
+                                                        disabled={isCompilingCode || (!isHost && followTeacher)}
+                                                        className="px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 hover:scale-105 transition-transform disabled:opacity-50"
+                                                    >
+                                                        {isCompilingCode ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+                                                        Run Code
+                                                    </button>
+                                                </div>
+
+                                                {/* Scrollable container for Stdin and Output */}
+                                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                                    {/* Stdin Area */}
+                                                    <div>
+                                                        <label className="text-xs font-bold text-[var(--text-secondary)] uppercase block mb-1.5">Standard Input (stdin):</label>
+                                                        <textarea 
+                                                            placeholder="Inputs for your program go here..."
+                                                            onChange={(e) => {
+                                                                window._stdinVal = e.target.value;
+                                                            }}
+                                                            disabled={!isHost && followTeacher}
+                                                            className="w-full h-16 px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm font-mono text-[var(--text-primary)] focus:outline-none focus:border-violet-500 resize-none"
+                                                        />
+                                                    </div>
+
+                                                    {/* Console Output */}
+                                                    <div>
+                                                        <label className="text-xs font-bold text-[var(--text-secondary)] uppercase block mb-1.5">Stdout Console Output:</label>
+                                                        <pre className="w-full min-h-[140px] p-3 rounded-lg bg-slate-950 font-mono text-xs text-green-400 border border-[var(--border-color)] whitespace-pre-wrap overflow-x-auto break-all">
+                                                            {codingOutput.stdout || (codingOutput.stderr ? '' : 'Console output will appear here...')}
+                                                        </pre>
+                                                    </div>
+
+                                                    {/* Errors Area */}
+                                                    {(codingOutput.stderr || codingOutput.error) && (
+                                                        <div>
+                                                            <label className="text-xs font-bold text-red-400 uppercase block mb-1.5">Compilation / Runtime Errors:</label>
+                                                            <pre className="w-full p-3 rounded-lg bg-red-950/20 text-red-400 border border-red-900/30 font-mono text-xs whitespace-pre-wrap overflow-x-auto break-all">
+                                                                {codingOutput.stderr || codingOutput.error}
+                                                            </pre>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Teacher Student-Code Monitor panel */}
+                                        {isHost && (
+                                            <div className="mt-6 pt-6 border-t border-[var(--border-color)]">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h5 className="text-[var(--text-primary)] font-bold flex items-center gap-2">
+                                                        <Users size={16} className="text-violet-400" />
+                                                        Student Screen Monitoring (CodeTantra Dashboard)
+                                                    </h5>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-xs text-[var(--text-secondary)]">Select student to view their code:</span>
+                                                        <select
+                                                            value={monitoredStudentId}
+                                                            onChange={(e) => {
+                                                                const studentId = e.target.value;
+                                                                setMonitoredStudentId(studentId);
+                                                                if (studentId) {
+                                                                    const socket = getSocket();
+                                                                    if (socket && currentRoomId) {
+                                                                        setMonitoredStudentName('Requesting...');
+                                                                        setMonitoredStudentCode('// Requesting code from student editor...');
+                                                                        socket.emit('room:requestStudentCode', {
+                                                                            roomId: currentRoomId,
+                                                                            studentId,
+                                                                            teacherId: currentUserId
+                                                                        });
+                                                                    }
+                                                                } else {
+                                                                    setMonitoredStudentName('');
+                                                                    setMonitoredStudentCode('');
+                                                                }
+                                                            }}
+                                                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-lg px-3 py-1.5 focus:outline-none"
+                                                        >
+                                                            <option value="">-- No Active Student Selected --</option>
+                                                            {liveParticipants.filter(p => p.id !== currentUserId).map(p => (
+                                                                <option key={p.id} value={p.id}>{p.name || p.userName}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {monitoredStudentId && (
+                                                    <div className="bg-[var(--bg-secondary)] border border-violet-500/30 rounded-xl p-4">
+                                                        <div className="flex justify-between items-center mb-3">
+                                                            <span className="text-sm font-bold text-violet-300">
+                                                                Viewing Live: <span className="text-[var(--text-primary)] font-extrabold">{monitoredStudentName || 'Student'}</span>
+                                                            </span>
+                                                            <button
+                                                                onClick={() => {
+                                                                    const socket = getSocket();
+                                                                    if (socket && currentRoomId && monitoredStudentId) {
+                                                                        socket.emit('room:requestStudentCode', {
+                                                                            roomId: currentRoomId,
+                                                                            studentId: monitoredStudentId,
+                                                                            teacherId: currentUserId
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                className="px-3 py-1 bg-violet-500/20 text-violet-400 rounded-lg text-xs font-semibold hover:bg-violet-500/30 flex items-center gap-1"
+                                                            >
+                                                                <RefreshCw size={12} /> Refresh Code
+                                                            </button>
+                                                        </div>
+                                                        <div className="h-[250px] border border-[var(--border-color)] rounded-lg overflow-hidden">
+                                                            <Editor
+                                                                height="100%"
+                                                                language={monitoredStudentLanguage}
+                                                                theme="vs-dark"
+                                                                value={monitoredStudentCode}
+                                                                options={{
+                                                                    readOnly: true,
+                                                                    minimap: { enabled: false },
+                                                                    fontSize: 13,
+                                                                    lineHeight: 18,
+                                                                    fontFamily: 'Fira Code, Courier New, monospace',
+                                                                    scrollBeyondLastLine: false,
+                                                                    automaticLayout: true
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
