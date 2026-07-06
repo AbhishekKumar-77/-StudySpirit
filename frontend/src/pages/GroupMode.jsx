@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     ArrowLeft, Users, MessageCircle, TrendingUp,
     Plus, Search, Target, Award, Clock,
@@ -22,6 +22,7 @@ import Editor from '@monaco-editor/react';
 export default function GroupMode() {
     const { user, loading: appLoading } = useApp();
     const navigate = useNavigate();
+    const location = useLocation();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [typingUsers, setTypingUsers] = useState([]);
     const [isPiPMode, setIsPiPMode] = useState(false);
@@ -112,6 +113,55 @@ export default function GroupMode() {
         }
         return false;
     }, [liveRooms, currentRoomId, user, groupDetailData]);
+
+    const myParticipantData = liveParticipants.find(p => p.id === currentUserId);
+    const isMicAllowed = isHost || !!myParticipantData?.allowMic;
+    const isCameraAllowed = isHost || !!myParticipantData?.allowCamera;
+    const isScreenAllowed = isHost || !!myParticipantData?.allowScreen;
+    const isBoardAllowed = isHost || !!myParticipantData?.allowBoard;
+
+    // Enforce permission revocations instantly for guests
+    useEffect(() => {
+        if (isHost) return;
+
+        // Microphone revocation
+        if (myParticipantData && !myParticipantData.allowMic && isMicOn) {
+            console.log('🔇 Mic permission revoked by host. Muting...');
+            setIsMicOn(false);
+            if (localStream) {
+                localStream.getAudioTracks().forEach(t => t.enabled = false);
+            }
+            webrtcService.toggleMicrophone(false);
+        }
+
+        // Camera revocation
+        if (myParticipantData && !myParticipantData.allowCamera && isCameraOn) {
+            console.log('📷 Camera permission revoked by host. Turning off video...');
+            setIsCameraOn(false);
+            if (localStream) {
+                localStream.getVideoTracks().forEach(t => t.enabled = false);
+            }
+            webrtcService.toggleCamera(false);
+        }
+
+        // Screen share revocation
+        if (myParticipantData && !myParticipantData.allowScreen && isScreenSharing) {
+            console.log('🖥️ Screen share permission revoked by host. Stopping...');
+            stopScreenSharing();
+        }
+
+        // Board permission revocation
+        if (myParticipantData && !myParticipantData.allowBoard) {
+            if (showWhiteboard) {
+                console.log('📋 Board permission revoked. Closing whiteboard...');
+                setShowWhiteboard(false);
+            }
+            if (showCodingBoard) {
+                console.log('💻 Board permission revoked. Closing coding board...');
+                setShowCodingBoard(false);
+            }
+        }
+    }, [liveParticipants, currentUserId, isHost, isMicOn, isCameraOn, isScreenSharing, showWhiteboard, showCodingBoard, localStream]);
 
     // Spotlight and Whiteboard states
     const [spotlightUserId, setSpotlightUserId] = useState(null);
@@ -873,6 +923,10 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                 setClassroomCode('');
                 setShowCreateModal(false);
                 alert(`✅ Successfully joined classroom: ${data.classroom?.name || 'Classroom'}!`);
+                if (data.liveRoomId) {
+                    // Redirect directly to the live stream
+                    navigate(`/group-mode?roomId=${data.liveRoomId}`);
+                }
             } else {
                 setError(data.error || data.message || 'Invalid classroom code');
                 setTimeout(() => setError(null), 4000);
@@ -1091,6 +1145,40 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
         }
     };
 
+    // Sync currentUserId when user details load
+    useEffect(() => {
+        if (user?._id) {
+            setCurrentUserId(user._id);
+        }
+    }, [user]);
+
+    // Auto-join room from URL query parameter if present
+    useEffect(() => {
+        if (appLoading || !user) return; // Wait for app user to load
+        
+        const queryParams = new URLSearchParams(location.search);
+        const roomIdFromUrl = queryParams.get('roomId');
+        
+        if (roomIdFromUrl && currentRoomId !== roomIdFromUrl) {
+            console.log('🚀 URL roomId parameter detected — Auto-joining live room:', roomIdFromUrl);
+            handleJoinRoom(roomIdFromUrl);
+            initializeWebRTC(roomIdFromUrl);
+        }
+    }, [location.search, user, appLoading, currentRoomId]);
+
+    const toggleParticipantPermission = (targetUserId, permType, currentValue) => {
+        const socket = getSocket();
+        if (socket && currentRoomId) {
+            socket.emit('room:updateStatus', {
+                roomId: currentRoomId,
+                userId: targetUserId,
+                status: {
+                    [permType]: !currentValue
+                }
+            });
+        }
+    };
+
     // Handle remote stream
     const handleRemoteStream = (event) => {
         const { userId, stream } = event.detail;
@@ -1146,13 +1234,23 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
         const newState = !isMicOn;
 
         if (newState) {
-            // Turning mic ON � check if tracks are still alive
-            const currentStream = webrtcService.getLocalStream();
-            const audioTrack = currentStream?.getAudioTracks()[0];
+            let currentStream = webrtcService.getLocalStream();
+            
+            if (!currentStream) {
+                try {
+                    console.log('🗣️ Initializing local media stream for unmuting...');
+                    currentStream = await webrtcService.initializeLocalMedia({ audio: true, video: isCameraOn });
+                    setLocalStream(currentStream);
+                } catch (err) {
+                    console.error('Failed to initialize local media:', err);
+                    return;
+                }
+            }
 
+            const audioTrack = currentStream?.getAudioTracks()[0];
             if (!audioTrack || audioTrack.readyState === 'ended') {
                 try {
-                    console.log('?? Re-acquiring audio stream...');
+                    console.log('🗣️ Re-acquiring audio stream...');
                     const newStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     const newAudioTrack = newStream.getAudioTracks()[0];
                     newAudioTrack.onended = () => setIsMicOn(false);
@@ -1163,16 +1261,16 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                     }
                     setLocalStream(currentStream || newStream);
                 } catch (err) {
-                    console.error('? Failed to re-acquire mic:', err);
+                    console.error('❌ Failed to re-acquire mic:', err);
                     return;
                 }
             } else {
                 audioTrack.enabled = true;
             }
-        } else {
-            webrtcService.toggleMicrophone(false);
         }
 
+        // Always sync microphone state with WebRTC service (for publishing to LiveKit)
+        webrtcService.toggleMicrophone(newState);
         setIsMicOn(newState);
     };
 
@@ -1181,14 +1279,24 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
         const newState = !isCameraOn;
 
         if (newState) {
-            // Turning camera ON � check if tracks are still alive
-            const currentStream = webrtcService.getLocalStream();
-            const videoTrack = currentStream?.getVideoTracks()[0];
-
-            if (!videoTrack || videoTrack.readyState === 'ended') {
-                // Track died � re-acquire camera
+            let currentStream = webrtcService.getLocalStream();
+            
+            if (!currentStream) {
                 try {
-                    console.log('?? Re-acquiring camera stream...');
+                    console.log('📷 Initializing local media stream for video...');
+                    currentStream = await webrtcService.initializeLocalMedia({ video: true, audio: isMicOn });
+                    setLocalStream(currentStream);
+                } catch (err) {
+                    console.error('Failed to initialize local media:', err);
+                    return;
+                }
+            }
+
+            const videoTrack = currentStream?.getVideoTracks()[0];
+            if (!videoTrack || videoTrack.readyState === 'ended') {
+                // Track died – re-acquire camera
+                try {
+                    console.log('📷 Re-acquiring camera stream...');
                     const newStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                     const newVideoTrack = newStream.getVideoTracks()[0];
                     newVideoTrack.onended = () => setIsCameraOn(false);
@@ -1217,9 +1325,9 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
 
                     // Force React to re-render with updated stream
                     setLocalStream(currentStream || newStream);
-                    console.log('? Camera re-acquired successfully');
+                    console.log('✅ Camera re-acquired successfully');
                 } catch (err) {
-                    console.error('? Failed to re-acquire camera:', err);
+                    console.error('❌ Failed to re-acquire camera:', err);
                     alert('Could not access camera. Please check permissions.');
                     return;
                 }
@@ -1229,13 +1337,10 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                 // Force re-render
                 setLocalStream(prev => prev);
             }
-        } else {
-            // Turning camera OFF � just disable the track (don't stop it)
-            webrtcService.toggleCamera(false);
-            // Force re-render
-            setLocalStream(prev => prev);
         }
 
+        // Always sync camera state with WebRTC service (for publishing to LiveKit)
+        webrtcService.toggleCamera(newState);
         setIsCameraOn(newState);
     };
 
@@ -2262,79 +2367,95 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
 
                                 {/* Controls */}
                                 <div className="flex gap-3 justify-center flex-wrap">
-                                    {isHost ? (
-                                        <>
-                                            <button
-                                                onClick={toggleMicrophone}
-                                                disabled={!isWebRTCInitialized}
-                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isMicOn
-                                                    ? 'bg-gradient-to-r from-emerald-500 to-green-600'
-                                                    : 'bg-red-500/20 text-red-400'
-                                                    } text-[var(--text-primary)] disabled:opacity-50`}
-                                            >
-                                                {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
-                                                {isMicOn ? 'Mute' : 'Unmute'}
-                                            </button>
+                                    <button
+                                        onClick={toggleMicrophone}
+                                        disabled={!isWebRTCInitialized || !isMicAllowed}
+                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${
+                                            isMicOn
+                                                ? 'bg-gradient-to-r from-emerald-500 to-green-600'
+                                                : 'bg-red-500/20 text-red-400'
+                                        } text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed`}
+                                        title={!isMicAllowed ? 'Requires teacher permission' : ''}
+                                    >
+                                        {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
+                                        {isMicOn ? 'Mute' : 'Unmute'}
+                                        {!isMicAllowed && <Lock size={12} className="opacity-60 ml-0.5" />}
+                                    </button>
 
-                                            <button
-                                                onClick={toggleCamera}
-                                                disabled={!isWebRTCInitialized}
-                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isCameraOn
-                                                    ? 'bg-gradient-to-r from-emerald-500 to-green-600'
-                                                    : 'bg-red-500/20 text-red-400'
-                                                    } text-[var(--text-primary)] disabled:opacity-50`}
-                                            >
-                                                {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
-                                                Camera
-                                            </button>
+                                    <button
+                                        onClick={toggleCamera}
+                                        disabled={!isWebRTCInitialized || !isCameraAllowed}
+                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${
+                                            isCameraOn
+                                                ? 'bg-gradient-to-r from-emerald-500 to-green-600'
+                                                : 'bg-red-500/20 text-red-400'
+                                        } text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed`}
+                                        title={!isCameraAllowed ? 'Requires teacher permission' : ''}
+                                    >
+                                        {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
+                                        Camera
+                                        {!isCameraAllowed && <Lock size={12} className="opacity-60 ml-0.5" />}
+                                    </button>
 
-                                            <button
-                                                onClick={isScreenSharing ? stopScreenSharing : startScreenSharing}
-                                                disabled={!isWebRTCInitialized}
-                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isScreenSharing
-                                                    ? 'bg-gradient-to-r from-cyan-500 to-purple-600'
-                                                    : 'bg-[var(--glass-bg)] border-cyan-500/30'
-                                                    } text-[var(--text-primary)] disabled:opacity-50`}
-                                            >
-                                                <Monitor size={20} />
-                                                {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
-                                            </button>
+                                    <button
+                                        onClick={isScreenSharing ? stopScreenSharing : startScreenSharing}
+                                        disabled={!isWebRTCInitialized || !isScreenAllowed}
+                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${
+                                            isScreenSharing
+                                                ? 'bg-gradient-to-r from-cyan-500 to-purple-600'
+                                                : 'bg-[var(--glass-bg)] border-cyan-500/30'
+                                        } text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed`}
+                                        title={!isScreenAllowed ? 'Requires teacher permission' : ''}
+                                    >
+                                        <Monitor size={20} />
+                                        {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+                                        {!isScreenAllowed && <Lock size={12} className="opacity-60 ml-0.5" />}
+                                    </button>
 
-                                            <button
-                                                onClick={() => setShowWhiteboard(!showWhiteboard)}
-                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showWhiteboard
-                                                    ? 'bg-gradient-to-r from-cyan-500500 to-blue-500'
-                                                    : 'bg-[var(--glass-bg)] border-cyan-500/30'
-                                                    } text-white`}
-                                            >
-                                                <Edit size={20} />
-                                                Whiteboard
-                                            </button>
+                                    <button
+                                        onClick={() => setShowWhiteboard(!showWhiteboard)}
+                                        disabled={!isBoardAllowed}
+                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${
+                                            showWhiteboard
+                                                ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                                                : 'bg-[var(--glass-bg)] border-cyan-500/30'
+                                        } text-white disabled:opacity-40 disabled:cursor-not-allowed`}
+                                        title={!isBoardAllowed ? 'Requires teacher permission' : ''}
+                                    >
+                                        <Lock size={12} className="inline mr-1" />
+                                        <Edit size={20} />
+                                        Whiteboard
+                                    </button>
 
-                                            <button
-                                                onClick={() => {
-                                                    setShowCodingBoard(!showCodingBoard);
-                                                    if (!showCodingBoard) {
-                                                        setShowWhiteboard(false);
-                                                    }
-                                                }}
-                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showCodingBoard
-                                                    ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
-                                                    : 'bg-[var(--glass-bg)] border-cyan-500/30'
-                                                    } text-white`}
-                                            >
-                                                <Code size={20} />
-                                                Coding Board
-                                            </button>
-                                        </>
-                                    ) : (
+                                    <button
+                                        onClick={() => {
+                                            setShowCodingBoard(!showCodingBoard);
+                                            if (!showCodingBoard) {
+                                                setShowWhiteboard(false);
+                                            }
+                                        }}
+                                        disabled={!isBoardAllowed}
+                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${
+                                            showCodingBoard
+                                                ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
+                                                : 'bg-[var(--glass-bg)] border-cyan-500/30'
+                                        } text-white disabled:opacity-40 disabled:cursor-not-allowed`}
+                                        title={!isBoardAllowed ? 'Requires teacher permission' : ''}
+                                    >
+                                        <Lock size={12} className="inline mr-1" />
+                                        <Code size={20} />
+                                        Coding Board
+                                    </button>
+
+                                    {!isHost && (
                                         <button
                                             onClick={toggleRaiseHand}
                                             disabled={!isWebRTCInitialized}
-                                            className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isHandRaised
-                                                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/30'
-                                                : 'bg-[var(--glass-bg)] border-cyan-500/30 text-[var(--text-primary)]'
-                                                } disabled:opacity-50`}
+                                            className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${
+                                                isHandRaised
+                                                    ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg shadow-amber-500/30'
+                                                    : 'bg-[var(--glass-bg)] border-cyan-500/30 text-[var(--text-primary)]'
+                                            } disabled:opacity-50`}
                                         >
                                             <Flame size={20} className={isHandRaised ? 'animate-bounce' : ''} />
                                             {isHandRaised ? 'Lower Hand' : 'Raise Hand'}
@@ -2816,16 +2937,62 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                                             )}
                                                         </span>
                                                         {isHost && user.id !== currentUserId && (
-                                                            <button 
-                                                                onClick={() => {
-                                                                    const socket = getSocket();
-                                                                    if(socket) socket.emit('room:message', { roomId: currentRoomId, message: `SYSTEM:KICK|${user.id}`, sender: window.user?.name, senderId: currentUserId });
-                                                                }}
-                                                                className="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40"
-                                                                title="Kick from Room"
-                                                            >
-                                                                Kick
-                                                            </button>
+                                                            <div className="flex items-center gap-1.5 ml-2">
+                                                                <button
+                                                                    onClick={() => toggleParticipantPermission(user.id, 'allowMic', user.allowMic)}
+                                                                    className={`p-1.5 rounded-lg transition-colors ${
+                                                                        user.allowMic
+                                                                            ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                                                            : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
+                                                                    }`}
+                                                                    title={user.allowMic ? 'Mute/Revoke Audio Permission' : 'Grant Audio Permission'}
+                                                                >
+                                                                    {user.allowMic ? <Mic size={14} /> : <MicOff size={14} />}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => toggleParticipantPermission(user.id, 'allowCamera', user.allowCamera)}
+                                                                    className={`p-1.5 rounded-lg transition-colors ${
+                                                                        user.allowCamera
+                                                                            ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                                                            : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
+                                                                    }`}
+                                                                    title={user.allowCamera ? 'Revoke Video Permission' : 'Grant Video Permission'}
+                                                                >
+                                                                    {user.allowCamera ? <Camera size={14} /> : <CameraOff size={14} />}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => toggleParticipantPermission(user.id, 'allowScreen', user.allowScreen)}
+                                                                    className={`p-1.5 rounded-lg transition-colors ${
+                                                                        user.allowScreen
+                                                                            ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                                                            : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
+                                                                    }`}
+                                                                    title={user.allowScreen ? 'Revoke Screen Share Permission' : 'Grant Screen Share Permission'}
+                                                                >
+                                                                    <Monitor size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => toggleParticipantPermission(user.id, 'allowBoard', user.allowBoard)}
+                                                                    className={`p-1.5 rounded-lg transition-colors ${
+                                                                        user.allowBoard
+                                                                            ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                                                            : 'bg-slate-800 text-slate-500 hover:bg-slate-700'
+                                                                    }`}
+                                                                    title={user.allowBoard ? 'Revoke Whiteboard/Coding Board Permission' : 'Grant Board Permission'}
+                                                                >
+                                                                    <Edit size={14} />
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        const socket = getSocket();
+                                                                        if(socket) socket.emit('room:message', { roomId: currentRoomId, message: `SYSTEM:KICK|${user.id}`, sender: window.user?.name, senderId: currentUserId });
+                                                                    }}
+                                                                    className="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 ml-1 font-bold"
+                                                                    title="Kick from Room"
+                                                                >
+                                                                    Kick
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                     <div className="text-xs text-[var(--text-secondary)]">{user.studying || 'In room'}</div>

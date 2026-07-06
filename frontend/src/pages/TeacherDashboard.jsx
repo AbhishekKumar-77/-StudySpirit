@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { API_BASE } from '../config';
 import { connectSocket, getSocket } from '../services/groupAPI';
@@ -14,8 +14,20 @@ import {
 export default function TeacherDashboard() {
     const { user, logoutUser } = useApp();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const [activeTab, setActiveTab] = useState('overview');
+    // Read initial tab parameter from URL query string
+    const queryParams = new URLSearchParams(location.search);
+    const tabParam = queryParams.get('tab');
+    
+    const [activeTab, setActiveTab] = useState(tabParam || 'overview');
+
+    // Sync active tab state when URL changes
+    useEffect(() => {
+        if (tabParam) {
+            setActiveTab(tabParam);
+        }
+    }, [tabParam]);
     const [myQuizzes, setMyQuizzes] = useState([]);
     const [loadingQuizzes, setLoadingQuizzes] = useState(true);
     const [isLight, setIsLight] = useState(false);

@@ -40,7 +40,11 @@ exports.joinClassroom = async (req, res) => {
             classroom.students.push(req.user._id);
             await classroom.save();
         }
-        res.json({ success: true, classroom, alreadyEnrolled });
+
+        const activeLecture = classroom.lectures.find(l => l.isLive);
+        const liveRoomId = activeLecture ? activeLecture.liveRoomId : null;
+
+        res.json({ success: true, classroom, alreadyEnrolled, liveRoomId });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

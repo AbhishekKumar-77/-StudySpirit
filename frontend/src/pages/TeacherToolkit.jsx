@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ClipboardCheck, Home, Shield, ArrowRight, Library, Target, Mic } from 'lucide-react';
+import { ClipboardCheck, Home, Shield, ArrowRight, Library, Target, Mic, School, Megaphone } from 'lucide-react';
 import './Dashboard.css';
 
 export default function TeacherToolkit() {
@@ -56,6 +56,22 @@ export default function TeacherToolkit() {
             path: '/teacher-interview',
             icon: Mic,
             color: '#f43f5e'
+        },
+        {
+            id: 5,
+            name: 'Classrooms',
+            description: 'Manage classrooms, schedule classes, and go live',
+            path: '/teacher-dashboard?tab=classrooms',
+            icon: School,
+            color: '#3b82f6'
+        },
+        {
+            id: 6,
+            name: 'Announcements',
+            description: 'Post and manage global batch announcements',
+            path: '/teacher-dashboard?tab=announcements',
+            icon: Megaphone,
+            color: '#f97316'
         }
     ];
 
