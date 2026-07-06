@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, Users, MessageCircle, TrendingUp,
     Plus, Search, Target, Award, Clock,
@@ -22,7 +22,6 @@ import Editor from '@monaco-editor/react';
 export default function GroupMode() {
     const { user, loading: appLoading } = useApp();
     const navigate = useNavigate();
-    const location = useLocation();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [typingUsers, setTypingUsers] = useState([]);
     const [isPiPMode, setIsPiPMode] = useState(false);
@@ -144,10 +143,17 @@ export default function GroupMode() {
             webrtcService.toggleCamera(false);
         }
 
-        // Screen share revocation
+        // Screen share revocation - inline stop (avoids calling stopScreenSharing which is declared later)
         if (myParticipantData && !myParticipantData.allowScreen && isScreenSharing) {
             console.log('🖥️ Screen share permission revoked by host. Stopping...');
-            stopScreenSharing();
+            setIsScreenSharing(false);
+            try {
+                const screenStream = webrtcService.getScreenStream?.();
+                if (screenStream) {
+                    screenStream.getTracks().forEach(t => t.stop());
+                }
+                webrtcService.stopScreenShare?.();
+            } catch (e) { /* ignore */ }
         }
 
         // Board permission revocation
@@ -1151,20 +1157,6 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
             setCurrentUserId(user._id);
         }
     }, [user]);
-
-    // Auto-join room from URL query parameter if present
-    useEffect(() => {
-        if (appLoading || !user) return; // Wait for app user to load
-        
-        const queryParams = new URLSearchParams(location.search);
-        const roomIdFromUrl = queryParams.get('roomId');
-        
-        if (roomIdFromUrl && currentRoomId !== roomIdFromUrl) {
-            console.log('🚀 URL roomId parameter detected — Auto-joining live room:', roomIdFromUrl);
-            handleJoinRoom(roomIdFromUrl);
-            initializeWebRTC(roomIdFromUrl);
-        }
-    }, [location.search, user, appLoading, currentRoomId]);
 
     const toggleParticipantPermission = (targetUserId, permType, currentValue) => {
         const socket = getSocket();
