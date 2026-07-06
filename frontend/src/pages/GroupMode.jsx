@@ -87,10 +87,31 @@ export default function GroupMode() {
 
     // Host checking logic - placed below dependencies
     const isHost = React.useMemo(() => {
-        if (!liveRooms || !currentRoomId) return false;
-        const currentRoom = liveRooms.find(r => r.id === currentRoomId || r._id === currentRoomId);
-        return currentRoom?.host === user?.name || currentRoom?.hostId === user?._id || user?.role === 'teacher';
-    }, [liveRooms, currentRoomId, user]);
+        if (!currentRoomId) return false;
+        if (user?.role === 'teacher') return true;
+
+        // If it is a group-based live room
+        if (groupDetailData && (groupDetailData._id === currentRoomId || groupDetailData.id === currentRoomId)) {
+            const isAdmin = groupDetailData.admins?.some(a => {
+                const adminId = a._id || a.id || a;
+                return adminId?.toString() === user?._id?.toString();
+            });
+            const isCreator = (groupDetailData.creator?._id || groupDetailData.creator?.id || groupDetailData.creator)?.toString() === user?._id?.toString();
+            if (isAdmin || isCreator) return true;
+        }
+
+        // Check in liveRooms
+        if (liveRooms && liveRooms.length > 0) {
+            const currentRoom = liveRooms.find(r => r.id === currentRoomId || r._id === currentRoomId);
+            if (currentRoom) {
+                const hostId = currentRoom.host?._id || currentRoom.host || currentRoom.hostId;
+                const hostName = currentRoom.host?.name || currentRoom.host;
+                if (hostId && user?._id && hostId.toString() === user._id.toString()) return true;
+                if (hostName && user?.name && hostName === user.name) return true;
+            }
+        }
+        return false;
+    }, [liveRooms, currentRoomId, user, groupDetailData]);
 
     // Spotlight and Whiteboard states
     const [spotlightUserId, setSpotlightUserId] = useState(null);
@@ -569,9 +590,23 @@ export default function GroupMode() {
             if (content.startsWith('SYSTEM:KICK|')) {
                 const targetId = content.split('|')[1];
                 if (targetId === currentUserId) {
-                    alert('You have been removed from the session by the host.');
+                    // Replace alert with a friendlier overlay message
                     leaveWebRTCRoom();
                     setShowStudyRoom(false);
+                    // Show a toast/notification instead of blocking alert
+                    const kickMsg = document.createElement('div');
+                    kickMsg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:14px 24px;border-radius:12px;font-weight:bold;z-index:99999;box-shadow:0 4px 24px rgba(0,0,0,0.3);font-size:15px;';
+                    kickMsg.textContent = '⛔ You have been removed from the session by the host.';
+                    document.body.appendChild(kickMsg);
+                    setTimeout(() => kickMsg.remove(), 4000);
+                } else {
+                    // Optimistically remove the kicked user immediately from host/other participant views
+                    setLiveParticipants(prev => prev.filter(p => p.id !== targetId));
+                    setRemoteStreams(prev => {
+                        const next = new Map(prev);
+                        next.delete(targetId);
+                        return next;
+                    });
                 }
                 return;
             }
@@ -984,40 +1019,75 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
     // Initialize WebRTC and join room
     const initializeWebRTC = async (roomId) => {
         try {
-            console.log('?? Initializing WebRTC for room:', roomId);
+            console.log('🔌 Initializing WebRTC for room:', roomId);
 
-            // Initialize local media - Always request video/audio to get the tracks
-            const stream = await webrtcService.initializeLocalMedia({
-                video: true,
-                audio: true
-            });
+            // Compute host status locally at start to avoid race conditions/stale state
+            const isTeacher = user?.role === 'teacher';
+            let isGroupAdminOrCreator = false;
+            
+            if (groupDetailData && (groupDetailData._id === roomId || groupDetailData.id === roomId)) {
+                const isAdmin = groupDetailData.admins?.some(a => {
+                    const adminId = a._id || a.id || a;
+                    return adminId?.toString() === user?._id?.toString();
+                });
+                const isCreator = (groupDetailData.creator?._id || groupDetailData.creator?.id || groupDetailData.creator)?.toString() === user?._id?.toString();
+                isGroupAdminOrCreator = isAdmin || isCreator;
+            }
 
-            // Apply initial state to tracks
-            stream.getAudioTracks().forEach(track => {
-                track.enabled = isMicOn;
-                track.onended = () => setIsMicOn(false);
-            });
-            stream.getVideoTracks().forEach(track => {
-                track.enabled = isCameraOn;
-                track.onended = () => setIsCameraOn(false);
-            });
+            let isRoomHost = false;
+            if (liveRooms && liveRooms.length > 0) {
+                const currentRoom = liveRooms.find(r => r.id === roomId || r._id === roomId);
+                if (currentRoom) {
+                    const hostId = currentRoom.host?._id || currentRoom.host || currentRoom.hostId;
+                    const hostName = currentRoom.host?.name || currentRoom.host;
+                    isRoomHost = hostId?.toString() === user?._id?.toString() || hostName === user?.name;
+                }
+            }
 
-            setLocalStream(stream);
+            const userIsHost = isTeacher || isGroupAdminOrCreator || isRoomHost;
+            console.log('👤 WebRTC host check:', { userIsHost, isTeacher, isGroupAdminOrCreator, isRoomHost });
+
+            let stream = null;
+            if (userIsHost) {
+                // Initialize local media - Only request video/audio for host
+                stream = await webrtcService.initializeLocalMedia({
+                    video: true,
+                    audio: true
+                });
+
+                // Apply initial state to tracks
+                stream.getAudioTracks().forEach(track => {
+                    track.enabled = isMicOn;
+                    track.onended = () => setIsMicOn(false);
+                });
+                stream.getVideoTracks().forEach(track => {
+                    track.enabled = isCameraOn;
+                    track.onended = () => setIsCameraOn(false);
+                });
+
+                setLocalStream(stream);
+            } else {
+                setLocalStream(null);
+                setIsMicOn(false);
+                setIsCameraOn(false);
+            }
+
             setCurrentRoomId(roomId);
             setIsWebRTCInitialized(true);
 
-            // Join WebRTC room
-            await webrtcService.joinRoom(roomId, currentUserId);
+            // Join WebRTC room - only publish if host
+            await webrtcService.joinRoom(roomId, currentUserId, userIsHost);
 
             // Listen for remote streams
             window.addEventListener('webrtc:remoteStream', handleRemoteStream);
             window.addEventListener('webrtc:remoteTrack', handleRemoteTrack);
             window.addEventListener('webrtc:userLeft', handleUserLeft);
 
-            console.log('? WebRTC initialized successfully');
+            console.log('✅ WebRTC initialized successfully');
         } catch (error) {
-            console.error('? Failed to initialize WebRTC:', error);
-            alert('Could not access camera/microphone. Please check permissions.');
+            console.error('❌ Failed to initialize WebRTC:', error);
+            // Handle error without intrusive alert
+            console.log('Could not access camera/microphone or connect to SFU.');
         }
     };
 
@@ -1212,6 +1282,13 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
     // Leave WebRTC room
     const leaveWebRTCRoom = () => {
         console.log('?? Leaving WebRTC room');
+
+        // Notify socket server that we are leaving the room
+        const socket = getSocket();
+        if (socket && currentRoomId) {
+            socket.emit('room:leave', { roomId: currentRoomId, userId: currentUserId });
+        }
+
         if (showWhiteboard && isHost && window.__getWhiteboardSnapshot) {
             const dataUrl = window.__getWhiteboardSnapshot();
             if (dataUrl) {
@@ -2185,70 +2262,72 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
 
                                 {/* Controls */}
                                 <div className="flex gap-3 justify-center flex-wrap">
-                                    <button
-                                        onClick={toggleMicrophone}
-                                        disabled={!isWebRTCInitialized}
-                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isMicOn
-                                            ? 'bg-gradient-to-r from-emerald-500 to-green-600'
-                                            : 'bg-red-500/20 text-red-400'
-                                            } text-[var(--text-primary)] disabled:opacity-50`}
-                                    >
-                                        {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
-                                        {isMicOn ? 'Mute' : 'Unmute'}
-                                    </button>
+                                    {isHost ? (
+                                        <>
+                                            <button
+                                                onClick={toggleMicrophone}
+                                                disabled={!isWebRTCInitialized}
+                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isMicOn
+                                                    ? 'bg-gradient-to-r from-emerald-500 to-green-600'
+                                                    : 'bg-red-500/20 text-red-400'
+                                                    } text-[var(--text-primary)] disabled:opacity-50`}
+                                            >
+                                                {isMicOn ? <Mic size={20} /> : <MicOff size={20} />}
+                                                {isMicOn ? 'Mute' : 'Unmute'}
+                                            </button>
 
-                                    <button
-                                        onClick={toggleCamera}
-                                        disabled={!isWebRTCInitialized}
-                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isCameraOn
-                                            ? 'bg-gradient-to-r from-emerald-500 to-green-600'
-                                            : 'bg-red-500/20 text-red-400'
-                                            } text-[var(--text-primary)] disabled:opacity-50`}
-                                    >
-                                        {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
-                                        Camera
-                                    </button>
+                                            <button
+                                                onClick={toggleCamera}
+                                                disabled={!isWebRTCInitialized}
+                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all ${isCameraOn
+                                                    ? 'bg-gradient-to-r from-emerald-500 to-green-600'
+                                                    : 'bg-red-500/20 text-red-400'
+                                                    } text-[var(--text-primary)] disabled:opacity-50`}
+                                            >
+                                                {isCameraOn ? <Camera size={20} /> : <CameraOff size={20} />}
+                                                Camera
+                                            </button>
 
-                                    <button
-                                        onClick={isScreenSharing ? stopScreenSharing : startScreenSharing}
-                                        disabled={!isWebRTCInitialized}
-                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isScreenSharing
-                                            ? 'bg-gradient-to-r from-cyan-500 to-purple-600'
-                                            : 'bg-[var(--glass-bg)] border-cyan-500/30'
-                                            } text-[var(--text-primary)] disabled:opacity-50`}
-                                    >
-                                        <Monitor size={20} />
-                                        {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
-                                    </button>
+                                            <button
+                                                onClick={isScreenSharing ? stopScreenSharing : startScreenSharing}
+                                                disabled={!isWebRTCInitialized}
+                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${isScreenSharing
+                                                    ? 'bg-gradient-to-r from-cyan-500 to-purple-600'
+                                                    : 'bg-[var(--glass-bg)] border-cyan-500/30'
+                                                    } text-[var(--text-primary)] disabled:opacity-50`}
+                                            >
+                                                <Monitor size={20} />
+                                                {isScreenSharing ? 'Stop Sharing' : 'Share Screen'}
+                                            </button>
 
-                                    <button
-                                        onClick={() => setShowWhiteboard(!showWhiteboard)}
-                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showWhiteboard
-                                            ? 'bg-gradient-to-r from-cyan-500500 to-blue-500'
-                                            : 'bg-[var(--glass-bg)] border-cyan-500/30'
-                                            } text-white`}
-                                    >
-                                        <Edit size={20} />
-                                        Whiteboard
-                                    </button>
+                                            <button
+                                                onClick={() => setShowWhiteboard(!showWhiteboard)}
+                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showWhiteboard
+                                                    ? 'bg-gradient-to-r from-cyan-500500 to-blue-500'
+                                                    : 'bg-[var(--glass-bg)] border-cyan-500/30'
+                                                    } text-white`}
+                                            >
+                                                <Edit size={20} />
+                                                Whiteboard
+                                            </button>
 
-                                    <button
-                                        onClick={() => {
-                                            setShowCodingBoard(!showCodingBoard);
-                                            if (!showCodingBoard) {
-                                                setShowWhiteboard(false);
-                                            }
-                                        }}
-                                        className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showCodingBoard
-                                            ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
-                                            : 'bg-[var(--glass-bg)] border-cyan-500/30'
-                                            } text-white`}
-                                    >
-                                        <Code size={20} />
-                                        Coding Board
-                                    </button>
-
-                                    {!isHost && (
+                                            <button
+                                                onClick={() => {
+                                                    setShowCodingBoard(!showCodingBoard);
+                                                    if (!showCodingBoard) {
+                                                        setShowWhiteboard(false);
+                                                    }
+                                                }}
+                                                className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${showCodingBoard
+                                                    ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30'
+                                                    : 'bg-[var(--glass-bg)] border-cyan-500/30'
+                                                    } text-white`}
+                                            >
+                                                <Code size={20} />
+                                                Coding Board
+                                            </button>
+                                        </>
+                                    ) : (
                                         <button
                                             onClick={toggleRaiseHand}
                                             disabled={!isWebRTCInitialized}

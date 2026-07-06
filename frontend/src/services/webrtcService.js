@@ -96,7 +96,7 @@ class WebRTCService {
     }
 
     // Join a room and connect to LiveKit SFU
-    async joinRoom(roomId, userId) {
+    async joinRoom(roomId, userId, shouldPublish = true) {
         this.currentRoomId = roomId;
         this.currentUserId = userId;
 
@@ -170,8 +170,8 @@ class WebRTCService {
             await this.room.connect(serverUrl, token);
             console.log('✅ Connected to LiveKit Room successfully!');
 
-            // If we have an existing localStream from initializeLocalMedia, publish those tracks
-            if (this.localStream) {
+            // If we have an existing localStream from initializeLocalMedia and shouldPublish is true, publish those tracks
+            if (this.localStream && shouldPublish) {
                 console.log('📡 LiveKit: Publishing existing media tracks...');
                 for (const track of this.localStream.getTracks()) {
                     if (track.kind === 'video') {
@@ -180,15 +180,17 @@ class WebRTCService {
                         await this.room.localParticipant.publishTrack(track, { name: 'microphone' });
                     }
                 }
-            } else {
+            } else if (shouldPublish) {
                 // Otherwise fallback to enabling directly
                 await this.room.localParticipant.enableCameraAndMicrophone();
+            } else {
+                console.log('📡 LiveKit: Joined as viewer (no media published)');
             }
 
         } catch (error) {
             console.error('❌ LiveKit connection error:', error);
             // Fallback for development if local node-server or token generation errors out
-            alert('Could not establish LiveKit SFU connection. Falling back to local/demo streaming.');
+            console.warn('⚠️ Could not establish LiveKit SFU connection. Falling back to local/demo streaming.');
         }
     }
 
