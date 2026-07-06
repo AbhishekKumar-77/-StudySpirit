@@ -113,62 +113,6 @@ export default function GroupMode() {
         return false;
     }, [liveRooms, currentRoomId, user, groupDetailData]);
 
-    const myParticipantData = liveParticipants.find(p => p.id === currentUserId);
-    const isMicAllowed = isHost || !!myParticipantData?.allowMic;
-    const isCameraAllowed = isHost || !!myParticipantData?.allowCamera;
-    const isScreenAllowed = isHost || !!myParticipantData?.allowScreen;
-    const isBoardAllowed = isHost || !!myParticipantData?.allowBoard;
-
-    // Enforce permission revocations instantly for guests
-    useEffect(() => {
-        if (isHost) return;
-
-        // Microphone revocation
-        if (myParticipantData && !myParticipantData.allowMic && isMicOn) {
-            console.log('🔇 Mic permission revoked by host. Muting...');
-            setIsMicOn(false);
-            if (localStream) {
-                localStream.getAudioTracks().forEach(t => t.enabled = false);
-            }
-            webrtcService.toggleMicrophone(false);
-        }
-
-        // Camera revocation
-        if (myParticipantData && !myParticipantData.allowCamera && isCameraOn) {
-            console.log('📷 Camera permission revoked by host. Turning off video...');
-            setIsCameraOn(false);
-            if (localStream) {
-                localStream.getVideoTracks().forEach(t => t.enabled = false);
-            }
-            webrtcService.toggleCamera(false);
-        }
-
-        // Screen share revocation - inline stop (avoids calling stopScreenSharing which is declared later)
-        if (myParticipantData && !myParticipantData.allowScreen && isScreenSharing) {
-            console.log('🖥️ Screen share permission revoked by host. Stopping...');
-            setIsScreenSharing(false);
-            try {
-                const screenStream = webrtcService.getScreenStream?.();
-                if (screenStream) {
-                    screenStream.getTracks().forEach(t => t.stop());
-                }
-                webrtcService.stopScreenShare?.();
-            } catch (e) { /* ignore */ }
-        }
-
-        // Board permission revocation
-        if (myParticipantData && !myParticipantData.allowBoard) {
-            if (showWhiteboard) {
-                console.log('📋 Board permission revoked. Closing whiteboard...');
-                setShowWhiteboard(false);
-            }
-            if (showCodingBoard) {
-                console.log('💻 Board permission revoked. Closing coding board...');
-                setShowCodingBoard(false);
-            }
-        }
-    }, [liveParticipants, currentUserId, isHost, isMicOn, isCameraOn, isScreenSharing, showWhiteboard, showCodingBoard, localStream]);
-
     // Spotlight and Whiteboard states
     const [spotlightUserId, setSpotlightUserId] = useState(null);
     const [isWhiteboardFullscreen, setIsWhiteboardFullscreen] = useState(false);
@@ -233,6 +177,63 @@ export default function GroupMode() {
         challengeType: 'problems'
     });
 
+
+    // ── Permission derived values (placed after ALL state declarations to avoid TDZ) ───────
+    const myParticipantData = liveParticipants.find(p => p.id === currentUserId);
+    const isMicAllowed = isHost || !!myParticipantData?.allowMic;
+    const isCameraAllowed = isHost || !!myParticipantData?.allowCamera;
+    const isScreenAllowed = isHost || !!myParticipantData?.allowScreen;
+    const isBoardAllowed = isHost || !!myParticipantData?.allowBoard;
+
+    // Enforce permission revocations instantly for guests
+    useEffect(() => {
+        if (isHost) return;
+
+        // Microphone revocation
+        if (myParticipantData && !myParticipantData.allowMic && isMicOn) {
+            console.log('\ud83d\udd07 Mic permission revoked by host. Muting...');
+            setIsMicOn(false);
+            if (localStream) {
+                localStream.getAudioTracks().forEach(t => t.enabled = false);
+            }
+            webrtcService.toggleMicrophone(false);
+        }
+
+        // Camera revocation
+        if (myParticipantData && !myParticipantData.allowCamera && isCameraOn) {
+            console.log('\ud83d\udcf7 Camera permission revoked by host. Turning off video...');
+            setIsCameraOn(false);
+            if (localStream) {
+                localStream.getVideoTracks().forEach(t => t.enabled = false);
+            }
+            webrtcService.toggleCamera(false);
+        }
+
+        // Screen share revocation - inline (avoids calling stopScreenSharing declared later)
+        if (myParticipantData && !myParticipantData.allowScreen && isScreenSharing) {
+            console.log('\ud83d\udda5\ufe0f Screen share permission revoked by host. Stopping...');
+            setIsScreenSharing(false);
+            try {
+                const screenStream = webrtcService.getScreenStream?.();
+                if (screenStream) {
+                    screenStream.getTracks().forEach(t => t.stop());
+                }
+                webrtcService.stopScreenShare?.();
+            } catch (e) { /* ignore */ }
+        }
+
+        // Board permission revocation
+        if (myParticipantData && !myParticipantData.allowBoard) {
+            if (showWhiteboard) {
+                console.log('\ud83d\udccb Board permission revoked. Closing whiteboard...');
+                setShowWhiteboard(false);
+            }
+            if (showCodingBoard) {
+                console.log('\ud83d\udcbb Board permission revoked. Closing coding board...');
+                setShowCodingBoard(false);
+            }
+        }
+    }, [liveParticipants, currentUserId, isHost, isMicOn, isCameraOn, isScreenSharing, showWhiteboard, showCodingBoard, localStream]);
 
     useEffect(() => {
         if (user?._id) {
