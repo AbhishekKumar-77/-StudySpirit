@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { 
-    Mic, MicOff, Send, Cpu, User, Users, Camera, Sparkles, MessageSquare
+    Mic, MicOff, Send, Cpu, User, Users, Camera, Sparkles, MessageSquare, Loader
 } from 'lucide-react';
 import AriaAvatar from '../AriaAvatar';
 

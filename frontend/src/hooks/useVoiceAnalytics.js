@@ -16,6 +16,11 @@ export default function useVoiceAnalytics(isListening, wordsSpoken) {
     const startTimeRef = useRef(null);
     const timerIntervalRef = useRef(null);
 
+    const wordsSpokenRef = useRef(wordsSpoken);
+    useEffect(() => {
+        wordsSpokenRef.current = wordsSpoken;
+    }, [wordsSpoken]);
+
     // Timing tracking
     const startTimer = () => {
         startTimeRef.current = Date.now();
@@ -25,7 +30,7 @@ export default function useVoiceAnalytics(isListening, wordsSpoken) {
             setElapsedTime(sec);
             if (sec > 60) {
                 const mins = sec / 60;
-                setWpm(Math.round(wordsSpoken / mins));
+                setWpm(Math.round(wordsSpokenRef.current / mins));
             }
         }, 1000);
     };
