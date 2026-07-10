@@ -98,6 +98,7 @@ export default function AIInterview() {
         startJourney,
         examCode, setExamCode,
         registrationNumber, setRegistrationNumber,
+        examData,
         handleJoinExam,
         isJoiningExam,
         atsFile, setAtsFile,

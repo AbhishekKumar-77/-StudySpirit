@@ -489,6 +489,7 @@ export default function useInterviewSession(user, onSpeechOutput) {
         setExamCode,
         registrationNumber,
         setRegistrationNumber,
+        examData,
         handleJoinExam,
         isJoiningExam,
         atsFile,

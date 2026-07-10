@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { 
     Cpu, User, Mic, FileText, Sparkles, Users, 
-    UploadCloud, X, Play, Loader 
+    UploadCloud, X, Play, Loader, CheckCircle
 } from 'lucide-react';
 
 export default function SetupPanel({ 
