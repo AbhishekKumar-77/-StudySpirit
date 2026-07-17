@@ -39,6 +39,24 @@ export default function SoftSkills() {
     const [progress, setProgress] = useState(loadProgress); // Restored
     const [vocabList, setVocabList] = useState([]);
     const [isLoadingVocab, setIsLoadingVocab] = useState(false);
+    const [voices, setVoices] = useState([]);
+
+    useEffect(() => {
+        const loadVoices = () => {
+            if ('speechSynthesis' in window) {
+                setVoices(window.speechSynthesis.getVoices());
+            }
+        };
+        loadVoices();
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        return () => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = null;
+            }
+        };
+    }, []);
 
     // Writing State
     const [writingTopic, setWritingTopic] = useState('');
@@ -203,8 +221,8 @@ export default function SoftSkills() {
             utterance.rate = 1.0;
             utterance.pitch = 1.0;
 
-            const voices = window.speechSynthesis.getVoices();
-            const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha'));
+            const availableVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+            const preferredVoice = availableVoices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha') || v.lang.startsWith('en-'));
             if (preferredVoice) utterance.voice = preferredVoice;
 
             utterance.onstart = () => {
@@ -463,12 +481,12 @@ export default function SoftSkills() {
     const ProgressBar = ({ value, color = 'violet' }) => (
         <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
             <div
-                className={`h-full rounded-full transition-all duration-1000 bg-gradient-to-r ${color === 'violet' ? 'from-cyan- to-purple-600' :
+                className={`h-full rounded-full transition-all duration-1000 bg-gradient-to-r ${color === 'violet' ? 'from-cyan-500 to-purple-600' :
                     color === 'cyan' ? 'from-cyan-500 to-blue-600' :
                         color === 'green' ? 'from-emerald-500 to-green-600' :
                             color === 'amber' ? 'from-amber-500 to-orange-600' :
                                 color === 'pink' ? 'from-pink-500 to-rose-600' :
-                                    'from-cyan- to-purple-600'
+                                    'from-cyan-500 to-purple-600'
                     }`}
                 style={{ width: `${value}%` }}
             />
@@ -478,7 +496,7 @@ export default function SoftSkills() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pb-16 font-sans text-[var(--text-primary)] relative">
             {/* Background Effects */}
-            <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-cyan-/10 rounded-full blur-[100px] pointer-events-none animate-pulse" />
+            <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none animate-pulse" />
             <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-pink-500/10 rounded-full blur-[100px] pointer-events-none" />
 
             {/* Navbar */}
@@ -486,14 +504,14 @@ export default function SoftSkills() {
                 <div className="max-w-[1400px] mx-auto flex items-center justify-between">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="flex items-center gap-3 bg-cyan-/10 hover:bg-cyan-/20 px-5 py-3 rounded-xl text-violet-300 font-semibold transition-all"
+                        className="flex items-center gap-3 bg-cyan-500/10 hover:bg-cyan-500/20 px-5 py-3 rounded-xl text-violet-300 font-semibold transition-all"
                     >
                         <ArrowLeft size={18} />
                         Back to Dashboard
                     </button>
 
                     <div className="text-xl font-bold flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-cyan- to-pink-500 rounded-xl">
+                        <div className="p-2 bg-gradient-to-br from-cyan-500 to-pink-500 rounded-xl">
                             <Brain size={24} />
                         </div>
                         <span>Soft Skills Lab</span>
@@ -504,8 +522,8 @@ export default function SoftSkills() {
                             <Flame className="text-amber-500" size={18} />
                             <span className="text-amber-300 font-bold">{progress.streak} day streak</span>
                         </div>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-cyan-/10 rounded-xl border border-cyan-500/30">
-                            <Star className="text-cyan-" size={18} />
+                        <div className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 rounded-xl border border-cyan-500/30">
+                            <Star className="text-cyan-400" size={18} />
                             <span className="text-violet-300 font-bold">{progress.xp} XP</span>
                         </div>
                     </div>
@@ -514,12 +532,12 @@ export default function SoftSkills() {
 
             <div className="max-w-[1400px] mx-auto px-8 py-10">
                 {/* Header */}
-                <div className="bg-gradient-to-br from-cyan-/20 to-pink-500/20 backdrop-blur-xl rounded-3xl p-10 mb-8 border border-cyan-500/20 shadow-2xl relative overflow-hidden">
+                <div className="bg-gradient-to-br from-cyan-500/20 to-pink-500/20 backdrop-blur-xl rounded-3xl p-10 mb-8 border border-cyan-500/20 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent animate-pulse" />
 
                     <div className="flex items-center justify-between flex-wrap gap-6">
                         <div className="flex items-center gap-6">
-                            <div className="bg-gradient-to-br from-cyan- to-pink-600 p-6 rounded-2xl shadow-lg shadow-violet-500/30">
+                            <div className="bg-gradient-to-br from-cyan-500 to-pink-600 p-6 rounded-2xl shadow-lg shadow-violet-500/30">
                                 <Mic size={48} />
                             </div>
                             <div>
@@ -531,7 +549,7 @@ export default function SoftSkills() {
 
                         <div className="flex gap-4">
                             <div className="text-center p-4 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)] min-w-[100px]">
-                                <div className="text-2xl font-black text-cyan-">{progress.interviewsCompleted}</div>
+                                <div className="text-2xl font-black text-cyan-400">{progress.interviewsCompleted}</div>
                                 <div className="text-xs text-[var(--text-secondary)]">Interviews</div>
                             </div>
                             <div className="text-center p-4 bg-[var(--glass-bg)] rounded-xl border border-[var(--border-color)] min-w-[100px]">
@@ -547,7 +565,7 @@ export default function SoftSkills() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
                     {[
-                        { icon: Volume2, label: 'Speech Score', value: `${stats.speechScore}%`, color: 'violet', bg: 'bg-cyan-/20' },
+                        { icon: Volume2, label: 'Speech Score', value: `${stats.speechScore}%`, color: 'violet', bg: 'bg-cyan-500/20' },
                         { icon: BookOpen, label: 'Vocabulary', value: stats.vocabularyLevel, color: 'cyan', bg: 'bg-cyan-500/20' },
                         { icon: Briefcase, label: 'Interview Ready', value: `${stats.interviewReady}%`, color: 'amber', bg: 'bg-amber-500/20' },
                         { icon: TrendingUp, label: 'Growth', value: stats.overallGrowth, color: 'green', bg: 'bg-emerald-500/20' }
@@ -573,7 +591,7 @@ export default function SoftSkills() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wide transition-all flex items-center gap-2 ${activeTab === tab.id
-                                ? 'bg-gradient-to-r from-cyan- to-pink-600 shadow-lg shadow-violet-500/30'
+                                ? 'bg-gradient-to-r from-cyan-500 to-pink-600 shadow-lg shadow-violet-500/30'
                                 : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
                                 }`}
                         >
@@ -592,7 +610,7 @@ export default function SoftSkills() {
                                 <div className="absolute inset-0 z-0 flex items-center justify-center opacity-20 pointer-events-none">
                                     {/* AI Avatar Animation */}
                                     <div className={`relative transition-all duration-500 ${isAiSpeaking ? 'scale-110' : 'scale-100'}`}>
-                                        <div className={`w-64 h-64 rounded-full bg-gradient-to-br from-cyan- to-pink-500 blur-3xl animate-pulse ${isAiSpeaking ? 'opacity-80' : 'opacity-30'}`} />
+                                        <div className={`w-64 h-64 rounded-full bg-gradient-to-br from-cyan-500 to-pink-500 blur-3xl animate-pulse ${isAiSpeaking ? 'opacity-80' : 'opacity-30'}`} />
                                         <div className="absolute inset-0 flex items-center justify-center">
                                             <div className={`w-40 h-40 rounded-full border-4 border-cyan-400 shadow-[0_0_50px_rgba(139,92,246,0.5)] bg-[var(--bg-secondary)] flex items-center justify-center relative overflow-hidden transition-all duration-300 ${isAiSpeaking ? 'shadow-[0_0_80px_rgba(139,92,246,0.8)] border-cyan-300' : ''}`}>
                                                 {/* Eyes */}
@@ -632,7 +650,7 @@ export default function SoftSkills() {
                                             )}
 
                                             <div className={`max-w-[80%] p-5 rounded-3xl ${msg.role === 'user'
-                                                ? 'bg-gradient-to-br from-cyan- to-pink-600 rounded-br-none shadow-lg shadow-violet-500/20 text-[var(--text-primary)]'
+                                                ? 'bg-gradient-to-br from-cyan-500 to-pink-600 rounded-br-none shadow-lg shadow-violet-500/20 text-[var(--text-primary)]'
                                                 : 'bg-[var(--glass-bg)] backdrop-blur-md rounded-bl-none border border-[var(--border-color)] text-[var(--text-primary)] shadow-xl'
                                                 }`}>
                                                 {msg.role === 'ai' && (
@@ -662,7 +680,7 @@ export default function SoftSkills() {
                                     {/* Live Transcription */}
                                     {interimTranscript && (
                                         <div className="absolute -top-16 left-0 right-0 flex justify-center">
-                                            <div className="bg-[var(--bg-secondary)]lack/60 backdrop-blur-md px-6 py-2 rounded-full text-[var(--text-primary)] border border-[var(--border-color)] animate-pulse">
+                                            <div className="bg-black/60 backdrop-blur-md px-6 py-2 rounded-full text-[var(--text-primary)] border border-[var(--border-color)] animate-pulse">
                                                 {interimTranscript}...
                                             </div>
                                         </div>
@@ -672,7 +690,7 @@ export default function SoftSkills() {
                                         onClick={toggleRecording}
                                         className={`w-20 h-20 rounded-full flex items-center justify-center transition-all bg-gradient-to-br shadow-2xl ${isRecording
                                             ? 'from-red-500 to-rose-600 shadow-red-500/50 scale-110 animate-pulse ring-4 ring-red-500/20'
-                                            : 'from-cyan- to-pink-600 shadow-violet-500/40 hover:scale-105 hover:from-violet-400 hover:to-pink-500'
+                                            : 'from-cyan-500 to-pink-600 shadow-violet-500/40 hover:scale-105 hover:from-violet-400 hover:to-pink-500'
                                             }`}
                                     >
                                         {isRecording ? <MicOff size={32} className="text-[var(--text-primary)]" /> : <Mic size={32} className="text-[var(--text-primary)]" />}
@@ -896,11 +914,11 @@ export default function SoftSkills() {
                         {activeTab === 'speaking' && (
                             <div className="space-y-6 animate-fade-in pb-20">
                                 <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-3xl p-8 border border-[var(--border-color)] relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-/10 rounded-full blur-3xl pointer-events-none" />
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
                                     <h3 className="text-3xl font-black flex items-center gap-3 mb-6 relative z-10">
-                                        <div className="p-3 bg-cyan-/20 rounded-xl">
-                                            <Mic className="text-cyan-" size={32} />
+                                        <div className="p-3 bg-cyan-500/20 rounded-xl">
+                                            <Mic className="text-cyan-400" size={32} />
                                         </div>
                                         Extempore Speaking
                                     </h3>
@@ -913,7 +931,7 @@ export default function SoftSkills() {
                                             <button
                                                 onClick={fetchSpeakingTopic}
                                                 disabled={isEvaluatingSpeech}
-                                                className="px-8 py-3 bg-gradient-to-r from-cyan- to-indigo-600 rounded-xl font-bold shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all flex items-center gap-2 mx-auto"
+                                                className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 rounded-xl font-bold shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all flex items-center gap-2 mx-auto"
                                             >
                                                 {isEvaluatingSpeech ? <RefreshCw className="animate-spin" /> : <PlayCircle />}
                                                 Generate Topic
@@ -925,7 +943,7 @@ export default function SoftSkills() {
                                         <div className="space-y-6 relative z-10">
                                             {/* Topic & Controls */}
                                             <div className="bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)] flex flex-col items-center text-center gap-4">
-                                                <div className="text-sm text-cyan- font-bold uppercase tracking-wider">Your Topic</div>
+                                                <div className="text-sm text-cyan-400 font-bold uppercase tracking-wider">Your Topic</div>
                                                 <h4 className="text-2xl font-black max-w-2xl">{speakingTopic}</h4>
 
                                                 <div className="flex items-center gap-4 mt-2">
@@ -940,7 +958,7 @@ export default function SoftSkills() {
                                                             onClick={toggleRecording}
                                                             className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isRecording
                                                                 ? 'bg-red-500 shadow-lg shadow-red-500/50 animate-pulse scale-110'
-                                                                : 'bg-cyan- shadow-lg shadow-violet-500/30 hover:bg-cyan-'
+                                                                : 'bg-cyan-500 shadow-lg shadow-violet-500/30 hover:bg-cyan-600'
                                                                 }`}
                                                         >
                                                             {isRecording ? <MicOff className="text-[var(--text-primary)]" /> : <Mic className="text-[var(--text-primary)]" />}
@@ -970,16 +988,16 @@ export default function SoftSkills() {
                                                 <div className="animate-fade-in bg-[var(--glass-bg)] p-6 rounded-2xl border border-[var(--border-color)]">
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                         <div className="flex flex-col items-center justify-center p-4 bg-[var(--bg-secondary)]/50 rounded-xl">
-                                                            <div className="text-4xl font-black text-cyan- mb-2">{speechFeedback.score}/100</div>
+                                                            <div className="text-4xl font-black text-cyan-400 mb-2">{speechFeedback.score}/100</div>
                                                             <div className="text-xs text-[var(--text-muted)] uppercase tracking-widest">Speaking Score</div>
                                                         </div>
                                                         <div className="md:col-span-2">
-                                                            <h5 className="font-bold text-cyan- mb-2 flex items-center gap-2"><Sparkles size={16} /> Feedback</h5>
+                                                            <h5 className="font-bold text-cyan-400 mb-2 flex items-center gap-2"><Sparkles size={16} /> Feedback</h5>
                                                             <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">{speechFeedback.feedback}</p>
                                                             <ul className="space-y-1">
                                                                 {speechFeedback.improvements?.map((imp, idx) => (
                                                                     <li key={idx} className="text-xs text-[var(--text-secondary)] flex items-start gap-2">
-                                                                        <div className="w-1 h-1 rounded-full bg-cyan- mt-1.5" />
+                                                                        <div className="w-1 h-1 rounded-full bg-cyan-400 mt-1.5" />
                                                                         {imp}
                                                                     </li>
                                                                 ))}
@@ -1042,7 +1060,7 @@ export default function SoftSkills() {
                         {/* Progress Stats */}
                         <div className="bg-[var(--glass-bg)] backdrop-blur-xl rounded-2xl p-6 border border-[var(--border-color)]">
                             <div className="font-bold mb-4 flex items-center gap-2">
-                                <BarChart3 className="text-cyan-" />
+                                <BarChart3 className="text-cyan-400" />
                                 Your Progress
                             </div>
 
@@ -1050,7 +1068,7 @@ export default function SoftSkills() {
                                 <div>
                                     <div className="flex justify-between text-sm mb-2">
                                         <span className="text-[var(--text-secondary)]">Speech Confidence</span>
-                                        <span className="font-bold text-cyan-">{stats.speechScore}%</span>
+                                        <span className="font-bold text-cyan-400">{stats.speechScore}%</span>
                                     </div>
                                     <ProgressBar value={stats.speechScore} color="violet" />
                                 </div>
@@ -1102,9 +1120,9 @@ export default function SoftSkills() {
                         </div>
 
                         {/* Tips */}
-                        <div className="bg-gradient-to-br from-cyan-/20 to-pink-500/20 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20">
+                        <div className="bg-gradient-to-br from-cyan-500/20 to-pink-500/20 backdrop-blur-xl rounded-2xl p-6 border border-cyan-500/20">
                             <div className="font-bold mb-3 flex items-center gap-2">
-                                <Sparkles className="text-cyan-" />
+                                <Sparkles className="text-cyan-400" />
                                 Pro Tip
                             </div>
                             <p className="text-sm text-violet-200 leading-relaxed">

@@ -2,6 +2,7 @@ const User = require('../models/User');
 const InterviewSession = require('../models/InterviewSession');
 const InterviewSubmission = require('../models/InterviewSubmission');
 const InterviewExam = require('../models/InterviewExam');
+const CareerProfile = require('../models/CareerProfile');
 const pdfParse = require('pdf-parse');
 const aiProviderService = require('../services/aiProviderService');
 
@@ -11,6 +12,53 @@ const GROQ_KEY_SOFTSKILLS = process.env.GROQ_API_KEY_SOFTSKILLS || process.env.G
 
 if (!GROQ_KEY_INTERVIEW)  console.warn('⚠️  GROQ_API_KEY_INTERVIEW not set — AI Interview features will failover to offline bank.');
 if (!GROQ_KEY_SOFTSKILLS) console.warn('⚠️  GROQ_API_KEY_SOFTSKILLS not set — Soft Skills features will fail.');
+
+// ── Resilient JSON parser — strips markdown fences, extracts JSON from LLM output ──
+function cleanAndParseJSON(rawText) {
+    if (!rawText || typeof rawText !== 'string') throw new Error('Empty AI response');
+    // Strip markdown code fences
+    let cleaned = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    // Try direct parse first
+    try {
+        return JSON.parse(cleaned);
+    } catch (_) {
+        // Fallback: extract the first { ... } or [ ... ] block
+        const objMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (objMatch) return JSON.parse(objMatch[0]);
+        const arrMatch = cleaned.match(/\[[\s\S]*\]/);
+        if (arrMatch) return JSON.parse(arrMatch[0]);
+        throw new Error('Could not extract valid JSON from AI response');
+    }
+}
+
+// ── Helper: Update CareerProfile soft skills scores after evaluation ──
+async function updateSoftSkillsProfile(userId, newScore, type) {
+    try {
+        if (!userId) return;
+        let profile = await CareerProfile.findOne({ user: userId });
+        if (!profile) profile = new CareerProfile({ user: userId });
+        if (!profile.softSkillsProfile) {
+            profile.softSkillsProfile = { communicationScore: 0, confidenceScore: 0, vocabularyLevel: 'A1', overallRating: 0 };
+        }
+
+        // Rolling average: blend old score with new (70% old, 30% new for smoothing)
+        const oldComm = profile.softSkillsProfile.communicationScore || 0;
+        const blended = oldComm === 0 ? newScore : Math.round(oldComm * 0.7 + newScore * 0.3);
+        profile.softSkillsProfile.communicationScore = Math.min(100, blended);
+
+        // Map 0-100 score to CEFR-like level
+        const level = blended >= 90 ? 'C2' : blended >= 75 ? 'C1' : blended >= 60 ? 'B2' : blended >= 45 ? 'B1' : blended >= 25 ? 'A2' : 'A1';
+        profile.softSkillsProfile.vocabularyLevel = level;
+        profile.softSkillsProfile.overallRating = Math.round(blended / 10);
+        profile.softSkillsProfile.confidenceScore = Math.min(100, Math.round((profile.softSkillsProfile.confidenceScore || 0) * 0.8 + (newScore * 0.2)));
+
+        profile.updatedAt = new Date();
+        await profile.save();
+        console.log(`✅ Updated CareerProfile softSkillsProfile for user ${userId} (${type}: ${newScore})`);
+    } catch (err) {
+        console.error('⚠️ CareerProfile update failed (non-blocking):', err.message);
+    }
+}
 
 // AI Interview - Mock Interviewer with Scoring & History
 exports.interviewWithAI = async (req, res) => {
@@ -253,7 +301,7 @@ ALWAYS return valid JSON in this exact format:
         if (!data.choices?.[0]?.message?.content) {
             return res.status(500).json({ message: 'AI response error', reply: 'Sorry, I had trouble responding. Please try again.' });
         }
-        res.json(JSON.parse(data.choices[0].message.content));
+        res.json(cleanAndParseJSON(data.choices[0].message.content));
     } catch (error) {
         console.error('SoftSkills AI Error:', error);
         res.status(500).json({ correction: null, reply: 'Sorry, I encountered an error. Please try again.' });
@@ -288,7 +336,7 @@ Return ONLY valid JSON in this exact format:
         });
         const data = await response.json();
         if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI error' });
-        res.json(JSON.parse(data.choices[0].message.content));
+        res.json(cleanAndParseJSON(data.choices[0].message.content));
     } catch (error) {
         console.error('Vocabulary Error:', error);
         res.status(500).json({ message: 'Error generating vocabulary' });
@@ -360,7 +408,14 @@ Return ONLY valid JSON:
         });
         const data = await response.json();
         if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI evaluation error' });
-        res.json(JSON.parse(data.choices[0].message.content));
+        const result = cleanAndParseJSON(data.choices[0].message.content);
+
+        // Sync score to CareerProfile (non-blocking)
+        if (req.user && req.user.id && result.score != null) {
+            updateSoftSkillsProfile(req.user.id, result.score, 'writing');
+        }
+
+        res.json(result);
     } catch (error) {
         console.error('Writing Evaluate Error:', error);
         res.status(500).json({ message: 'Error evaluating essay' });
@@ -432,7 +487,14 @@ Return ONLY valid JSON:
         });
         const data = await response.json();
         if (!data.choices?.[0]?.message?.content) return res.status(500).json({ message: 'AI evaluation error' });
-        res.json(JSON.parse(data.choices[0].message.content));
+        const result = cleanAndParseJSON(data.choices[0].message.content);
+
+        // Sync score to CareerProfile (non-blocking)
+        if (req.user && req.user.id && result.score != null) {
+            updateSoftSkillsProfile(req.user.id, result.score, 'speaking');
+        }
+
+        res.json(result);
     } catch (error) {
         console.error('Speech Evaluate Error:', error);
         res.status(500).json({ message: 'Error evaluating speech' });

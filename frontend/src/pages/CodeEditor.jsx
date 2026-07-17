@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { API_BASE } from "../config";
+import { codeExecutionEngine } from "../services/codeExecutionEngine";
 import {
     ArrowLeft, Play, Download, Upload, Copy, Trash2, Terminal,
     Settings, Sun, Moon, Code, FileText, Save, FolderOpen, Zap,
@@ -106,6 +107,11 @@ export default function CodeEditor() {
     const [theme, setTheme] = useState("vs-dark");
     const [output, setOutput] = useState("");
     const [isRunning, setIsRunning] = useState(false);
+    const [executionMode, setExecutionMode] = useState(() => {
+        return localStorage.getItem("codeeditor_execution_mode") || "local";
+    });
+    const [loadingEngine, setLoadingEngine] = useState(false);
+    const [engineProgress, setEngineProgress] = useState("");
     const [fontSize, setFontSize] = useState(14);
     const [showSettings, setShowSettings] = useState(false);
     const [savedFiles, setSavedFiles] = useState(() => {
@@ -314,18 +320,24 @@ export default function CodeEditor() {
         setIsVerifying(true);
         setVerificationResults(null);
         try {
-            const res = await fetch(`${API_BASE}/codespirit/verify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    sessionId,
-                    challengeId: currentProblem.id,
-                    code,
-                    language: language.id
-                })
+            const data = await codeExecutionEngine.verify(language.id, code, currentProblem.testCases || [], {
+                mode: executionMode,
+                sessionId,
+                challengeId: currentProblem.id,
+                onLoadStart: (msg) => {
+                    setLoadingEngine(true);
+                    setEngineProgress(msg);
+                },
+                onLoadProgress: (msg) => {
+                    setEngineProgress(msg);
+                },
+                onLoadEnd: () => {
+                    setLoadingEngine(false);
+                }
             });
-            const data = await res.json();
+
+            setLoadingEngine(false);
+
             if (data.success) {
                 setVerificationResults(data);
                 if (data.allPassed) {
@@ -335,7 +347,7 @@ export default function CodeEditor() {
                 setVerificationResults({ results: [], allPassed: false, message: data.message || 'Verification failed' });
             }
         } catch (err) {
-            setVerificationResults({ results: [], allPassed: false, message: 'Network error: ' + err.message });
+            setVerificationResults({ results: [], allPassed: false, message: 'Verification error: ' + err.message });
         } finally {
             setIsVerifying(false);
         }
@@ -377,13 +389,22 @@ export default function CodeEditor() {
     const runWithTestCase = async (tcIndex, tcInput) => {
         setTcOutputs(prev => ({ ...prev, [tcIndex]: { running: true, stdout: null, stderr: null } }));
         try {
-            const res = await fetch(`${API_BASE}/codespirit/execute`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ language: language.id, code, stdin: tcInput || '' })
+            const result = await codeExecutionEngine.execute(language.id, code, tcInput || '', {
+                mode: executionMode,
+                onLoadStart: (msg) => {
+                    setLoadingEngine(true);
+                    setEngineProgress(msg);
+                },
+                onLoadProgress: (msg) => {
+                    setEngineProgress(msg);
+                },
+                onLoadEnd: () => {
+                    setLoadingEngine(false);
+                }
             });
-            const result = await res.json();
+
+            setLoadingEngine(false);
+
             if (result.success && result.run) {
                 setTcOutputs(prev => ({
                     ...prev,
@@ -407,18 +428,21 @@ export default function CodeEditor() {
         setOutput("⏳ Compiling & Running...\n");
 
         try {
-            const executeRes = await fetch(`${API_BASE}/codespirit/execute`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: 'include',
-                body: JSON.stringify({
-                    language: language.id,
-                    code: code,
-                    stdin: stdin
-                })
+            const result = await codeExecutionEngine.execute(language.id, code, stdin, {
+                mode: executionMode,
+                onLoadStart: (msg) => {
+                    setLoadingEngine(true);
+                    setEngineProgress(msg);
+                },
+                onLoadProgress: (msg) => {
+                    setEngineProgress(msg);
+                },
+                onLoadEnd: () => {
+                    setLoadingEngine(false);
+                }
             });
 
-            const result = await executeRes.json();
+            setLoadingEngine(false);
 
             if (result.success && result.run) {
                 const out = result.run.stdout || "";
@@ -430,7 +454,7 @@ export default function CodeEditor() {
                 setOutput(`❌ Execution failed: ${result.message || "Unknown error"}`);
             }
         } catch (e) {
-            setOutput(`❌ API Error: ${e.message}\n\nTip: Make sure the backend server is running.`);
+            setOutput(`❌ Error: ${e.message}`);
         }
         setIsRunning(false);
     };
@@ -612,6 +636,21 @@ export default function CodeEditor() {
     return (
         <div className={`min-h-screen font-sans ${theme === "light" ? "bg-gray-100 text-gray-900" : "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-[var(--text-primary)]"}`}>
             
+            {/* Global Loader for Client-Side Engines */}
+            {loadingEngine && (
+                <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6">
+                    <div className="glass-card p-8 rounded-2xl max-w-sm w-full text-center border-cyan-500/30 flex flex-col items-center justify-center relative overflow-hidden animate-fade-in-up">
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 opacity-30 pointer-events-none" />
+                        <Loader size={48} className="text-cyan-400 animate-spin mb-4" />
+                        <h3 className="text-lg font-bold mb-2 tracking-wide text-cyan-400">LOADING RUNTIME</h3>
+                        <p className="text-sm text-[var(--text-secondary)] mb-4">{engineProgress || "Downloading compilation modules..."}</p>
+                        <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div className="bg-gradient-to-r from-cyan-400 to-violet-500 h-full rounded-full animate-shimmer" style={{ width: '100%' }} />
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             {/* Tab switch blocker */}
             {isTabHidden && isSecureMode && (
                 <div className="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center p-6 backdrop-blur-3xl">
@@ -716,6 +755,36 @@ export default function CodeEditor() {
                     <select value={language.id} onChange={(e) => changeLanguage(e.target.value)} className={`px-4 py-2 rounded-lg font-semibold ${theme === "light" ? "bg-gray-100 border border-gray-300" : "bg-[var(--bg-secondary)] border border-cyan-500/30"}`}>
                         {LANGUAGES.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                     </select>
+
+                    {/* Execution Mode Toggle */}
+                    <div className={`flex items-center rounded-lg p-0.5 border ${theme === "light" ? "bg-gray-100 border-gray-300" : "bg-[var(--bg-secondary)] border-cyan-500/10"}`}>
+                        <button
+                            onClick={() => { setExecutionMode("local"); localStorage.setItem("codeeditor_execution_mode", "local"); }}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                executionMode === "local"
+                                    ? (theme === "light"
+                                        ? "bg-emerald-100 text-emerald-800 shadow"
+                                        : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.25)]")
+                                    : "opacity-60 hover:opacity-100 text-[var(--text-secondary)]"
+                            }`}
+                            title="Run code client-side inside your browser (Instant, Offline)"
+                        >
+                            <Zap size={13} className={executionMode === "local" ? "animate-pulse" : ""} /> Local
+                        </button>
+                        <button
+                            onClick={() => { setExecutionMode("cloud"); localStorage.setItem("codeeditor_execution_mode", "cloud"); }}
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+                                executionMode === "cloud"
+                                    ? (theme === "light"
+                                        ? "bg-cyan-100 text-cyan-800 shadow"
+                                        : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]")
+                                    : "opacity-60 hover:opacity-100 text-[var(--text-secondary)]"
+                            }`}
+                            title="Run code in the cloud via compiler API (Requires Network)"
+                        >
+                            <Clock size={13} /> Cloud
+                        </button>
+                    </div>
                     <button onClick={runCode} disabled={isRunning} className={`px-5 py-2 rounded-lg font-bold flex items-center gap-2 transition-all ${isRunning ? "opacity-50 cursor-not-allowed" : ""} bg-gradient-to-r from-emerald-500 to-green-600 text-[var(--text-primary)] shadow-lg shadow-emerald-500/30`}>
                         {isRunning ? <Zap className="animate-spin" size={18} /> : <Play size={18} />} {isRunning ? "Running..." : "Run Code"}
                     </button>
