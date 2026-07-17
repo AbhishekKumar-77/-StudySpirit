@@ -3,16 +3,16 @@ const User = require('../models/User');
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY_CODESPIRIT || process.env.GROQ_API_KEY;
 
-// ============== WANDBOX API FOR REAL CODE EXECUTION ==============
-const WANDBOX_API = 'https://wandbox.org/api/compile.json';
-const WANDBOX_COMPILERS = {
-    'python': 'cpython-3.12.7',
-    'javascript': 'nodejs-20.17.0',
-    'cpp': 'gcc-13.2.0',
-    'c++': 'gcc-13.2.0',
-    'java': 'openjdk-jdk-22+36',
-    'c': 'gcc-13.2.0-c',
-    'typescript': 'nodejs-20.17.0'
+// ============== PISTON API FOR REAL CODE EXECUTION ==============
+const PISTON_API = 'https://emkc.org/api/v2/piston/execute';
+const PISTON_LANGUAGES = {
+    'python': 'python',
+    'javascript': 'javascript',
+    'cpp': 'cpp',
+    'c++': 'cpp',
+    'java': 'java',
+    'c': 'c',
+    'typescript': 'typescript'
 };
 
 // Curated topic categories
@@ -100,27 +100,13 @@ function setCachedResult(language, code, stdin, result) {
     }
 }
 
-// ============== HELPER: EXECUTE CODE VIA WANDBOX API ==============
-async function executeViaWandbox(language, code, stdin = '') {
+// ============== HELPER: EXECUTE CODE VIA PISTON API ==============
+async function executeViaPiston(language, code, stdin = '') {
     const langKey = language.toLowerCase();
-    const compiler = WANDBOX_COMPILERS[langKey];
-    if (!compiler) {
-        throw new Error(`Unsupported language: ${language}. Supported: ${Object.keys(WANDBOX_COMPILERS).join(', ')}`);
-    }
-
-    // TypeScript needs transpilation hint — run as JS via Node
-    let finalCode = code;
-    if (langKey === 'typescript') {
-        // Strip type annotations for basic TS execution via Node
-        finalCode = code.replace(/:\s*(string|number|boolean|any|void|object|never|unknown)(\[\])?/g, '')
-            .replace(/interface\s+\w+\s*\{[^}]*\}/g, '')
-            .replace(/<[^>]+>/g, '');
-    }
-
-    // For C language, use C-specific options
-    let options = '';
-    if (langKey === 'c') {
-        options = '-lm'; // Link math library for C
+    const pistonLang = PISTON_LANGUAGES[langKey];
+    
+    if (!pistonLang) {
+        throw new Error(`Unsupported language: ${language}. Supported: ${Object.keys(PISTON_LANGUAGES).join(', ')}`);
     }
 
     // Check Cache first
@@ -132,25 +118,26 @@ async function executeViaWandbox(language, code, stdin = '') {
     // Wrap execution in a task function to be executed by the Memory Queue
     const executeTask = async () => {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8-second execution timeout limit
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second request timeout limit
 
         let response;
         try {
-            response = await fetch(WANDBOX_API, {
+            response = await fetch(PISTON_API, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 signal: controller.signal,
                 body: JSON.stringify({
-                    code: finalCode,
-                    compiler: compiler,
-                    stdin: stdin || '',
-                    options: options,
-                    'compiler-option-raw': langKey === 'c' ? '-std=c17' : (langKey === 'cpp' || langKey === 'c++') ? '-std=c++20' : ''
+                    language: pistonLang,
+                    version: '*',
+                    files: [
+                        { content: code }
+                    ],
+                    stdin: stdin || ''
                 })
             });
         } catch (err) {
             if (err.name === 'AbortError') {
-                throw new Error("Execution Time Limit Exceeded (8s timeout) - Possible Infinite Loop.");
+                throw new Error("Execution Time Limit Exceeded - API Timeout.");
             }
             throw err;
         } finally {
@@ -159,18 +146,29 @@ async function executeViaWandbox(language, code, stdin = '') {
 
         if (!response.ok) {
             const errText = await response.text().catch(() => '');
-            throw new Error(`Wandbox API error (${response.status}): ${errText}`);
+            throw new Error(`Piston API error (${response.status}): ${errText}`);
         }
 
         const data = await response.json();
 
-        // Normalize Wandbox response to a standard format
+        // Normalize Piston response to a standard format
+        // Piston returns { run: { stdout, stderr, code, signal }, compile: { ... } }
+        let stdout = data.run?.stdout || '';
+        let stderr = data.run?.stderr || '';
+        let exitCode = data.run?.code || 0;
+        let signal = data.run?.signal || null;
+
+        if (data.compile && data.compile.code !== 0) {
+            stderr = data.compile.stderr || data.compile.stdout || 'Compilation failed';
+            exitCode = data.compile.code;
+        }
+
         const result = {
             run: {
-                stdout: data.program_output || '',
-                stderr: data.program_error || data.compiler_error || '',
-                code: parseInt(data.status) || 0,
-                signal: data.signal || null
+                stdout: stdout,
+                stderr: stderr,
+                code: exitCode,
+                signal: signal
             }
         };
 
@@ -487,7 +485,7 @@ exports.executeCode = async (req, res) => {
             return res.status(400).json({ success: false, message: "Code is required" });
         }
 
-        const result = await executeViaWandbox(language || 'python', code, stdin);
+        const result = await executeViaPiston(language || 'python', code, stdin);
 
         const run = result.run || {};
         res.json({
@@ -525,7 +523,7 @@ exports.executeCodeExam = async (req, res) => {
             return res.status(403).json({ success: false, message: "Invalid or unpublished exam code" });
         }
 
-        const result = await executeViaWandbox(language || 'python', code, stdin);
+        const result = await executeViaPiston(language || 'python', code, stdin);
 
         const run = result.run || {};
         res.json({
@@ -578,7 +576,7 @@ exports.verifyCode = async (req, res) => {
         // Run code against all test cases concurrently using Promise.all for speed (Piston can handle it)
         const results = await Promise.all(testCases.map(async (tc, index) => {
             try {
-                const result = await executeViaWandbox(language || challenge.language || 'python', code, tc.input || '');
+                const result = await executeViaPiston(language || challenge.language || 'python', code, tc.input || '');
                 const run = result.run || {};
                 const actualOutput = normalizeOutput(run.stdout);
                 const expectedOutput = normalizeOutput(tc.output);
