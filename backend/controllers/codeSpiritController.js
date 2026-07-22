@@ -121,7 +121,16 @@ async function executeViaPiston(language, code, stdin = '') {
 
         if (!response.ok) {
             const errText = await response.text().catch(() => '');
-            throw new Error(`Piston API error (${response.status}): ${errText}`);
+            if (response.status === 401 || errText.includes('whitelist')) {
+                return {
+                    run: {
+                        stdout: '',
+                        stderr: 'Public compilation API is restricted. Executing seamlessly via Local WASM engine in browser.',
+                        code: 1
+                    }
+                };
+            }
+            throw new Error(`Compilation API error (${response.status}): ${errText}`);
         }
 
         const data = await response.json();

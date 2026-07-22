@@ -489,8 +489,7 @@ export const codeExecutionEngine = {
             try {
                 return await runLocally[lang](code, stdin, options);
             } catch (err) {
-                console.warn(`Local execution failed for ${language}. Falling back to Cloud API.`, err);
-                // Fallback to cloud
+                console.warn(`Local execution failed for ${language}. Trying Cloud API...`, err);
             }
         }
 
@@ -502,8 +501,22 @@ export const codeExecutionEngine = {
                 credentials: "include",
                 body: JSON.stringify({ language, code, stdin })
             });
-            return await res.json();
+            const data = await res.json();
+            if (data.success && data.run) {
+                return data;
+            }
+
+            // If Cloud API failed or returned 401 whitelist error, fall back to local in-browser execution automatically!
+            if (runLocally[lang]) {
+                console.warn(`Cloud API returned error (${data.message}). Seamlessly executing via local engine...`);
+                return await runLocally[lang](code, stdin, options);
+            }
+            return data;
         } catch (err) {
+            if (runLocally[lang]) {
+                console.warn(`Cloud network error (${err.message}). Seamlessly executing via local engine...`);
+                return await runLocally[lang](code, stdin, options);
+            }
             return {
                 success: false,
                 message: `API Error: ${err.message}. Check your network or backend server.`
@@ -518,52 +531,55 @@ export const codeExecutionEngine = {
         const mode = options.mode || "local";
         const lang = (language || "").toLowerCase();
 
+        const runLocalVerification = async () => {
+            const results = await Promise.all(testCases.map(async (tc, index) => {
+                const result = await runLocally[lang](code, tc.input || "", options);
+                const run = result.run || {};
+                
+                const normalizeOutput = (str) => {
+                    return (str || '')
+                        .replace(/\r\n/g, '\n')
+                        .replace(/\r/g, '\n')
+                        .trim()
+                        .split('\n')
+                        .map(line => line.trim())
+                        .join('\n');
+                };
+
+                const actual = normalizeOutput(run.stdout);
+                const expected = normalizeOutput(tc.output);
+                const hasRealError = run.stderr && run.stderr.trim().length > 0 && run.exitCode !== 0;
+                const passed = actual === expected && !hasRealError;
+
+                return {
+                    testCase: index + 1,
+                    input: tc.input,
+                    expectedOutput: expected,
+                    actualOutput: actual,
+                    stderr: run.stderr || "",
+                    passed,
+                    exitCode: run.exitCode || 0
+                };
+            }));
+
+            const allPassed = results.every(r => r.passed);
+            return {
+                success: true,
+                results,
+                allPassed,
+                message: allPassed ? "🎉 All test cases passed!" : `${results.filter(r => r.passed).length}/${results.length} test cases passed`
+            };
+        };
+
         if (mode === "local" && runLocally[lang]) {
             try {
-                const results = await Promise.all(testCases.map(async (tc, index) => {
-                    const result = await runLocally[lang](code, tc.input || "", options);
-                    const run = result.run || {};
-                    
-                    const normalizeOutput = (str) => {
-                        return (str || '')
-                            .replace(/\r\n/g, '\n')
-                            .replace(/\r/g, '\n')
-                            .trim()
-                            .split('\n')
-                            .map(line => line.trim())
-                            .join('\n');
-                    };
-
-                    const actual = normalizeOutput(run.stdout);
-                    const expected = normalizeOutput(tc.output);
-                    // Only fail on stderr if there's a real runtime error (not just warnings)
-                    const hasRealError = run.stderr && run.stderr.trim().length > 0 && run.exitCode !== 0;
-                    const passed = actual === expected && !hasRealError;
-
-                    return {
-                        testCase: index + 1,
-                        input: tc.input,
-                        expectedOutput: expected,
-                        actualOutput: actual,
-                        stderr: run.stderr || "",
-                        passed,
-                        exitCode: run.exitCode || 0
-                    };
-                }));
-
-                const allPassed = results.every(r => r.passed);
-                return {
-                    success: true,
-                    results,
-                    allPassed,
-                    message: allPassed ? "🎉 All test cases passed!" : `${results.filter(r => r.passed).length}/${results.length} test cases passed`
-                };
+                return await runLocalVerification();
             } catch (err) {
-                console.warn("Local verification failed. Falling back to Cloud API.", err);
+                console.warn("Local verification failed. Trying Cloud API...", err);
             }
         }
 
-        // Cloud verification (Fallback or explicit)
+        // Cloud verification
         try {
             const res = await fetch(`${API_BASE}/codespirit/verify`, {
                 method: "POST",
@@ -576,8 +592,20 @@ export const codeExecutionEngine = {
                     language
                 })
             });
-            return await res.json();
+            const data = await res.json();
+            if (data.success) {
+                return data;
+            }
+            if (runLocally[lang]) {
+                console.warn(`Cloud verification error (${data.message}). Falling back to local verification engine...`);
+                return await runLocalVerification();
+            }
+            return data;
         } catch (err) {
+            if (runLocally[lang]) {
+                console.warn(`Cloud verification network error (${err.message}). Falling back to local verification engine...`);
+                return await runLocalVerification();
+            }
             return {
                 success: false,
                 message: `Network verification failed: ${err.message}`
