@@ -313,75 +313,207 @@ function executeJSInWorker(code, stdin) {
 }
 
 /**
- * Execute C/C++ inside a Web Worker using JSCPP.
+ * Transpiles standard competitive programming C/C++ code to JavaScript.
+ * Handles: printf/scanf, cin/cout, for/while/if, arrays, basic types,
+ * string functions, math operations, and common patterns.
+ * 
+ * NOTE: This replaces the dead JSCPP library (removed from all CDNs/npm).
+ * Complex C/C++ code (pointers, structs, templates) should use Cloud API.
  */
-function executeCPPInWorker(code, stdin) {
-    return new Promise((resolve) => {
-        const cppWorkerCode = `
-            self.onmessage = function(e) {
-                const { code, stdin, libUrl } = e.data;
-                try {
-                    importScripts(libUrl);
-                    let stdout = "";
-                    const config = {
-                        stdio: {
-                            write: function(str) {
-                                stdout += str;
-                            }
-                        }
-                    };
-                    const exitCode = self.JSCPP.run(code, stdin, config);
-                    self.postMessage({ success: true, stdout: stdout, stderr: "", exitCode: exitCode });
-                } catch (err) {
-                    self.postMessage({ success: false, stdout: "", stderr: err.message || String(err), exitCode: 1 });
-                }
-            };
-        `;
+function transpileCToJS(code, stdin) {
+    let clean = code;
 
-        const blob = new Blob([cppWorkerCode], { type: 'application/javascript' });
-        const worker = new Worker(URL.createObjectURL(blob));
+    // Remove single-line and multi-line comments
+    clean = clean.replace(/\/\/.*$/gm, '');
+    clean = clean.replace(/\/\*[\s\S]*?\*\//g, '');
 
-        const timeoutId = setTimeout(() => {
-            worker.terminate();
-            resolve({
-                success: false,
-                message: "Execution Time Limit Exceeded (5s timeout) - Possible Infinite Loop."
-            });
-        }, 5000);
+    // Remove #include directives
+    clean = clean.replace(/^\s*#include\s*[<"][^>"]*[>"]\s*$/gm, '');
 
-        worker.onmessage = (e) => {
-            clearTimeout(timeoutId);
-            worker.terminate();
-            const data = e.data;
-            resolve({
-                success: data.success !== false,
-                run: {
-                    stdout: data.stdout || '',
-                    stderr: data.stderr || '',
-                    exitCode: data.exitCode != null ? data.exitCode : (data.stderr ? 1 : 0)
-                }
-            });
-        };
+    // Remove using namespace std;
+    clean = clean.replace(/using\s+namespace\s+\w+\s*;/g, '');
 
-        worker.onerror = (e) => {
-            clearTimeout(timeoutId);
-            worker.terminate();
-            resolve({
-                success: true,
-                run: {
-                    stdout: '',
-                    stderr: `Worker Error: ${e.message || 'Unknown error'}`,
-                    exitCode: 1
-                }
-            });
-        };
-
-        worker.postMessage({
-            code,
-            stdin,
-            libUrl: "https://cdn.jsdelivr.net/npm/jscpp@0.0.9/dist/JSCPP.es5.min.js"
-        });
+    // Remove #define constants (simple ones)
+    const defines = {};
+    clean = clean.replace(/^\s*#define\s+(\w+)\s+(.+)$/gm, (_, name, value) => {
+        defines[name] = value.trim();
+        return '';
     });
+    // Apply #define substitutions
+    for (const [name, value] of Object.entries(defines)) {
+        clean = clean.replace(new RegExp(`\\b${name}\\b`, 'g'), value);
+    }
+
+    // Replace cout << ... << endl;
+    clean = clean.replace(/cout\s*<<\s*([\s\S]*?)\s*;/g, (match, content) => {
+        const parts = content.split(/\s*<<\s*/).map(p => p.trim()).filter(Boolean);
+        let printParts = [];
+        let endsWithNewline = false;
+        for (let part of parts) {
+            if (part === 'endl' || part === '"\\n"' || part === "'\\n'") {
+                endsWithNewline = true;
+            } else {
+                printParts.push(part);
+            }
+        }
+        if (printParts.length === 0) {
+            return endsWithNewline ? '__output += "\\n";' : '';
+        }
+        const joined = printParts.join(' + ');
+        return `__output += ${joined}${endsWithNewline ? ' + "\\n"' : ''};`;
+    });
+
+    // Replace cin >> var1 >> var2;
+    clean = clean.replace(/cin\s*>>\s*([\s\S]*?)\s*;/g, (match, content) => {
+        const vars = content.split(/\s*>>\s*/).map(v => v.trim()).filter(Boolean);
+        return vars.map(v => `${v} = __scanner.next();`).join('\n');
+    });
+
+    // Replace printf("format", args)
+    clean = clean.replace(/printf\s*\(\s*"([^"]*)"\s*(?:,\s*([\s\S]*?))?\)/g, (match, fmt, argsStr) => {
+        const args = argsStr ? argsStr.split(/\s*,\s*/).filter(Boolean) : [];
+        let argIdx = 0;
+        let result = fmt;
+        // Replace format specifiers
+        result = result.replace(/%(-?\d*\.?\d*)?([difs%lLuUxXoc])/g, (m, flags, spec) => {
+            if (spec === '%') return '%';
+            const arg = args[argIdx++] || '""';
+            return `" + (${arg}) + "`;
+        });
+        result = result.replace(/\\n/g, '\n');
+        result = result.replace(/\\t/g, '\t');
+        return `__output += "${result}"`;
+    });
+
+    // Replace scanf("format", &var1, &var2)
+    clean = clean.replace(/scanf\s*\(\s*"([^"]*)"\s*,\s*([\s\S]*?)\)/g, (match, fmt, argsStr) => {
+        const args = argsStr.split(/\s*,\s*/).map(a => a.trim().replace(/^&/, '')).filter(Boolean);
+        return args.map(v => `${v} = __scanner.nextTyped("${fmt.includes('%d') || fmt.includes('%ld') ? 'int' : fmt.includes('%f') || fmt.includes('%lf') ? 'float' : 'str'}")`).join(';\n');
+    });
+
+    // Replace puts(str) 
+    clean = clean.replace(/\bputs\s*\(([\s\S]*?)\)\s*;/g, '__output += ($1) + "\\n";');
+
+    // Replace gets(var) - deprecated but common in CP
+    clean = clean.replace(/\bgets\s*\((\w+)\)\s*;/g, '$1 = __scanner.nextLine();');
+
+    // Type declarations: int/float/double/char/long long/bool/string
+    // Handle array declarations: int arr[N] or int arr[N] = {1,2,3}
+    clean = clean.replace(/(?:^|(?<=;|\{|\})\s*)\b(int|long\s+long|long|float|double|char|bool|string|short|unsigned\s+int|unsigned)\s+(\w+)\s*\[(.*?)\]\s*(?:=\s*\{([^}]*)\})?\s*;/gm, (match, type, name, size, init) => {
+        if (init) {
+            return `let ${name} = [${init}];`;
+        }
+        const fillVal = (type === 'char' || type === 'string') ? '""' : type === 'bool' ? 'false' : '0';
+        return `let ${name} = new Array(${size || 0}).fill(${fillVal});`;
+    });
+
+    // Variable declarations with initialization: int a = 5, b = 3;
+    clean = clean.replace(/\b(int|long\s+long|long|float|double|char|bool|string|short|unsigned\s+int|unsigned)\s+((?:\w+\s*(?:=\s*[^,;]+)?\s*,\s*)*\w+\s*(?:=\s*[^;]+)?)\s*;/g, (match, type, vars) => {
+        const parts = vars.split(/\s*,\s*/).map(v => v.trim());
+        return parts.map(v => {
+            if (v.includes('=')) {
+                return `let ${v};`;
+            }
+            const fillVal = (type === 'char' || type === 'string') ? '""' : type === 'bool' ? 'false' : '0';
+            return `let ${v} = ${fillVal};`;
+        }).join('\n');
+    });
+
+    // Replace void/int return type on functions (but not main)
+    clean = clean.replace(/\b(int|void|float|double|long|char|bool|string)\s+(\w+)\s*\(([^)]*)\)\s*\{/g, (match, retType, name, params) => {
+        // Strip parameter types
+        const cleanParams = params.split(',').map(p => {
+            return p.trim().replace(/^(const\s+)?\b(int|long\s+long|long|float|double|char|bool|string|short|unsigned\s+int|unsigned|void)(\s*[&*])?\s+(\w+).*$/, '$4').trim();
+        }).filter(Boolean).join(', ');
+        return `function ${name}(${cleanParams}) {`;
+    });
+
+    // Replace main() - extract body
+    const mainMatch = clean.match(/function\s+main\s*\([^)]*\)\s*\{/);
+    if (mainMatch) {
+        const mainStart = clean.indexOf(mainMatch[0]);
+        const bodyStart = clean.indexOf('{', mainStart);
+        let braces = 1, ptr = bodyStart + 1;
+        while (ptr < clean.length && braces > 0) {
+            if (clean[ptr] === '{') braces++;
+            if (clean[ptr] === '}') braces--;
+            ptr++;
+        }
+        const beforeMain = clean.substring(0, mainStart).trim();
+        const mainBody = clean.substring(bodyStart + 1, ptr - 1).trim();
+        const afterMain = clean.substring(ptr).trim();
+        clean = beforeMain + '\n' + mainBody + '\n' + afterMain;
+    }
+
+    // Replace return 0; at end (common in C main)
+    clean = clean.replace(/\breturn\s+0\s*;\s*$/gm, '');
+
+    // Replace common C string functions
+    clean = clean.replace(/\bstrlen\s*\(([^)]+)\)/g, '($1).length');
+    clean = clean.replace(/\bstrcmp\s*\(([^,]+),\s*([^)]+)\)/g, '(($1) === ($2) ? 0 : ($1) < ($2) ? -1 : 1)');
+    clean = clean.replace(/\babs\s*\(([^)]+)\)/g, 'Math.abs($1)');
+    clean = clean.replace(/\bsqrt\s*\(([^)]+)\)/g, 'Math.sqrt($1)');
+    clean = clean.replace(/\bpow\s*\(([^,]+),\s*([^)]+)\)/g, 'Math.pow($1, $2)');
+    clean = clean.replace(/\bfloor\s*\(([^)]+)\)/g, 'Math.floor($1)');
+    clean = clean.replace(/\bceil\s*\(([^)]+)\)/g, 'Math.ceil($1)');
+    clean = clean.replace(/\bmax\s*\(([^,]+),\s*([^)]+)\)/g, 'Math.max($1, $2)');
+    clean = clean.replace(/\bmin\s*\(([^,]+),\s*([^)]+)\)/g, 'Math.min($1, $2)');
+
+    // Replace swap(a, b) - common in CP
+    clean = clean.replace(/\bswap\s*\(([^,]+),\s*([^)]+)\)/g, '[($1), ($2)] = [($2), ($1)]');
+
+    // Replace sort(arr, arr+n) or sort(v.begin(), v.end())
+    clean = clean.replace(/\bsort\s*\(\s*\w+\s*,\s*\w+\s*\+\s*(\w+)\s*\)/g, (_, size) => {
+        return `.sort((a, b) => a - b)`;
+    });
+    clean = clean.replace(/\bsort\s*\((\w+)\.begin\(\)\s*,\s*\1\.end\(\)\)/g, '$1.sort((a, b) => a - b)');
+
+    // Replace vector<type> name or vector<type> name(n, val)
+    clean = clean.replace(/\bvector\s*<[^>]+>\s+(\w+)\s*\(\s*(\w+)\s*,\s*([^)]+)\s*\)\s*;/g, 'let $1 = new Array($2).fill($3);');
+    clean = clean.replace(/\bvector\s*<[^>]+>\s+(\w+)\s*;/g, 'let $1 = [];');
+
+    // Replace .push_back() -> .push()
+    clean = clean.replace(/\.push_back\s*\(/g, '.push(');
+    // Replace .size() -> .length
+    clean = clean.replace(/\.size\s*\(\)/g, '.length');
+    // Replace .empty() -> (.length === 0)
+    clean = clean.replace(/\.empty\s*\(\)/g, '.length === 0');
+
+    // Replace to_string(x)
+    clean = clean.replace(/\bto_string\s*\(([^)]+)\)/g, 'String($1)');
+    // Replace stoi(x)
+    clean = clean.replace(/\bstoi\s*\(([^)]+)\)/g, 'parseInt($1, 10)');
+    // Replace stod(x)
+    clean = clean.replace(/\bstod\s*\(([^)]+)\)/g, 'parseFloat($1)');
+
+    // Build the runnable JavaScript with scanner and output capture
+    const header = `
+let __output = '';
+const __scanner = (function(input) {
+    const tokens = (input || '').split(/\\s+/).filter(Boolean);
+    const lines = (input || '').split(/\\n/);
+    let tPtr = 0, lPtr = 0;
+    return {
+        next() {
+            if (tPtr >= tokens.length) return '';
+            return tokens[tPtr++];
+        },
+        nextTyped(type) {
+            const val = this.next();
+            if (type === 'int') return parseInt(val, 10) || 0;
+            if (type === 'float') return parseFloat(val) || 0;
+            return val;
+        },
+        nextLine() {
+            if (lPtr >= lines.length) return '';
+            return lines[lPtr++];
+        },
+        hasNext() { return tPtr < tokens.length; }
+    };
+})(\`${stdin.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`);
+`;
+    const footer = `\nconsole.log(__output.replace(/\\n$/, ''));`;
+    return header + clean + footer;
 }
 
 /**
@@ -453,20 +585,16 @@ except Exception as e:
         }
     },
     cpp: async (code, stdin, options) => {
-        if (options.onLoadStart) options.onLoadStart("Initializing C++ Engine...");
-        // Pre-cache script in DOM, though Web Worker will load it natively
-        await loadScript("https://cdn.jsdelivr.net/npm/jscpp@0.0.9/dist/JSCPP.es5.min.js", "JSCPP");
+        if (options.onLoadStart) options.onLoadStart("Transpiling C++ → JS...");
+        const transpiled = transpileCToJS(code, stdin);
         if (options.onLoadEnd) options.onLoadEnd();
-        
-        return executeCPPInWorker(code, stdin);
+        return executeJSInWorker(transpiled, stdin);
     },
     c: async (code, stdin, options) => {
-        // C is treated exactly as C++ for JSCPP
-        if (options.onLoadStart) options.onLoadStart("Initializing C Engine...");
-        await loadScript("https://cdn.jsdelivr.net/npm/jscpp@0.0.9/dist/JSCPP.es5.min.js", "JSCPP");
+        if (options.onLoadStart) options.onLoadStart("Transpiling C → JS...");
+        const transpiled = transpileCToJS(code, stdin);
         if (options.onLoadEnd) options.onLoadEnd();
-        
-        return executeCPPInWorker(code, stdin);
+        return executeJSInWorker(transpiled, stdin);
     },
     java: async (code, stdin) => {
         const transpiled = transpileJavaToJS(code, stdin);
