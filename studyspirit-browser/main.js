@@ -320,6 +320,23 @@ async function activateExamMode() {
       `).catch(() => {});
     }
 
+    // 0.5 Check for secondary displays
+    const displays = screen.getAllDisplays();
+    if (displays.length > 1) {
+      isExamMode = false;
+      dialog.showMessageBoxSync({
+        type: 'error',
+        title: 'StudySpirit Browser — Multiple Displays Blocked',
+        message: `Detected ${displays.length} active displays.`,
+        detail: 'Exams require single-monitor mode. Please disconnect external monitors and try again.',
+        buttons: ['OK']
+      });
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('exam:fullscreen-exit-warning', { count: 1, reason: 'Multiple Displays Detected' });
+      }
+      return;
+    }
+
     // 1. Verify device
     const currentId = await fingerprint.getDeviceId();
     const valid = await fingerprint.verifyDevice(currentId);
@@ -473,6 +490,9 @@ function setupIpcHandlers() {
 
   // Renderer requests VM status
   ipcMain.handle('device:check-vm', async () => fingerprint.checkVirtualMachine());
+
+  // Renderer requests active display count
+  ipcMain.handle('device:check-displays', async () => screen.getAllDisplays().length);
 
   // Student tried to paste during exam
   ipcMain.on('exam:clipboard-attempt', () => {

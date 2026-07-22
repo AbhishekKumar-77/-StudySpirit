@@ -1,5 +1,7 @@
 const CodeSession = require('../models/CodeSession');
 const User = require('../models/User');
+const cacheService = require('../services/cacheService');
+const mongoose = require('mongoose');
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY_CODESPIRIT || process.env.GROQ_API_KEY;
 
@@ -72,34 +74,6 @@ class MemoryQueue {
 
 const wandboxQueue = new MemoryQueue(3); // Process max 3 requests concurrently to avoid Wandbox rate limits
 
-// ============== IN-MEMORY CACHE FOR SAME CODE EXECUTION ==============
-const executionCache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache lifetime
-
-function getCachedResult(language, code, stdin) {
-    const key = `${language.toLowerCase()}:${code.trim()}:${(stdin || '').trim()}`;
-    const cached = executionCache.get(key);
-    if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
-        return cached.result;
-    }
-    // Clean up stale cache entry if expired
-    if (cached) {
-        executionCache.delete(key);
-    }
-    return null;
-}
-
-function setCachedResult(language, code, stdin, result) {
-    const key = `${language.toLowerCase()}:${code.trim()}:${(stdin || '').trim()}`;
-    executionCache.set(key, { result, timestamp: Date.now() });
-
-    // Eviction policy: Keep maximum 1000 records in cache to prevent RAM exhaustion
-    if (executionCache.size > 1000) {
-        const oldestKey = executionCache.keys().next().value;
-        executionCache.delete(oldestKey);
-    }
-}
-
 // ============== HELPER: EXECUTE CODE VIA PISTON API ==============
 async function executeViaPiston(language, code, stdin = '') {
     const langKey = language.toLowerCase();
@@ -109,8 +83,9 @@ async function executeViaPiston(language, code, stdin = '') {
         throw new Error(`Unsupported language: ${language}. Supported: ${Object.keys(PISTON_LANGUAGES).join(', ')}`);
     }
 
-    // Check Cache first
-    const cached = getCachedResult(language, code, stdin);
+    // Check Distributed Cache first
+    const cacheKey = cacheService.generateKey('piston', `${language}:${code}:${stdin}`);
+    const cached = await cacheService.get(cacheKey);
     if (cached) {
         return cached;
     }
@@ -152,7 +127,6 @@ async function executeViaPiston(language, code, stdin = '') {
         const data = await response.json();
 
         // Normalize Piston response to a standard format
-        // Piston returns { run: { stdout, stderr, code, signal }, compile: { ... } }
         let stdout = data.run?.stdout || '';
         let stderr = data.run?.stderr || '';
         let exitCode = data.run?.code || 0;
@@ -173,7 +147,7 @@ async function executeViaPiston(language, code, stdin = '') {
         };
 
         // Cache the result
-        setCachedResult(language, code, stdin, result);
+        await cacheService.set(cacheKey, result, 300);
 
         return result;
     };
@@ -618,48 +592,70 @@ exports.verifyCode = async (req, res) => {
             challenge.verificationResults = results;
             session.updatedAt = Date.now();
 
-            // Check full session completion
-            if (session.challenges.every(c => c.status === 'solved') && !session.completed) {
-                session.completed = true;
-                const user = await User.findById(req.user.id);
-                if (user) {
-                    user.stats.xp = (user.stats.xp || 0) + 50;
-                    user.reputation = (user.reputation || 0) + 5;
-                    await user.save();
-                }
-
-                // --- Update CareerProfile Skill Passport ---
-                const CareerProfile = require('../models/CareerProfile');
-                let profile = await CareerProfile.findOne({ user: req.user.id });
-                if (!profile) profile = new CareerProfile({ user: req.user.id });
-
-                let level = 'Beginner';
-                if (session.difficulty === 'hard') level = 'Expert';
-                else if (session.difficulty === 'medium') level = 'Intermediate';
-
-                const skillName = `${session.language} (${session.topic.replace('Daily: ', '')})`;
-                const score = session.difficulty === 'hard' ? 95 : session.difficulty === 'medium' ? 80 : 65;
-
-                const skillIndex = profile.verifiedSkills.findIndex(s => s.skillName === skillName);
-                if (skillIndex > -1) {
-                    if (score > profile.verifiedSkills[skillIndex].score) {
-                        profile.verifiedSkills[skillIndex].score = score;
-                        profile.verifiedSkills[skillIndex].level = level;
-                        profile.verifiedSkills[skillIndex].verifiedDate = new Date();
-                    }
-                } else {
-                    profile.verifiedSkills.push({
-                        skillName: skillName,
-                        score: score,
-                        verifiedBy: 'CodeSpirit Module',
-                        level: level
-                    });
-                }
-                await profile.save();
-                // -----------------------------------------
+            let dbSession = null;
+            try {
+                dbSession = await mongoose.startSession();
+                dbSession.startTransaction();
+            } catch (err) {
+                // Single-node standalone Mongo fallback (no replica set)
+                dbSession = null;
             }
 
-            await session.save();
+            const sessionOpts = dbSession ? { session: dbSession } : {};
+
+            try {
+                // Check full session completion
+                if (session.challenges.every(c => c.status === 'solved') && !session.completed) {
+                    session.completed = true;
+                    const user = await User.findById(req.user.id).session(dbSession || null);
+                    if (user) {
+                        user.stats.xp = (user.stats.xp || 0) + 50;
+                        user.reputation = (user.reputation || 0) + 5;
+                        await user.save(sessionOpts);
+                    }
+
+                    // --- Update CareerProfile Skill Passport ---
+                    const CareerProfile = require('../models/CareerProfile');
+                    let profile = await CareerProfile.findOne({ user: req.user.id }).session(dbSession || null);
+                    if (!profile) profile = new CareerProfile({ user: req.user.id });
+
+                    let level = 'Beginner';
+                    if (session.difficulty === 'hard') level = 'Expert';
+                    else if (session.difficulty === 'medium') level = 'Intermediate';
+
+                    const skillName = `${session.language} (${session.topic.replace('Daily: ', '')})`;
+                    const score = session.difficulty === 'hard' ? 95 : session.difficulty === 'medium' ? 80 : 65;
+
+                    const skillIndex = profile.verifiedSkills.findIndex(s => s.skillName === skillName);
+                    if (skillIndex > -1) {
+                        if (score > profile.verifiedSkills[skillIndex].score) {
+                            profile.verifiedSkills[skillIndex].score = score;
+                            profile.verifiedSkills[skillIndex].level = level;
+                            profile.verifiedSkills[skillIndex].verifiedDate = new Date();
+                        }
+                    } else {
+                        profile.verifiedSkills.push({
+                            skillName: skillName,
+                            score: score,
+                            verifiedBy: 'CodeSpirit Module',
+                            level: level
+                        });
+                    }
+                    await profile.save(sessionOpts);
+                }
+
+                await session.save(sessionOpts);
+
+                if (dbSession) {
+                    await dbSession.commitTransaction();
+                }
+            } catch (txErr) {
+                if (dbSession) await dbSession.abortTransaction();
+                throw txErr;
+            } finally {
+                if (dbSession) dbSession.endSession();
+            }
+
             await updateUserStats(req.user.id, 20, true);
         }
 
