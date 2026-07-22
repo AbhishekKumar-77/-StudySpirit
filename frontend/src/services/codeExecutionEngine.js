@@ -553,15 +553,79 @@ const runLocally = {
         const runnerCode = `
 import sys
 import io
+import json
+import ast
+import inspect
+
 sys.stdin = io.StringIO("${escapedStdin}")
 sys.argv = ['main.py']
 
+_captured_out = io.StringIO()
+_orig_stdout = sys.stdout
+
+class _TeeStdout:
+    def __init__(self, target1, target2):
+        self.t1 = target1
+        self.t2 = target2
+    def write(self, s):
+        self.t1.write(s)
+        self.t2.write(s)
+    def flush(self):
+        if hasattr(self.t1, 'flush'): self.t1.flush()
+        if hasattr(self.t2, 'flush'): self.t2.flush()
+
+sys.stdout = _TeeStdout(_orig_stdout, _captured_out)
+_user_globals = {}
+
 try:
     code_obj = compile(${JSON.stringify(code)}, 'main.py', 'exec')
-    exec(code_obj, {})
+    exec(code_obj, _user_globals)
+
+    # If user code didn't print anything, try auto-invoking user-defined function with stdin
+    if not _captured_out.getvalue().strip():
+        _user_funcs = [v for k, v in _user_globals.items() if callable(v) and not k.startswith('__')]
+        if _user_funcs:
+            func = _user_funcs[-1]
+            raw_in = "${escapedStdin}".strip()
+            if raw_in:
+                res = None
+                parsed_in = None
+                try:
+                    parsed_in = json.loads(raw_in)
+                except Exception:
+                    try:
+                        parsed_in = ast.literal_eval(raw_in)
+                    except Exception:
+                        parsed_in = raw_in
+
+                if isinstance(parsed_in, dict):
+                    sig = inspect.signature(func)
+                    params = list(sig.parameters.keys())
+                    if len(params) == 1 and params[0] in parsed_in:
+                        res = func(parsed_in[params[0]])
+                    else:
+                        try:
+                            res = func(**parsed_in)
+                        except Exception:
+                            res = func(parsed_in)
+                elif isinstance(parsed_in, list):
+                    try:
+                        res = func(*parsed_in)
+                    except Exception:
+                        res = func(parsed_in)
+                else:
+                    res = func(parsed_in)
+
+                if res is not None:
+                    if isinstance(res, (dict, list)):
+                        print(json.dumps(res))
+                    else:
+                        print(res)
 except Exception as e:
     import traceback
     sys.stderr.write(traceback.format_exc())
+finally:
+    sys.stdout = _orig_stdout
 `;
         try {
             await pyodideInstance.runPythonAsync(runnerCode);
