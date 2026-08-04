@@ -90,7 +90,43 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
         socket.to(`room:${roomId}`).emit('room:whiteboardDeleteText', { id });
     });
 
-    // ============== COLLABORATIVE CODE EDITOR SYNC ==============
+    // ============== COLLABORATIVE CODE EDITOR SYNC (LEGACY & YJS CRDT) ==============
+    // Store Yjs binary updates in memory per room
+    const roomYjsUpdates = new Map(); // roomId -> Array of Uint8Arrays
+
+    socket.on('room:yjsJoin', (data) => {
+        const { roomId } = data;
+        if (roomId && roomYjsUpdates.has(roomId)) {
+            const updates = roomYjsUpdates.get(roomId);
+            // Send existing updates to newly joined client
+            for (const update of updates) {
+                socket.emit('room:yjsInit', { roomId, state: update });
+            }
+        }
+    });
+
+    socket.on('room:yjsUpdate', (data) => {
+        const { roomId, update } = data;
+        if (roomId && update) {
+            if (!roomYjsUpdates.has(roomId)) {
+                roomYjsUpdates.set(roomId, []);
+            }
+            const updates = roomYjsUpdates.get(roomId);
+            // Store up to 500 recent delta chunks
+            if (updates.length > 500) updates.shift();
+            updates.push(update);
+
+            socket.to(`room:${roomId}`).emit('room:yjsUpdate', { roomId, update });
+        }
+    });
+
+    socket.on('room:yjsAwareness', (data) => {
+        const { roomId, update } = data;
+        if (roomId && update) {
+            socket.to(`room:${roomId}`).emit('room:yjsAwareness', { roomId, update });
+        }
+    });
+
     socket.on('room:codeUpdate', (data) => {
         const { roomId, code, language, senderId, senderName } = data;
         socket.to(`room:${roomId}`).emit('room:codeUpdate', { code, language, senderId, senderName });

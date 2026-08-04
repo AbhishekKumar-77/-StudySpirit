@@ -24,7 +24,10 @@
     "react-router-dom": "^7.11.0",
     "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.3",
-    "vite-plugin-node-polyfills": "^0.25.0"
+    "vite-plugin-node-polyfills": "^0.25.0",
+    "y-monaco": "^0.1.6",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.32"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

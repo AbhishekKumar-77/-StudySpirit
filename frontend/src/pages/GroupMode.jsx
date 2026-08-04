@@ -18,6 +18,7 @@ import VideoGrid from '../components/VideoGrid';
 import Whiteboard from '../components/Whiteboard';
 import { useApp } from '../context/AppContext';
 import Editor from '@monaco-editor/react';
+import CollaborativeCodeEditor from '../components/CollaborativeCodeEditor';
 
 export default function GroupMode() {
     const { user, loading: appLoading } = useApp();
@@ -127,6 +128,7 @@ export default function GroupMode() {
 
     // Collaborative Coding Board States
     const [showCodingBoard, setShowCodingBoard] = useState(false);
+    const [editorSyncEngine, setEditorSyncEngine] = useState('crdt'); // 'crdt' (Yjs zero-conflict) or 'legacy' (older broadcast)
     const [codingCode, setCodingCode] = useState('// Write your code here...');
     const [codingLanguage, setCodingLanguage] = useState('javascript');
     const [codingOutput, setCodingOutput] = useState({ stdout: '', stderr: '', error: '' });
@@ -2560,11 +2562,6 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         </div>
                                         <Whiteboard
                                             isOpen={showWhiteboard}
-                                            onClose={() => setShowWhiteboard(false)}
-                                            isFullscreen={isWhiteboardFullscreen}
-                                            onToggleFullscreen={() => setIsWhiteboardFullscreen(!isWhiteboardFullscreen)}
-                                            roomId={currentRoomId}
-                                            socket={getSocket()}
                                         />
                                     </div>
                                 )}
@@ -2580,77 +2577,106 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                                 </div>
                                                 <div>
                                                     <h4 className="text-[var(--text-primary)] font-bold text-lg">Interactive Coding Board</h4>
-                                                    <p className="text-[var(--text-secondary)] text-xs">Collaborative programming workspace with live execution</p>
+                                                    <p className="text-[var(--text-secondary)] text-xs">Collaborative programming workspace with real-time sync</p>
                                                 </div>
                                             </div>
 
-                                            {/* Sync controls */}
+                                            {/* Sync Engine Mode Switch & Controls */}
                                             <div className="flex items-center gap-3 flex-wrap">
-                                                {isHost ? (
-                                                    <label className="flex items-center gap-2 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 rounded-lg text-sm text-violet-300 font-semibold cursor-pointer">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            checked={broadcastEnabled} 
+                                                {/* Mode Selector: CRDT vs Legacy */}
+                                                <div className="flex items-center bg-[var(--bg-secondary)] border border-violet-500/30 rounded-xl p-1 text-xs">
+                                                    <button
+                                                        onClick={() => setEditorSyncEngine('crdt')}
+                                                        className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 ${
+                                                            editorSyncEngine === 'crdt'
+                                                                ? 'bg-violet-600 text-white shadow-md'
+                                                                : 'text-gray-400 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                                        CRDT Multi-User (New)
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditorSyncEngine('legacy')}
+                                                        className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                                                            editorSyncEngine === 'legacy'
+                                                                ? 'bg-violet-600 text-white shadow-md'
+                                                                : 'text-gray-400 hover:text-white'
+                                                        }`}
+                                                    >
+                                                        Legacy Broadcast (Older)
+                                                    </button>
+                                                </div>
+
+                                                {editorSyncEngine === 'legacy' && (
+                                                    <>
+                                                        {isHost ? (
+                                                            <label className="flex items-center gap-2 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 rounded-lg text-sm text-violet-300 font-semibold cursor-pointer">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={broadcastEnabled} 
+                                                                    onChange={(e) => {
+                                                                        setBroadcastEnabled(e.target.checked);
+                                                                        if (e.target.checked) {
+                                                                            const socket = getSocket();
+                                                                            if (socket && currentRoomId) {
+                                                                                socket.emit('room:codeUpdate', {
+                                                                                    roomId: currentRoomId,
+                                                                                    code: codingCode,
+                                                                                    language: codingLanguage,
+                                                                                    senderId: currentUserId,
+                                                                                    senderName: user?.name
+                                                                                });
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="rounded border-violet-500 text-violet-500 focus:ring-violet-500" 
+                                                                />
+                                                                Broadcast Code to Students
+                                                            </label>
+                                                        ) : (
+                                                            <label className="flex items-center gap-2 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 font-semibold cursor-pointer">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={followTeacher} 
+                                                                    onChange={(e) => {
+                                                                        setFollowTeacher(e.target.checked);
+                                                                    }}
+                                                                    className="rounded border-cyan-500 text-cyan-500 focus:ring-cyan-500" 
+                                                                />
+                                                                Follow Teacher's Code
+                                                            </label>
+                                                        )}
+
+                                                        <select 
+                                                            value={codingLanguage} 
                                                             onChange={(e) => {
-                                                                setBroadcastEnabled(e.target.checked);
-                                                                if (e.target.checked) {
+                                                                const lang = e.target.value;
+                                                                setCodingLanguage(lang);
+                                                                if (isHost && broadcastEnabled) {
                                                                     const socket = getSocket();
                                                                     if (socket && currentRoomId) {
                                                                         socket.emit('room:codeUpdate', {
                                                                             roomId: currentRoomId,
                                                                             code: codingCode,
-                                                                            language: codingLanguage,
+                                                                            language: lang,
                                                                             senderId: currentUserId,
                                                                             senderName: user?.name
                                                                         });
                                                                     }
                                                                 }
                                                             }}
-                                                            className="rounded border-violet-500 text-violet-500 focus:ring-violet-500" 
-                                                        />
-                                                        Broadcast Code to Students
-                                                    </label>
-                                                ) : (
-                                                    <label className="flex items-center gap-2 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 font-semibold cursor-pointer">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            checked={followTeacher} 
-                                                            onChange={(e) => {
-                                                                setFollowTeacher(e.target.checked);
-                                                            }}
-                                                            className="rounded border-cyan-500 text-cyan-500 focus:ring-cyan-500" 
-                                                        />
-                                                        Follow Teacher's Code
-                                                    </label>
+                                                            disabled={!isHost && followTeacher}
+                                                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-violet-500"
+                                                        >
+                                                            <option value="javascript">JavaScript</option>
+                                                            <option value="python">Python</option>
+                                                            <option value="cpp">C++</option>
+                                                            <option value="java">Java</option>
+                                                            <option value="c">C</option>
+                                                        </select>
+                                                    </>
                                                 )}
-
-                                                <select 
-                                                    value={codingLanguage} 
-                                                    onChange={(e) => {
-                                                        const lang = e.target.value;
-                                                        setCodingLanguage(lang);
-                                                        if (isHost && broadcastEnabled) {
-                                                            const socket = getSocket();
-                                                            if (socket && currentRoomId) {
-                                                                socket.emit('room:codeUpdate', {
-                                                                    roomId: currentRoomId,
-                                                                    code: codingCode,
-                                                                    language: lang,
-                                                                    senderId: currentUserId,
-                                                                    senderName: user?.name
-                                                                });
-                                                            }
-                                                        }
-                                                    }}
-                                                    disabled={!isHost && followTeacher}
-                                                    className="bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-violet-500"
-                                                >
-                                                    <option value="javascript">JavaScript</option>
-                                                    <option value="python">Python</option>
-                                                    <option value="cpp">C++</option>
-                                                    <option value="java">Java</option>
-                                                    <option value="c">C</option>
-                                                </select>
 
                                                 <button
                                                     onClick={() => setShowCodingBoard(false)}
@@ -2661,7 +2687,19 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                             </div>
                                         </div>
 
-                                        {/* Editor and Output split */}
+                                        {/* Editor rendering: CRDT Mode vs Legacy Mode */}
+                                        {editorSyncEngine === 'crdt' ? (
+                                            <div className="h-[550px]">
+                                                <CollaborativeCodeEditor
+                                                    roomId={currentRoomId || 'group_global_room'}
+                                                    user={user}
+                                                    isHost={isHost}
+                                                    readOnly={!isBoardAllowed}
+                                                    language={codingLanguage}
+                                                    onLanguageChange={setCodingLanguage}
+                                                />
+                                            </div>
+                                        ) : (
                                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                                             {/* Editor Panel */}
                                             <div className="xl:col-span-2 flex flex-col h-[450px] border border-[var(--border-color)] rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
@@ -2793,6 +2831,7 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                                 </div>
                                             </div>
                                         </div>
+                                        )}
 
                                         {/* Teacher Student-Code Monitor panel */}
                                         {isHost && (
