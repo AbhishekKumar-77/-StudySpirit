@@ -8,7 +8,7 @@ import {
     Flame, Radio, Users2, Loader2, RefreshCw, Copy, Check,
     X, Play, Pause, Square, Folder, Download, FileText,
     Settings, Crown, Shield, UserMinus, LogOut, Hash, Maximize2, Minimize2, PenTool,
-    Trophy, Globe, Lock, Eye, Calendar, Zap, Medal, TrendingDown, Bell, Terminal
+    Trophy, Globe, Lock, Eye, Calendar, Zap, Medal, TrendingDown, Bell, Terminal, BarChart2
 } from 'lucide-react';
 
 import { groupAPI, roomAPI, challengeAPI, resourceAPI, activityAPI, messageAPI, connectSocket, getSocket, disconnectSocket, setCurrentGroupId, isSocketConnected } from '../services/groupAPI';
