@@ -19,6 +19,11 @@ import Whiteboard from '../components/Whiteboard';
 import { useApp } from '../context/AppContext';
 import Editor from '@monaco-editor/react';
 import CollaborativeCodeEditor from '../components/CollaborativeCodeEditor';
+import StudentCodeMatrix from '../components/StudentCodeMatrix';
+import BreakoutRoomsModal from '../components/BreakoutRoomsModal';
+import LivePollModal from '../components/LivePollModal';
+import ClassroomAISummarizer from '../components/ClassroomAISummarizer';
+import AttendanceReportModal from '../components/AttendanceReportModal';
 
 export default function GroupMode() {
     const { user, loading: appLoading } = useApp();
@@ -125,6 +130,13 @@ export default function GroupMode() {
     const [isViewerFullscreen, setIsViewerFullscreen] = useState(false); // Am I a viewer seeing presenter's content
     const [presenterType, setPresenterType] = useState(null); // 'whiteboard' or 'screenshare'
     const [isHandRaised, setIsHandRaised] = useState(false);
+
+    // Advanced Virtual Classroom Feature Modals (Steps 2, 3, 4)
+    const [showStudentMatrixModal, setShowStudentMatrixModal] = useState(false);
+    const [showBreakoutsModal, setShowBreakoutsModal] = useState(false);
+    const [showPollModal, setShowPollModal] = useState(false);
+    const [showAISummarizerModal, setShowAISummarizerModal] = useState(false);
+    const [showAttendanceModal, setShowAttendanceModal] = useState(false);
 
     // Collaborative Coding Board States
     const [showCodingBoard, setShowCodingBoard] = useState(false);
@@ -2442,6 +2454,51 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         Coding Board
                                     </button>
 
+                                    {/* Virtual Classroom Advanced Action Buttons */}
+                                    {isHost && (
+                                        <button
+                                            onClick={() => setShowStudentMatrixModal(true)}
+                                            className="px-5 py-3.5 rounded-xl font-bold flex items-center gap-2 bg-[#242437] hover:bg-[#2f2f45] border border-violet-500/40 text-violet-300 transition-all text-sm shadow-md"
+                                        >
+                                            <Users size={18} className="text-violet-400" />
+                                            Student Matrix (CodeTantra)
+                                        </button>
+                                    )}
+
+                                    {isHost && (
+                                        <button
+                                            onClick={() => setShowBreakoutsModal(true)}
+                                            className="px-5 py-3.5 rounded-xl font-bold flex items-center gap-2 bg-[#242437] hover:bg-[#2f2f45] border border-indigo-500/40 text-indigo-300 transition-all text-sm shadow-md"
+                                        >
+                                            <Radio size={18} className="text-indigo-400" />
+                                            Breakout Rooms
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => setShowPollModal(true)}
+                                        className="px-5 py-3.5 rounded-xl font-bold flex items-center gap-2 bg-[#242437] hover:bg-[#2f2f45] border border-amber-500/40 text-amber-300 transition-all text-sm shadow-md"
+                                    >
+                                        <BarChart2 size={18} className="text-amber-400" />
+                                        Live Poll & Quiz
+                                    </button>
+
+                                    <button
+                                        onClick={() => setShowAISummarizerModal(true)}
+                                        className="px-5 py-3.5 rounded-xl font-bold flex items-center gap-2 bg-[#242437] hover:bg-[#2f2f45] border border-fuchsia-500/40 text-fuchsia-300 transition-all text-sm shadow-md"
+                                    >
+                                        <Sparkles size={18} className="text-fuchsia-400" />
+                                        AI Subtitles & Notes
+                                    </button>
+
+                                    <button
+                                        onClick={() => setShowAttendanceModal(true)}
+                                        className="px-5 py-3.5 rounded-xl font-bold flex items-center gap-2 bg-[#242437] hover:bg-[#2f2f45] border border-emerald-500/40 text-emerald-300 transition-all text-sm shadow-md"
+                                    >
+                                        <FileText size={18} className="text-emerald-400" />
+                                        Attendance Report
+                                    </button>
+
                                     {!isHost && (
                                         <button
                                             onClick={toggleRaiseHand}
@@ -2562,6 +2619,11 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         </div>
                                         <Whiteboard
                                             isOpen={showWhiteboard}
+                                            onClose={() => setShowWhiteboard(false)}
+                                            isFullscreen={isWhiteboardFullscreen}
+                                            onToggleFullscreen={() => setIsWhiteboardFullscreen(!isWhiteboardFullscreen)}
+                                            roomId={currentRoomId}
+                                            socket={getSocket()}
                                         />
                                     </div>
                                 )}
@@ -4305,6 +4367,59 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Modals & Overlays for Steps 2, 3, and 4 */}
+                <BreakoutRoomsModal
+                    isOpen={showBreakoutsModal}
+                    onClose={() => setShowBreakoutsModal(false)}
+                    socket={getSocket()}
+                    roomId={currentRoomId}
+                    participants={liveParticipants}
+                    isHost={isHost}
+                />
+
+                <LivePollModal
+                    isOpen={showPollModal}
+                    onClose={() => setShowPollModal(false)}
+                    socket={getSocket()}
+                    roomId={currentRoomId}
+                    user={user}
+                    isHost={isHost}
+                />
+
+                <ClassroomAISummarizer
+                    isOpen={showAISummarizerModal}
+                    onClose={() => setShowAISummarizerModal(false)}
+                    roomId={currentRoomId}
+                    user={user}
+                />
+
+                <AttendanceReportModal
+                    isOpen={showAttendanceModal}
+                    onClose={() => setShowAttendanceModal(false)}
+                    participants={liveParticipants}
+                    roomId={currentRoomId}
+                />
+
+                {showStudentMatrixModal && (
+                    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                        <div className="bg-[#181825] border border-violet-500/30 rounded-2xl w-full max-w-6xl h-[85vh] overflow-y-auto p-4 relative shadow-2xl">
+                            <button
+                                onClick={() => setShowStudentMatrixModal(false)}
+                                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg bg-white/5 hover:bg-white/10 z-10"
+                            >
+                                <X size={18} />
+                            </button>
+                            <StudentCodeMatrix
+                                roomId={currentRoomId || 'group_global_room'}
+                                socket={getSocket()}
+                                user={user}
+                                participants={liveParticipants}
+                                isHost={isHost}
+                            />
                         </div>
                     </div>
                 )}

@@ -146,4 +146,89 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
         const { roomId, teacherId, studentId, studentName, code, language } = data;
         socket.to(`room:${roomId}`).emit('room:replyStudentCode', { teacherId, studentId, studentName, code, language });
     });
+
+    // ============== STUDENT MATRIX HEARTBEAT ==============
+    const roomMatrixSnapshots = new Map(); // roomId -> Map(studentId -> snapshot)
+
+    socket.on('room:studentCodeHeartbeat', (data) => {
+        const { roomId, studentId, studentName, code, language, status } = data;
+        if (roomId && studentId) {
+            if (!roomMatrixSnapshots.has(roomId)) {
+                roomMatrixSnapshots.set(roomId, new Map());
+            }
+            roomMatrixSnapshots.get(roomId).set(studentId, {
+                studentId, studentName, code, language, status, updatedAt: Date.now()
+            });
+
+            socket.to(`room:${roomId}`).emit('room:studentCodeHeartbeat', data);
+        }
+    });
+
+    socket.on('room:requestMatrixSnapshots', (data) => {
+        const { roomId } = data;
+        if (roomId && roomMatrixSnapshots.has(roomId)) {
+            const snapshots = Array.from(roomMatrixSnapshots.get(roomId).values());
+            socket.emit('room:matrixSnapshotsInit', { roomId, snapshots });
+        }
+    });
+
+    // ============== BREAKOUT ROOMS SOCKET EVENTS ==============
+    socket.on('room:createBreakouts', (data) => {
+        const { roomId } = data;
+        io.to(`room:${roomId}`).emit('room:breakoutsCreated', data);
+    });
+
+    socket.on('room:broadcastBreakouts', (data) => {
+        const { roomId, message } = data;
+        io.to(`room:${roomId}`).emit('room:breakoutBroadcast', { message });
+    });
+
+    socket.on('room:closeBreakouts', (data) => {
+        const { roomId } = data;
+        io.to(`room:${roomId}`).emit('room:breakoutsClosed');
+    });
+
+    // ============== LIVE POLLS & QUIZZES SOCKET EVENTS ==============
+    const activeRoomPolls = new Map(); // roomId -> pollData
+
+    socket.on('room:createPoll', (data) => {
+        const { roomId } = data;
+        activeRoomPolls.set(roomId, data);
+        io.to(`room:${roomId}`).emit('room:pollCreated', data);
+    });
+
+    socket.on('room:votePoll', (data) => {
+        const { roomId, pollId, optionIndex, userId } = data;
+        if (roomId && activeRoomPolls.has(roomId)) {
+            const poll = activeRoomPolls.get(roomId);
+            if (poll && !poll.voters.includes(userId)) {
+                poll.voters.push(userId);
+                poll.options[optionIndex].votes += 1;
+                poll.totalVotes += 1;
+                io.to(`room:${roomId}`).emit('room:pollUpdated', poll);
+            }
+        }
+    });
+
+    socket.on('room:closePoll', (data) => {
+        const { roomId } = data;
+        activeRoomPolls.delete(roomId);
+        io.to(`room:${roomId}`).emit('room:pollClosed');
+    });
+
+    // ============== LOBBY / WAITING ROOM SOCKET EVENTS ==============
+    socket.on('room:lobbyJoin', (data) => {
+        const { roomId, user } = data;
+        socket.to(`room:${roomId}`).emit('room:lobbyParticipantWaiting', { user, socketId: socket.id });
+    });
+
+    socket.on('room:lobbyApprove', (data) => {
+        const { targetSocketId, roomId } = data;
+        io.to(targetSocketId).emit('room:lobbyApproved', { roomId });
+    });
+
+    socket.on('room:lobbyDeny', (data) => {
+        const { targetSocketId } = data;
+        io.to(targetSocketId).emit('room:lobbyDenied');
+    });
 };
