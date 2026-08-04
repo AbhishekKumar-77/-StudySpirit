@@ -62,6 +62,7 @@ export default function GroupMode() {
     const [classroomCode, setClassroomCode] = useState(''); // For joining classrooms
     const [copiedCode, setCopiedCode] = useState(false);
     const [joinRequests, setJoinRequests] = useState([]); // Admin requests
+    const [createModalTab, setCreateModalTab] = useState('create'); // 'create' | 'join'
 
     // Dynamic data from API (fallback to sample data if not logged in)
     const [myGroups, setMyGroups] = useState([]);
@@ -1949,10 +1950,19 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
 
                         {/* Tabs for Create / Join */}
                         <div className="flex gap-4 mb-6 border-b border-[var(--border-color)] pb-4">
-                            <button className="text-[var(--text-primary)] font-bold border-b-2 border-cyan-500 pb-2">Create Group</button>
-                            <button className="text-[var(--text-secondary)] font-semibold pb-2 hover:text-[var(--text-primary)] transition-colors">Join by Code</button>
+                            <button
+                                onClick={() => setCreateModalTab('create')}
+                                className={`font-bold pb-2 transition-all ${createModalTab === 'create' ? 'text-[var(--text-primary)] border-b-2 border-cyan-500' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                            >Create Group</button>
+                            <button
+                                onClick={() => setCreateModalTab('join')}
+                                className={`font-semibold pb-2 transition-all ${createModalTab === 'join' ? 'text-[var(--text-primary)] border-b-2 border-violet-500' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                            >Join by Code</button>
                         </div>
 
+                        {/* CREATE GROUP FORM */}
+                        {createModalTab === 'create' && (
+                        <>
                         <div className="mb-6">
                             <label className="text-[var(--text-secondary)] text-sm mb-2 block">Group Name</label>
                             <input
@@ -1999,9 +2009,32 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                             />
                         </div>
 
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleCreateGroup}
+                                disabled={loading}
+                                className="flex-1 p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
+                            >
+                                {loading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
+                                Create Group
+                            </button>
+                            <button
+                                onClick={() => setShowCreateModal(false)}
+                                className="flex-1 p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--border-color)]/80 transition-all"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                        </>
+                        )}
+
+                        {/* JOIN BY CODE TAB */}
+                        {createModalTab === 'join' && (
+                        <>
                         {/* Join by Group Invite Code */}
-                        <div className="mb-4 border-t border-[var(--border-color)] pt-6">
+                        <div className="mb-6">
                             <label className="text-[var(--text-secondary)] text-sm mb-2 block font-semibold">📎 Join Study Group by Code</label>
+                            <p className="text-xs text-[var(--text-muted)] mb-3">Enter the invite code shared by a group admin to join their study group.</p>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
@@ -2013,15 +2046,15 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                 <button
                                     onClick={handleJoinGroup}
                                     disabled={loading || !inviteCode}
-                                    className="px-6 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-xl font-bold transition-all disabled:opacity-50"
+                                    className="px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all disabled:opacity-50"
                                 >
-                                    Join
+                                    {loading ? <Loader2 className="animate-spin" size={18} /> : 'Join'}
                                 </button>
                             </div>
                         </div>
 
                         {/* Join by Classroom Code */}
-                        <div className="mb-6 p-4 border border-violet-500/30 rounded-2xl bg-violet-500/5">
+                        <div className="mb-6 p-5 border border-violet-500/30 rounded-2xl bg-violet-500/5">
                             <label className="text-violet-400 text-sm mb-2 block font-bold flex items-center gap-2">
                                 🎓 Join a Teacher's Classroom
                             </label>
@@ -2040,27 +2073,20 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                     disabled={loading || !classroomCode.trim()}
                                     className="px-6 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all disabled:opacity-50"
                                 >
-                                    {loading ? '...' : 'Join'}
+                                    {loading ? <Loader2 className="animate-spin" size={18} /> : 'Join'}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleCreateGroup}
-                                disabled={loading}
-                                className="flex-1 p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform disabled:opacity-70"
-                            >
-                                {loading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
-                                Create Group
-                            </button>
-                            <button
-                                onClick={() => setShowCreateModal(false)}
-                                className="flex-1 p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--border-color)]/80 transition-all"
-                            >
-                                Cancel
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setShowCreateModal(false)}
+                            className="w-full p-4 bg-[var(--glass-bg)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-bold hover:bg-[var(--border-color)]/80 transition-all"
+                        >
+                            Cancel
+                        </button>
+                        </>
+                        )}
+
                     </div>
                 </div>
             )}
@@ -2420,7 +2446,12 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                     </button>
 
                                     <button
-                                        onClick={() => setShowWhiteboard(!showWhiteboard)}
+                                        onClick={() => {
+                                            setShowWhiteboard(!showWhiteboard);
+                                            if (!showWhiteboard) {
+                                                setShowCodingBoard(false);
+                                            }
+                                        }}
                                         disabled={!isBoardAllowed}
                                         className={`px-6 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border ${
                                             showWhiteboard
@@ -2429,7 +2460,7 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         } text-white disabled:opacity-40 disabled:cursor-not-allowed`}
                                         title={!isBoardAllowed ? 'Requires teacher permission' : ''}
                                     >
-                                        <Lock size={12} className="inline mr-1" />
+                                        {!isBoardAllowed && <Lock size={12} className="inline mr-1" />}
                                         <Edit size={20} />
                                         Whiteboard
                                     </button>
@@ -2449,7 +2480,7 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         } text-white disabled:opacity-40 disabled:cursor-not-allowed`}
                                         title={!isBoardAllowed ? 'Requires teacher permission' : ''}
                                     >
-                                        <Lock size={12} className="inline mr-1" />
+                                        {!isBoardAllowed && <Lock size={12} className="inline mr-1" />}
                                         <Code size={20} />
                                         Coding Board
                                     </button>
@@ -2511,6 +2542,33 @@ if (content === 'SYSTEM:WHITEBOARD_OPEN') {
                                         >
                                             <Flame size={20} className={isHandRaised ? 'animate-bounce' : ''} />
                                             {isHandRaised ? 'Lower Hand' : 'Raise Hand'}
+                                        </button>
+                                    )}
+
+                                    {/* Student Request Permission Button — only visible to students with locked permissions */}
+                                    {!isHost && (!isMicAllowed || !isCameraAllowed || !isBoardAllowed) && (
+                                        <button
+                                            onClick={() => {
+                                                const socket = getSocket();
+                                                if (socket && currentRoomId) {
+                                                    socket.emit('room:updateStatus', {
+                                                        roomId: currentRoomId,
+                                                        status: { requestPermission: true, handRaised: true }
+                                                    });
+                                                    setIsHandRaised(true);
+                                                    // Show notification
+                                                    const notif = document.createElement('div');
+                                                    notif.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#a855f7);color:#fff;padding:14px 24px;border-radius:12px;font-weight:bold;z-index:99999;box-shadow:0 4px 24px rgba(0,0,0,0.3);font-size:15px;';
+                                                    notif.textContent = '🙋 Permission request sent to teacher!';
+                                                    document.body.appendChild(notif);
+                                                    setTimeout(() => notif.remove(), 3000);
+                                                }
+                                            }}
+                                            disabled={!isWebRTCInitialized || isHandRaised}
+                                            className="px-5 py-3.5 rounded-xl font-bold flex items-center gap-2 transition-all border bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border-violet-500/40 text-violet-300 hover:from-violet-500/40 hover:to-fuchsia-500/40 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                        >
+                                            <Bell size={18} className="text-violet-400" />
+                                            Request Permission
                                         </button>
                                     )}
                                 </div>
