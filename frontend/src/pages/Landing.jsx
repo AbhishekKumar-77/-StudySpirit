@@ -1,336 +1,1135 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+    GraduationCap, Users, Briefcase, Code, Trophy, BookOpen,
+    Sparkles, CheckCircle2, ArrowRight, Lock, Mail,
+    MessageSquare, BarChart3, FileText, Building2, Rocket,
+    BookMarked, Lightbulb, Compass, Award, Star, X
+} from 'lucide-react';
 
 export default function Landing() {
     const navigate = useNavigate();
-    const [typedText, setTypedText] = useState('');
-    const [showCursor, setShowCursor] = useState(true);
-    const [scrollY, setScrollY] = useState(0);
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [isLight, setIsLight] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [newsletterEmail, setNewsletterEmail] = useState('');
+    const [subscribed, setSubscribed] = useState(false);
+    const [activeTab, setActiveTab] = useState('Home');
 
-    const fullText = "Study the way you want, succeed the way you dream.";
-
-    useEffect(() => {
-        const check = () => setIsLight(document.documentElement.classList.contains('light'));
-        check();
-        const obs = new MutationObserver(check);
-        obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-        return () => obs.disconnect();
-    }, []);
-
-    useEffect(() => {
-        let i = 0;
-        const t = setInterval(() => {
-            if (i <= fullText.length) { setTypedText(fullText.slice(0, i)); i++; }
-            else { clearInterval(t); setShowCursor(false); }
-        }, 40);
-        return () => clearInterval(t);
-    }, []);
-
-    useEffect(() => {
-        const mm = (e) => setMousePosition({ x: (e.clientX / window.innerWidth - 0.5) * 20, y: (e.clientY / window.innerHeight - 0.5) * 10 });
-        window.addEventListener('mousemove', mm);
-        return () => window.removeEventListener('mousemove', mm);
-    }, []);
-
-    useEffect(() => {
-        const s = () => setScrollY(window.scrollY);
-        window.addEventListener('scroll', s);
-        return () => window.removeEventListener('scroll', s);
-    }, []);
-
-    const dark = {
-        pageBg: '#0d0b09', sectionBg2: '#111009', heroTitle: '#f5efe3', spiritColor: '#FF6B35',
-        spiritGlow: '0 0 18px rgba(255,107,53,0.45)', accent: '#FF6B35', accentAlt: '#FFD700',
-        sectionHighlight: '#FF6B35', text: '#f0e6cc', subText: '#c4aa88', muted: '#8a7060',
-        badgeBg: 'rgba(255,107,53,0.12)', badgeBorder: 'rgba(255,107,53,0.35)', badgeText: '#FF8C55',
-        cardBg: 'rgba(30, 22, 14, 0.85)', cardBorder: 'rgba(255,107,53,0.12)',
-        cardHoverBg: 'rgba(255,107,53,0.06)', cardHoverBorder: 'rgba(255,107,53,0.3)',
-        cardTitle: '#f5efe3', cardText: '#8a7060', stepNumColor: 'rgba(255,107,53,0.12)',
-        stepTitle: '#f5efe3', stepText: '#8a7060', accentLine: '#FF6B35',
-        btnPrimary: { background: '#FF6B35', color: '#fff', shadow: '0 8px 30px rgba(255,107,53,0.4)' },
-        btnSecondary: { background: 'rgba(255,255,255,0.05)', border: 'rgba(240,230,204,0.18)', color: '#c4aa88' },
-        footerBg: '#0a0807', footerBorder: 'rgba(255,107,53,0.08)', footerText: '#5a4030',
-        overlayBottom: 'linear-gradient(to bottom, rgba(13,11,9,0.4) 0%, rgba(13,11,9,0.2) 40%, rgba(13,11,9,0.9) 75%, #0d0b09 100%)',
-        overlayLamp: 'radial-gradient(ellipse 60% 50% at 20% 30%, rgba(255,140,60,0.1) 0%, transparent 70%)',
+    const handleSubscribe = (e) => {
+        e.preventDefault();
+        if (newsletterEmail.trim()) {
+            setSubscribed(true);
+            setTimeout(() => setSubscribed(false), 4000);
+            setNewsletterEmail('');
+        }
     };
 
-    const light = {
-        pageBg: '#faf7f2', sectionBg2: '#f0ebe1', heroTitle: '#1a1208', spiritColor: '#d4520a',
-        spiritGlow: 'none', accent: '#d4520a', accentAlt: '#b8820a', sectionHighlight: '#d4520a',
-        text: '#1a1208', subText: '#4a3820', muted: '#7a6048',
-        badgeBg: 'rgba(212,82,10,0.08)', badgeBorder: 'rgba(212,82,10,0.25)', badgeText: '#c04a08',
-        cardBg: '#ffffff', cardBorder: 'rgba(212,82,10,0.1)',
-        cardHoverBg: '#fff8f5', cardHoverBorder: 'rgba(212,82,10,0.3)',
-        cardTitle: '#1a1208', cardText: '#7a6048', stepNumColor: 'rgba(212,82,10,0.1)',
-        stepTitle: '#1a1208', stepText: '#7a6048', accentLine: '#d4520a',
-        btnPrimary: { background: '#d4520a', color: '#fff', shadow: '0 8px 30px rgba(212,82,10,0.3)' },
-        btnSecondary: { background: 'rgba(255,255,255,0.8)', border: 'rgba(212,82,10,0.2)', color: '#7a6048' },
-        footerBg: '#ede8df', footerBorder: 'rgba(212,82,10,0.12)', footerText: '#a08060',
-        overlayBottom: 'linear-gradient(to bottom, rgba(250,247,242,0.0) 0%, rgba(250,247,242,0.05) 45%, rgba(250,247,242,0.92) 78%, #faf7f2 100%)',
-        overlayLamp: 'radial-gradient(ellipse 60% 55% at 18% 30%, rgba(255,190,100,0.3) 0%, transparent 70%)',
+    const scrollToSection = (id, tabName) => {
+        setActiveTab(tabName);
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
     };
-
-    const t = isLight ? light : dark;
-
-    // Role cards config
-    const roleCards = [
-        {
-            role: 'student',
-            emoji: '📚',
-            title: 'I\'m a Student',
-            subtitle: 'Access learning tools, quizzes, AI practice & more',
-            features: ['Solo & Group Study Modes', 'AI Practice Arena', 'Career & Interview Prep', 'Coding Challenges'],
-            color: '#FF6B35',
-            glow: 'rgba(255,107,53,0.2)',
-            borderHover: 'rgba(255,107,53,0.5)',
-        },
-        {
-            role: 'teacher',
-            emoji: '🎓',
-            title: 'I\'m a Teacher',
-            subtitle: 'Create quizzes, track students & manage exams',
-            features: ['Create AI-Powered Quizzes', 'Real-time Exam Management', 'Student Leaderboard', 'Performance Analytics'],
-            color: '#7C3AED',
-            glow: 'rgba(124,58,237,0.2)',
-            borderHover: 'rgba(124,58,237,0.5)',
-        },
-        {
-            role: 'recruiter',
-            emoji: '💼',
-            title: 'I\'m a Recruiter',
-            subtitle: 'Hire top talent with verified Skill Passports',
-            features: ['AI Reverse Matching', 'Verified Skill Badges', 'Campus Drive Management', 'One-Click Apply Pipeline'],
-            color: '#06b6d4',
-            glow: 'rgba(6,182,212,0.2)',
-            borderHover: 'rgba(6,182,212,0.5)',
-        },
-    ];
 
     return (
-        <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", color: t.text, background: t.pageBg, transition: 'background 0.5s, color 0.5s' }}>
+        <div style={{
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            backgroundColor: '#ffffff',
+            color: '#1e293b',
+            minHeight: '100vh',
+            overflowX: 'hidden'
+        }}>
 
-            {/* ========== HERO ========== */}
-            <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-
-                {/* Background photo */}
+            {/* ==================== HEADER / NAVBAR ==================== */}
+            <header style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 50,
+                backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                backdropFilter: 'blur(12px)',
+                borderBottom: '1px solid #f1f5f9'
+            }}>
                 <div style={{
-                    position: 'absolute', inset: 0, zIndex: 0,
-                    transform: `translateX(${mousePosition.x * 0.3}px) translateY(${mousePosition.y * 0.3 + scrollY * 0.4}px) scale(1.15)`,
-                    transition: 'transform 0.6s cubic-bezier(0.2, 0, 0, 1)',
-                    backgroundImage: `url('/study-desk.jpg')`,
-                    backgroundSize: 'cover', backgroundPosition: 'center top',
-                }} />
-                <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: t.overlayBottom, transition: 'background 0.5s' }} />
-                <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: t.overlayLamp, transition: 'background 0.5s' }} />
-
-                {/* NAVBAR */}
-                <nav style={{ position: 'relative', zIndex: 10, padding: '24px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: 1400, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <img src="/logo.png" alt="StudySpirit Logo" style={{ width: 46, height: 46, borderRadius: 12, objectFit: 'cover', boxShadow: `0 0 16px rgba(255,107,53,0.35)` }} />
-                        <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.02em' }}>
-                            <span style={{ color: isLight ? '#1a1208' : '#f5efe3' }}>STUDY</span>
-                            <span style={{ color: t.spiritColor, textShadow: !isLight ? '0 0 12px rgba(255,107,53,0.4)' : 'none' }}>SPIRIT</span>
+                    maxWidth: '1280px',
+                    margin: '0 auto',
+                    padding: '16px 32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                }}>
+                    {/* Brand Logo & Name */}
+                    <div 
+                        onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setActiveTab('Home'); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                    >
+                        <img 
+                            src="/logo.png" 
+                            alt="StudySpirit Logo" 
+                            style={{ height: '48px', width: 'auto', objectFit: 'contain' }} 
+                        />
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ 
+                                fontSize: '26px', 
+                                fontWeight: '800', 
+                                letterSpacing: '-0.02em',
+                                lineHeight: '1'
+                            }}>
+                                <span style={{ color: '#D97706' }}>Study</span>
+                                <span style={{ color: '#0891B2' }}>Spirit</span>
+                            </span>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                        <button
-                            onClick={() => navigate('/login/student')}
-                            style={{ padding: '10px 24px', borderRadius: 999, background: t.badgeBg, border: `1px solid ${t.badgeBorder}`, color: t.badgeText, fontWeight: 700, fontSize: 13, letterSpacing: '0.12em', cursor: 'pointer', textTransform: 'uppercase', backdropFilter: 'blur(12px)', transition: 'all 0.3s ease' }}
-                        >Student Login</button>
-                        <button
-                            onClick={() => navigate('/login/teacher')}
-                            style={{ padding: '10px 24px', borderRadius: 999, background: 'rgba(124,58,237,0.15)', border: `1px solid rgba(124,58,237,0.35)`, color: '#a78bfa', fontWeight: 700, fontSize: 13, letterSpacing: '0.12em', cursor: 'pointer', textTransform: 'uppercase', backdropFilter: 'blur(12px)', transition: 'all 0.3s ease' }}
-                        >Teacher</button>
-                        <button
-                            onClick={() => navigate('/login/recruiter')}
-                            style={{ padding: '10px 24px', borderRadius: 999, background: 'rgba(6,182,212,0.15)', border: `1px solid rgba(6,182,212,0.35)`, color: '#67e8f9', fontWeight: 700, fontSize: 13, letterSpacing: '0.12em', cursor: 'pointer', textTransform: 'uppercase', backdropFilter: 'blur(12px)', transition: 'all 0.3s ease' }}
-                        >Recruiter</button>
-                    </div>
-                </nav>
 
-                {/* HERO CONTENT */}
-                <div style={{ position: 'relative', zIndex: 10, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 24px 80px', maxWidth: 900, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 18px', borderRadius: 999, background: t.badgeBg, border: `1px solid ${t.badgeBorder}`, marginBottom: 32, backdropFilter: 'blur(12px)' }}>
-                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: t.accent, animation: 'blink 2s infinite' }} />
-                        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: t.badgeText, textTransform: 'uppercase' }}>Your Study Sanctuary</span>
-                    </div>
-
-                    <h1 style={{ fontSize: 'clamp(52px, 9vw, 100px)', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 24, textShadow: isLight ? 'none' : '0 4px 40px rgba(0,0,0,0.9)' }}>
-                        <span style={{ color: t.heroTitle, display: 'block' }}>STUDY</span>
-                        <span style={{ color: t.spiritColor, display: 'block', textShadow: t.spiritGlow }}>SPIRIT</span>
-                    </h1>
-
-                    <p style={{ fontSize: 'clamp(16px, 2.5vw, 22px)', color: t.subText, fontWeight: 300, lineHeight: 1.6, maxWidth: 580, marginBottom: 48, minHeight: 60 }}>
-                        {typedText}
-                        {showCursor && <span style={{ borderRight: `2px solid ${t.accent}`, marginLeft: 2, animation: 'blink 1s infinite' }}>&nbsp;</span>}
-                    </p>
-
-                    {/* Scroll hint */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, opacity: 0.5 }}>
-                        <div style={{ width: 1, height: 40, background: `linear-gradient(to bottom, transparent, ${t.accent})` }} />
-                        <span style={{ fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: t.muted }}>Choose your role</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* ========== ROLE SELECTION ========== */}
-            <div style={{ background: t.pageBg, padding: '100px 24px', transition: 'background 0.5s' }}>
-                <div style={{ maxWidth: 900, margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: 60 }}>
-                        <div style={{ display: 'inline-block', padding: '4px 16px', borderRadius: 4, background: t.badgeBg, border: `1px solid ${t.badgeBorder}`, fontSize: 11, letterSpacing: '0.2em', color: t.badgeText, textTransform: 'uppercase', marginBottom: 20 }}>
-                            Get Started
-                        </div>
-                        <h2 style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 16px', color: t.text }}>
-                            WHO ARE <span style={{ color: t.sectionHighlight }}>YOU?</span>
-                        </h2>
-                        <p style={{ color: t.muted, fontSize: 18, fontWeight: 300 }}>Select your role to get the right experience.</p>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 24 }}>
-                        {roleCards.map((card) => (
-                            <RoleCard key={card.role} card={card} t={t} isLight={isLight} onNavigate={navigate} />
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* ========== FEATURES ========== */}
-            <div style={{ background: t.sectionBg2, padding: '100px 24px', transition: 'background 0.5s' }}>
-                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: 60 }}>
-                        <h2 style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 16px', color: t.text }}>
-                            THE ULTIMATE <span style={{ color: t.sectionHighlight }}>TOOLKIT</span>
-                        </h2>
-                        <p style={{ color: t.muted, fontSize: 18, fontWeight: 300 }}>Everything you need to crush your learning goals.</p>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+                    {/* Nav Links */}
+                    <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
                         {[
-                            { icon: '📖', title: 'Solo Mode', desc: 'Focus sessions, Pomodoro, AI mentor & deep work tools.' },
-                            { icon: '👥', title: 'Group Mode', desc: 'Study in live rooms with real-time video, chat & sync.' },
-                            { icon: '🧠', title: 'AI Interview', desc: 'Practice mock interviews with Aria, your AI interviewer.' },
-                            { icon: '🏆', title: 'Gamification', desc: 'Earn XP, maintain streaks & climb the leaderboard.' },
-                            { icon: '💻', title: 'CodeSpirit', desc: 'Solve problems, run code live & level up your skills.' },
-                            { icon: '🚀', title: 'CareerSprint', desc: 'AI resume, job board & interview prep in one place.' },
-                        ].map((f, i) => (
-                            <div key={i}
-                                style={{ padding: '32px', background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 20, backdropFilter: 'blur(12px)', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: isLight ? '0 2px 16px rgba(0,0,0,0.06)' : 'none' }}
-                                onMouseEnter={e => { e.currentTarget.style.background = t.cardHoverBg; e.currentTarget.style.borderColor = t.cardHoverBorder; e.currentTarget.style.transform = 'translateY(-4px)'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = t.cardBg; e.currentTarget.style.borderColor = t.cardBorder; e.currentTarget.style.transform = 'none'; }}
+                            { name: 'Home', target: '' },
+                            { name: 'Features', target: 'features' },
+                            { name: 'Courses', target: 'roles' },
+                            { name: 'About', target: 'cta-banner' },
+                            { name: 'Contact', target: 'footer' }
+                        ].map((link) => (
+                            <button
+                                key={link.name}
+                                onClick={() => {
+                                    if (link.target) {
+                                        scrollToSection(link.target, link.name);
+                                    } else {
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        setActiveTab('Home');
+                                    }
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '15px',
+                                    fontWeight: activeTab === link.name ? '700' : '600',
+                                    color: activeTab === link.name ? '#EE5D2B' : '#4b5563',
+                                    cursor: 'pointer',
+                                    position: 'relative',
+                                    padding: '6px 0',
+                                    transition: 'color 0.2s ease'
+                                }}
                             >
-                                <div style={{ fontSize: 40, marginBottom: 20 }}>{f.icon}</div>
-                                <h3 style={{ fontSize: 20, fontWeight: 700, color: t.cardTitle, marginBottom: 12 }}>{f.title}</h3>
-                                <p style={{ fontSize: 15, color: t.cardText, lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
-                            </div>
+                                {link.name}
+                                {activeTab === link.name && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: '3px',
+                                        backgroundColor: '#EE5D2B',
+                                        borderRadius: '2px'
+                                    }} />
+                                )}
+                            </button>
                         ))}
-                    </div>
-                </div>
-            </div>
+                    </nav>
 
-            {/* ========== CTA ========== */}
-            <div style={{ background: t.pageBg, padding: '100px 24px', textAlign: 'center', transition: 'background 0.5s' }}>
-                <div style={{ maxWidth: 820, margin: '0 auto' }}>
-                    <h2 style={{ fontSize: 'clamp(36px, 7vw, 72px)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: 24 }}>
-                        <span style={{ color: t.text }}>READY TO</span><br />
-                        <span style={{ color: t.sectionHighlight }}>LEVEL UP?</span>
-                    </h2>
-                    <p style={{ fontSize: 18, color: t.muted, marginBottom: 48, fontWeight: 300 }}>
-                        Join thousands of students turning late-night study sessions into their superpower.
-                    </p>
-                    <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {/* Header Action Buttons */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <button
+                            onClick={() => setShowLoginModal(true)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '10px 22px',
+                                borderRadius: '9999px',
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #e2e8f0',
+                                color: '#334155',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.backgroundColor = '#f8fafc'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.backgroundColor = '#ffffff'; }}
+                        >
+                            <Lock size={15} style={{ color: '#64748b' }} />
+                            Login
+                        </button>
+
                         <button
                             onClick={() => navigate('/login/student')}
-                            style={{ padding: '18px 44px', borderRadius: 999, background: t.btnPrimary.background, border: 'none', color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '0.08em', cursor: 'pointer', textTransform: 'uppercase', boxShadow: t.btnPrimary.shadow, transition: 'all 0.3s ease' }}
-                            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-                        >Join as Student →</button>
-                        <button
-                            onClick={() => navigate('/login/teacher')}
-                            style={{ padding: '18px 44px', borderRadius: 999, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.35)', color: '#a78bfa', fontWeight: 700, fontSize: 15, letterSpacing: '0.08em', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-                            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-                        >Join as Teacher →</button>
-                        <button
-                            onClick={() => navigate('/login/recruiter')}
-                            style={{ padding: '18px 44px', borderRadius: 999, background: 'rgba(6,182,212,0.15)', border: '1px solid rgba(6,182,212,0.35)', color: '#67e8f9', fontWeight: 700, fontSize: 15, letterSpacing: '0.08em', cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.3s ease' }}
-                            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
-                        >Join as Recruiter →</button>
+                            style={{
+                                padding: '10px 24px',
+                                borderRadius: '9999px',
+                                background: 'linear-gradient(135deg, #FF6B35 0%, #EE5D2B 100%)',
+                                border: 'none',
+                                color: '#ffffff',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 14px rgba(238, 93, 43, 0.35)',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(238, 93, 43, 0.45)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(238, 93, 43, 0.35)'; }}
+                        >
+                            Get Started
+                        </button>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            {/* ========== FOOTER ========== */}
-            <footer style={{ background: t.footerBg, borderTop: `1px solid ${t.footerBorder}`, padding: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, transition: 'background 0.5s' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <img src="/logo.png" alt="Logo" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover' }} />
-                    <span style={{ fontWeight: 800, fontSize: 14, letterSpacing: '0.05em' }}>
-                        <span style={{ color: t.footerText }}>STUDY</span>
-                        <span style={{ color: t.accent }}>SPIRIT</span>
-                        <span style={{ color: t.footerText }}> © 2025</span>
-                    </span>
+
+            {/* ==================== HERO SECTION ==================== */}
+            <section style={{
+                position: 'relative',
+                padding: '60px 0 80px',
+                background: 'linear-gradient(180deg, #ffffff 0%, #faf9f5 100%)',
+                overflow: 'hidden'
+            }}>
+                <div style={{
+                    maxWidth: '1280px',
+                    margin: '0 auto',
+                    padding: '0 32px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '48px',
+                    alignItems: 'center'
+                }}>
+                    {/* Left Column: Headline & Action */}
+                    <div>
+                        {/* Pill Badge */}
+                        <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '8px 20px',
+                            borderRadius: '9999px',
+                            backgroundColor: '#FFF3EC',
+                            border: '1px solid #FDBA74',
+                            marginBottom: '28px'
+                        }}>
+                            <GraduationCap size={18} style={{ color: '#EA580C' }} />
+                            <span style={{ fontSize: '14px', fontWeight: '700', color: '#C2410C' }}>
+                                Learn • Practice • Grow
+                            </span>
+                        </div>
+
+                        {/* Title */}
+                        <h1 style={{
+                            fontSize: 'clamp(52px, 6vw, 76px)',
+                            fontWeight: '900',
+                            lineHeight: '1.05',
+                            letterSpacing: '-0.03em',
+                            margin: '0 0 20px 0'
+                        }}>
+                            <span style={{ color: '#0F172A', display: 'block' }}>STUDY</span>
+                            <span style={{ 
+                                background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                display: 'block'
+                            }}>
+                                SPIRIT
+                            </span>
+                        </h1>
+
+                        {/* Subtitle */}
+                        <p style={{
+                            fontSize: '20px',
+                            color: '#475569',
+                            fontWeight: '400',
+                            lineHeight: '1.6',
+                            marginBottom: '36px',
+                            maxWidth: '540px'
+                        }}>
+                            Study the way you want, succeed the way you dream.
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '44px' }}>
+                            <button
+                                onClick={() => navigate('/login/student')}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    padding: '14px 32px',
+                                    borderRadius: '9999px',
+                                    background: 'linear-gradient(135deg, #FF6B35 0%, #EE5D2B 100%)',
+                                    border: 'none',
+                                    color: '#ffffff',
+                                    fontWeight: '700',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 6px 20px rgba(238, 93, 43, 0.4)',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; }}
+                            >
+                                Get Started <ArrowRight size={18} />
+                            </button>
+
+                            <button
+                                onClick={() => scrollToSection('features', 'Features')}
+                                style={{
+                                    padding: '14px 32px',
+                                    borderRadius: '9999px',
+                                    backgroundColor: '#ffffff',
+                                    border: '2px solid #EE5D2B',
+                                    color: '#EE5D2B',
+                                    fontWeight: '700',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FFF5F0'; }}
+                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#ffffff'; }}
+                            >
+                                Learn More
+                            </button>
+                        </div>
+
+                        {/* Trust Checkmarks */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                            {[
+                                'AI Powered Learning',
+                                'Personalized Paths',
+                                'Placement Ready'
+                            ].map((item, idx) => (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{
+                                        width: '22px',
+                                        height: '22px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#DCFCE7',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <CheckCircle2 size={14} style={{ color: '#16A34A' }} />
+                                    </div>
+                                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#334155' }}>
+                                        {item}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Hero Desk Image */}
+                    <div style={{ position: 'relative' }}>
+                        <div style={{
+                            position: 'relative',
+                            borderRadius: '24px',
+                            overflow: 'hidden',
+                            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.08)',
+                            border: '1px solid #f1f5f9'
+                        }}>
+                            <img 
+                                src="/study-desk.jpg" 
+                                alt="Study Desk Setup with Notes" 
+                                style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', gap: 32, fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                    {['Privacy', 'Terms', 'GitHub'].map(link => (
-                        <span key={link} style={{ color: t.footerText, cursor: 'pointer', transition: 'color 0.2s' }}
-                            onMouseEnter={e => e.currentTarget.style.color = t.accent}
-                            onMouseLeave={e => e.currentTarget.style.color = t.footerText}
-                        >{link}</span>
-                    ))}
+            </section>
+
+
+            {/* ==================== EXPLORE YOUR ROLE SECTION ==================== */}
+            <section id="roles" style={{ padding: '90px 0', backgroundColor: '#ffffff' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+                    
+                    {/* Section Title */}
+                    <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+                        <h2 style={{
+                            fontSize: '36px',
+                            fontWeight: '900',
+                            color: '#0F172A',
+                            letterSpacing: '-0.02em',
+                            margin: '0 0 12px 0'
+                        }}>
+                            EXPLORE YOUR ROLE
+                        </h2>
+                        <div style={{
+                            width: '60px',
+                            height: '4px',
+                            backgroundColor: '#EE5D2B',
+                            borderRadius: '2px',
+                            margin: '0 auto'
+                        }} />
+                    </div>
+
+                    {/* 3 Role Cards Grid */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '32px'
+                    }}>
+                        {/* Student Card */}
+                        <div 
+                            onClick={() => navigate('/login/student')}
+                            style={{
+                                backgroundColor: '#FFF8F5',
+                                border: '1px solid #FFEDD5',
+                                borderRadius: '24px',
+                                padding: '40px 32px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 16px 36px rgba(238, 93, 43, 0.15)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.03)'; }}
+                        >
+                            <div style={{
+                                width: '72px',
+                                height: '72px',
+                                borderRadius: '20px',
+                                backgroundColor: '#EE5D2B',
+                                color: '#ffffff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 24px',
+                                boxShadow: '0 8px 20px rgba(238, 93, 43, 0.3)'
+                            }}>
+                                <GraduationCap size={36} />
+                            </div>
+                            <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#0F172A', marginBottom: '12px' }}>
+                                I'm a Student
+                            </h3>
+                            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
+                                Solo & Group Study Modes, Quizzes, AI Mentor & More
+                            </p>
+                            <button style={{
+                                width: '100%',
+                                padding: '12px 24px',
+                                borderRadius: '9999px',
+                                backgroundColor: '#ffffff',
+                                border: '2px solid #EE5D2B',
+                                color: '#EE5D2B',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                            }}>
+                                Get Started <ArrowRight size={16} />
+                            </button>
+                        </div>
+
+                        {/* Teacher Card */}
+                        <div 
+                            onClick={() => navigate('/login/teacher')}
+                            style={{
+                                backgroundColor: '#F5F3FF',
+                                border: '1px solid #DDD6FE',
+                                borderRadius: '24px',
+                                padding: '40px 32px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 16px 36px rgba(124, 58, 237, 0.15)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.03)'; }}
+                        >
+                            <div style={{
+                                width: '72px',
+                                height: '72px',
+                                borderRadius: '20px',
+                                backgroundColor: '#7C3AED',
+                                color: '#ffffff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 24px',
+                                boxShadow: '0 8px 20px rgba(124, 58, 237, 0.3)'
+                            }}>
+                                <Users size={36} />
+                            </div>
+                            <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#0F172A', marginBottom: '12px' }}>
+                                I'm a Teacher
+                            </h3>
+                            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
+                                Create Quizzes, Track Students & Manage Exams
+                            </p>
+                            <button style={{
+                                width: '100%',
+                                padding: '12px 24px',
+                                borderRadius: '9999px',
+                                backgroundColor: '#ffffff',
+                                border: '2px solid #7C3AED',
+                                color: '#7C3AED',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                            }}>
+                                Get Started <ArrowRight size={16} />
+                            </button>
+                        </div>
+
+                        {/* Recruiter Card */}
+                        <div 
+                            onClick={() => navigate('/login/recruiter')}
+                            style={{
+                                backgroundColor: '#FEFCE8',
+                                border: '1px solid #FDE68A',
+                                borderRadius: '24px',
+                                padding: '40px 32px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 16px 36px rgba(217, 119, 6, 0.15)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.03)'; }}
+                        >
+                            <div style={{
+                                width: '72px',
+                                height: '72px',
+                                borderRadius: '20px',
+                                backgroundColor: '#D97706',
+                                color: '#ffffff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 24px',
+                                boxShadow: '0 8px 20px rgba(217, 119, 6, 0.3)'
+                            }}>
+                                <Briefcase size={36} />
+                            </div>
+                            <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#0F172A', marginBottom: '12px' }}>
+                                I'm a Recruiter
+                            </h3>
+                            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
+                                Hire Top Talent with Verified Skill Passports
+                            </p>
+                            <button style={{
+                                width: '100%',
+                                padding: '12px 24px',
+                                borderRadius: '9999px',
+                                backgroundColor: '#ffffff',
+                                border: '2px solid #D97706',
+                                color: '#D97706',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px'
+                            }}>
+                                Get Started <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            {/* ==================== THE ULTIMATE TOOLKIT SECTION ==================== */}
+            <section id="features" style={{ padding: '90px 0', backgroundColor: '#faf9f6' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+                    
+                    {/* Title */}
+                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                        <h2 style={{
+                            fontSize: '40px',
+                            fontWeight: '900',
+                            color: '#0F172A',
+                            letterSpacing: '-0.02em',
+                            margin: '0 0 12px 0'
+                        }}>
+                            THE ULTIMATE <span style={{ color: '#EE5D2B' }}>TOOLKIT</span>
+                        </h2>
+                        <p style={{ fontSize: '17px', color: '#64748B', margin: 0 }}>
+                            Everything you need to crush your learning goals.
+                        </p>
+                    </div>
+
+                    {/* 8 Features Grid */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '24px'
+                    }}>
+                        {[
+                            {
+                                icon: BookMarked,
+                                title: 'Solo Mode',
+                                desc: 'Focus sessions, Pomodoro, AI mentor & deep work tools.',
+                                path: '/solo-mode',
+                                color: '#3B82F6',
+                                bg: '#EFF6FF'
+                            },
+                            {
+                                icon: Users,
+                                title: 'Group Mode',
+                                desc: 'Study in live rooms with real-time video, chat & sync.',
+                                path: '/group-mode',
+                                color: '#8B5CF6',
+                                bg: '#F5F3FF'
+                            },
+                            {
+                                icon: MessageSquare,
+                                title: 'AI Interview',
+                                desc: 'Practice mock interviews with AI, your AI interviewer.',
+                                path: '/interview',
+                                color: '#EC4899',
+                                bg: '#FDF2F8'
+                            },
+                            {
+                                icon: Trophy,
+                                title: 'Gamification',
+                                desc: 'Earn XP, maintain streaks & climb the leaderboard.',
+                                path: '/dashboard',
+                                color: '#F59E0B',
+                                bg: '#FEF3C7'
+                            },
+                            {
+                                icon: Code,
+                                title: 'CodeSpirit',
+                                desc: 'Solve problems, run code live & level up your skills.',
+                                path: '/codespirit',
+                                color: '#0EA5E9',
+                                bg: '#E0F2FE'
+                            },
+                            {
+                                icon: Briefcase,
+                                title: 'CareerSprint',
+                                desc: 'AI resume, job board & interview prep in one place.',
+                                path: '/career',
+                                color: '#EE5D2B',
+                                bg: '#FFF7ED'
+                            },
+                            {
+                                icon: BookOpen,
+                                title: 'Study Resources',
+                                desc: 'Notes, videos, PDFs & smart search.',
+                                path: '/resources',
+                                color: '#10B981',
+                                bg: '#ECFDF5'
+                            },
+                            {
+                                icon: BarChart3,
+                                title: 'Performance Analytics',
+                                desc: 'Track progress & skill growth.',
+                                path: '/dashboard',
+                                color: '#6366F1',
+                                bg: '#EEF2FF'
+                            }
+                        ].map((feature, idx) => {
+                            const IconComponent = feature.icon;
+                            return (
+                                <div
+                                    key={idx}
+                                    onClick={() => navigate(feature.path)}
+                                    style={{
+                                        backgroundColor: '#ffffff',
+                                        borderRadius: '24px',
+                                        padding: '32px 24px',
+                                        border: '1px solid #f1f5f9',
+                                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.03)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.transform = 'translateY(-4px)';
+                                        e.currentTarget.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.08)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.transform = 'none';
+                                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.03)';
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '48px',
+                                        height: '48px',
+                                        borderRadius: '14px',
+                                        backgroundColor: feature.bg,
+                                        color: feature.color,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginBottom: '20px'
+                                    }}>
+                                        <IconComponent size={26} />
+                                    </div>
+                                    <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#0F172A', marginBottom: '8px' }}>
+                                        {feature.title}
+                                    </h3>
+                                    <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.5', margin: 0 }}>
+                                        {feature.desc}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+
+            {/* ==================== CTA BANNER: READY TO LEVEL UP? ==================== */}
+            <section id="cta-banner" style={{ padding: '80px 0', backgroundColor: '#ffffff' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+                    <div style={{
+                        background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 50%, #FEF3C7 100%)',
+                        borderRadius: '32px',
+                        padding: '60px 48px',
+                        border: '1px solid #FED7AA',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 10px 40px rgba(249, 115, 22, 0.08)'
+                    }}>
+                        {/* Content */}
+                        <div style={{ textAlign: 'center', width: '100%', maxWidth: '780px', margin: '0 auto', zIndex: 2 }}>
+                            <h2 style={{
+                                fontSize: '42px',
+                                fontWeight: '900',
+                                color: '#0F172A',
+                                letterSpacing: '-0.02em',
+                                marginBottom: '16px'
+                            }}>
+                                Ready to <span style={{ color: '#EE5D2B' }}>Level Up?</span>
+                            </h2>
+                            <p style={{
+                                fontSize: '18px',
+                                color: '#475569',
+                                marginBottom: '36px',
+                                lineHeight: '1.6'
+                            }}>
+                                Join thousands of students turning late-night study sessions into their superpower.
+                            </p>
+
+                            {/* CTA Action Buttons */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                                <button
+                                    onClick={() => navigate('/login/student')}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '14px 32px',
+                                        borderRadius: '9999px',
+                                        backgroundColor: '#EE5D2B',
+                                        border: 'none',
+                                        color: '#ffffff',
+                                        fontWeight: '700',
+                                        fontSize: '15px',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 6px 18px rgba(238, 93, 43, 0.35)',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; }}
+                                >
+                                    Join as Student <ArrowRight size={16} />
+                                </button>
+
+                                <button
+                                    onClick={() => navigate('/login/teacher')}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '14px 32px',
+                                        borderRadius: '9999px',
+                                        backgroundColor: '#8B5CF6',
+                                        border: 'none',
+                                        color: '#ffffff',
+                                        fontWeight: '700',
+                                        fontSize: '15px',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 6px 18px rgba(139, 92, 246, 0.35)',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; }}
+                                >
+                                    Join as Teacher <ArrowRight size={16} />
+                                </button>
+
+                                <button
+                                    onClick={() => navigate('/login/recruiter')}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '14px 32px',
+                                        borderRadius: '9999px',
+                                        backgroundColor: '#0D9488',
+                                        border: 'none',
+                                        color: '#ffffff',
+                                        fontWeight: '700',
+                                        fontSize: '15px',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 6px 18px rgba(13, 148, 136, 0.35)',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; }}
+                                >
+                                    Join as Recruiter <ArrowRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            {/* ==================== STATS COUNTER ROW ==================== */}
+            <section style={{ padding: '0 0 90px', backgroundColor: '#ffffff' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+                    <div style={{
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #f1f5f9',
+                        borderRadius: '32px',
+                        padding: '40px',
+                        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '24px',
+                        textAlign: 'center'
+                    }}>
+                        {[
+                            { icon: Users, stat: '50K+', label: 'Active Learners', color: '#EE5D2B' },
+                            { icon: GraduationCap, stat: '1.2K+', label: 'Teachers', color: '#8B5CF6' },
+                            { icon: Building2, stat: '500+', label: 'Institutions', color: '#D97706' },
+                            { icon: Rocket, stat: '95%', label: 'Placement Success', color: '#0EA5E9' }
+                        ].map((item, idx) => {
+                            const IconComp = item.icon;
+                            return (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+                                    <div style={{
+                                        width: '52px',
+                                        height: '52px',
+                                        borderRadius: '16px',
+                                        backgroundColor: '#F8FAFC',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: item.color
+                                    }}>
+                                        <IconComp size={28} />
+                                    </div>
+                                    <div style={{ textAlign: 'left' }}>
+                                        <div style={{ fontSize: '28px', fontWeight: '900', color: '#0F172A', lineHeight: '1' }}>
+                                            {item.stat}
+                                        </div>
+                                        <div style={{ fontSize: '14px', color: '#64748B', fontWeight: '500', marginTop: '4px' }}>
+                                            {item.label}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+
+            {/* ==================== FOOTER ==================== */}
+            <footer id="footer" style={{
+                backgroundColor: '#FAFAFA',
+                borderTop: '1px solid #f1f5f9',
+                padding: '70px 0 32px'
+            }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+                    
+                    {/* Top Footer Columns */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '2fr 1fr 1fr 1fr 2fr',
+                        gap: '40px',
+                        marginBottom: '60px'
+                    }}>
+                        {/* Col 1: Brand */}
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                                <img src="/logo.png" alt="StudySpirit Logo" style={{ height: '40px', width: 'auto' }} />
+                                <span style={{ fontSize: '22px', fontWeight: '800' }}>
+                                    <span style={{ color: '#D97706' }}>Study</span>
+                                    <span style={{ color: '#0891B2' }}>Spirit</span>
+                                </span>
+                            </div>
+                            <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.6', margin: 0 }}>
+                                Learn Better. Achieve More.
+                            </p>
+                        </div>
+
+                        {/* Col 2: Quick Links */}
+                        <div>
+                            <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '18px' }}>
+                                Quick Links
+                            </h4>
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {['Home', 'Courses', 'About', 'Contact'].map((item) => (
+                                    <li key={item}>
+                                        <button 
+                                            onClick={() => scrollToSection(item.toLowerCase(), item)}
+                                            style={{ background: 'none', border: 'none', padding: 0, fontSize: '14px', color: '#64748B', cursor: 'pointer', textAlign: 'left' }}
+                                        >
+                                            {item}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Col 3: Resources */}
+                        <div>
+                            <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '18px' }}>
+                                Resources
+                            </h4>
+                            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {[
+                                    { name: 'Study Notes', path: '/resources' },
+                                    { name: 'Practice Quizzes', path: '/quiz' },
+                                    { name: 'Coding Practice', path: '/codespirit' },
+                                    { name: 'Career Guide', path: '/career' }
+                                ].map((item) => (
+                                    <li key={item.name}>
+                                        <button 
+                                            onClick={() => navigate(item.path)}
+                                            style={{ background: 'none', border: 'none', padding: 0, fontSize: '14px', color: '#64748B', cursor: 'pointer', textAlign: 'left' }}
+                                        >
+                                            {item.name}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Col 4: Follow Us */}
+                        <div>
+                            <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '18px' }}>
+                                Follow Us
+                            </h4>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#EFF6FF', color: '#1877F2', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: '700' }}>f</div>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F5F3FF', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: '700' }}>X</div>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#E0F2FE', color: '#0A66C2', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: '700' }}>in</div>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#FEF2F2', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: '700' }}>▶</div>
+                            </div>
+                        </div>
+
+                        {/* Col 5: Newsletter */}
+                        <div>
+                            <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0F172A', marginBottom: '14px' }}>
+                                Subscribe to Our Newsletter
+                            </h4>
+                            <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                <input 
+                                    type="email" 
+                                    placeholder="Your email"
+                                    value={newsletterEmail}
+                                    onChange={e => setNewsletterEmail(e.target.value)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '10px 14px',
+                                        borderRadius: '9999px',
+                                        border: '1px solid #e2e8f0',
+                                        fontSize: '13px',
+                                        outline: 'none'
+                                    }}
+                                />
+                                <button
+                                    type="submit"
+                                    style={{
+                                        padding: '10px 18px',
+                                        borderRadius: '9999px',
+                                        backgroundColor: '#EE5D2B',
+                                        border: 'none',
+                                        color: '#ffffff',
+                                        fontWeight: '700',
+                                        fontSize: '13px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Subscribe
+                                </button>
+                            </form>
+                            {subscribed ? (
+                                <p style={{ fontSize: '12px', color: '#16A34A', margin: 0 }}>✓ Thanks for subscribing!</p>
+                            ) : (
+                                <p style={{ fontSize: '12px', color: '#94A3B8', margin: 0 }}>Stay updated with latest courses & features.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Bottom Copyright & Terms */}
+                    <div style={{
+                        borderTop: '1px solid #f1f5f9',
+                        paddingTop: '28px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '13px',
+                        color: '#94A3B8'
+                    }}>
+                        <div>
+                            © 2024 StudySpirit. All rights reserved. | Built for Learners. Powered by AI.
+                        </div>
+                        <div style={{ display: 'flex', gap: '20px' }}>
+                            <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
+                            <span>|</span>
+                            <span style={{ cursor: 'pointer' }}>Terms of Use</span>
+                        </div>
+                    </div>
                 </div>
             </footer>
 
-            <style>{`
-                @keyframes blink { 50% { opacity: 0; } }
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                html { scroll-behavior: smooth; }
-            `}</style>
-        </div>
-    );
-}
 
-// ── Role Card Sub-Component ──────────────────────────────────────
-function RoleCard({ card, t, isLight, onNavigate }) {
-    const [hovered, setHovered] = useState(false);
+            {/* ==================== LOGIN ROLE SELECTOR MODAL ==================== */}
+            {showLoginModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                    backdropFilter: 'blur(8px)',
+                    zIndex: 100,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '24px'
+                }}>
+                    <div style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: '28px',
+                        padding: '40px',
+                        maxWidth: '520px',
+                        width: '100%',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setShowLoginModal(false)}
+                            style={{
+                                position: 'absolute',
+                                top: '24px',
+                                right: '24px',
+                                background: '#f1f5f9',
+                                border: 'none',
+                                borderRadius: '50%',
+                                width: '36px',
+                                height: '36px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                color: '#64748b'
+                            }}
+                        >
+                            <X size={20} />
+                        </button>
 
-    return (
-        <div
-            onClick={() => onNavigate(`/login/${card.role}`)}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            style={{
-                padding: '40px', borderRadius: 24, cursor: 'pointer',
-                background: hovered ? `${card.glow}` : t.cardBg,
-                border: `2px solid ${hovered ? card.borderHover : t.cardBorder}`,
-                boxShadow: hovered ? `0 20px 60px ${card.glow}` : (isLight ? '0 2px 16px rgba(0,0,0,0.05)' : 'none'),
-                transform: hovered ? 'translateY(-6px)' : 'none',
-                transition: 'all 0.3s ease',
-            }}
-        >
-            <div style={{ fontSize: 56, marginBottom: 20 }}>{card.emoji}</div>
-            <h3 style={{ fontSize: 28, fontWeight: 900, color: hovered ? card.color : t.cardTitle, marginBottom: 10, transition: 'color 0.3s' }}>{card.title}</h3>
-            <p style={{ fontSize: 15, color: t.cardText, marginBottom: 24, lineHeight: 1.6 }}>{card.subtitle}</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {card.features.map((f, i) => (
-                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: t.cardText }}>
-                        <span style={{ width: 20, height: 20, borderRadius: '50%', background: card.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <span style={{ color: '#fff', fontSize: 11, fontWeight: 900 }}>✓</span>
-                        </span>
-                        {f}
-                    </li>
-                ))}
-            </ul>
-            <div style={{
-                width: '100%', padding: '14px 24px', borderRadius: 999, textAlign: 'center',
-                background: card.color, color: '#fff', fontWeight: 800, fontSize: 14,
-                letterSpacing: '0.08em', textTransform: 'uppercase',
-                boxShadow: hovered ? `0 8px 24px ${card.glow}` : 'none',
-                transition: 'all 0.3s ease',
-            }}>
-                Get Started →
-            </div>
+                        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                            <img src="/logo.png" alt="StudySpirit" style={{ height: '48px', width: 'auto', marginBottom: '16px' }} />
+                            <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#0F172A', margin: '0 0 6px 0' }}>
+                                Welcome Back!
+                            </h3>
+                            <p style={{ fontSize: '15px', color: '#64748B', margin: 0 }}>
+                                Select your role to access your portal
+                            </p>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <button
+                                onClick={() => { setShowLoginModal(false); navigate('/login/student'); }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    padding: '16px 20px',
+                                    borderRadius: '16px',
+                                    backgroundColor: '#FFF8F5',
+                                    border: '1px solid #FFEDD5',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = '#EE5D2B'; e.currentTarget.style.backgroundColor = '#FFF0E8'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#FFEDD5'; e.currentTarget.style.backgroundColor = '#FFF8F5'; }}
+                            >
+                                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#EE5D2B', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <GraduationCap size={22} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A' }}>Student Portal</div>
+                                    <div style={{ fontSize: '13px', color: '#64748B' }}>Access study tools, quizzes & AI mentor</div>
+                                </div>
+                                <ArrowRight size={18} style={{ color: '#EE5D2B' }} />
+                            </button>
+
+                            <button
+                                onClick={() => { setShowLoginModal(false); navigate('/login/teacher'); }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    padding: '16px 20px',
+                                    borderRadius: '16px',
+                                    backgroundColor: '#F5F3FF',
+                                    border: '1px solid #DDD6FE',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.backgroundColor = '#EDE9FE'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#DDD6FE'; e.currentTarget.style.backgroundColor = '#F5F3FF'; }}
+                            >
+                                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#7C3AED', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Users size={22} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A' }}>Teacher Portal</div>
+                                    <div style={{ fontSize: '13px', color: '#64748B' }}>Manage classrooms, quizzes & students</div>
+                                </div>
+                                <ArrowRight size={18} style={{ color: '#7C3AED' }} />
+                            </button>
+
+                            <button
+                                onClick={() => { setShowLoginModal(false); navigate('/login/recruiter'); }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '16px',
+                                    padding: '16px 20px',
+                                    borderRadius: '16px',
+                                    backgroundColor: '#FEFCE8',
+                                    border: '1px solid #FDE68A',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = '#D97706'; e.currentTarget.style.backgroundColor = '#FEF9C3'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = '#FDE68A'; e.currentTarget.style.backgroundColor = '#FEFCE8'; }}
+                            >
+                                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#D97706', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <Briefcase size={22} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '16px', fontWeight: '800', color: '#0F172A' }}>Recruiter Portal</div>
+                                    <div style={{ fontSize: '13px', color: '#64748B' }}>Hire verified talent with Skill Passports</div>
+                                </div>
+                                <ArrowRight size={18} style={{ color: '#D97706' }} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
