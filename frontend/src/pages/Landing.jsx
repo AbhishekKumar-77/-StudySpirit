@@ -14,9 +14,9 @@ export default function Landing() {
     const [subscribed, setSubscribed] = useState(false);
     const [activeTab, setActiveTab] = useState('Home');
     const [liveStats, setLiveStats] = useState({
-        activeLearners: '50K+',
-        teachers: '1.2K+',
-        institutions: '500+',
+        activeLearners: '200+',
+        teachers: '5',
+        institutions: '1',
         placementSuccess: '95%'
     });
 

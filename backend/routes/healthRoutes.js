@@ -54,9 +54,12 @@ router.get('/stats', async (req, res) => {
         const totalUsers = await User.countDocuments();
         const activeGroups = await Group.countDocuments();
 
-        // Calculate formatted strings with real data
-        const formatNum = (num, minBase = 0) => {
-            const val = Math.max(num, minBase);
+        // Base metrics + real live database count (auto-increments when new students/teachers sign up or log in)
+        const totalActiveLearners = 200 + studentCount;
+        const totalTeachers = 5 + teacherCount;
+        const totalInstitutions = 1 + activeGroups;
+
+        const formatNum = (val) => {
             if (val >= 1000) {
                 return (val / 1000).toFixed(1).replace(/\.0$/, '') + 'K+';
             }
@@ -66,9 +69,9 @@ router.get('/stats', async (req, res) => {
         res.json({
             success: true,
             stats: {
-                activeLearners: formatNum(studentCount, 50),
-                teachers: formatNum(teacherCount, 12),
-                institutions: formatNum(activeGroups, 15),
+                activeLearners: formatNum(totalActiveLearners),
+                teachers: totalTeachers >= 1000 ? formatNum(totalTeachers) : `${totalTeachers}`,
+                institutions: totalInstitutions >= 1000 ? formatNum(totalInstitutions) : `${totalInstitutions}`,
                 placementSuccess: '95%',
                 counts: {
                     students: studentCount,
@@ -83,9 +86,9 @@ router.get('/stats', async (req, res) => {
         res.json({
             success: true,
             stats: {
-                activeLearners: '50K+',
-                teachers: '1.2K+',
-                institutions: '500+',
+                activeLearners: '200+',
+                teachers: '5',
+                institutions: '1',
                 placementSuccess: '95%'
             }
         });
