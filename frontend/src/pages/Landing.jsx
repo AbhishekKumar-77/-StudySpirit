@@ -49,6 +49,184 @@ export default function Landing() {
     };
 
     return (
+        <>
+        <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@700;900&family=Inter:wght@400;500;600;700&display=swap');
+
+            /* ── Landing: Hamburger Menu (hidden on desktop) ── */
+            .landing-hamburger { display: none; }
+
+            /* ── Landing: Nav (visible on desktop) ── */
+            .landing-nav-links { display: flex; align-items: center; gap: 36px; }
+
+            /* ── Landing: Hero grid ── */
+            .landing-hero-grid {
+                max-width: 1440px;
+                margin: 0 auto;
+                padding: 20px 32px 40px;
+                display: grid;
+                grid-template-columns: 40% 60%;
+                align-items: center;
+                min-height: 78vh;
+            }
+
+            /* ── Landing: Stats row ── */
+            .landing-stats-row {
+                display: flex;
+                align-items: stretch;
+                justify-content: center;
+                gap: 0;
+                flex-wrap: nowrap;
+            }
+
+            /* ── Landing: Features grid ── */
+            .landing-features-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+                margin-top: 48px;
+            }
+
+            /* ── Landing: Roles grid ── */
+            .landing-roles-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+            }
+
+            /* ── Landing: Testimonial grid ── */
+            .landing-testimonials-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 24px;
+                margin-top: 48px;
+            }
+
+            /* ── Landing: CTA banner inner ── */
+            .landing-cta-inner {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 40px;
+                flex-wrap: nowrap;
+            }
+
+            /* ── Landing: Footer grid ── */
+            .landing-footer-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr 1fr;
+                gap: 48px;
+            }
+
+            /* ===== TABLET: 768px - 1024px ===== */
+            @media (max-width: 1024px) {
+                .landing-hero-grid {
+                    grid-template-columns: 50% 50%;
+                    min-height: 60vh;
+                    padding: 20px 24px 32px;
+                }
+                .landing-features-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                .landing-roles-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                .landing-testimonials-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                .landing-footer-grid {
+                    grid-template-columns: 1fr 1fr;
+                    gap: 32px;
+                }
+            }
+
+            /* ===== MOBILE: 768px and below ===== */
+            @media (max-width: 768px) {
+                /* Navbar: hide nav links, show hamburger placeholder */
+                .landing-nav-links { display: none !important; }
+                .landing-hamburger {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    padding: 4px;
+                }
+                .landing-hamburger span {
+                    display: block;
+                    width: 24px;
+                    height: 2.5px;
+                    background: #334155;
+                    border-radius: 2px;
+                    transition: all 0.25s;
+                }
+                .landing-header-actions { gap: 8px !important; }
+                .landing-header-actions .login-btn { display: none !important; }
+
+                /* Hero: stack vertically */
+                .landing-hero-grid {
+                    grid-template-columns: 1fr !important;
+                    min-height: unset !important;
+                    padding: 24px 18px 28px !important;
+                    gap: 20px;
+                }
+                .landing-hero-grid > div:last-child {
+                    order: -1; /* image first on mobile */
+                    max-height: 260px;
+                    overflow: hidden;
+                }
+                .landing-hero-grid > div:last-child img {
+                    max-height: 240px !important;
+                }
+
+                /* Stats */
+                .landing-stats-row {
+                    flex-direction: column !important;
+                    gap: 0 !important;
+                }
+                .landing-stats-row > div {
+                    border-right: none !important;
+                    border-bottom: 1px solid #e2e8f0 !important;
+                }
+                .landing-stats-row > div:last-child {
+                    border-bottom: none !important;
+                }
+
+                /* Features, Roles, Testimonials */
+                .landing-features-grid {
+                    grid-template-columns: 1fr !important;
+                }
+                .landing-roles-grid {
+                    grid-template-columns: 1fr !important;
+                }
+                .landing-testimonials-grid {
+                    grid-template-columns: 1fr !important;
+                }
+
+                /* CTA Banner */
+                .landing-cta-inner {
+                    flex-direction: column !important;
+                    text-align: center !important;
+                    gap: 24px !important;
+                    padding: 32px 20px !important;
+                }
+
+                /* Footer */
+                .landing-footer-grid {
+                    grid-template-columns: 1fr 1fr !important;
+                    gap: 24px !important;
+                }
+            }
+
+            /* ===== VERY SMALL MOBILE: 480px ===== */
+            @media (max-width: 480px) {
+                .landing-footer-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 20px !important;
+                }
+            }
+        `}</style>
         <div style={{
             fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             backgroundColor: '#ffffff',
@@ -107,8 +285,8 @@ export default function Landing() {
                         </span>
                     </div>
 
-                    {/* Nav Links */}
-                    <nav style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
+                    {/* Nav Links — hidden on mobile via CSS */}
+                    <nav className="landing-nav-links">
                         {[
                             { name: 'Home', target: '' },
                             { name: 'Features', target: 'features' },
@@ -154,8 +332,16 @@ export default function Landing() {
                         ))}
                     </nav>
 
+                    {/* Hamburger — shown only on mobile */}
+                    <button className="landing-hamburger" aria-label="Open menu" onClick={() => {
+                        const nav = document.querySelector('.landing-nav-links');
+                        if (nav) nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+                    }}>
+                        <span /><span /><span />
+                    </button>
+
                     {/* Header Action Buttons */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div className="landing-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         <button
                             onClick={() => setShowLoginModal(true)}
                             style={{
@@ -212,15 +398,7 @@ export default function Landing() {
                 overflow: 'hidden',
                 borderBottom: '1px solid #f8fafc'
             }}>
-                <div style={{
-                    maxWidth: '1440px',
-                    margin: '0 auto',
-                    padding: '20px 32px 40px',
-                    display: 'grid',
-                    gridTemplateColumns: '40% 60%',
-                    alignItems: 'center',
-                    minHeight: '78vh'
-                }}>
+                <div className="landing-hero-grid">
                     {/* Left Column: Headline & Action */}
                     <div style={{ zIndex: 10, paddingRight: '16px' }}>
                         {/* Pill Badge */}
@@ -1275,5 +1453,6 @@ export default function Landing() {
             )}
 
         </div>
+        </>
     );
 }
