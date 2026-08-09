@@ -187,52 +187,25 @@ export default function Landing() {
             </header>
 
 
-            {/* ==================== HERO SECTION (EXACT FIT MATCHING IMAGE 1) ==================== */}
+            {/* ==================== HERO SECTION (EXACT MATCH FOR IMAGE 2) ==================== */}
             <section style={{
                 position: 'relative',
                 width: '100%',
                 backgroundColor: '#ffffff',
                 overflow: 'hidden',
-                minHeight: '85vh',
-                display: 'flex',
-                alignItems: 'center'
+                borderBottom: '1px solid #f8fafc'
             }}>
-                {/* Absolute Full Background Image (Anchored Right) */}
                 <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    left: 0,
-                    zIndex: 0,
-                    pointerEvents: 'none'
-                }}>
-                    <img 
-                        src="/study-desk.jpg" 
-                        alt="Study Desk Background" 
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            objectPosition: 'right center',
-                            /* Fade out the left side of the image so text is clearly readable on pure white */
-                            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.05) 20%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 100%)',
-                            maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.05) 20%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 100%)'
-                        }}
-                    />
-                </div>
-
-                {/* Content Container (Overlaying Left Side) */}
-                <div style={{
-                    position: 'relative',
-                    zIndex: 10,
-                    maxWidth: '1400px',
-                    width: '100%',
+                    maxWidth: '1440px',
                     margin: '0 auto',
-                    padding: '40px 32px'
+                    padding: '20px 32px 40px',
+                    display: 'grid',
+                    gridTemplateColumns: '40% 60%',
+                    alignItems: 'center',
+                    minHeight: '78vh'
                 }}>
-                    {/* Left Content (Text) */}
-                    <div style={{ maxWidth: '580px' }}>
+                    {/* Left Column: Headline & Action */}
+                    <div style={{ zIndex: 10, paddingRight: '16px' }}>
                         {/* Pill Badge */}
                         <div style={{
                             display: 'inline-flex',
@@ -252,7 +225,7 @@ export default function Landing() {
 
                         {/* Title */}
                         <h1 style={{
-                            fontSize: 'clamp(52px, 6.2vw, 82px)',
+                            fontSize: 'clamp(48px, 5.8vw, 78px)',
                             fontWeight: '900',
                             lineHeight: '1.05',
                             letterSpacing: '-0.03em',
@@ -276,7 +249,7 @@ export default function Landing() {
                             fontWeight: '400',
                             lineHeight: '1.6',
                             marginBottom: '36px',
-                            maxWidth: '520px'
+                            maxWidth: '500px'
                         }}>
                             Study the way you want, succeed the way you dream.
                         </p>
@@ -351,6 +324,29 @@ export default function Landing() {
                                 </div>
                             ))}
                         </div>
+                    </div>
+
+                    {/* Right Column: Full Scene Desk Image (Matching Image 2 Aspect Ratio & Faded Edges) */}
+                    <div style={{
+                        position: 'relative',
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <img 
+                            src="/study-desk.jpg" 
+                            alt="Study Desk Setup with Lamp, Laptop and Notebook" 
+                            style={{
+                                width: '100%',
+                                height: 'auto',
+                                maxHeight: '640px',
+                                objectFit: 'contain',
+                                display: 'block',
+                                WebkitMaskImage: 'radial-gradient(ellipse 92% 92% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+                                maskImage: 'radial-gradient(ellipse 92% 92% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)'
+                            }}
+                        />
                     </div>
                 </div>
             </section>
