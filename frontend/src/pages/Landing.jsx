@@ -45,12 +45,12 @@ export default function Landing() {
                 position: 'sticky',
                 top: 0,
                 zIndex: 50,
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backgroundColor: 'rgba(255, 255, 255, 0.96)',
                 backdropFilter: 'blur(12px)',
                 borderBottom: '1px solid #f1f5f9'
             }}>
                 <div style={{
-                    maxWidth: '1320px',
+                    maxWidth: '1360px',
                     margin: '0 auto',
                     padding: '14px 32px',
                     display: 'flex',
@@ -187,28 +187,25 @@ export default function Landing() {
             </header>
 
 
-            {/* ==================== HERO SECTION (FULL BACKGROUND - MATCHING IMAGE 2) ==================== */}
+            {/* ==================== HERO SECTION (EXACT FIT MATCHING IMAGE 2) ==================== */}
             <section style={{
                 position: 'relative',
                 width: '100%',
-                minHeight: '82vh',
-                display: 'flex',
-                alignItems: 'center',
-                background: `linear-gradient(90deg, #FFFFFF 0%, #FFFFFF 42%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.2) 75%, transparent 100%), url('/study-desk.jpg') right center / cover no-repeat`,
-                overflow: 'hidden'
+                backgroundColor: '#ffffff',
+                overflow: 'hidden',
+                borderBottom: '1px solid #f8fafc'
             }}>
                 <div style={{
-                    maxWidth: '1320px',
+                    maxWidth: '1400px',
                     margin: '0 auto',
-                    padding: '60px 32px',
-                    width: '100%',
+                    padding: '30px 32px 40px',
                     display: 'grid',
-                    gridTemplateColumns: '1.1fr 0.9fr',
-                    gap: '40px',
-                    alignItems: 'center'
+                    gridTemplateColumns: '44% 56%',
+                    alignItems: 'center',
+                    minHeight: '80vh'
                 }}>
-                    {/* Left Column Content */}
-                    <div>
+                    {/* Left Column: Headline & Action */}
+                    <div style={{ zIndex: 10, paddingRight: '24px' }}>
                         {/* Pill Badge */}
                         <div style={{
                             display: 'inline-flex',
@@ -218,7 +215,7 @@ export default function Landing() {
                             borderRadius: '9999px',
                             backgroundColor: '#FFF3EC',
                             border: '1px solid #FDBA74',
-                            marginBottom: '28px'
+                            marginBottom: '24px'
                         }}>
                             <GraduationCap size={18} style={{ color: '#EA580C' }} />
                             <span style={{ fontSize: '14px', fontWeight: '700', color: '#C2410C' }}>
@@ -228,7 +225,7 @@ export default function Landing() {
 
                         {/* Title */}
                         <h1 style={{
-                            fontSize: 'clamp(56px, 6.5vw, 84px)',
+                            fontSize: 'clamp(52px, 6.2vw, 82px)',
                             fontWeight: '900',
                             lineHeight: '1.05',
                             letterSpacing: '-0.03em',
@@ -247,18 +244,18 @@ export default function Landing() {
 
                         {/* Tagline */}
                         <p style={{
-                            fontSize: '20px',
+                            fontSize: '19px',
                             color: '#475569',
                             fontWeight: '400',
                             lineHeight: '1.6',
                             marginBottom: '36px',
-                            maxWidth: '540px'
+                            maxWidth: '520px'
                         }}>
                             Study the way you want, succeed the way you dream.
                         </p>
 
                         {/* Action Buttons */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '44px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '40px' }}>
                             <button
                                 onClick={() => navigate('/login/student')}
                                 style={{
@@ -303,7 +300,7 @@ export default function Landing() {
                         </div>
 
                         {/* Trust Checkmarks */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                             {[
                                 'AI Powered Learning',
                                 'Personalized Paths',
@@ -311,15 +308,15 @@ export default function Landing() {
                             ].map((item, idx) => (
                                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <div style={{
-                                        width: '22px',
-                                        height: '22px',
+                                        width: '20px',
+                                        height: '20px',
                                         borderRadius: '50%',
                                         backgroundColor: '#DCFCE7',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}>
-                                        <CheckCircle2 size={14} style={{ color: '#16A34A' }} />
+                                        <CheckCircle2 size={13} style={{ color: '#16A34A' }} />
                                     </div>
                                     <span style={{ fontSize: '14px', fontWeight: '600', color: '#334155' }}>
                                         {item}
@@ -329,14 +326,32 @@ export default function Landing() {
                         </div>
                     </div>
 
-                    {/* Right space allows background desk photo to shine seamlessly */}
-                    <div />
+                    {/* Right Column: Full Scene Desk Image (Matching Image 2 Aspect Ratio Exactly) */}
+                    <div style={{
+                        position: 'relative',
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start'
+                    }}>
+                        <img 
+                            src="/study-desk.jpg" 
+                            alt="Study Desk Setup with Lamp, Laptop and Notebook" 
+                            style={{
+                                width: '100%',
+                                height: 'auto',
+                                maxHeight: '700px',
+                                objectFit: 'contain',
+                                display: 'block'
+                            }}
+                        />
+                    </div>
                 </div>
             </section>
 
 
             {/* ==================== EXPLORE YOUR ROLE SECTION (MATCHING IMAGE 4 EXACTLY) ==================== */}
-            <section id="roles" style={{ padding: '100px 0 90px', backgroundColor: '#ffffff' }}>
+            <section id="roles" style={{ padding: '90px 0', backgroundColor: '#ffffff' }}>
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
                     
                     {/* Section Title */}
