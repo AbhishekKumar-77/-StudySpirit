@@ -187,25 +187,52 @@ export default function Landing() {
             </header>
 
 
-            {/* ==================== HERO SECTION (WITH SOFT FEATHERED/FADED EDGES MATCHING IMAGE 2) ==================== */}
+            {/* ==================== HERO SECTION (EXACT FIT MATCHING IMAGE 1) ==================== */}
             <section style={{
                 position: 'relative',
                 width: '100%',
                 backgroundColor: '#ffffff',
                 overflow: 'hidden',
-                borderBottom: '1px solid #f8fafc'
+                minHeight: '85vh',
+                display: 'flex',
+                alignItems: 'center'
             }}>
+                {/* Absolute Full Background Image (Anchored Right) */}
                 <div style={{
-                    maxWidth: '1400px',
-                    margin: '0 auto',
-                    padding: '30px 32px 40px',
-                    display: 'grid',
-                    gridTemplateColumns: '44% 56%',
-                    alignItems: 'center',
-                    minHeight: '80vh'
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                    zIndex: 0,
+                    pointerEvents: 'none'
                 }}>
-                    {/* Left Column: Headline & Action */}
-                    <div style={{ zIndex: 10, paddingRight: '24px' }}>
+                    <img 
+                        src="/study-desk.jpg" 
+                        alt="Study Desk Background" 
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: 'right center',
+                            /* Fade out the left side of the image so text is clearly readable on pure white */
+                            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.05) 20%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 100%)',
+                            maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.05) 20%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 100%)'
+                        }}
+                    />
+                </div>
+
+                {/* Content Container (Overlaying Left Side) */}
+                <div style={{
+                    position: 'relative',
+                    zIndex: 10,
+                    maxWidth: '1400px',
+                    width: '100%',
+                    margin: '0 auto',
+                    padding: '40px 32px'
+                }}>
+                    {/* Left Content (Text) */}
+                    <div style={{ maxWidth: '580px' }}>
                         {/* Pill Badge */}
                         <div style={{
                             display: 'inline-flex',
@@ -324,29 +351,6 @@ export default function Landing() {
                                 </div>
                             ))}
                         </div>
-                    </div>
-
-                    {/* Right Column: Full Scene Desk Image with Soft Edge Gradient Mask (Matching Image 2 Faded Edges) */}
-                    <div style={{
-                        position: 'relative',
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
-                        <img 
-                            src="/study-desk.jpg" 
-                            alt="Study Desk Setup with Lamp, Laptop and Notebook" 
-                            style={{
-                                width: '100%',
-                                height: 'auto',
-                                maxHeight: '700px',
-                                objectFit: 'contain',
-                                display: 'block',
-                                WebkitMaskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
-                                maskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'
-                            }}
-                        />
                     </div>
                 </div>
             </section>
