@@ -342,9 +342,7 @@ export default function Landing() {
                                 height: 'auto',
                                 maxHeight: '640px',
                                 objectFit: 'contain',
-                                display: 'block',
-                                WebkitMaskImage: 'radial-gradient(ellipse 92% 92% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
-                                maskImage: 'radial-gradient(ellipse 92% 92% at 50% 50%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)'
+                                display: 'block'
                             }}
                         />
                     </div>
