@@ -4,7 +4,7 @@ import {
     GraduationCap, Users, Briefcase, Code, Trophy, BookOpen,
     Sparkles, CheckCircle2, ArrowRight, Lock, Mail,
     MessageSquare, BarChart3, FileText, Building2, Rocket,
-    BookMarked, Lightbulb, Compass, Award, Star, X
+    BookMarked, Lightbulb, Compass, Award, Star, X, Presentation
 } from 'lucide-react';
 
 export default function Landing() {
@@ -45,43 +45,53 @@ export default function Landing() {
                 position: 'sticky',
                 top: 0,
                 zIndex: 50,
-                backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(12px)',
                 borderBottom: '1px solid #f1f5f9'
             }}>
                 <div style={{
-                    maxWidth: '1280px',
+                    maxWidth: '1320px',
                     margin: '0 auto',
-                    padding: '16px 32px',
+                    padding: '14px 32px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 }}>
-                    {/* Brand Logo & Name */}
+                    {/* Brand Logo & Stylized Name (Matching Image 1) */}
                     <div 
                         onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setActiveTab('Home'); }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
                     >
                         <img 
-                            src="/logo.png" 
+                            src="/logo-icon.png" 
                             alt="StudySpirit Logo" 
-                            style={{ height: '48px', width: 'auto', objectFit: 'contain' }} 
+                            style={{ height: '44px', width: 'auto', objectFit: 'contain' }} 
                         />
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ 
+                            fontSize: '28px', 
+                            fontWeight: '900', 
+                            fontFamily: "'Outfit', 'Inter', sans-serif",
+                            letterSpacing: '-0.02em',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}>
                             <span style={{ 
-                                fontSize: '26px', 
-                                fontWeight: '800', 
-                                letterSpacing: '-0.02em',
-                                lineHeight: '1'
-                            }}>
-                                <span style={{ color: '#D97706' }}>Study</span>
-                                <span style={{ color: '#0891B2' }}>Spirit</span>
-                            </span>
-                        </div>
+                                background: 'linear-gradient(180deg, #F59E0B 0%, #D97706 50%, #92400E 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))'
+                            }}>Study</span>
+                            <span style={{ 
+                                background: 'linear-gradient(180deg, #0284C7 0%, #0369A1 50%, #075985 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))'
+                            }}>Spirit</span>
+                        </span>
                     </div>
 
                     {/* Nav Links */}
-                    <nav style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+                    <nav style={{ display: 'flex', alignItems: 'center', gap: '36px' }}>
                         {[
                             { name: 'Home', target: '' },
                             { name: 'Features', target: 'features' },
@@ -139,17 +149,17 @@ export default function Landing() {
                                 borderRadius: '9999px',
                                 backgroundColor: '#ffffff',
                                 border: '1px solid #e2e8f0',
-                                color: '#334155',
+                                color: '#EE5D2B',
                                 fontWeight: '700',
                                 fontSize: '14px',
                                 cursor: 'pointer',
                                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                                 transition: 'all 0.2s ease'
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.backgroundColor = '#f8fafc'; }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#EE5D2B'; e.currentTarget.style.backgroundColor = '#FFF5F0'; }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.backgroundColor = '#ffffff'; }}
                         >
-                            <Lock size={15} style={{ color: '#64748b' }} />
+                            <Lock size={15} style={{ color: '#EE5D2B' }} />
                             Login
                         </button>
 
@@ -177,30 +187,34 @@ export default function Landing() {
             </header>
 
 
-            {/* ==================== HERO SECTION ==================== */}
+            {/* ==================== HERO SECTION (FULL BACKGROUND - MATCHING IMAGE 2) ==================== */}
             <section style={{
                 position: 'relative',
-                padding: '60px 0 80px',
-                background: 'linear-gradient(180deg, #ffffff 0%, #faf9f5 100%)',
+                width: '100%',
+                minHeight: '82vh',
+                display: 'flex',
+                alignItems: 'center',
+                background: `linear-gradient(90deg, #FFFFFF 0%, #FFFFFF 42%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.2) 75%, transparent 100%), url('/study-desk.jpg') right center / cover no-repeat`,
                 overflow: 'hidden'
             }}>
                 <div style={{
-                    maxWidth: '1280px',
+                    maxWidth: '1320px',
                     margin: '0 auto',
-                    padding: '0 32px',
+                    padding: '60px 32px',
+                    width: '100%',
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '48px',
+                    gridTemplateColumns: '1.1fr 0.9fr',
+                    gap: '40px',
                     alignItems: 'center'
                 }}>
-                    {/* Left Column: Headline & Action */}
+                    {/* Left Column Content */}
                     <div>
                         {/* Pill Badge */}
                         <div style={{
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '8px',
-                            padding: '8px 20px',
+                            padding: '8px 22px',
                             borderRadius: '9999px',
                             backgroundColor: '#FFF3EC',
                             border: '1px solid #FDBA74',
@@ -214,7 +228,7 @@ export default function Landing() {
 
                         {/* Title */}
                         <h1 style={{
-                            fontSize: 'clamp(52px, 6vw, 76px)',
+                            fontSize: 'clamp(56px, 6.5vw, 84px)',
                             fontWeight: '900',
                             lineHeight: '1.05',
                             letterSpacing: '-0.03em',
@@ -231,7 +245,7 @@ export default function Landing() {
                             </span>
                         </h1>
 
-                        {/* Subtitle */}
+                        {/* Tagline */}
                         <p style={{
                             fontSize: '20px',
                             color: '#475569',
@@ -315,32 +329,18 @@ export default function Landing() {
                         </div>
                     </div>
 
-                    {/* Right Column: Hero Desk Image */}
-                    <div style={{ position: 'relative' }}>
-                        <div style={{
-                            position: 'relative',
-                            borderRadius: '24px',
-                            overflow: 'hidden',
-                            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.08)',
-                            border: '1px solid #f1f5f9'
-                        }}>
-                            <img 
-                                src="/study-desk.jpg" 
-                                alt="Study Desk Setup with Notes" 
-                                style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
-                            />
-                        </div>
-                    </div>
+                    {/* Right space allows background desk photo to shine seamlessly */}
+                    <div />
                 </div>
             </section>
 
 
-            {/* ==================== EXPLORE YOUR ROLE SECTION ==================== */}
-            <section id="roles" style={{ padding: '90px 0', backgroundColor: '#ffffff' }}>
+            {/* ==================== EXPLORE YOUR ROLE SECTION (MATCHING IMAGE 4 EXACTLY) ==================== */}
+            <section id="roles" style={{ padding: '100px 0 90px', backgroundColor: '#ffffff' }}>
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
                     
                     {/* Section Title */}
-                    <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '64px' }}>
                         <h2 style={{
                             fontSize: '36px',
                             fontWeight: '900',
@@ -359,176 +359,243 @@ export default function Landing() {
                         }} />
                     </div>
 
-                    {/* 3 Role Cards Grid */}
+                    {/* 3 Role Cards Grid (Image 4 exact design with wave left ribbons) */}
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '32px'
+                        gap: '36px'
                     }}>
-                        {/* Student Card */}
+                        
+                        {/* CARD 1: STUDENT (Orange wave ribbon on left) */}
                         <div 
                             onClick={() => navigate('/login/student')}
                             style={{
-                                backgroundColor: '#FFF8F5',
-                                border: '1px solid #FFEDD5',
-                                borderRadius: '24px',
-                                padding: '40px 32px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '32px',
+                                border: '1px solid #f1f5f9',
+                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)',
+                                padding: '44px 36px 36px',
                                 textAlign: 'center',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)'
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 16px 36px rgba(238, 93, 43, 0.15)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.03)'; }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(238, 93, 43, 0.12)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.05)'; }}
                         >
+                            {/* Left Wave Ribbon (Image 4 Style) */}
                             <div style={{
-                                width: '72px',
-                                height: '72px',
-                                borderRadius: '20px',
-                                backgroundColor: '#EE5D2B',
-                                color: '#ffffff',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                width: '12px',
+                                background: 'linear-gradient(180deg, #FF9E7D 0%, #FFD0B8 100%)',
+                                borderTopLeftRadius: '32px',
+                                borderBottomLeftRadius: '32px'
+                            }} />
+
+                            {/* 3D Student Icon */}
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '24px',
+                                background: 'linear-gradient(135deg, #FFF1EC 0%, #FFE4D6 100%)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 margin: '0 auto 24px',
-                                boxShadow: '0 8px 20px rgba(238, 93, 43, 0.3)'
+                                boxShadow: '0 8px 20px rgba(238, 93, 43, 0.12)'
                             }}>
-                                <GraduationCap size={36} />
+                                <GraduationCap size={44} style={{ color: '#EA580C' }} />
                             </div>
-                            <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#0F172A', marginBottom: '12px' }}>
+
+                            <h3 style={{ fontSize: '26px', fontWeight: '900', color: '#0F172A', marginBottom: '14px' }}>
                                 I'm a Student
                             </h3>
-                            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
-                                Solo & Group Study Modes, Quizzes, AI Mentor & More
+
+                            {/* Subtitle with highlighted colors */}
+                            <p style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '32px', minHeight: '48px' }}>
+                                <span style={{ color: '#1E293B', fontWeight: '600' }}>Solo & Group Study Modes,</span>{' '}
+                                <span style={{ color: '#C2410C', fontWeight: '600' }}>Quizzes, AI Mentor & More</span>
                             </p>
+
+                            {/* Pill Button with Orange Border */}
                             <button style={{
                                 width: '100%',
-                                padding: '12px 24px',
+                                padding: '13px 24px',
                                 borderRadius: '9999px',
                                 backgroundColor: '#ffffff',
                                 border: '2px solid #EE5D2B',
                                 color: '#EE5D2B',
                                 fontWeight: '700',
-                                fontSize: '14px',
+                                fontSize: '15px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '6px'
+                                gap: '8px',
+                                boxShadow: '0 2px 8px rgba(238, 93, 43, 0.1)'
                             }}>
-                                Get Started <ArrowRight size={16} />
+                                Get Started <ArrowRight size={18} />
                             </button>
                         </div>
 
-                        {/* Teacher Card */}
+
+                        {/* CARD 2: TEACHER (Purple wave ribbon on left) */}
                         <div 
                             onClick={() => navigate('/login/teacher')}
                             style={{
-                                backgroundColor: '#F5F3FF',
-                                border: '1px solid #DDD6FE',
-                                borderRadius: '24px',
-                                padding: '40px 32px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '32px',
+                                border: '1px solid #f1f5f9',
+                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)',
+                                padding: '44px 36px 36px',
                                 textAlign: 'center',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)'
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 16px 36px rgba(124, 58, 237, 0.15)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.03)'; }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(124, 58, 237, 0.12)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.05)'; }}
                         >
+                            {/* Left Wave Ribbon (Image 4 Style) */}
                             <div style={{
-                                width: '72px',
-                                height: '72px',
-                                borderRadius: '20px',
-                                backgroundColor: '#7C3AED',
-                                color: '#ffffff',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                width: '12px',
+                                background: 'linear-gradient(180deg, #A78BFA 0%, #DDD6FE 100%)',
+                                borderTopLeftRadius: '32px',
+                                borderBottomLeftRadius: '32px'
+                            }} />
+
+                            {/* 3D Teacher Icon */}
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '24px',
+                                background: 'linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 margin: '0 auto 24px',
-                                boxShadow: '0 8px 20px rgba(124, 58, 237, 0.3)'
+                                boxShadow: '0 8px 20px rgba(124, 58, 237, 0.12)'
                             }}>
-                                <Users size={36} />
+                                <Presentation size={44} style={{ color: '#7C3AED' }} />
                             </div>
-                            <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#0F172A', marginBottom: '12px' }}>
+
+                            <h3 style={{ fontSize: '26px', fontWeight: '900', color: '#0F172A', marginBottom: '14px' }}>
                                 I'm a Teacher
                             </h3>
-                            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
-                                Create Quizzes, Track Students & Manage Exams
+
+                            {/* Subtitle with highlighted colors */}
+                            <p style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '32px', minHeight: '48px' }}>
+                                <span style={{ color: '#1E293B', fontWeight: '600' }}>Create Quizzes, Track Students</span>{' '}
+                                <span style={{ color: '#92400E', fontWeight: '600' }}>& Manage Exams</span>
                             </p>
+
+                            {/* Pill Button with Orange Border */}
                             <button style={{
                                 width: '100%',
-                                padding: '12px 24px',
+                                padding: '13px 24px',
                                 borderRadius: '9999px',
                                 backgroundColor: '#ffffff',
-                                border: '2px solid #7C3AED',
-                                color: '#7C3AED',
+                                border: '2px solid #EE5D2B',
+                                color: '#EE5D2B',
                                 fontWeight: '700',
-                                fontSize: '14px',
+                                fontSize: '15px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '6px'
+                                gap: '8px',
+                                boxShadow: '0 2px 8px rgba(238, 93, 43, 0.1)'
                             }}>
-                                Get Started <ArrowRight size={16} />
+                                Get Started <ArrowRight size={18} />
                             </button>
                         </div>
 
-                        {/* Recruiter Card */}
+
+                        {/* CARD 3: RECRUITER (Green wave ribbon on left) */}
                         <div 
                             onClick={() => navigate('/login/recruiter')}
                             style={{
-                                backgroundColor: '#FEFCE8',
-                                border: '1px solid #FDE68A',
-                                borderRadius: '24px',
-                                padding: '40px 32px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '32px',
+                                border: '1px solid #f1f5f9',
+                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.05)',
+                                padding: '44px 36px 36px',
                                 textAlign: 'center',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)'
+                                position: 'relative',
+                                overflow: 'hidden',
+                                transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)'
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 16px 36px rgba(217, 119, 6, 0.15)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.03)'; }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.12)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.05)'; }}
                         >
+                            {/* Left Wave Ribbon (Image 4 Style) */}
                             <div style={{
-                                width: '72px',
-                                height: '72px',
-                                borderRadius: '20px',
-                                backgroundColor: '#D97706',
-                                color: '#ffffff',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                bottom: 0,
+                                width: '12px',
+                                background: 'linear-gradient(180deg, #86EFAC 0%, #DCFCE7 100%)',
+                                borderTopLeftRadius: '32px',
+                                borderBottomLeftRadius: '32px'
+                            }} />
+
+                            {/* 3D Briefcase Icon */}
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '24px',
+                                background: 'linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 margin: '0 auto 24px',
-                                boxShadow: '0 8px 20px rgba(217, 119, 6, 0.3)'
+                                boxShadow: '0 8px 20px rgba(16, 185, 129, 0.12)'
                             }}>
-                                <Briefcase size={36} />
+                                <Briefcase size={44} style={{ color: '#059669' }} />
                             </div>
-                            <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#0F172A', marginBottom: '12px' }}>
+
+                            <h3 style={{ fontSize: '26px', fontWeight: '900', color: '#0F172A', marginBottom: '14px' }}>
                                 I'm a Recruiter
                             </h3>
-                            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: '1.6', marginBottom: '28px' }}>
-                                Hire Top Talent with Verified Skill Passports
+
+                            {/* Subtitle with highlighted colors */}
+                            <p style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '32px', minHeight: '48px' }}>
+                                <span style={{ color: '#1E293B', fontWeight: '600' }}>Hire Top Talent with</span>{' '}
+                                <span style={{ color: '#C2410C', fontWeight: '600' }}>Verified Skill Passports</span>
                             </p>
+
+                            {/* Pill Button with Orange Border */}
                             <button style={{
                                 width: '100%',
-                                padding: '12px 24px',
+                                padding: '13px 24px',
                                 borderRadius: '9999px',
                                 backgroundColor: '#ffffff',
-                                border: '2px solid #D97706',
-                                color: '#D97706',
+                                border: '2px solid #EE5D2B',
+                                color: '#EE5D2B',
                                 fontWeight: '700',
-                                fontSize: '14px',
+                                fontSize: '15px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '6px'
+                                gap: '8px',
+                                boxShadow: '0 2px 8px rgba(238, 93, 43, 0.1)'
                             }}>
-                                Get Started <ArrowRight size={16} />
+                                Get Started <ArrowRight size={18} />
                             </button>
                         </div>
+
                     </div>
                 </div>
             </section>
@@ -691,7 +758,6 @@ export default function Landing() {
                         justifyContent: 'space-between',
                         boxShadow: '0 10px 40px rgba(249, 115, 22, 0.08)'
                     }}>
-                        {/* Content */}
                         <div style={{ textAlign: 'center', width: '100%', maxWidth: '780px', margin: '0 auto', zIndex: 2 }}>
                             <h2 style={{
                                 fontSize: '42px',
@@ -711,7 +777,6 @@ export default function Landing() {
                                 Join thousands of students turning late-night study sessions into their superpower.
                             </p>
 
-                            {/* CTA Action Buttons */}
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
                                 <button
                                     onClick={() => navigate('/login/student')}
@@ -847,7 +912,6 @@ export default function Landing() {
             }}>
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
                     
-                    {/* Top Footer Columns */}
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: '2fr 1fr 1fr 1fr 2fr',
@@ -857,10 +921,10 @@ export default function Landing() {
                         {/* Col 1: Brand */}
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                                <img src="/logo.png" alt="StudySpirit Logo" style={{ height: '40px', width: 'auto' }} />
-                                <span style={{ fontSize: '22px', fontWeight: '800' }}>
+                                <img src="/logo-icon.png" alt="StudySpirit Logo" style={{ height: '36px', width: 'auto' }} />
+                                <span style={{ fontSize: '22px', fontWeight: '900', fontFamily: "'Outfit', 'Inter', sans-serif" }}>
                                     <span style={{ color: '#D97706' }}>Study</span>
-                                    <span style={{ color: '#0891B2' }}>Spirit</span>
+                                    <span style={{ color: '#0369A1' }}>Spirit</span>
                                 </span>
                             </div>
                             <p style={{ fontSize: '14px', color: '#64748B', lineHeight: '1.6', margin: 0 }}>
@@ -968,7 +1032,6 @@ export default function Landing() {
                         </div>
                     </div>
 
-                    {/* Bottom Copyright & Terms */}
                     <div style={{
                         borderTop: '1px solid #f1f5f9',
                         paddingTop: '28px',
@@ -1035,7 +1098,7 @@ export default function Landing() {
                         </button>
 
                         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                            <img src="/logo.png" alt="StudySpirit" style={{ height: '48px', width: 'auto', marginBottom: '16px' }} />
+                            <img src="/logo-icon.png" alt="StudySpirit" style={{ height: '48px', width: 'auto', marginBottom: '12px' }} />
                             <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#0F172A', margin: '0 0 6px 0' }}>
                                 Welcome Back!
                             </h3>
