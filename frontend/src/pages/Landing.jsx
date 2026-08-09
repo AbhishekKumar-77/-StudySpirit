@@ -57,14 +57,14 @@ export default function Landing() {
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 }}>
-                    {/* Brand Logo & Stylized Name (Matching Image 1) */}
+                    {/* Brand Logo & Stylized Name (Icon only + styled StudySpirit text) */}
                     <div 
                         onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setActiveTab('Home'); }}
                         style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
                     >
                         <img 
                             src="/logo-icon.png" 
-                            alt="StudySpirit Logo" 
+                            alt="StudySpirit Icon" 
                             style={{ height: '44px', width: 'auto', objectFit: 'contain' }} 
                         />
                         <span style={{ 
@@ -187,7 +187,7 @@ export default function Landing() {
             </header>
 
 
-            {/* ==================== HERO SECTION (EXACT FIT MATCHING IMAGE 2) ==================== */}
+            {/* ==================== HERO SECTION (WITH SOFT FEATHERED/FADED EDGES MATCHING IMAGE 2) ==================== */}
             <section style={{
                 position: 'relative',
                 width: '100%',
@@ -326,13 +326,13 @@ export default function Landing() {
                         </div>
                     </div>
 
-                    {/* Right Column: Full Scene Desk Image (Matching Image 2 Aspect Ratio Exactly) */}
+                    {/* Right Column: Full Scene Desk Image with Soft Edge Gradient Mask (Matching Image 2 Faded Edges) */}
                     <div style={{
                         position: 'relative',
                         width: '100%',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'flex-start'
+                        justifyContent: 'center'
                     }}>
                         <img 
                             src="/study-desk.jpg" 
@@ -342,7 +342,9 @@ export default function Landing() {
                                 height: 'auto',
                                 maxHeight: '700px',
                                 objectFit: 'contain',
-                                display: 'block'
+                                display: 'block',
+                                WebkitMaskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
+                                maskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)'
                             }}
                         />
                     </div>
