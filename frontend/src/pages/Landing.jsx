@@ -758,56 +758,83 @@ export default function Landing() {
             </section>
 
 
-            {/* ==================== CTA BANNER: READY TO LEVEL UP? ==================== */}
+            {/* ==================== CTA BANNER: READY TO LEVEL UP? (EXACT MATCH FOR REFERENCE IMAGE) ==================== */}
             <section id="cta-banner" style={{ padding: '80px 0', backgroundColor: '#ffffff' }}>
-                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+                <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 32px' }}>
                     <div style={{
-                        background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 50%, #FEF3C7 100%)',
-                        borderRadius: '32px',
-                        padding: '60px 48px',
-                        border: '1px solid #FED7AA',
+                        background: 'linear-gradient(135deg, #FFF1E8 0%, #FEE5D5 50%, #FED7C3 100%)',
+                        borderRadius: '36px',
+                        padding: '36px 40px',
+                        border: '1px solid #FFC8A8',
                         position: 'relative',
                         overflow: 'hidden',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        boxShadow: '0 10px 40px rgba(249, 115, 22, 0.08)'
+                        boxShadow: '0 12px 35px rgba(249, 115, 22, 0.08)'
                     }}>
-                        <div style={{ textAlign: 'center', width: '100%', maxWidth: '780px', margin: '0 auto', zIndex: 2 }}>
+                        {/* Left 3D Illustration: Books & Pencil Holder */}
+                        <div style={{
+                            flexShrink: 0,
+                            width: '240px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 2
+                        }}>
+                            <img 
+                                src="/cta-left.png" 
+                                alt="Study Books and Pencils" 
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    maxHeight: '185px',
+                                    objectFit: 'contain',
+                                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.06))'
+                                }}
+                            />
+                        </div>
+
+                        {/* Center Content: Headline, Subtitle, 3 Action Buttons */}
+                        <div style={{ textAlign: 'center', flex: 1, padding: '0 20px', zIndex: 2 }}>
                             <h2 style={{
-                                fontSize: '42px',
+                                fontSize: 'clamp(32px, 3.5vw, 42px)',
                                 fontWeight: '900',
                                 color: '#0F172A',
                                 letterSpacing: '-0.02em',
-                                marginBottom: '16px'
+                                marginBottom: '14px',
+                                lineHeight: '1.1'
                             }}>
-                                Ready to <span style={{ color: '#EE5D2B' }}>Level Up?</span>
+                                Ready to <span style={{ color: '#F9572A' }}>Level Up?</span>
                             </h2>
+
                             <p style={{
-                                fontSize: '18px',
+                                fontSize: '16px',
                                 color: '#475569',
-                                marginBottom: '36px',
-                                lineHeight: '1.6'
+                                lineHeight: '1.5',
+                                maxWidth: '540px',
+                                margin: '0 auto 28px'
                             }}>
                                 Join thousands of students turning late-night study sessions into their superpower.
                             </p>
 
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                            {/* 3 Pill Buttons Row */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
                                 <button
                                     onClick={() => navigate('/login/student')}
                                     style={{
                                         display: 'inline-flex',
                                         alignItems: 'center',
                                         gap: '8px',
-                                        padding: '14px 32px',
+                                        padding: '13px 26px',
                                         borderRadius: '9999px',
-                                        backgroundColor: '#EE5D2B',
+                                        background: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)',
                                         border: 'none',
                                         color: '#ffffff',
                                         fontWeight: '700',
                                         fontSize: '15px',
                                         cursor: 'pointer',
-                                        boxShadow: '0 6px 18px rgba(238, 93, 43, 0.35)',
+                                        boxShadow: '0 6px 18px rgba(230, 74, 25, 0.35)',
                                         transition: 'all 0.2s ease'
                                     }}
                                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -822,9 +849,9 @@ export default function Landing() {
                                         display: 'inline-flex',
                                         alignItems: 'center',
                                         gap: '8px',
-                                        padding: '14px 32px',
+                                        padding: '13px 26px',
                                         borderRadius: '9999px',
-                                        backgroundColor: '#8B5CF6',
+                                        background: 'linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%)',
                                         border: 'none',
                                         color: '#ffffff',
                                         fontWeight: '700',
@@ -845,15 +872,15 @@ export default function Landing() {
                                         display: 'inline-flex',
                                         alignItems: 'center',
                                         gap: '8px',
-                                        padding: '14px 32px',
+                                        padding: '13px 26px',
                                         borderRadius: '9999px',
-                                        backgroundColor: '#0D9488',
+                                        background: 'linear-gradient(135deg, #00A896 0%, #028090 100%)',
                                         border: 'none',
                                         color: '#ffffff',
                                         fontWeight: '700',
                                         fontSize: '15px',
                                         cursor: 'pointer',
-                                        boxShadow: '0 6px 18px rgba(13, 148, 136, 0.35)',
+                                        boxShadow: '0 6px 18px rgba(2, 128, 144, 0.35)',
                                         transition: 'all 0.2s ease'
                                     }}
                                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -862,6 +889,28 @@ export default function Landing() {
                                     Join as Recruiter <ArrowRight size={16} />
                                 </button>
                             </div>
+                        </div>
+
+                        {/* Right 3D Illustration: Trophy & Sparkles */}
+                        <div style={{
+                            flexShrink: 0,
+                            width: '240px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 2
+                        }}>
+                            <img 
+                                src="/cta-right.png" 
+                                alt="Gold Trophy and Sparkles" 
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    maxHeight: '185px',
+                                    objectFit: 'contain',
+                                    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.06))'
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
