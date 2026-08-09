@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     GraduationCap, Users, Briefcase, Code, Trophy, BookOpen,
@@ -13,6 +13,23 @@ export default function Landing() {
     const [newsletterEmail, setNewsletterEmail] = useState('');
     const [subscribed, setSubscribed] = useState(false);
     const [activeTab, setActiveTab] = useState('Home');
+    const [liveStats, setLiveStats] = useState({
+        activeLearners: '50K+',
+        teachers: '1.2K+',
+        institutions: '500+',
+        placementSuccess: '95%'
+    });
+
+    useEffect(() => {
+        fetch('/api/health/stats')
+            .then(res => res.json())
+            .then(data => {
+                if (data?.success && data?.stats) {
+                    setLiveStats(data.stats);
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     const handleSubscribe = (e) => {
         e.preventDefault();
@@ -932,10 +949,10 @@ export default function Landing() {
                         textAlign: 'center'
                     }}>
                         {[
-                            { icon: Users, stat: '50K+', label: 'Active Learners', color: '#EE5D2B' },
-                            { icon: GraduationCap, stat: '1.2K+', label: 'Teachers', color: '#8B5CF6' },
-                            { icon: Building2, stat: '500+', label: 'Institutions', color: '#D97706' },
-                            { icon: Rocket, stat: '95%', label: 'Placement Success', color: '#0EA5E9' }
+                            { icon: Users, stat: liveStats.activeLearners, label: 'Active Learners', color: '#EE5D2B' },
+                            { icon: GraduationCap, stat: liveStats.teachers, label: 'Teachers', color: '#8B5CF6' },
+                            { icon: Building2, stat: liveStats.institutions, label: 'Institutions', color: '#D97706' },
+                            { icon: Rocket, stat: liveStats.placementSuccess, label: 'Placement Success', color: '#0EA5E9' }
                         ].map((item, idx) => {
                             const IconComp = item.icon;
                             return (
