@@ -183,13 +183,14 @@ export default function Dashboard() {
         fetchDashboardData();
     }, [setUser, setStats]);
 
-    // 13 Features list matching the user request & sidebar
+    // Platform features list with distinct Quizzes and Exams items
     const navFeatures = [
         { id: 'dashboard', name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { id: 'solo', name: 'Solo Mode', path: '/solo-mode', icon: BookOpen, badge: 'Live', badgeColor: 'green' },
         { id: 'group', name: 'Group Mode', path: '/group-mode', icon: Users },
         { id: 'planner', name: 'Study Planner', path: '/planner', icon: Calendar },
-        { id: 'quizzes', name: 'Quizzes & Exams', path: '/quiz', icon: ClipboardCheck },
+        { id: 'quizzes', name: 'Quizzes', path: '/quiz', icon: ClipboardCheck },
+        { id: 'exams', name: 'Exams', path: '/exams', icon: FileCheck },
         { id: 'codespirit', name: 'CodeSpirit', path: '/codespirit', icon: Code },
         { id: 'interview', name: 'Interview Prep', path: '/interview', icon: Mic, badge: 'AI', badgeColor: 'coral' },
         { id: 'resources', name: 'Study Resources', path: '/resources', icon: Library },
@@ -203,6 +204,7 @@ export default function Dashboard() {
     const quickAccessGrid = [
         { name: 'CodeSpirit', icon: Code, color: '#06b6d4', bg: '#ecfeff', path: '/codespirit' },
         { name: 'Quizzes', icon: ClipboardCheck, color: '#ec4899', bg: '#fdf2f8', path: '/quiz' },
+        { name: 'Exams', icon: FileCheck, color: '#ef4444', bg: '#fef2f2', path: '/exams' },
         { name: 'Solo Mode', icon: BookOpen, color: '#6366f1', bg: '#eef2ff', path: '/solo-mode' },
         { name: 'Group Study', icon: Users, color: '#8b5cf6', bg: '#f5f3ff', path: '/group-mode' },
         { name: 'Resources', icon: Library, color: '#10b981', bg: '#ecfdf5', path: '/resources' },
