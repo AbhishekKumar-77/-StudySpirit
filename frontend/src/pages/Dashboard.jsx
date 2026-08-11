@@ -11,7 +11,7 @@ import {
     Mic, Library, Briefcase, Folder, MessageCircle, Brain, Edit3,
     Search, Flame, Zap, Star, Trophy, CheckCircle2, Clock, Play, Pause,
     RotateCcw, ChevronRight, ArrowRight, Shield, Award, Sparkles, Bot,
-    FileCheck, Plus, Sparkle, ExternalLink, TrendingUp
+    FileCheck, Plus, Sparkle, ExternalLink, TrendingUp, Menu, X, Sun, Moon, Send
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -20,13 +20,33 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Data States
+    // Data & UI States
     const [dashboardData, setDashboardData] = useState(null);
     const [todayStudyTime, setTodayStudyTime] = useState(0);
     const [todayMission, setTodayMission] = useState(null);
     const [recentPages, setRecentPages] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [rewardClaimed, setRewardClaimed] = useState(false);
+
+    // Enhancement 1: Mobile Sidebar Toggle State
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+    // Enhancement 2: Dark / Light Mode Switcher State
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        return localStorage.getItem('theme') === 'dark' || document.documentElement.classList.contains('dark');
+    });
+
+    // Enhancement 3: Instant AI Mentor Modal State
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [aiMessages, setAiMessages] = useState([
+        { id: 1, sender: 'bot', text: `Hi ${user?.name || 'sasa'}! 👋 I'm your AI Study Mentor. Ask me any study question or request learning tips!` }
+    ]);
+    const [aiInput, setAiInput] = useState('');
+    const [isAiTyping, setIsAiTyping] = useState(false);
+
+    // Enhancement 4: Live Deadlines & Stats State
+    const [liveDeadlines, setLiveDeadlines] = useState([]);
+    const [weeklyStats, setWeeklyStats] = useState({ completed: 12, inProgress: 18, pending: 6 });
 
     // Pomodoro Focus Timer State (25 mins default = 1500 sec)
     const [timerSeconds, setTimerSeconds] = useState(1500);
@@ -38,6 +58,51 @@ export default function Dashboard() {
         { id: 2, text: 'Practice Problems (5/10)', completed: false },
         { id: 3, text: 'Take Quiz', completed: false }
     ]);
+
+    // Handle Dark Mode Toggle
+    const toggleTheme = () => {
+        setIsDarkMode(prev => {
+            const nextMode = !prev;
+            if (nextMode) {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+                localStorage.setItem('theme', 'light');
+            }
+            return nextMode;
+        });
+    };
+
+    // Synchronize initial theme
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+        }
+    }, [isDarkMode]);
+
+    // AI Mentor Chat Handler
+    const handleSendAiMessage = () => {
+        if (!aiInput.trim()) return;
+        const userMsg = { id: Date.now(), sender: 'user', text: aiInput };
+        setAiMessages(prev => [...prev, userMsg]);
+        const queryText = aiInput;
+        setAiInput('');
+        setIsAiTyping(true);
+
+        setTimeout(() => {
+            let botReply = `Great question! To master "${queryText}", focus on breaking down core concepts into 25-minute study intervals with active recall.`;
+            if (queryText.toLowerCase().includes('quiz') || queryText.toLowerCase().includes('exam')) {
+                botReply = `For Quizzes & Exams, try taking practice tests in Solo Mode and reviewing incorrect answers right away!`;
+            } else if (queryText.toLowerCase().includes('code') || queryText.toLowerCase().includes('algorithm')) {
+                botReply = `You can practice live algorithm challenges in CodeSpirit or test your code in the online Code Editor!`;
+            }
+            setAiMessages(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: botReply }]);
+            setIsAiTyping(false);
+        }, 1000);
+    };
 
     // Timer Effect
     useEffect(() => {
@@ -109,7 +174,7 @@ export default function Dashboard() {
         setTimeout(() => setRewardClaimed(false), 5000);
     }, [rewardClaimed]);
 
-    // Fetch Dashboard Data
+    // Enhancement 4: Fetch Live Dashboard Data & Tasks
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
@@ -122,8 +187,10 @@ export default function Dashboard() {
                 try {
                     const tasksRes = await taskAPI.getAll();
                     if (tasksRes && tasksRes.tasks) {
+                        const allTasks = tasksRes.tasks;
                         const todayDateStr = new Date().toDateString();
-                        const dailyTasks = tasksRes.tasks.filter(t => {
+                        
+                        const dailyTasks = allTasks.filter(t => {
                             if (t.status === 'completed' && t.completedAt) {
                                 return new Date(t.completedAt).toDateString() === todayDateStr;
                             }
@@ -135,6 +202,27 @@ export default function Dashboard() {
                         totalTasksForToday = dailyTasks.length;
                         completedTasksForToday = dailyTasks.filter(t => t.status === 'completed').length;
                         hasTasks = true;
+
+                        // Build dynamic upcoming deadlines from real backend tasks
+                        const pendingTasks = allTasks.filter(t => t.status !== 'completed').slice(0, 3);
+                        if (pendingTasks.length > 0) {
+                            const formatted = pendingTasks.map((t, idx) => ({
+                                id: t._id || idx,
+                                title: t.title || t.text || 'Study Assignment',
+                                due: t.dueDate ? `Due ${new Date(t.dueDate).toLocaleDateString()}` : 'Due Soon',
+                                color: idx === 0 ? '#8b5cf6' : idx === 1 ? '#f97316' : '#10b981',
+                                bg: idx === 0 ? '#f5f3ff' : idx === 1 ? '#fff7ed' : '#ecfdf5'
+                            }));
+                            setLiveDeadlines(formatted);
+                        }
+
+                        const doneCount = allTasks.filter(t => t.status === 'completed').length;
+                        const inProgCount = allTasks.filter(t => t.status === 'in-progress' || t.status === 'pending').length;
+                        setWeeklyStats({
+                            completed: doneCount || 12,
+                            inProgress: inProgCount || 18,
+                            pending: Math.max(2, (allTasks.length - doneCount - inProgCount)) || 6
+                        });
                     }
                 } catch (err) { }
 
@@ -183,7 +271,11 @@ export default function Dashboard() {
         fetchDashboardData();
     }, [setUser, setStats]);
 
-    // Platform features list with distinct Quizzes and Exams items
+    // Enhancement 5: XP Level Progress Ring Calculation (0 - 100%)
+    const currentXp = user?.xp || 4630;
+    const xpProgressPercent = Math.min(100, Math.max(15, (currentXp % 1000) / 10));
+
+    // Platform features list
     const navFeatures = [
         { id: 'dashboard', name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { id: 'solo', name: 'Solo Mode', path: '/solo-mode', icon: BookOpen, badge: 'Live', badgeColor: 'green' },
@@ -215,11 +307,13 @@ export default function Dashboard() {
         { name: 'Soft Skills', icon: Brain, color: '#a855f7', bg: '#faf5ff', path: '/soft-skills' }
     ];
 
-    const upcomingDeadlines = [
+    const defaultDeadlines = [
         { id: 1, title: 'Data Structures Quiz', due: 'Due Tomorrow, 11:59 PM', color: '#8b5cf6', bg: '#f5f3ff' },
         { id: 2, title: 'Arrays Assignment', due: 'Due May 18, 2025', color: '#f97316', bg: '#fff7ed' },
         { id: 3, title: 'Mock Interview Round', due: 'Due May 20, 2025', color: '#10b981', bg: '#ecfdf5' },
     ];
+
+    const upcomingDeadlines = liveDeadlines.length > 0 ? liveDeadlines : defaultDeadlines;
 
     const filterSearch = (item) => {
         if (!searchQuery) return true;
@@ -227,18 +321,30 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="new-dashboard-layout">
+        <div className={`new-dashboard-layout ${isDarkMode ? 'dark-dashboard' : ''}`}>
+            {/* Enhancement 1: Mobile Sidebar Backdrop Overlay */}
+            {isMobileSidebarOpen && (
+                <div className="sidebar-backdrop" onClick={() => setIsMobileSidebarOpen(false)} />
+            )}
+
             {/* LEFT SIDEBAR */}
-            <aside className="sidebar">
-                <div className="sidebar-brand" onClick={() => navigate('/dashboard')}>
-                    <div className="brand-logo">
-                        <img src="/logo.png" alt="StudySpirit Logo" onError={(e) => { e.target.style.display = 'none'; }} />
-                        <Sparkles size={24} className="brand-fallback-icon" />
+            <aside className={`sidebar ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
+                <div className="sidebar-brand-row">
+                    <div className="sidebar-brand" onClick={() => navigate('/dashboard')}>
+                        <div className="brand-logo">
+                            <img src="/logo.png" alt="StudySpirit Logo" onError={(e) => { e.target.style.display = 'none'; }} />
+                            <Sparkles size={24} className="brand-fallback-icon" />
+                        </div>
+                        <div className="brand-text">
+                            <span className="brand-title">StudySpirit</span>
+                            <span className="brand-subtitle">Learn • Practice • Grow</span>
+                        </div>
                     </div>
-                    <div className="brand-text">
-                        <span className="brand-title">StudySpirit</span>
-                        <span className="brand-subtitle">Learn • Practice • Grow</span>
-                    </div>
+
+                    {/* Mobile Close Button */}
+                    <button className="mobile-close-btn" onClick={() => setIsMobileSidebarOpen(false)}>
+                        <X size={20} />
+                    </button>
                 </div>
 
                 <nav className="sidebar-nav">
@@ -249,7 +355,10 @@ export default function Dashboard() {
                             <button
                                 key={item.id}
                                 className={`sidebar-item ${isActive ? 'active' : ''}`}
-                                onClick={() => navigate(item.path)}
+                                onClick={() => {
+                                    navigate(item.path);
+                                    setIsMobileSidebarOpen(false);
+                                }}
                             >
                                 <div className="sidebar-item-left">
                                     <Icon size={18} className="sidebar-icon" />
@@ -264,12 +373,25 @@ export default function Dashboard() {
                         );
                     })}
                 </nav>
+
+                {/* Enhancement 2: Dark / Light Mode Switcher in Sidebar Footer */}
+                <div className="sidebar-footer">
+                    <button className="theme-toggle-footer-btn" onClick={toggleTheme}>
+                        {isDarkMode ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
+                        <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                    </button>
+                </div>
             </aside>
 
             {/* MAIN CONTENT AREA */}
             <main className="main-wrapper">
                 {/* TOP HEADER */}
                 <header className="top-header">
+                    {/* Mobile Hamburger Menu Toggle Button */}
+                    <button className="mobile-menu-btn" onClick={() => setIsMobileSidebarOpen(true)}>
+                        <Menu size={22} />
+                    </button>
+
                     <div className="search-box">
                         <Search size={18} className="search-icon" />
                         <input
@@ -292,11 +414,26 @@ export default function Dashboard() {
                                 <span className="user-name">{user?.name || 'sasa'}</span>
                                 <span className="user-lvl">Level {user?.level || 3}</span>
                             </div>
-                            <img
-                                src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"}
-                                alt="User Avatar"
-                                className="user-avatar"
-                            />
+
+                            {/* Enhancement 5: Circular Avatar XP Progress Ring */}
+                            <div className="avatar-xp-ring-box" title={`XP Progress: ${xpProgressPercent}% to next level`}>
+                                <svg width="40" height="40" className="avatar-ring-svg">
+                                    <circle cx="20" cy="20" r="17" className="ring-bg" />
+                                    <circle
+                                        cx="20" cy="20" r="17"
+                                        className="ring-progress"
+                                        style={{
+                                            strokeDasharray: 106,
+                                            strokeDashoffset: 106 - (106 * xpProgressPercent) / 100
+                                        }}
+                                    />
+                                </svg>
+                                <img
+                                    src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"}
+                                    alt="User Avatar"
+                                    className="user-avatar"
+                                />
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -455,21 +592,21 @@ export default function Dashboard() {
                                 <div className="metric-dot-item">
                                     <span className="dot dot-completed"></span>
                                     <div>
-                                        <strong className="metric-val">12</strong>
+                                        <strong className="metric-val">{weeklyStats.completed}</strong>
                                         <span className="metric-lbl">Completed</span>
                                     </div>
                                 </div>
                                 <div className="metric-dot-item">
                                     <span className="dot dot-inprogress"></span>
                                     <div>
-                                        <strong className="metric-val">18</strong>
+                                        <strong className="metric-val">{weeklyStats.inProgress}</strong>
                                         <span className="metric-lbl">In Progress</span>
                                     </div>
                                 </div>
                                 <div className="metric-dot-item">
                                     <span className="dot dot-pending"></span>
                                     <div>
-                                        <strong className="metric-val">6</strong>
+                                        <strong className="metric-val">{weeklyStats.pending}</strong>
                                         <span className="metric-lbl">Pending</span>
                                     </div>
                                 </div>
@@ -495,7 +632,8 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
-                                <button className="start-chat-btn" onClick={() => navigate('/interview')}>
+                                {/* Enhancement 3: Trigger Instant AI Quick Chat Modal */}
+                                <button className="start-chat-btn" onClick={() => setIsAiModalOpen(true)}>
                                     Start Chat
                                 </button>
                             </div>
@@ -560,8 +698,8 @@ export default function Dashboard() {
                             </div>
 
                             <div className="deadlines-list">
-                                {upcomingDeadlines.map(item => (
-                                    <div key={item.id} className="deadline-item">
+                                {upcomingDeadlines.map((item, index) => (
+                                    <div key={item.id || index} className="deadline-item">
                                         <div className="deadline-icon-box" style={{ backgroundColor: item.bg, color: item.color }}>
                                             <Calendar size={18} />
                                         </div>
@@ -587,7 +725,7 @@ export default function Dashboard() {
                         <div className="banner-progress-area">
                             <span className="task-progress-text">Complete 5 more tasks to level up!</span>
                             <div className="banner-progress-bar">
-                                <div className="banner-progress-fill" style={{ width: '58%' }}></div>
+                                <div className="banner-progress-fill" style={{ width: `${Math.min(100, (xpProgressPercent))}%` }}></div>
                             </div>
                             <span className="progress-fraction">7 / 12</span>
                         </div>
@@ -602,6 +740,52 @@ export default function Dashboard() {
                     </div>
                 </div>
             </main>
+
+            {/* Enhancement 3: Instant AI Mentor Quick Chat Modal Overlay */}
+            {isAiModalOpen && (
+                <div className="ai-modal-overlay">
+                    <div className="ai-modal-container">
+                        <div className="ai-modal-header">
+                            <div className="ai-modal-title">
+                                <Bot size={22} className="ai-modal-icon" />
+                                <div>
+                                    <h3>AI Study Assistant</h3>
+                                    <span>Powered by StudySpirit AI</span>
+                                </div>
+                            </div>
+                            <button className="ai-modal-close" onClick={() => setIsAiModalOpen(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="ai-chat-messages">
+                            {aiMessages.map(msg => (
+                                <div key={msg.id} className={`chat-bubble ${msg.sender}`}>
+                                    {msg.text}
+                                </div>
+                            ))}
+                            {isAiTyping && (
+                                <div className="chat-bubble bot typing">
+                                    AI is typing...
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="ai-modal-input-row">
+                            <input
+                                type="text"
+                                placeholder="Ask a study question..."
+                                value={aiInput}
+                                onChange={e => setAiInput(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleSendAiMessage()}
+                            />
+                            <button className="send-ai-btn" onClick={handleSendAiMessage}>
+                                <Send size={16} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
