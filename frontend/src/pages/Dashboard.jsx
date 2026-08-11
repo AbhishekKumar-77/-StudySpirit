@@ -264,15 +264,6 @@ export default function Dashboard() {
                         );
                     })}
                 </nav>
-
-                <div className="sidebar-footer">
-                    <div className="upgrade-card">
-                        <div className="upgrade-icon">🔥</div>
-                        <h4>Upgrade to Pro</h4>
-                        <p>Unlock premium features and accelerate your learning.</p>
-                        <button className="upgrade-btn" onClick={() => navigate('/onboarding')}>Upgrade Now</button>
-                    </div>
-                </div>
             </aside>
 
             {/* MAIN CONTENT AREA */}
