@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import * as soloApi from '../services/soloApi';
 import { taskAPI } from '../services/plannerApi';
@@ -7,28 +7,67 @@ import { getRecentPages } from '../hooks/usePageTracker';
 import NotificationBell from '../components/NotificationBell';
 import confetti from 'canvas-confetti';
 import {
-    BookOpen, Users, Calendar, ClipboardCheck, Library, Code,
-    Briefcase, Folder, MessageCircle, Mic, Brain, Edit3, Target, CheckCircle, Clock, Home, Shield, ChevronRight, ArrowRight, FileCheck, History, Map, Share2, Award, Copy, Eye
+    LayoutDashboard, BookOpen, Users, Calendar, ClipboardCheck, Code,
+    Mic, Library, Briefcase, Folder, MessageCircle, Brain, Edit3,
+    Search, Flame, Zap, Star, Trophy, CheckCircle2, Clock, Play, Pause,
+    RotateCcw, ChevronRight, ArrowRight, Shield, Award, Sparkles, Bot,
+    FileCheck, Plus, Sparkle, ExternalLink, TrendingUp
 } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard() {
     const { user, stats, setUser, setStats } = useApp();
     const navigate = useNavigate();
-    const [hoveredFeature, setHoveredFeature] = useState(null);
+    const location = useLocation();
+
+    // Data States
     const [dashboardData, setDashboardData] = useState(null);
     const [todayStudyTime, setTodayStudyTime] = useState(0);
-    const [isLight, setIsLight] = useState(false);
-    const [rewardClaimed, setRewardClaimed] = useState(false);
     const [todayMission, setTodayMission] = useState(null);
     const [recentPages, setRecentPages] = useState([]);
-    const [copied, setCopied] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [rewardClaimed, setRewardClaimed] = useState(false);
 
-    const copyProfileLink = () => {
-        const link = `${window.location.origin}/profile/${user?._id}`;
-        navigator.clipboard.writeText(link);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    // Pomodoro Focus Timer State (25 mins default = 1500 sec)
+    const [timerSeconds, setTimerSeconds] = useState(1500);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+    // Plan Checklist State
+    const [planTasks, setPlanTasks] = useState([
+        { id: 1, text: 'Watch Introduction Video', completed: true },
+        { id: 2, text: 'Practice Problems (5/10)', completed: false },
+        { id: 3, text: 'Take Quiz', completed: false }
+    ]);
+
+    // Timer Effect
+    useEffect(() => {
+        let interval = null;
+        if (isTimerRunning && timerSeconds > 0) {
+            interval = setInterval(() => {
+                setTimerSeconds(prev => prev - 1);
+            }, 1000);
+        } else if (timerSeconds === 0) {
+            setIsTimerRunning(false);
+        }
+        return () => clearInterval(interval);
+    }, [isTimerRunning, timerSeconds]);
+
+    const formatTimer = (sec) => {
+        const mins = Math.floor(sec / 60);
+        const remainingSec = sec % 60;
+        return `${mins.toString().padStart(2, '0')}:${remainingSec.toString().padStart(2, '0')}`;
+    };
+
+    const toggleTimer = () => setIsTimerRunning(prev => !prev);
+    const resetTimer = () => {
+        setIsTimerRunning(false);
+        setTimerSeconds(1500);
+    };
+
+    const toggleTask = (id) => {
+        setPlanTasks(prev => prev.map(task => 
+            task.id === id ? { ...task, completed: !task.completed } : task
+        ));
     };
 
     useEffect(() => {
@@ -40,92 +79,35 @@ export default function Dashboard() {
         if (rewardClaimed) return;
         setRewardClaimed(true);
 
-        const duration = 3000;
+        const duration = 2500;
         const end = Date.now() + duration;
+        const colors = ['#ff6b4a', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#06b6d4'];
 
-        const colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6', '#f43f5e', '#06b6d4', '#ff6b6b', '#ffd93d'];
-
-        // Center burst
         confetti({
-            particleCount: 100,
-            spread: 100,
-            origin: { x: 0.5, y: 0.5 },
+            particleCount: 80,
+            spread: 90,
+            origin: { x: 0.5, y: 0.6 },
             colors,
-            startVelocity: 45,
-            gravity: 0.8,
-            shapes: ['circle', 'square'],
-            scalar: 1.2,
             zIndex: 10000
         });
 
-        // Side bursts
-        setTimeout(() => {
-            confetti({ particleCount: 50, angle: 60, spread: 70, origin: { x: 0, y: 0.6 }, colors, zIndex: 10000 });
-            confetti({ particleCount: 50, angle: 120, spread: 70, origin: { x: 1, y: 0.6 }, colors, zIndex: 10000 });
-        }, 200);
-
-        // Continuous firework bursts
         const interval = setInterval(() => {
             if (Date.now() > end) {
                 clearInterval(interval);
                 return;
             }
-
             confetti({
-                particleCount: 30,
+                particleCount: 25,
                 angle: 60 + Math.random() * 60,
-                spread: 60 + Math.random() * 40,
-                origin: { x: Math.random(), y: Math.random() * 0.4 },
+                spread: 60,
+                origin: { x: Math.random(), y: Math.random() * 0.5 },
                 colors,
-                startVelocity: 30 + Math.random() * 20,
-                gravity: 1,
                 zIndex: 10000
             });
-        }, 250);
+        }, 300);
 
-        // Star burst at top
-        setTimeout(() => {
-            confetti({
-                particleCount: 80,
-                spread: 160,
-                origin: { x: 0.5, y: 0.2 },
-                colors,
-                startVelocity: 55,
-                gravity: 1.2,
-                shapes: ['star'],
-                scalar: 1.5,
-                zIndex: 10000
-            });
-        }, 500);
-
-        // Final grand burst
-        setTimeout(() => {
-            confetti({
-                particleCount: 150,
-                spread: 180,
-                origin: { x: 0.5, y: 0.35 },
-                colors,
-                startVelocity: 50,
-                gravity: 0.6,
-                shapes: ['circle', 'square', 'star'],
-                scalar: 1.3,
-                ticks: 300,
-                zIndex: 10000
-            });
-        }, 1200);
-
-        // Reset after 5 seconds
         setTimeout(() => setRewardClaimed(false), 5000);
     }, [rewardClaimed]);
-
-    // Theme Detection
-    useEffect(() => {
-        const checkTheme = () => setIsLight(document.documentElement.classList.contains('light'));
-        checkTheme();
-        const observer = new MutationObserver(checkTheme);
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-        return () => observer.disconnect();
-    }, []);
 
     // Fetch Dashboard Data
     useEffect(() => {
@@ -154,9 +136,7 @@ export default function Dashboard() {
                         completedTasksForToday = dailyTasks.filter(t => t.status === 'completed').length;
                         hasTasks = true;
                     }
-                } catch (err) {
-                    console.error('Failed to fetch tasks', err);
-                }
+                } catch (err) { }
 
                 if (data && data.user) {
                     setDashboardData(data);
@@ -184,16 +164,15 @@ export default function Dashboard() {
                     });
                     setTodayStudyTime(data.user.todayStudyTime || 0);
 
-                    // Pull today's mission from learning path roadmap
                     const lp = data.learningPath;
                     if (lp && lp.topics && lp.topics.length > 0) {
                         const activeTopic = lp.topics.find(t => t.status === 'active') || lp.topics[0];
                         if (activeTopic) {
                             setTodayMission({
-                                title: activeTopic.name || 'Study Session',
-                                task: activeTopic.task || `Study ${activeTopic.name} today`,
+                                title: activeTopic.name || 'Data Structures & Algorithms',
+                                task: activeTopic.task || 'Arrays and Linked List',
                                 xp: activeTopic.xp || 50,
-                                tag: activeTopic.tag || 'concept',
+                                tag: activeTopic.tag || 'In Progress',
                                 day: activeTopic.day || 1
                             });
                         }
@@ -204,307 +183,432 @@ export default function Dashboard() {
         fetchDashboardData();
     }, [setUser, setStats]);
 
-    const formatStudyTime = (seconds) => {
-        const hours = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        if (hours > 0) return `${hours}h ${mins}m`;
-        return `${mins}m`;
+    // 13 Features list matching the user request & sidebar
+    const navFeatures = [
+        { id: 'dashboard', name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+        { id: 'solo', name: 'Solo Mode', path: '/solo-mode', icon: BookOpen, badge: 'Live', badgeColor: 'green' },
+        { id: 'group', name: 'Group Mode', path: '/group-mode', icon: Users },
+        { id: 'planner', name: 'Study Planner', path: '/planner', icon: Calendar },
+        { id: 'quizzes', name: 'Quizzes & Exams', path: '/quiz', icon: ClipboardCheck },
+        { id: 'codespirit', name: 'CodeSpirit', path: '/codespirit', icon: Code },
+        { id: 'interview', name: 'Interview Prep', path: '/interview', icon: Mic, badge: 'AI', badgeColor: 'coral' },
+        { id: 'resources', name: 'Study Resources', path: '/resources', icon: Library },
+        { id: 'career', name: 'CareerSprint', path: '/career', icon: Briefcase },
+        { id: 'project', name: 'Project Lab', path: '/project-lab', icon: Folder },
+        { id: 'discuss', name: 'DiscussVerse', path: '/discuss', icon: MessageCircle },
+        { id: 'softskills', name: 'Soft Skills', path: '/soft-skills', icon: Brain },
+        { id: 'editors', name: 'Code Editor', path: '/code-editor', icon: Edit3 },
+    ];
+
+    const quickAccessGrid = [
+        { name: 'CodeSpirit', icon: Code, color: '#06b6d4', bg: '#ecfeff', path: '/codespirit' },
+        { name: 'Quizzes', icon: ClipboardCheck, color: '#ec4899', bg: '#fdf2f8', path: '/quiz' },
+        { name: 'Solo Mode', icon: BookOpen, color: '#6366f1', bg: '#eef2ff', path: '/solo-mode' },
+        { name: 'Group Study', icon: Users, color: '#8b5cf6', bg: '#f5f3ff', path: '/group-mode' },
+        { name: 'Resources', icon: Library, color: '#10b981', bg: '#ecfdf5', path: '/resources' },
+        { name: 'Interview Prep', icon: Mic, color: '#f43f5e', bg: '#fff1f2', path: '/interview' },
+        { name: 'CareerSprint', icon: Briefcase, color: '#84cc16', bg: '#f7fee7', path: '/career' },
+        { name: 'Project Lab', icon: Folder, color: '#f97316', bg: '#fff7ed', path: '/project-lab' },
+        { name: 'DiscussVerse', icon: MessageCircle, color: '#14b8a6', bg: '#f0fdfa', path: '/discuss' },
+        { name: 'Soft Skills', icon: Brain, color: '#a855f7', bg: '#faf5ff', path: '/soft-skills' }
+    ];
+
+    const upcomingDeadlines = [
+        { id: 1, title: 'Data Structures Quiz', due: 'Due Tomorrow, 11:59 PM', color: '#8b5cf6', bg: '#f5f3ff' },
+        { id: 2, title: 'Arrays Assignment', due: 'Due May 18, 2025', color: '#f97316', bg: '#fff7ed' },
+        { id: 3, title: 'Mock Interview Round', due: 'Due May 20, 2025', color: '#10b981', bg: '#ecfdf5' },
+    ];
+
+    const filterSearch = (item) => {
+        if (!searchQuery) return true;
+        return item.name.toLowerCase().includes(searchQuery.toLowerCase());
     };
 
-    const features = [
-        { id: 1, name: 'Solo Mode', description: 'Deep focus study sessions', path: '/solo-mode', icon: BookOpen, color: '#6366f1' },
-        { id: 2, name: 'Group Mode', description: 'Collaborate with peers', path: '/group-mode', icon: Users, color: '#8b5cf6' },
-        { id: 3, name: 'Planner', description: 'Organize your schedule', path: '/planner', icon: Calendar, color: '#ec4899' },
-        { id: 4, name: 'Quizzes', description: 'Test your knowledge', path: '/quiz', icon: ClipboardCheck, color: '#f59e0b' },
-        { id: 13, name: 'Exams', description: 'Quiz & coding exams', path: '/exams', icon: FileCheck, color: '#ef4444' },
-        { id: 5, name: 'Resources', description: 'Curated study materials', path: '/resources', icon: Library, color: '#10b981' },
-        { id: 6, name: 'CodeSpirit', description: 'Practice coding challenges', path: '/codespirit', icon: Code, color: '#06b6d4' },
-        { id: 7, name: 'Interview Prep', description: 'AI-powered mock interviews', path: '/interview', icon: Mic, color: '#f43f5e' },
-        { id: 8, name: 'CareerSprint', description: 'Plan your career path', path: '/career', icon: Briefcase, color: '#84cc16' },
-        { id: 9, name: 'Project Lab', description: 'Build real-world projects', path: '/project-lab', icon: Folder, color: '#f97316' },
-        { id: 10, name: 'DiscussVerse', description: 'Community discussions', path: '/discuss', icon: MessageCircle, color: '#14b8a6' },
-        { id: 11, name: 'Soft Skills', description: 'Communication & leadership', path: '/soft-skills', icon: Brain, color: '#a855f7' },
-        { id: 12, name: 'Editors', description: 'Online code editor', path: '/code-editor', icon: Edit3, color: '#64748b' }
-    ];
-
-    const quickStats = [
-        {
-            label: 'Daily Tasks',
-            value: stats?.dailyGoals || 0,
-            subtext: 'Missions Today',
-            icon: Target,
-            from: '#6366f1', to: '#8b5cf6',
-            path: '/planner'
-        },
-        {
-            label: 'Success Rate',
-            value: `${stats?.completionRate || 0}%`,
-            subtext: 'Keep it going!',
-            icon: CheckCircle,
-            from: '#ec4899', to: '#f43f5e',
-            path: '/planner'
-        },
-        {
-            label: 'Focus Time',
-            value: formatStudyTime(todayStudyTime),
-            subtext: `Today • ${formatStudyTime((dashboardData?.user?.totalStudyTime || 0))} total`,
-            icon: Clock,
-            from: '#f97316', to: '#f59e0b',
-            path: '/solo-mode'
-        },
-    ];
-
     return (
-        <div className={`dashboard-container ${isLight ? 'light-mode' : 'dark-mode'}`}>
-            {/* Background Image with Overlay */}
-            <div className="dashboard-bg" />
-            <div className="dashboard-overlay" />
-
-            {/* Navbar */}
-            <nav className="dash-nav">
-                <div className="nav-container">
-                    <div className="nav-logo" onClick={() => navigate('/')}>
-                        <img src="/logo.png" alt="Logo" />
-                        <span className="logo-text">
-                            STUDY<span>SPIRIT</span>
-                        </span>
+        <div className="new-dashboard-layout">
+            {/* LEFT SIDEBAR */}
+            <aside className="sidebar">
+                <div className="sidebar-brand" onClick={() => navigate('/dashboard')}>
+                    <div className="brand-logo">
+                        <img src="/logo.png" alt="StudySpirit Logo" onError={(e) => { e.target.style.display = 'none'; }} />
+                        <Sparkles size={24} className="brand-fallback-icon" />
                     </div>
-
-                    <div className="nav-actions">
-                        <button className="nav-home" onClick={() => navigate('/')}>
-                            <Home size={20} />
-                        </button>
-                        {user?.isAdmin && (
-                            <button className="nav-admin" onClick={() => navigate('/admin')}>
-                                <Shield size={16} /> ADMIN
-                            </button>
-                        )}
-                        <NotificationBell />
-                        <div className="nav-profile">
-                            <div className="streak">
-                                <span>🔥</span> <strong>{user?.streak || 0}</strong>
-                            </div>
-                            <div className="divider" />
-                            <div className="profile-info">
-                                <div className="profile-name">{user?.name || 'SYS.USER'}</div>
-                                <div className="profile-level">LEVEL {user?.level || 1}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            <div className="dashboard-content">
-                {/* Welcome Section */}
-                <div className="welcome-section">
-                    <div className="welcome-badge">
-                        <span className="pulse-dot"></span> SYSTEM ONLINE
-                    </div>
-                    <h1 className="welcome-title">
-                        Welcome Back, <br />
-                        <span className="highlight-name">{user?.name || 'Developer'}</span> <span className="wave">👋</span>
-                    </h1>
-                    <p className="welcome-subtitle">Your dashboard is ready. Time to dive into deep work and crush today's objectives.</p>
-                </div>
-
-                {/* Stats Row */}
-                <div className="stats-row">
-                    <div className="stat-pill">
-                        <span className="stat-pill-icon">🔥</span>
-                        <div>
-                            <div className="stat-pill-label">Streak</div>
-                            <div className="stat-pill-value amber">{user?.streak || 0}</div>
-                        </div>
-                    </div>
-                    <div className="stat-pill">
-                        <span className="stat-pill-icon">⚡</span>
-                        <div>
-                            <div className="stat-pill-label">Level</div>
-                            <div className="stat-pill-value cyan">{user?.level || 1}</div>
-                        </div>
-                    </div>
-                    <div className="stat-pill">
-                        <span className="stat-pill-icon">✨</span>
-                        <div>
-                            <div className="stat-pill-label">Total XP</div>
-                            <div className="stat-pill-value purple">{user?.xp || 0}</div>
-                        </div>
-                    </div>
-                    <div className="stat-pill">
-                        <span className="stat-pill-icon">🏆</span>
-                        <div>
-                            <div className="stat-pill-label">Reputation</div>
-                            <div className="stat-pill-value emerald">{user?.reputation || 0}</div>
-                        </div>
+                    <div className="brand-text">
+                        <span className="brand-title">StudySpirit</span>
+                        <span className="brand-subtitle">Learn • Practice • Grow</span>
                     </div>
                 </div>
 
-                {/* Skill Passport Share Section */}
-                <div className="profile-share-card">
-                    <div className="ps-content">
-                        <div className="ps-icon"><Shield size={24} color="#6366f1" /></div>
-                        <div className="ps-info">
-                            <h3>Your Skill Passport is Active</h3>
-                            <p>Recruiters can now see your verified scores and streak.</p>
-                        </div>
-                    </div>
-                    <div className="ps-actions">
-                        <button className="btn-outline" onClick={() => navigate(`/profile/${user?._id}`)}>
-                            <Eye size={16} /> View
-                        </button>
-                        <button className="btn-primary" onClick={copyProfileLink}>
-                            {copied ? <CheckCircle size={16} /> : <Share2 size={16} />}
-                            {copied ? 'Copied!' : 'Share Link'}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Badges Section */}
-                {user?.badges?.length > 0 && (
-                    <div className="badges-section">
-                        <div className="badges-header">
-                            <h3><Award size={18} className="text-primary" /> Your Milestones</h3>
-                            <span className="badge-count">{user.badges.length} Unlocked</span>
-                        </div>
-                        <div className="badges-row">
-                            {user.badges.map((badge, i) => (
-                                <div key={i} className="badge-item" title={badge.description}>
-                                    <span className="badge-icon">{badge.icon}</span>
-                                    <span className="badge-name">{badge.name}</span>
+                <nav className="sidebar-nav">
+                    {navFeatures.filter(filterSearch).map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path || (item.id === 'dashboard' && location.pathname === '/dashboard');
+                        return (
+                            <button
+                                key={item.id}
+                                className={`sidebar-item ${isActive ? 'active' : ''}`}
+                                onClick={() => navigate(item.path)}
+                            >
+                                <div className="sidebar-item-left">
+                                    <Icon size={18} className="sidebar-icon" />
+                                    <span>{item.name}</span>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                                {item.badge && (
+                                    <span className={`sidebar-badge badge-${item.badgeColor}`}>
+                                        {item.badge}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </nav>
 
-                {/* Quick Stats Cards */}
-                <div className="quick-stats-container">
-                    {quickStats.map((stat, idx) => (
-                        <div 
-                            key={idx} 
-                            className="quick-stat-card" 
-                            style={stat.path ? { cursor: 'pointer' } : {}}
-                            onClick={() => stat.path && navigate(stat.path)}
-                        >
-                            <div className="quick-stat-icon" style={{ background: `linear-gradient(135deg, ${stat.from}, ${stat.to})` }}>
-                                <stat.icon size={24} color="#fff" />
-                            </div>
-                            <div className="quick-stat-info">
-                                <div className="qs-label">{stat.label}</div>
-                                <div className="qs-value">{stat.value}</div>
-                                <div className="qs-subtext">{stat.subtext}</div>
-                            </div>
-                            {stat.path && <ChevronRight className="qs-arrow" size={20} />}
-                        </div>
-                    ))}
+                <div className="sidebar-footer">
+                    <div className="upgrade-card">
+                        <div className="upgrade-icon">🔥</div>
+                        <h4>Upgrade to Pro</h4>
+                        <p>Unlock premium features and accelerate your learning.</p>
+                        <button className="upgrade-btn" onClick={() => navigate('/onboarding')}>Upgrade Now</button>
+                    </div>
                 </div>
+            </aside>
 
-                {/* Smart Action Area */}
-                <div className="action-area">
-                    {/* Today's Mission Card — Smart fallback if no roadmap */}
-                    <div className="today-mission-card" onClick={() => navigate(todayMission ? '/solo-mode' : '/planner')} style={{ cursor: 'pointer' }}>
-                        <div className="mission-left">
-                            <div className="mission-badge">⚡ TODAY'S MISSION</div>
-                            <h3 className="mission-title">{todayMission ? todayMission.title : 'Establish Your Foundation'}</h3>
-                            <p className="mission-task">{todayMission ? todayMission.task : 'Set up your daily goals in the Planner to track your progress.'}</p>
-                            <div className="mission-meta">
-                                <span className="mission-xp">+{todayMission ? todayMission.xp : 50} XP</span>
-                                <span className="mission-tag">{todayMission ? todayMission.tag : 'planning'}</span>
-                                {todayMission?.day && <span className="mission-day">Day {todayMission.day}</span>}
-                            </div>
-                        </div>
-                        <div className="mission-arrow">→</div>
+            {/* MAIN CONTENT AREA */}
+            <main className="main-wrapper">
+                {/* TOP HEADER */}
+                <header className="top-header">
+                    <div className="search-box">
+                        <Search size={18} className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Search for courses, topics, notes..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
 
-                    {/* Continue Where You Left Off */}
-                    {recentPages.length > 0 && (
-                        <div className="recent-pages-section">
-                            <div className="recent-header">
-                                <h3><History size={16} /> Continue Where You Left Off</h3>
-                                <p>Jump right back into your active sessions.</p>
+                    <div className="header-actions">
+                        <NotificationBell />
+                        
+                        <div className="user-profile-widget" onClick={() => navigate(`/profile/${user?._id || ''}`)}>
+                            <div className="user-streak-badge">
+                                <Flame size={16} className="flame-icon" />
+                                <span>{user?.streak || 3}</span>
                             </div>
-                            <div className="recent-grid">
-                                {recentPages.map((page, i) => (
-                                    <div key={i} className="recent-card" onClick={() => navigate(page.path)}>
-                                        <div className="recent-icon">{page.icon}</div>
-                                        <div className="recent-info">
-                                            <h4>{page.name}</h4>
-                                            <span className="recent-time">Visited recently</span>
+                            <div className="user-level-badge">
+                                <span className="user-name">{user?.name || 'sasa'}</span>
+                                <span className="user-lvl">Level {user?.level || 3}</span>
+                            </div>
+                            <img
+                                src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"}
+                                alt="User Avatar"
+                                className="user-avatar"
+                            />
+                        </div>
+                    </div>
+                </header>
+
+                {/* DASHBOARD CONTENT BODY */}
+                <div className="dashboard-body">
+                    {/* WELCOME HERO SECTION */}
+                    <div className="welcome-hero-row">
+                        <div className="welcome-hero-left">
+                            <h1>Welcome back, <span className="highlight-coral">{user?.name || 'sasa'}</span> 👋</h1>
+                            <p>Ready to continue your learning journey?</p>
+                        </div>
+                        <div className="quote-box">
+                            <span className="quote-mark">“</span>
+                            <p>Small consistent efforts create massive results.</p>
+                        </div>
+                    </div>
+
+                    {/* TOP 4 STAT CARDS */}
+                    <div className="stats-cards-grid">
+                        <div className="stat-card">
+                            <div className="stat-icon-wrapper amber-bg">
+                                <Flame size={22} className="amber-text" />
+                            </div>
+                            <div className="stat-details">
+                                <span className="stat-title">Streak</span>
+                                <div className="stat-value">{user?.streak || 3}</div>
+                                <span className="stat-sub">days in a row</span>
+                            </div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-icon-wrapper purple-bg">
+                                <Zap size={22} className="purple-text" />
+                            </div>
+                            <div className="stat-details">
+                                <span className="stat-title">Level</span>
+                                <div className="stat-value">{user?.level || 3}</div>
+                                <span className="stat-sub">Keep going!</span>
+                            </div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-icon-wrapper yellow-bg">
+                                <Star size={22} className="yellow-text" />
+                            </div>
+                            <div className="stat-details">
+                                <span className="stat-title">Total XP</span>
+                                <div className="stat-value">{user?.xp || 4630}</div>
+                                <span className="stat-sub positive-text">+120 this week</span>
+                            </div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-icon-wrapper emerald-bg">
+                                <Trophy size={22} className="emerald-text" />
+                            </div>
+                            <div className="stat-details">
+                                <span className="stat-title">Reputation</span>
+                                <div className="stat-value">{user?.reputation || 20}</div>
+                                <span className="stat-sub">Top 15% learners</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* MIDDLE SECTION: TODAY'S PLAN | WEEKLY PROGRESS | RIGHT WIDGETS */}
+                    <div className="middle-widgets-grid">
+                        {/* TODAY'S PLAN */}
+                        <div className="widget-card todays-plan-card">
+                            <div className="widget-header">
+                                <h3><Calendar size={18} color="#6366f1" /> Today's Plan</h3>
+                                <span className="badge-tag tag-progress">In Progress • 2:30 PM - 3:15 PM</span>
+                            </div>
+
+                            <div className="plan-subject-info">
+                                <h4>{todayMission ? todayMission.title : 'Data Structures & Algorithms'}</h4>
+                                <p>{todayMission ? todayMission.task : 'Arrays and Linked List'}</p>
+                                
+                                <div className="progress-bar-container">
+                                    <div className="progress-bar-fill" style={{ width: '65%' }}></div>
+                                </div>
+                                <span className="progress-percentage">65%</span>
+                            </div>
+
+                            <div className="plan-checklist">
+                                {planTasks.map(task => (
+                                    <label key={task.id} className={`checklist-item ${task.completed ? 'completed' : ''}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={task.completed}
+                                            onChange={() => toggleTask(task.id)}
+                                        />
+                                        <span className="checkmark-box"></span>
+                                        <span className="task-text">{task.text}</span>
+                                    </label>
+                                ))}
+                            </div>
+
+                            <button className="widget-footer-btn" onClick={() => navigate('/planner')}>
+                                View Full Schedule <ArrowRight size={16} />
+                            </button>
+                        </div>
+
+                        {/* WEEKLY PROGRESS CHART */}
+                        <div className="widget-card weekly-progress-card">
+                            <div className="widget-header">
+                                <h3><TrendingUp size={18} color="#8b5cf6" /> Weekly Progress</h3>
+                                <select className="time-select">
+                                    <option>This Week</option>
+                                    <option>Last Week</option>
+                                </select>
+                            </div>
+
+                            <div className="chart-container">
+                                <svg viewBox="0 0 400 150" className="chart-svg">
+                                    <defs>
+                                        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" />
+                                            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.0" />
+                                        </linearGradient>
+                                    </defs>
+
+                                    {/* Area fill */}
+                                    <path
+                                        d="M 20,120 Q 70,110 120,80 T 220,70 T 320,30 L 370,50 L 370,140 L 20,140 Z"
+                                        fill="url(#chartGradient)"
+                                    />
+
+                                    {/* Curved Line */}
+                                    <path
+                                        d="M 20,120 Q 70,110 120,80 T 220,70 T 320,30 L 370,50"
+                                        fill="none"
+                                        stroke="#8b5cf6"
+                                        strokeWidth="3"
+                                        strokeLinecap="round"
+                                    />
+
+                                    {/* Active Point at 75% */}
+                                    <circle cx="320" cy="30" r="6" fill="#8b5cf6" stroke="#fff" strokeWidth="2" />
+                                    <rect x="300" y="5" width="40" height="20" rx="6" fill="#8b5cf6" />
+                                    <text x="320" y="19" fill="#fff" fontSize="10" fontWeight="bold" textAnchor="middle">75%</text>
+                                </svg>
+
+                                <div className="chart-days-labels">
+                                    <span>Mon</span>
+                                    <span>Tue</span>
+                                    <span>Wed</span>
+                                    <span>Thu</span>
+                                    <span>Fri</span>
+                                    <span>Sat</span>
+                                    <span>Sun</span>
+                                </div>
+                            </div>
+
+                            <div className="chart-metrics-row">
+                                <div className="metric-dot-item">
+                                    <span className="dot dot-completed"></span>
+                                    <div>
+                                        <strong className="metric-val">12</strong>
+                                        <span className="metric-lbl">Completed</span>
+                                    </div>
+                                </div>
+                                <div className="metric-dot-item">
+                                    <span className="dot dot-inprogress"></span>
+                                    <div>
+                                        <strong className="metric-val">18</strong>
+                                        <span className="metric-lbl">In Progress</span>
+                                    </div>
+                                </div>
+                                <div className="metric-dot-item">
+                                    <span className="dot dot-pending"></span>
+                                    <div>
+                                        <strong className="metric-val">6</strong>
+                                        <span className="metric-lbl">Pending</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* RIGHT STACKED WIDGETS: AI MENTOR + FOCUS TIMER */}
+                        <div className="right-stacked-widgets">
+                            {/* AI MENTOR CARD */}
+                            <div className="widget-card ai-mentor-card">
+                                <div className="widget-header">
+                                    <h3><Bot size={18} color="#06b6d4" /> AI Mentor</h3>
+                                    <span className="badge-tag tag-new">New</span>
+                                </div>
+
+                                <div className="mentor-body">
+                                    <div className="mentor-avatar-box">
+                                        🤖
+                                    </div>
+                                    <div className="mentor-text">
+                                        <h4>Hi {user?.name || 'sasa'}! 👋</h4>
+                                        <p>How can I help you today?</p>
+                                    </div>
+                                </div>
+
+                                <button className="start-chat-btn" onClick={() => navigate('/interview')}>
+                                    Start Chat
+                                </button>
+                            </div>
+
+                            {/* FOCUS TIME TIMER CARD */}
+                            <div className="widget-card focus-time-card">
+                                <div className="widget-header">
+                                    <h3><Clock size={18} color="#f97316" /> Focus Time</h3>
+                                </div>
+
+                                <div className="focus-timer-display">
+                                    <div className="timer-numbers">
+                                        {formatTimer(timerSeconds)}
+                                    </div>
+                                    <div className="timer-subtext">Pomodoro Session</div>
+
+                                    <div className="timer-controls">
+                                        <button className="play-btn" onClick={toggleTimer} title={isTimerRunning ? "Pause" : "Start"}>
+                                            {isTimerRunning ? <Pause size={18} /> : <Play size={18} className="play-icon-offset" />}
+                                        </button>
+                                        <button className="reset-btn" onClick={resetTimer} title="Reset">
+                                            <RotateCcw size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* LOWER SECTION: QUICK ACCESS & UPCOMING DEADLINES */}
+                    <div className="lower-widgets-grid">
+                        {/* QUICK ACCESS GRID */}
+                        <div className="widget-card quick-access-card">
+                            <div className="widget-header">
+                                <h3><Sparkles size={18} color="#6366f1" /> Quick Access</h3>
+                            </div>
+
+                            <div className="quick-grid">
+                                {quickAccessGrid.map((item, idx) => {
+                                    const Icon = item.icon;
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className="quick-grid-item"
+                                            onClick={() => navigate(item.path)}
+                                        >
+                                            <div className="quick-item-icon" style={{ backgroundColor: item.bg, color: item.color }}>
+                                                <Icon size={22} />
+                                            </div>
+                                            <span className="quick-item-name">{item.name}</span>
                                         </div>
-                                        <ArrowRight size={14} className="recent-arrow" />
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* UPCOMING DEADLINES */}
+                        <div className="widget-card upcoming-deadlines-card">
+                            <div className="widget-header">
+                                <h3><Clock size={18} color="#ec4899" /> Upcoming Deadlines</h3>
+                                <button className="view-all-link" onClick={() => navigate('/planner')}>View All</button>
+                            </div>
+
+                            <div className="deadlines-list">
+                                {upcomingDeadlines.map(item => (
+                                    <div key={item.id} className="deadline-item">
+                                        <div className="deadline-icon-box" style={{ backgroundColor: item.bg, color: item.color }}>
+                                            <Calendar size={18} />
+                                        </div>
+                                        <div className="deadline-info">
+                                            <h4>{item.title}</h4>
+                                            <span>{item.due}</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                    )}
-                </div>
-
-                {/* Goal Badge — shown when user has a study goal */}
-                {user?.studyGoal && user?.onboardingCompleted && (
-                    <div className="goal-badge-row">
-                        <div className="goal-badge">
-                            <span className="goal-icon">🎯</span>
-                            <span className="goal-text">{user.studyGoal}</span>
-                            <span className="goal-divider">•</span>
-                            <span className="goal-level">{user.difficultyLevel || 'Student'}</span>
-                        </div>
-                        <button className="change-goal-btn" onClick={() => navigate('/onboarding')}>Change Goal</button>
                     </div>
-                )}
 
-                {/* Streak Reward Alert */}
-                {user?.streak > 0 && (
-                    <div className="streak-reward-card">
-                        <div className="reward-content">
-                            <span className="reward-icon">🔥</span>
-                            <div>
-                                <h2>Unstoppable!</h2>
-                                <p>You're on a <strong>{user?.streak}-day streak</strong>. Keep the momentum high.</p>
+                    {/* BOTTOM LEVEL UP MOMENTUM BANNER */}
+                    <div className="level-momentum-banner">
+                        <div className="banner-left">
+                            <div className="banner-title-row">
+                                <h2>Keep the momentum going! <Flame size={24} className="banner-flame" /></h2>
                             </div>
+                            <p>You're doing great! Complete your tasks and level up your skills.</p>
                         </div>
-                        <button
-                            className={`claim-reward-btn ${rewardClaimed ? 'claimed' : ''}`}
+
+                        <div className="banner-progress-area">
+                            <span className="task-progress-text">Complete 5 more tasks to level up!</span>
+                            <div className="banner-progress-bar">
+                                <div className="banner-progress-fill" style={{ width: '58%' }}></div>
+                            </div>
+                            <span className="progress-fraction">7 / 12</span>
+                        </div>
+
+                        <div
+                            className={`hex-level-badge ${rewardClaimed ? 'claimed' : ''}`}
                             onClick={fireConfetti}
+                            title="Click to Claim Reward!"
                         >
-                            {rewardClaimed ? '✨ CLAIMED ✓' : '🎉 CLAIM REWARD'}
-                        </button>
+                            <span className="hex-lvl-number">{user?.level || 4}</span>
+                        </div>
                     </div>
-                )}
-
-                {/* Features Section Title */}
-                <div className="features-header">
-                    <h2>Your <span>Toolkit</span></h2>
-                    <p>Access your personalized modules for extreme productivity.</p>
                 </div>
-
-                {/* Feature Cards Grid */}
-                <div className="features-grid">
-                    {features.map((feature) => {
-                        const isHovered = hoveredFeature === feature.id;
-                        return (
-                            <div
-                                key={feature.id}
-                                className={`feature-card ${isHovered ? 'hovered' : ''}`}
-                                onMouseEnter={() => setHoveredFeature(feature.id)}
-                                onMouseLeave={() => setHoveredFeature(null)}
-                                onClick={() => navigate(feature.path)}
-                            >
-                                <div className="feature-card-glow" style={{ background: feature.color }} />
-                                <div className="feature-card-icon" style={{ background: `${feature.color}15`, borderColor: `${feature.color}40` }}>
-                                    <feature.icon size={26} style={{ color: feature.color }} />
-                                </div>
-                                <h3 className="feature-card-name">{feature.name}</h3>
-                                <p className="feature-card-desc">{feature.description}</p>
-                                <div className="feature-card-arrow" style={{ color: feature.color }}>
-                                    <ArrowRight size={18} />
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            <div className="watermark">StudySpirit Nexus System</div>
+            </main>
         </div>
     );
 }
