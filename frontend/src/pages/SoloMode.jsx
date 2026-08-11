@@ -1772,7 +1772,6 @@ export default function SoloMode() {
                             { id: 'dashboard', label: 'Dashboard', icon: Layout },
                             { id: 'platforms', label: 'Platforms', icon: Link },
                             { id: 'focus', label: 'Focus', icon: Zap },
-                            { id: 'ai-mentor', label: 'AI Mentor', icon: Brain },
                             { id: 'skills', label: 'Skills', icon: GitBranch }
                         ].map((tab) => (
                             <button
@@ -2303,97 +2302,6 @@ export default function SoloMode() {
                     )
                 }
 
-                {/* AI Mentor Tab */}
-                {
-                    activeTab === 'ai-mentor' && (
-                        <div className="w-full">
-                            {/* AI Chat Section - Full Width */}
-                            <div className={`bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--card-hover)] hover:border-[var(--neon-primary)] hover:shadow-md backdrop-blur-xl transition-all rounded-2xl p-6 flex flex-col ${isFullscreenAIMentor ? 'fixed inset-4 z-[9999] h-auto' : 'h-[700px]'}`}>
-                                <div className="flex items-center justify-between mb-5">
-                                    <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-3">
-                                        <Brain className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                                        AI Study Mentor
-                                    </h3>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-[var(--text-secondary)] hidden sm:block">💡 Ask about DSA, algorithms, problem hints, study tips!</span>
-                                        <button
-                                            onClick={() => setIsFullscreenAIMentor(!isFullscreenAIMentor)}
-                                            className="p-2 bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 rounded-lg hover:bg-cyan-500/30 transition-all"
-                                            title={isFullscreenAIMentor ? "Exit Fullscreen" : "Fullscreen"}
-                                        >
-                                            {isFullscreenAIMentor ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className={`flex-1 overflow-y-auto mb-4 p-5 bg-[var(--glass-bg)] rounded-xl space-y-4 ${isFullscreenAIMentor ? 'max-h-[calc(100vh-280px)]' : ''}`}>
-                                    {chatHistory.length === 0 ? (
-                                        <div className="text-center py-16">
-                                            <Brain className="w-16 h-16 text-cyan-600 dark:text-cyan-400/30 mx-auto mb-4" />
-                                            <p className="text-xl font-bold text-[var(--text-primary)] mb-2">Hi! I'm your AI Study Mentor 🎓</p>
-                                            <p className="text-[var(--text-secondary)] max-w-md mx-auto">Ask me about DSA, algorithms, coding problems, study strategies, or anything else you need help with!</p>
-                                            <div className="flex flex-wrap justify-center gap-2 mt-6">
-                                                {['Explain Binary Search', 'How to approach DP?', 'Study plan for interviews', 'Time complexity of sorting'].map((suggestion) => (
-                                                    <button
-                                                        key={suggestion}
-                                                        onClick={() => { setChatMessage(suggestion); }}
-                                                        className="px-4 py-2 bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/20 rounded-xl text-sm text-violet-300 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all"
-                                                    >
-                                                        {suggestion}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        chatHistory.map((msg, idx) => (
-                                            <div key={idx} className={`${msg.type === 'user' ? 'self-end ml-auto' : 'self-start'} max-w-[75%]`}>
-                                                <div className={`p-4 rounded-2xl ${msg.type === 'user' ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : 'bg-cyan-500/15 border border-cyan-500/30'} text-[var(--text-primary)]`}>
-                                                    {msg.type === 'ai' && (
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <Brain className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                                                            <span className="text-xs text-cyan-600 dark:text-cyan-400 font-bold">AI MENTOR</span>
-                                                        </div>
-                                                    )}
-                                                    {msg.type === 'ai' ? (
-                                                        <FormatAIMessage text={msg.message} />
-                                                    ) : (
-                                                        <div className="text-sm leading-relaxed">{msg.message}</div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-                                    {isSendingMessage && (
-                                        <div className="self-start max-w-[75%]">
-                                            <div className="p-4 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-[var(--text-primary)]">
-                                                <div className="flex items-center gap-2">
-                                                    <Loader className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-spin" />
-                                                    <span className="text-sm text-cyan-600 dark:text-cyan-400">Thinking...</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex gap-3">
-                                    <input
-                                        type="text"
-                                        value={chatMessage}
-                                        onChange={(e) => setChatMessage(e.target.value)}
-                                        placeholder="Ask about DSA, algorithms, study tips, problem hints..."
-                                        className="flex-1 px-5 py-4 bg-[var(--border-color)]/80 border border-cyan-500/30 rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 text-sm"
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    />
-                                    <button
-                                        onClick={handleSendMessage}
-                                        disabled={!chatMessage.trim() || isSendingMessage}
-                                        className="bg-gradient-to-r from-cyan-500 to-purple-500 text-[var(--text-primary)] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50"
-                                    >
-                                        <MessageSquare className="w-4 h-4" /> Send
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                }
 
                 {/* Skills Tab */}
                 {

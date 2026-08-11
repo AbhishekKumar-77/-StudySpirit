@@ -278,13 +278,14 @@ export default function Dashboard() {
     // Platform features list
     const navFeatures = [
         { id: 'dashboard', name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-        { id: 'solo', name: 'Solo Mode', path: '/solo-mode', icon: BookOpen, badge: 'Live', badgeColor: 'green' },
+        { id: 'ai-mentor', name: 'AI Mentor', path: null, icon: Bot, badge: 'AI', badgeColor: 'coral', action: () => setIsAiModalOpen(true) },
         { id: 'group', name: 'Group Mode', path: '/group-mode', icon: Users },
         { id: 'planner', name: 'Study Planner', path: '/planner', icon: Calendar },
         { id: 'quizzes', name: 'Quizzes', path: '/quiz', icon: ClipboardCheck },
         { id: 'exams', name: 'Exams', path: '/exams', icon: FileCheck },
+        { id: 'solo', name: 'Solo Mode', path: '/solo-mode', icon: BookOpen },
         { id: 'codespirit', name: 'CodeSpirit', path: '/codespirit', icon: Code },
-        { id: 'interview', name: 'Interview Prep', path: '/interview', icon: Mic, badge: 'AI', badgeColor: 'coral' },
+        { id: 'interview', name: 'Interview Prep', path: '/interview', icon: Mic },
         { id: 'resources', name: 'Study Resources', path: '/resources', icon: Library },
         { id: 'career', name: 'CareerSprint', path: '/career', icon: Briefcase },
         { id: 'project', name: 'Project Lab', path: '/project-lab', icon: Folder },
@@ -350,13 +351,18 @@ export default function Dashboard() {
                 <nav className="sidebar-nav">
                     {navFeatures.filter(filterSearch).map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname === item.path || (item.id === 'dashboard' && location.pathname === '/dashboard');
+                        const isActive = item.path && (location.pathname === item.path || (item.id === 'dashboard' && location.pathname === '/dashboard'));
+                        const isAiMentor = item.id === 'ai-mentor';
                         return (
                             <button
                                 key={item.id}
-                                className={`sidebar-item ${isActive ? 'active' : ''}`}
+                                className={`sidebar-item ${isActive ? 'active' : ''} ${isAiMentor ? 'ai-mentor-nav-item' : ''}`}
                                 onClick={() => {
-                                    navigate(item.path);
+                                    if (item.action) {
+                                        item.action();
+                                    } else if (item.path) {
+                                        navigate(item.path);
+                                    }
                                     setIsMobileSidebarOpen(false);
                                 }}
                             >
