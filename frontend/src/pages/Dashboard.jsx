@@ -84,7 +84,7 @@ export default function Dashboard() {
     }, [isDarkMode]);
 
     // AI Mentor Chat Handler
-    const handleSendAiMessage = () => {
+    const handleSendAiMessage = async () => {
         if (!aiInput.trim()) return;
         const userMsg = { id: Date.now(), sender: 'user', text: aiInput };
         setAiMessages(prev => [...prev, userMsg]);
@@ -92,16 +92,23 @@ export default function Dashboard() {
         setAiInput('');
         setIsAiTyping(true);
 
-        setTimeout(() => {
-            let botReply = `Great question! To master "${queryText}", focus on breaking down core concepts into 25-minute study intervals with active recall.`;
-            if (queryText.toLowerCase().includes('quiz') || queryText.toLowerCase().includes('exam')) {
-                botReply = `For Quizzes & Exams, try taking practice tests in Solo Mode and reviewing incorrect answers right away!`;
-            } else if (queryText.toLowerCase().includes('code') || queryText.toLowerCase().includes('algorithm')) {
-                botReply = `You can practice live algorithm challenges in CodeSpirit or test your code in the online Code Editor!`;
-            }
-            setAiMessages(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: botReply }]);
+        try {
+            const res = await soloApi.sendAIMessage(queryText);
+            setAiMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                sender: 'bot',
+                text: res.response || `Great question! To master "${queryText}", focus on breaking down core concepts into 25-minute study intervals with active recall.`
+            }]);
+        } catch (error) {
+            console.error('AI chat error:', error);
+            setAiMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                sender: 'bot',
+                text: "Sorry, I am having trouble connecting to the AI Mentor. Please try again in a moment."
+            }]);
+        } finally {
             setIsAiTyping(false);
-        }, 1000);
+        }
     };
 
     // Timer Effect
@@ -278,12 +285,10 @@ export default function Dashboard() {
     // Platform features list
     const navFeatures = [
         { id: 'dashboard', name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-        { id: 'ai-mentor', name: 'AI Mentor', path: null, icon: Bot, badge: 'AI', badgeColor: 'coral', action: () => setIsAiModalOpen(true) },
         { id: 'group', name: 'Group Mode', path: '/group-mode', icon: Users },
         { id: 'planner', name: 'Study Planner', path: '/planner', icon: Calendar },
         { id: 'quizzes', name: 'Quizzes', path: '/quiz', icon: ClipboardCheck },
         { id: 'exams', name: 'Exams', path: '/exams', icon: FileCheck },
-        { id: 'solo', name: 'Solo Mode', path: '/solo-mode', icon: BookOpen },
         { id: 'codespirit', name: 'CodeSpirit', path: '/codespirit', icon: Code },
         { id: 'interview', name: 'Interview Prep', path: '/interview', icon: Mic },
         { id: 'resources', name: 'Study Resources', path: '/resources', icon: Library },
@@ -298,7 +303,6 @@ export default function Dashboard() {
         { name: 'CodeSpirit', icon: Code, color: '#06b6d4', bg: '#ecfeff', path: '/codespirit' },
         { name: 'Quizzes', icon: ClipboardCheck, color: '#ec4899', bg: '#fdf2f8', path: '/quiz' },
         { name: 'Exams', icon: FileCheck, color: '#ef4444', bg: '#fef2f2', path: '/exams' },
-        { name: 'Solo Mode', icon: BookOpen, color: '#6366f1', bg: '#eef2ff', path: '/solo-mode' },
         { name: 'Group Study', icon: Users, color: '#8b5cf6', bg: '#f5f3ff', path: '/group-mode' },
         { name: 'Resources', icon: Library, color: '#10b981', bg: '#ecfdf5', path: '/resources' },
         { name: 'Interview Prep', icon: Mic, color: '#f43f5e', bg: '#fff1f2', path: '/interview' },

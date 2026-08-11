@@ -4,7 +4,7 @@ import {
     GraduationCap, Users, Briefcase, Code, Trophy, BookOpen,
     Sparkles, CheckCircle2, ArrowRight, Lock, Mail,
     MessageSquare, BarChart3, FileText, Building2, Rocket,
-    BookMarked, Lightbulb, Compass, Award, Star, X, Presentation
+    Bot, Lightbulb, Compass, Award, Star, X, Presentation
 } from 'lucide-react';
 
 export default function Landing() {
@@ -627,8 +627,8 @@ export default function Landing() {
 
                             {/* Subtitle with highlighted colors */}
                             <p style={{ fontSize: '15px', lineHeight: '1.6', marginBottom: '32px', minHeight: '48px' }}>
-                                <span style={{ color: '#1E293B', fontWeight: '600' }}>Solo & Group Study Modes,</span>{' '}
-                                <span style={{ color: '#C2410C', fontWeight: '600' }}>Quizzes, AI Mentor & More</span>
+                                <span style={{ color: '#1E293B', fontWeight: '600' }}>Group Study Mode & AI Mentor,</span>{' '}
+                                <span style={{ color: '#C2410C', fontWeight: '600' }}>Quizzes & More</span>
                             </p>
 
                             {/* Pill Button with Orange Border */}
@@ -839,12 +839,12 @@ export default function Landing() {
                     }}>
                         {[
                             {
-                                icon: BookMarked,
-                                title: 'Solo Mode',
-                                desc: 'Focus sessions, Pomodoro, AI mentor & deep work tools.',
-                                path: '/solo-mode',
-                                color: '#3B82F6',
-                                bg: '#EFF6FF'
+                                icon: Bot,
+                                title: 'AI Mentor',
+                                desc: 'Interactive chat assistant for step-by-step concepts, DSA guidance, and study tips.',
+                                path: '/dashboard',
+                                color: '#06B6D4',
+                                bg: '#ECFEFF'
                             },
                             {
                                 icon: Users,
