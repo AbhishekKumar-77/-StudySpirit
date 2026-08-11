@@ -11,7 +11,6 @@ import ThemeToggle from './components/ThemeToggle';
 const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const SoloMode = lazy(() => import('./pages/SoloMode'));
 const GroupMode = lazy(() => import('./pages/GroupMode'));
 const Planner = lazy(() => import('./pages/Planner'));
 const Quiz = lazy(() => import('./pages/Quiz'));
@@ -134,7 +133,6 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/login/:role" element={<Login />} />
               <Route path="/dashboard" element={<OnboardingGuard><Dashboard /></OnboardingGuard>} />
-              <Route path="/solo-mode" element={<SoloMode />} />
               <Route path="/group-mode" element={<GroupMode />} />
               <Route path="/planner" element={<Planner />} />
               <Route path="/quiz" element={<Quiz />} />
