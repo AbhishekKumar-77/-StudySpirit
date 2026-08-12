@@ -66,21 +66,11 @@
     cursor: pointer;
 }
 
-.brand-logo {
-    width: 36px;
-    height: 36px;
-    background: var(--primary-coral-light);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-coral);
-}
-
-.brand-logo img {
-    width: 28px;
-    height: 28px;
+.brand-logo-img {
+    width: 42px;
+    height: 42px;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .brand-text {
@@ -91,8 +81,17 @@
 .brand-title {
     font-size: 18px;
     font-weight: 800;
-    color: var(--text-heading);
     letter-spacing: -0.3px;
+    line-height: 1.15;
+}
+
+.brand-study {
+    color: var(--text-heading);
+}
+
+.brand-spirit {
+    color: #e07b00;
+    font-weight: 900;
 }
 
 .brand-subtitle {

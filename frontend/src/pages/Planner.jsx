@@ -280,8 +280,14 @@ export default function Planner() {
             {/* Sidebar (Fixed position) */}
             <aside className="sp-sidebar">
                 <div className="sp-sidebar-brand">
-                    <div className="sp-brand-logo">S</div>
-                    <span className="sp-brand-title">StudySpirit</span>
+                    <img
+                        src="/logo-icon.png"
+                        alt="StudySpirit Logo"
+                        style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                        <span style={{ color: '#0f172a' }}>Study</span><span style={{ color: '#e07b00', fontWeight: 900 }}>Spirit</span>
+                    </span>
                 </div>
                 <div className="sp-sidebar-tag">AI Study Planner</div>
 

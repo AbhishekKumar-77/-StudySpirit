@@ -336,12 +336,15 @@ export default function Dashboard() {
             <aside className={`sidebar ${isMobileSidebarOpen ? 'mobile-open' : ''}`}>
                 <div className="sidebar-brand-row">
                     <div className="sidebar-brand" onClick={() => navigate('/dashboard')}>
-                        <div className="brand-logo">
-                            <img src="/logo.png" alt="StudySpirit Logo" onError={(e) => { e.target.style.display = 'none'; }} />
-                            <Sparkles size={24} className="brand-fallback-icon" />
-                        </div>
+                        <img
+                            src="/logo-icon.png"
+                            alt="StudySpirit Logo"
+                            className="brand-logo-img"
+                        />
                         <div className="brand-text">
-                            <span className="brand-title">StudySpirit</span>
+                            <span className="brand-title">
+                                <span className="brand-study">Study</span><span className="brand-spirit">Spirit</span>
+                            </span>
                             <span className="brand-subtitle">Learn • Practice • Grow</span>
                         </div>
                     </div>
