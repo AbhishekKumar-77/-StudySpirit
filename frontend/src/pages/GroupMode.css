@@ -1,0 +1,558 @@
+/* StudySpirit Group Study Hub Light SaaS Stylesheet */
+
+:root {
+  --gh-bg-main: #f8fafc;
+  --gh-bg-card: #ffffff;
+  --gh-bg-sidebar: #ffffff;
+  --gh-border: #e2e8f0;
+  --gh-border-hover: #cbd5e1;
+  --gh-text-primary: #0f172a;
+  --gh-text-secondary: #475569;
+  --gh-text-muted: #64748b;
+  --gh-primary-violet: #6366f1;
+  --gh-primary-violet-hover: #4f46e5;
+  --gh-accent-pink: #ec4899;
+  --gh-accent-emerald: #10b981;
+  --gh-accent-amber: #f59e0b;
+  --gh-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  --gh-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+}
+
+.gh-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--gh-bg-main);
+  color: var(--gh-text-primary);
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Sidebar */
+.gh-sidebar {
+  width: 270px;
+  min-width: 270px;
+  background-color: var(--gh-bg-sidebar);
+  border-right: 1px solid var(--gh-border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  z-index: 40;
+}
+
+.gh-sidebar-brand {
+  padding: 24px 20px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gh-sidebar-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #6366f1;
+  background-color: #e0e7ff;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-left: 20px;
+  display: inline-block;
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gh-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  color: var(--gh-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.gh-nav-item:hover {
+  background-color: #f1f5f9;
+  color: var(--gh-text-primary);
+}
+
+.gh-nav-item.active {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  font-weight: 700;
+  border-left-color: #6366f1;
+}
+
+/* Sidebar Upcoming Live Class Widget */
+.gh-live-widget {
+  margin: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+  border: 1px solid #e9d5ff;
+  border-radius: 16px;
+  box-shadow: var(--gh-shadow-sm);
+}
+
+.gh-widget-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #e11d48;
+  background: #ffe4e6;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.gh-widget-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--gh-text-primary);
+  margin-bottom: 2px;
+}
+
+.gh-widget-sub {
+  font-size: 0.8rem;
+  color: var(--gh-text-secondary);
+  margin-bottom: 10px;
+}
+
+.gh-btn-join-purple {
+  width: 100%;
+  padding: 9px 14px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  transition: all 0.15s ease;
+}
+
+.gh-btn-join-purple:hover {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  transform: translateY(-1px);
+}
+
+/* Main Container */
+.gh-main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Top Header */
+.gh-top-header {
+  height: 68px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--gh-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.gh-top-left-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--gh-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.gh-top-left-sub {
+  font-size: 0.82rem;
+  color: var(--gh-text-secondary);
+}
+
+.gh-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gh-btn-join-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+/* Content Body */
+.gh-content-body {
+  padding: 28px 32px 48px;
+  max-width: 1360px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Banner Card (Your Learning Classes) */
+.gh-banner-card {
+  background: linear-gradient(135deg, #f5f3ff, #faf5ff);
+  border: 1px solid #ede9fe;
+  border-radius: 20px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  box-shadow: var(--gh-shadow-sm);
+}
+
+.gh-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.gh-banner-icon {
+  width: 52px;
+  height: 52px;
+  background: #6366f1;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+}
+
+.gh-banner-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--gh-text-primary);
+  margin-bottom: 4px;
+}
+
+.gh-banner-sub {
+  font-size: 0.88rem;
+  color: var(--gh-text-secondary);
+}
+
+.gh-banner-stats {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.gh-stat-box {
+  text-align: center;
+}
+
+.gh-stat-num {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--gh-text-primary);
+}
+
+.gh-stat-lbl {
+  font-size: 0.78rem;
+  color: var(--gh-text-secondary);
+}
+
+/* Main Split Grid: Left Content (2fr) vs Right Column (1fr) */
+.gh-split-grid {
+  display: grid;
+  grid-template-columns: 2.1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+/* My Classes Card & Filter Bar */
+.gh-classes-card {
+  background-color: var(--gh-bg-card);
+  border: 1px solid var(--gh-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: var(--gh-shadow-sm);
+}
+
+.gh-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gh-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gh-tab-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--gh-text-secondary);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.gh-tab-btn.active {
+  background-color: #f1f5f9;
+  color: var(--gh-text-primary);
+  font-weight: 700;
+}
+
+.gh-search-small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+}
+
+/* Course Items */
+.gh-course-item {
+  border: 1px solid var(--gh-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.gh-course-item:hover {
+  border-color: var(--gh-border-hover);
+  box-shadow: var(--gh-shadow-md);
+}
+
+.gh-course-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.gh-course-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gh-course-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.gh-course-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gh-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gh-course-sub {
+  font-size: 0.82rem;
+  color: var(--gh-text-secondary);
+  margin-top: 2px;
+}
+
+.gh-status-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.gh-status-pill.live { background: #ffe4e6; color: #e11d48; }
+.gh-status-pill.upcoming { background: #d1fae5; color: #059669; }
+.gh-status-pill.scheduled { background: #fef3c7; color: #d97706; }
+
+/* Next Class Countdown Box */
+.gh-countdown-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  text-align: center;
+  min-width: 140px;
+}
+
+.gh-countdown-lbl {
+  font-size: 0.72rem;
+  color: var(--gh-text-muted);
+  font-weight: 600;
+}
+
+.gh-countdown-val {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--gh-text-primary);
+  margin: 2px 0;
+  letter-spacing: 0.05em;
+}
+
+/* Course Action Pills */
+.gh-action-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.gh-action-pill {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gh-text-secondary);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gh-action-pill:hover {
+  background: #f1f5f9;
+  color: var(--gh-text-primary);
+}
+
+/* Right Stacked Column */
+.gh-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gh-side-card {
+  background-color: var(--gh-bg-card);
+  border: 1px solid var(--gh-border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--gh-shadow-sm);
+}
+
+.gh-side-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gh-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.gh-schedule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+.gh-announcement-item {
+  padding: 10px 0;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+/* Study Together Avatars Grid */
+.gh-avatars-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0;
+}
+
+.gh-user-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gh-avatar-bubble {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.gh-online-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid white;
+}
+
+/* Recent Activity Section */
+.gh-activity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.gh-activity-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid var(--gh-border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+/* Responsive Rules */
+@media (max-width: 1024px) {
+  .gh-split-grid { grid-template-columns: 1fr; }
+  .gh-activity-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .gh-sidebar { display: none; }
+  .gh-top-header { padding: 0 16px; }
+  .gh-banner-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+}
