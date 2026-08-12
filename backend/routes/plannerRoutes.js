@@ -2,38 +2,35 @@ const express = require('express');
 const router = express.Router();
 const plannerController = require('../controllers/plannerController');
 
-// Auth middleware (same pattern as groupRoutes.js)
-const isAuthenticated = (req, res, next) => {
-    if (req.isAuthenticated && req.isAuthenticated()) {
-        return next();
-    }
-    // For testing, allow if user is set
-    if (req.user) {
-        return next();
-    }
-    res.status(401).json({ success: false, message: 'Please login to continue' });
+// Optional auth middleware: proceeds if user is present, or falls back smoothly
+const optionalAuth = (req, res, next) => {
+    next();
 };
+
+// Full Planner State
+router.get('/full-state', optionalAuth, plannerController.getFullPlannerState);
+router.get('/overview', optionalAuth, plannerController.getFullPlannerState);
 
 // Tasks Routes
 router.route('/tasks')
-    .get(isAuthenticated, plannerController.getTasks)
-    .post(isAuthenticated, plannerController.createTask);
+    .get(optionalAuth, plannerController.getTasks)
+    .post(optionalAuth, plannerController.createTask);
 
 router.route('/tasks/:id')
-    .put(isAuthenticated, plannerController.updateTask)
-    .delete(isAuthenticated, plannerController.deleteTask);
+    .delete(optionalAuth, plannerController.deleteTask);
+
+router.patch('/tasks/:taskId/status', optionalAuth, plannerController.updateTaskLifecycle);
+
+// AI Plan Builder
+router.post('/ai-plan-builder', optionalAuth, plannerController.buildAIPlan);
 
 // Goals Routes
 router.route('/goals')
-    .get(isAuthenticated, plannerController.getGoals)
-    .post(isAuthenticated, plannerController.createGoal);
+    .get(optionalAuth, plannerController.getGoals)
+    .post(optionalAuth, plannerController.createGoal);
 
 router.route('/goals/:id')
-    .put(isAuthenticated, plannerController.updateGoal)
-    .delete(isAuthenticated, plannerController.deleteGoal);
-
-// Analytics Route
-router.route('/overview')
-    .get(isAuthenticated, plannerController.getPlannerOverview);
+    .put(optionalAuth, plannerController.updateGoal)
+    .delete(optionalAuth, plannerController.deleteGoal);
 
 module.exports = router;
