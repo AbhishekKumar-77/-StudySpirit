@@ -13,6 +13,18 @@ router.get('/history', auth, codeSpiritController.getHistory);
 // Get topic categories
 router.get('/topics', codeSpiritController.getTopicCategories);
 
+// Dashboard analytics & stats
+router.get('/dashboard-stats', auth, codeSpiritController.getDashboardStats);
+
+// Skill tree data
+router.get('/skill-tree', auth, codeSpiritController.getSkillTree);
+
+// Mistake analytics
+router.get('/mistakes', auth, codeSpiritController.getMistakes);
+
+// Company prep
+router.get('/company-prep', auth, codeSpiritController.getCompanyPrep);
+
 // Get or generate daily challenge
 router.get('/daily', auth, codeSpiritController.getDailyChallenge);
 
