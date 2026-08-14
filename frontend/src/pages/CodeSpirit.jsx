@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../config";
+import api from "../services/api";
 import {
     ArrowLeft, Send, Sparkles, Terminal, Cpu, Hash, History, CheckCircle, Code,
     Flame, Star, Clock, Trash2, Filter, Search, ChevronRight, Zap, Trophy,
@@ -210,9 +211,8 @@ export default function CodeSpirit() {
     const fetchDailyChallenge = async () => {
         setLoadingDaily(true);
         try {
-            const res = await fetch(`${API_BASE}/codespirit/daily?language=${language}`, { credentials: 'include' });
-            const data = await res.json();
-            if (data.success) setDailyChallenge(data.session);
+            const res = await api.get(`/codespirit/daily?language=${language}`);
+            if (res.data.success) setDailyChallenge(res.data.session);
         } catch (e) {
             console.error("Daily challenge error:", e);
         } finally {
@@ -227,9 +227,8 @@ export default function CodeSpirit() {
             if (historyFilter.difficulty !== 'all') params.set('difficulty', historyFilter.difficulty);
             if (historyFilter.language !== 'all') params.set('language', historyFilter.language);
             if (historyFilter.completed !== 'all') params.set('completed', historyFilter.completed);
-            const res = await fetch(`${API_BASE}/codespirit/history?${params}`, { credentials: 'include' });
-            const data = await res.json();
-            if (data.success) setHistory(data.sessions);
+            const res = await api.get(`/codespirit/history?${params}`);
+            if (res.data.success) setHistory(res.data.sessions);
         } catch (error) {
             console.error(error);
         } finally {
@@ -264,13 +263,10 @@ export default function CodeSpirit() {
             : topic;
 
         try {
-            const res = await fetch(`${API_BASE}/codespirit/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ topic: fullTopic, difficulty, count: questionCount, language })
+            const res = await api.post(`/codespirit/generate`, {
+                topic: fullTopic, difficulty, count: questionCount, language
             });
-            const data = await res.json();
+            const data = res.data;
             if (data.success && data.challenges?.length > 0) {
                 navigate('/code-editor', {
                     state: { sessionId: data.sessionId, challenges: data.challenges, totalCount: data.totalCount, topic: fullTopic, difficulty, secureMode }
@@ -290,7 +286,7 @@ export default function CodeSpirit() {
         e.stopPropagation();
         if (!confirm('Delete this session? This cannot be undone.')) return;
         try {
-            await fetch(`${API_BASE}/codespirit/session/${sessionId}`, { method: 'DELETE', credentials: 'include' });
+            await api.delete(`/codespirit/session/${sessionId}`);
             setHistory(prev => prev.filter(s => s._id !== sessionId));
         } catch (err) { console.error(err); }
     };
