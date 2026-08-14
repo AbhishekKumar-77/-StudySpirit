@@ -178,6 +178,7 @@ const proctorRoutes = require('./routes/proctorRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const recruiterRoutes = require('./routes/recruiterRoutes');
 const webrtcRoutes = require('./routes/webrtcRoutes');
+const practiceRoutes = require('./routes/practiceRoutes');
 
 // Auth routes get stricter rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
@@ -190,6 +191,7 @@ app.use('/api/codespirit', aiLimiter, codeSpiritRoutes);
 // Standard routes
 app.use('/api/group', groupRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/practice', practiceRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/discuss', discussRoutes);
 app.use('/api/career', careerRoutes);

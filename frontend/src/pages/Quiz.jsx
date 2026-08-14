@@ -16,6 +16,20 @@ import {
 import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 
+// Student Learning Platform Components
+import StudentHeader from "../components/practice/StudentHeader";
+import StudentSidebar from "../components/practice/StudentSidebar";
+import StudentDashboardView from "../components/practice/StudentDashboardView";
+import SmartPracticeView from "../components/practice/SmartPracticeView";
+import TopicPracticeView from "../components/practice/TopicPracticeView";
+import MistakePracticeView from "../components/practice/MistakePracticeView";
+import QuestionPlayer from "../components/practice/QuestionPlayer";
+import ExamSimulatorView from "../components/practice/ExamSimulatorView";
+import QuestionBankView from "../components/practice/QuestionBankView";
+import LearningAnalyticsView from "../components/practice/LearningAnalyticsView";
+import AIQuestionStudioView from "../components/practice/AIQuestionStudioView";
+import LeaderboardView from "../components/practice/LeaderboardView";
+
 export default function StudySprintQuiz() {
     const { user } = useApp();
     const navigate = useNavigate();
@@ -26,8 +40,9 @@ export default function StudySprintQuiz() {
     const previewCode = searchParams.get('code') || '';
 
     // Note: Secure Browser Integration moved below state hooks to fix ReferenceError
-    // Main Tab State
-    const [activeTab, setActiveTab] = useState("teacher");
+    // Main Tab State (Default to 'dashboard' for student learning experience)
+    const [activeTab, setActiveTab] = useState(user?.role === 'teacher' ? "teacher" : "dashboard");
+    const [activeRunnerSession, setActiveRunnerSession] = useState(null); // active QuestionPlayer session
 
     // Teacher Mode
     const [questions, setQuestions] = useState([]);
@@ -853,7 +868,84 @@ export default function StudySprintQuiz() {
     };
 
 
+    // Helper to start practice runner
+    const handleStartPracticeRunner = (opts = {}) => {
+        if (opts.mode === 'smart' || opts.mode === 'topic' || opts.mode === 'mistake') {
+            setActiveRunnerSession({
+                title: `${opts.mode.toUpperCase()} Practice — ${opts.topic || 'Python OOP'}`,
+                questions: [
+                    {
+                        id: 'runner-1',
+                        question: `Which OOP concept enables dynamic method overriding at runtime in ${opts.subject || 'Python'}?`,
+                        options: ['Method Overloading', 'Method Overriding (Runtime Polymorphism)', 'Encapsulation', 'Abstraction'],
+                        correct: 1,
+                        explanation: 'Method overriding allows a subclass to provide a specific implementation of a method that is already defined in its superclass, resolved dynamically at runtime.',
+                        keyConcept: 'Runtime Polymorphism resolves method execution dynamically based on object instance.',
+                        subject: opts.subject || 'Python',
+                        topic: opts.topic || 'OOP'
+                    },
+                    {
+                        id: 'runner-2',
+                        question: `In Python, which keyword is used to raise a custom exception?`,
+                        options: ['throw', 'raise', 'catch', 'error'],
+                        correct: 1,
+                        explanation: 'The raise keyword in Python is used to explicitly throw/raise exceptions.',
+                        keyConcept: 'raise propagates custom or built-in exceptions in Python.',
+                        subject: opts.subject || 'Python',
+                        topic: opts.topic || 'Exception Handling'
+                    }
+                ]
+            });
+        } else if (opts.questions) {
+            setActiveRunnerSession({
+                title: "AI Studio Practice Session",
+                questions: opts.questions
+            });
+        }
+    };
+
     // --------------------------- RENDER ---------------------------
+    if (activeTab !== "teacher") {
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800" ref={fullscreenRef}>
+                <StudentHeader userProfile={{ name: user?.name }} />
+                <div className="flex flex-1">
+                    <StudentSidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveRunnerSession(null); setActiveTab(tab); }} />
+                    <main className="flex-1 overflow-y-auto">
+                        {activeRunnerSession ? (
+                            <QuestionPlayer 
+                                questions={activeRunnerSession.questions}
+                                sessionTitle={activeRunnerSession.title}
+                                onFinish={() => setActiveRunnerSession(null)}
+                                onAskAITutor={(ctx) => alert(`Connecting StudySpirit AI Tutor for: "${ctx.question}"`)}
+                            />
+                        ) : activeTab === 'dashboard' ? (
+                            <StudentDashboardView setActiveTab={setActiveTab} onStartPractice={handleStartPracticeRunner} />
+                        ) : activeTab === 'smart_practice' ? (
+                            <SmartPracticeView onStartSession={handleStartPracticeRunner} />
+                        ) : activeTab === 'topic_practice' ? (
+                            <TopicPracticeView onStartSession={handleStartPracticeRunner} />
+                        ) : activeTab === 'mistake_practice' ? (
+                            <MistakePracticeView onStartSession={handleStartPracticeRunner} />
+                        ) : activeTab === 'exam_simulator' || activeTab === 'mock_tests' || activeTab === 'previous_papers' ? (
+                            <ExamSimulatorView onFinishExam={() => setActiveTab('dashboard')} />
+                        ) : activeTab === 'question_bank' || activeTab === 'my_library' || activeTab === 'history' ? (
+                            <QuestionBankView onStartSession={handleStartPracticeRunner} />
+                        ) : activeTab === 'analytics' ? (
+                            <LearningAnalyticsView />
+                        ) : activeTab === 'ai_studio' ? (
+                            <AIQuestionStudioView onStartSession={handleStartPracticeRunner} />
+                        ) : activeTab === 'leaderboard' || activeTab === 'challenges' || activeTab === 'achievements' ? (
+                            <LeaderboardView />
+                        ) : (
+                            <StudentDashboardView setActiveTab={setActiveTab} onStartPractice={handleStartPracticeRunner} />
+                        )}
+                    </main>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
             className="min-h-screen bg-[var(--bg-primary)] relative pb-20 overflow-hidden font-sans text-[var(--text-primary)]"
