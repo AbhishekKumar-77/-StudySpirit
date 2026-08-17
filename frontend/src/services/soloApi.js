@@ -202,6 +202,28 @@ export default {
             method: 'POST',
             body: formData
         });
+    },
+    getInterviewDashboard: async () => {
+        return fetchWithAuth('/solo/interview-prep/dashboard');
+    },
+    analyzeJobContext: async (formData) => {
+        return fetchWithAuth('/solo/interview-prep/analyze-jd', {
+            method: 'POST',
+            body: formData
+        });
+    },
+    getQuestionBank: async (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        return fetchWithAuth(`/solo/interview-prep/questions?${query}`);
     }
 };
+
+// Named exports for components importing destructured methods
+export const getInterviewDashboard = async () => fetchWithAuth('/solo/interview-prep/dashboard');
+export const analyzeJobContext = async (formData) => fetchWithAuth('/solo/interview-prep/analyze-jd', { method: 'POST', body: formData });
+export const getQuestionBank = async (params = {}) => fetchWithAuth(`/solo/interview-prep/questions?${new URLSearchParams(params).toString()}`);
+export const getEvents = async () => fetchWithAuth('/events');
+export const toggleEventMonitor = async (eventId) => fetchWithAuth('/events/monitor', { method: 'POST', body: JSON.stringify({ eventId }) });
+export const getMonitoredEvents = async () => fetchWithAuth('/events/monitored');
+
 

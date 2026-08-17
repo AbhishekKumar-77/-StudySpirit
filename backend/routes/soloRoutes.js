@@ -110,4 +110,16 @@ router.post('/ai/ats/check', (req, res, next) => {
     });
 }, aiLimiter, aiController.checkATSScore);
 
+// Redesigned Interview Prep Endpoints
+const interviewPrepController = require('../controllers/interviewPrepController');
+
+router.get('/interview-prep/dashboard', interviewPrepController.getDashboardOverview);
+router.post('/interview-prep/analyze-jd', (req, res, next) => {
+    upload.single('resume')(req, res, (err) => {
+        next();
+    });
+}, aiLimiter, interviewPrepController.analyzeJobContext);
+router.get('/interview-prep/questions', interviewPrepController.getQuestionBank);
+
 module.exports = router;
+

@@ -7,7 +7,12 @@ const interviewSessionSchema = new mongoose.Schema({
     },
     mode: {
         type: String,
-        enum: ['technical', 'behavioral', 'resume', 'gd'],
+        enum: ['technical', 'behavioral', 'resume', 'gd', 'system-design', 'full-mock', 'teacher-exam'],
+        default: 'technical'
+    },
+    roundType: {
+        type: String,
+        enum: ['technical', 'system-design', 'behavioral', 'gd', 'full-mock', 'teacher-exam'],
         default: 'technical'
     },
     totalQuestions: {
@@ -23,14 +28,45 @@ const interviewSessionSchema = new mongoose.Schema({
         questionNumber: Number,
         question: String,
         answer: String,
-        score: { type: Number, default: 0 }, // 1-10
+        score: { type: Number, default: 0 }, // 1-10 or 1-100
         feedback: String,
         idealAnswer: String,
+        codeSubmitted: String,
+        complexityAnalysis: String,
+        starComponents: {
+            situation: Boolean,
+            task: Boolean,
+            action: Boolean,
+            result: Boolean
+        },
         timestamp: { type: Date, default: Date.now }
     }],
-    // Config
+    // Job Context
     targetRole: String,
     targetCompany: String,
+    jobDescription: String,
+    detectedSkills: [String],
+
+    // Detailed 7-dimension score breakdown (0-100)
+    dimensionScores: {
+        answerQuality: { type: Number, default: 75 },
+        technicalDepth: { type: Number, default: 75 },
+        problemSolving: { type: Number, default: 75 },
+        communication: { type: Number, default: 75 },
+        confidence: { type: Number, default: 75 },
+        structure: { type: Number, default: 75 },
+        pacing: { type: Number, default: 75 }
+    },
+
+    // Behavioral STAR evaluation
+    starEvaluation: {
+        situation: { type: Number, default: 80 },
+        task: { type: Number, default: 80 },
+        action: { type: Number, default: 80 },
+        result: { type: Number, default: 60 },
+        missingElements: [String]
+    },
+
     // Final report
     overallScore: {
         type: Number,
@@ -43,8 +79,23 @@ const interviewSessionSchema = new mongoose.Schema({
         logic: Number,
         communication: Number,
         teamwork: Number,
-        confidence: Number
+        confidence: Number,
+        listening: Number,
+        relevance: Number,
+        leadership: Number,
+        interruptions: Number
     },
+
+    // Actionable AI Improvement Plan (linking into StudySpirit modules)
+    improvementPlan: [{
+        title: String,
+        priority: { type: String, enum: ['High Priority', 'Medium Priority', 'Low Priority'], default: 'Medium Priority' },
+        category: String, // 'System Design', 'STAR Responses', 'Filler Words', 'Graph Algorithms', etc.
+        actionUrl: String, // e.g. '/codespirit', '/soft-skills', '/resources'
+        actionText: String, // e.g. 'Practice in CodeSpirit'
+        completed: { type: Boolean, default: false }
+    }],
+
     status: {
         type: String,
         enum: ['in-progress', 'completed', 'abandoned'],
@@ -62,3 +113,4 @@ const interviewSessionSchema = new mongoose.Schema({
 interviewSessionSchema.index({ userId: 1, startedAt: -1 });
 
 module.exports = mongoose.model('InterviewSession', interviewSessionSchema);
+

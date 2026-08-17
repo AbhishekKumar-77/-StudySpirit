@@ -266,7 +266,7 @@ class AIProviderService {
         const exchangeSummary = exchanges.map(e => `Q: ${e.question}\nA: ${e.answer}`).join('\n\n');
 
         const reportPrompt = `You are a Senior Executive Talent Evaluator. 
-        Analyze the following ${session.mode} session performance and generate a PREMIUM, HIGHLY CRITICAL feedback report.
+        Analyze the following ${session.mode} interview session and generate a PREMIUM 7-dimension report with an actionable StudySpirit Improvement Plan.
         
         MODE: ${session.mode}
         USER ROLE: ${session.targetRole}
@@ -275,18 +275,71 @@ class AIProviderService {
         INTERVIEW EXCHANGES:
         ${exchangeSummary}
         
-        Return ONLY valid JSON with this structure:
+        Return ONLY valid JSON with this exact structure:
         {
-            "overallScore": <number 1-10>,
-            "strengths": ["string", "string", "string"],
-            "improvements": ["string", "string", "string"],
+            "overallScore": <number 0-100>,
+            "dimensionScores": {
+                "answerQuality": <0-100>,
+                "technicalDepth": <0-100>,
+                "problemSolving": <0-100>,
+                "communication": <0-100>,
+                "confidence": <0-100>,
+                "structure": <0-100>,
+                "pacing": <0-100>
+            },
+            "starEvaluation": {
+                "situation": <0-100>,
+                "task": <0-100>,
+                "action": <0-100>,
+                "result": <0-100>,
+                "missingElements": ["Result missing in Q2", "Action needs more metrics"]
+            },
+            "strengths": ["Explained project clearly", "Strong technical reasoning", "Good confidence"],
+            "improvements": ["Answers were too long", "Weak STAR structure", "Frequent filler words"],
             "overallFeedback": "Professional assessment (3-4 sentences)",
             "gdMetrics": {
-                "logic": 0-10,
-                "communication": 0-10,
-                "teamwork": 0-10,
-                "confidence": 0-10
-            }
+                "logic": <0-100>,
+                "communication": <0-100>,
+                "teamwork": <0-100>,
+                "confidence": <0-100>,
+                "listening": <0-100>,
+                "relevance": <0-100>,
+                "leadership": <0-100>
+            },
+            "improvementPlan": [
+                {
+                    "title": "System Design",
+                    "priority": "High Priority",
+                    "category": "Architecture",
+                    "actionUrl": "/resources",
+                    "actionText": "Practice",
+                    "completed": false
+                },
+                {
+                    "title": "STAR Responses",
+                    "priority": "Medium Priority",
+                    "category": "Behavioral",
+                    "actionUrl": "/soft-skills",
+                    "actionText": "Practice",
+                    "completed": false
+                },
+                {
+                    "title": "Filler Words",
+                    "priority": "Medium Priority",
+                    "category": "Communication",
+                    "actionUrl": "/soft-skills",
+                    "actionText": "Speaking Drill",
+                    "completed": false
+                },
+                {
+                    "title": "Graph Algorithms",
+                    "priority": "High Priority",
+                    "category": "Coding",
+                    "actionUrl": "/codespirit",
+                    "actionText": "Practice in CodeSpirit",
+                    "completed": false
+                }
+            ]
         }`;
 
         const fetchResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -321,6 +374,7 @@ class AIProviderService {
             throw new Error("Invalid report response format from Groq");
         }
     }
+
 }
 
 module.exports = new AIProviderService();

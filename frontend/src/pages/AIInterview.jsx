@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { usePageTracker } from '../hooks/usePageTracker';
-import {
-    Mic, ArrowLeft, History, Camera, CameraOff, Volume2, VolumeX
-} from 'lucide-react';
+import soloApi from '../services/soloApi';
 
 // Custom Hooks
 import useSpeechRecognition from '../hooks/useSpeechRecognition';
@@ -14,31 +12,38 @@ import useVoiceAnalytics from '../hooks/useVoiceAnalytics';
 import useInterviewSession from '../hooks/useInterviewSession';
 
 // Modular Components
-import SetupPanel from '../components/interview/SetupPanel';
-import InterviewChat from '../components/interview/InterviewChat';
-import ReportView from '../components/interview/ReportView';
+import InterviewSidebar from '../components/interview/InterviewSidebar';
+import InterviewDashboard from '../components/interview/InterviewDashboard';
+import GuidedInterviewWizard from '../components/interview/GuidedInterviewWizard';
+import AriaInterviewRoom from '../components/interview/AriaInterviewRoom';
+import TechnicalInterviewRoom from '../components/interview/TechnicalInterviewRoom';
+import GDPanelRoom from '../components/interview/GDPanelRoom';
+import QuestionBankView from '../components/interview/QuestionBankView';
+import MyInterviewsView from '../components/interview/MyInterviewsView';
 import ATSChecker from '../components/interview/ATSChecker';
-import HistoryView from '../components/interview/HistoryView';
-import { JourneyProgressBar, JourneyFinalReport } from '../components/interview/JourneyProgress';
+import ReportView from '../components/interview/ReportView';
 
 export default function AIInterview() {
     const { user } = useApp();
     const navigate = useNavigate();
     usePageTracker('Interview Prep', '/interview', '🎤');
 
-    // Shared global settings
+    // Tab & View Control
+    const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'interviews', 'practice', 'question-bank', 'reports', 'ats'
+    const [roomType, setRoomType] = useState(null); // 'aria', 'technical', 'gd', 'wizard'
+    const [dashboardData, setDashboardData] = useState(null);
+
+    // Shared settings
     const [selectedVoiceURI, setSelectedVoiceURI] = useState('');
     const [autoSpeak, setAutoSpeak] = useState(true);
     const [input, setInput] = useState('');
     
     const videoRef = useRef(null);
-    const autoSubmitTimeoutRef = useRef(null);
 
     // 1. Text to Speech
     const { 
         isSpeaking, 
         currentSpeaker, 
-        availableVoices, 
         speak, 
         stopSpeaking 
     } = useTextToSpeech(autoSpeak, selectedVoiceURI, setSelectedVoiceURI);
@@ -47,7 +52,6 @@ export default function AIInterview() {
     const { 
         isListening, 
         speechSupported, 
-        fillerWordCount, 
         wordsSpoken, 
         startListening, 
         stopListening, 
@@ -63,11 +67,8 @@ export default function AIInterview() {
         stopCamera 
     } = useCamera(true, videoRef);
 
-    // 4. Voice & Time Analytics
+    // 4. Voice Analytics
     const { 
-        elapsedTime, 
-        wpm, 
-        vocalVolume, 
         startTimer, 
         stopTimer, 
         resetTimer 
@@ -90,32 +91,37 @@ export default function AIInterview() {
         startInterview,
         sendMessage,
         finishInterview,
-        isJourneyMode,
-        journeyStep,
-        journeyReports,
-        journeyModesList,
-        nextJourneyStep,
-        startJourney,
         examCode, setExamCode,
         registrationNumber, setRegistrationNumber,
-        examData,
         handleJoinExam,
-        isJoiningExam,
         atsFile, setAtsFile,
         atsJobDescription, setAtsJobDescription,
         atsResult,
         isCheckingAts,
         checkATS,
         resumeFile, setResumeFile,
-        resumeText, setResumeText,
-        resetSessionState,
-        viewTranscript
+        resetSessionState
     } = useInterviewSession(user, (text, speakers) => {
-        // Callback when AI speaks
         speak(text, speakers);
     });
 
-    // Handle Mic Toggling
+    // Fetch Dashboard Data from Backend
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const data = await soloApi.getInterviewDashboard();
+                if (data && data.success) {
+                    setDashboardData(data);
+                }
+            } catch (err) {
+                console.error("Error fetching interview dashboard data:", err);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    // Toggle Mic Listening
     const toggleListening = () => {
         if (!speechSupported) {
             alert("Speech recognition is not supported in your browser. Please use Chrome.");
@@ -130,216 +136,209 @@ export default function AIInterview() {
         }
     };
 
-    // Auto submit mechanic when listening gets silent
-    useEffect(() => {
-        if (isListening && input.trim()) {
-            if (autoSubmitTimeoutRef.current) clearTimeout(autoSubmitTimeoutRef.current);
-            autoSubmitTimeoutRef.current = setTimeout(() => {
-                handleSendMessage();
-            }, 3500);
-        }
-        return () => {
-            if (autoSubmitTimeoutRef.current) clearTimeout(autoSubmitTimeoutRef.current);
-        };
-    }, [input, isListening]);
-
     const handleSendMessage = () => {
         if (!input.trim() || isLoading) return;
-        if (isListening) {
-            stopListening();
-        }
+        if (isListening) stopListening();
         stopSpeaking();
         sendMessage(input);
         setInput('');
     };
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
+    // Launch Interview Session with specific mode
+    const handleLaunchInterview = (selectedRound = 'technical', params = {}) => {
+        if (params.targetRole) setTargetRole(params.targetRole);
+        if (params.targetCompany) setTargetCompany(params.targetCompany);
+
+        setMode(selectedRound);
+
+        if (selectedRound === 'gd') {
+            setRoomType('gd');
+        } else if (selectedRound === 'technical') {
+            setRoomType('technical');
+        } else {
+            setRoomType('aria');
         }
+
+        startInterview(selectedRound, params.resumeFile || resumeFile, 10);
     };
 
-    // Timer Sync with Interview View
-    useEffect(() => {
-        if (view === 'interview') {
-            resetSpeechStats();
-            resetTimer();
-            startTimer();
-        } else {
-            stopTimer();
-            stopListening();
-            stopSpeaking();
-            stopCamera();
-        }
-    }, [view]);
-
-    // End Interview Session completely
+    // End Active Session
     const handleEndSession = () => {
         stopSpeaking();
         stopListening();
         stopTimer();
+        setRoomType(null);
         if (sessionId && messages.length > 1) {
-            const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
-            const lastUserIdx = [...messages].reverse().findIndex(m => m.role === 'user');
-            const msgsBeforeLastUser = messages.slice(0, messages.length - lastUserIdx);
-            const lastAiQuestion = [...msgsBeforeLastUser].reverse().find(m => m.role === 'ai');
-            finishInterview(lastUserMsg?.content || '', lastAiQuestion?.content || '');
+            finishInterview();
+            setActiveTab('reports');
         } else {
             resetSessionState();
+            setActiveTab('dashboard');
         }
     };
 
+    // Render Room Component if in active session
+    if (roomType === 'aria') {
+        return (
+            <AriaInterviewRoom
+                targetRole={targetRole}
+                targetCompany={targetCompany}
+                messages={messages}
+                input={input}
+                setInput={setInput}
+                onSendMessage={handleSendMessage}
+                isLoading={isLoading}
+                isSpeaking={isSpeaking}
+                currentSpeaker={currentSpeaker}
+                isListening={isListening}
+                onToggleListening={toggleListening}
+                cameraEnabled={cameraEnabled}
+                onToggleCamera={toggleCamera}
+                videoRef={videoRef}
+                autoSpeak={autoSpeak}
+                onToggleAutoSpeak={() => setAutoSpeak(!autoSpeak)}
+                currentQuestionNum={currentQuestionNum}
+                totalQuestionsConfig={totalQuestionsConfig}
+                onEndInterview={handleEndSession}
+                onBack={() => setRoomType(null)}
+            />
+        );
+    }
+
+    if (roomType === 'technical') {
+        return (
+            <TechnicalInterviewRoom
+                targetRole={targetRole}
+                targetCompany={targetCompany}
+                onEndInterview={handleEndSession}
+                onBack={() => setRoomType(null)}
+            />
+        );
+    }
+
+    if (roomType === 'gd') {
+        return (
+            <GDPanelRoom
+                targetRole={targetRole}
+                user={user}
+                onEndInterview={handleEndSession}
+                onBack={() => setRoomType(null)}
+            />
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans relative overflow-y-auto overflow-x-hidden">
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[100px]" />
-                <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-pink-500/10 rounded-full blur-[100px]" />
-            </div>
+        <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+            {/* Dedicated Interview Prep Sidebar */}
+            <InterviewSidebar
+                activeTab={activeTab}
+                setActiveTab={(tab) => {
+                    setRoomType(null);
+                    setActiveTab(tab);
+                }}
+                readinessScore={dashboardData?.profile?.readiness?.technical || 76}
+            />
 
-            {/* Navbar */}
-            <nav className="sticky top-0 z-50 bg-[var(--bg-primary)]/90 backdrop-blur-xl border-b border-[var(--border-color)] px-6 py-4 flex justify-between items-center print:hidden">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-white/10 rounded-lg">
-                        <ArrowLeft className="w-6 h-6 text-[var(--text-secondary)]" />
-                    </button>
-                    <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-br from-pink-500 to-rose-500 p-2 rounded-lg">
-                            <Mic className="w-6 h-6 text-[var(--text-primary)]" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">AI Interview Prep</h1>
-                            <p className="text-xs text-[var(--text-secondary)]">Mock Interview with Aria</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => {
-                            if (view === 'history') resetSessionState();
-                            else {
-                                loadHistory();
-                                setView('history');
-                            }
+            {/* Main Sub-View Container */}
+            <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+                {/* Guided Interview Setup Wizard */}
+                {roomType === 'wizard' && (
+                    <GuidedInterviewWizard
+                        onCancel={() => setRoomType(null)}
+                        onLaunchInterview={handleLaunchInterview}
+                        onJoinExam={(code, reg) => {
+                            setExamCode(code);
+                            setRegistrationNumber(reg);
+                            handleJoinExam();
                         }}
-                        className={`p-2 rounded-lg transition-all ${view === 'history' ? 'bg-cyan-500/20 text-cyan-500' : 'hover:bg-white/5 text-[var(--text-secondary)]'}`}
-                    >
-                        <History className="w-5 h-5" />
-                    </button>
-                    {view === 'interview' && (
-                        <button
-                            onClick={toggleCamera}
-                            className={`p-2 rounded-lg transition-all ${cameraEnabled ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}
-                        >
-                            {cameraEnabled ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
-                        </button>
-                    )}
-                    <button
-                        onClick={() => setAutoSpeak(!autoSpeak)}
-                        className={`p-2 rounded-lg transition-all ${autoSpeak ? 'bg-cyan-500/20 text-cyan-500' : 'bg-white/5 text-[var(--text-muted)]'}`}
-                    >
-                        {autoSpeak ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-                    </button>
-                    {view === 'interview' && (
-                        <button
-                            onClick={handleEndSession}
-                            className="bg-red-500/20 text-red-400 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-500/30"
-                        >
-                            End Session
-                        </button>
-                    )}
-                </div>
-            </nav>
-
-            <main className="max-w-7xl mx-auto p-6 flex flex-col gap-6 min-h-[calc(100vh-80px)]">
-                {isJourneyMode && <JourneyProgressBar journeyStep={journeyStep} journeyModesList={journeyModesList} />}
-
-                {/* SETUP VIEW */}
-                {view === 'setup' && (
-                    <SetupPanel
-                        mode={mode} setMode={setMode} setView={setView}
-                        examCode={examCode} setExamCode={setExamCode}
-                        registrationNumber={registrationNumber} setRegistrationNumber={setRegistrationNumber}
-                        isJoiningExam={isJoiningExam} handleJoinExam={handleJoinExam} examData={examData}
-                        totalQuestionsConfig={totalQuestionsConfig} setTotalQuestionsConfig={setTotalQuestionsConfig}
-                        targetRole={targetRole} setTargetRole={setTargetRole}
-                        targetCompany={targetCompany} setTargetCompany={setTargetCompany}
-                        selectedVoiceURI={selectedVoiceURI} setSelectedVoiceURI={setSelectedVoiceURI}
-                        availableVoices={availableVoices}
-                        resumeFile={resumeFile} setResumeFile={setResumeFile}
-                        resumeText={resumeText} setResumeText={setResumeText}
-                        startInterview={startInterview} startJourney={startJourney} isLoading={isLoading}
                     />
                 )}
 
-                {/* INTERVIEW VIEW */}
-                {view === 'interview' && (
-                    <InterviewChat
-                        messages={messages}
-                        input={input} setInput={setInput}
-                        sendMessage={handleSendMessage}
-                        handleKeyDown={handleKeyDown}
-                        isLoading={isLoading}
-                        mode={mode}
-                        isSpeaking={isSpeaking}
-                        currentSpeaker={currentSpeaker}
-                        targetRole={targetRole}
-                        isListening={isListening}
-                        toggleListening={toggleListening}
-                        cameraEnabled={cameraEnabled}
-                        videoRef={videoRef}
-                        vocalVolume={vocalVolume}
-                        elapsedTime={elapsedTime}
-                        wpm={wpm}
-                        fillerWordCount={fillerWordCount}
-                        currentQuestionNum={currentQuestionNum}
-                        totalQuestionsConfig={totalQuestionsConfig}
+                {/* Dashboard View */}
+                {!roomType && activeTab === 'dashboard' && (
+                    <InterviewDashboard
+                        user={user}
+                        dashboardData={dashboardData}
+                        onStartNewInterview={(type) => {
+                            if (type === 'specific-job') setRoomType('wizard');
+                            else handleLaunchInterview(type === 'skill-practice' ? 'technical' : 'behavioral');
+                        }}
+                        onSelectQuickAction={(action) => {
+                            if (action === 'aria') handleLaunchInterview('full-mock');
+                            else if (action === 'technical') setRoomType('technical');
+                            else if (action === 'behavioral') handleLaunchInterview('behavioral');
+                            else if (action === 'gd') setRoomType('gd');
+                        }}
+                        onOpenATS={() => setActiveTab('ats')}
+                        onOpenQuestionBank={() => setActiveTab('question-bank')}
+                        onOpenHistory={() => setActiveTab('interviews')}
+                        onOpenReport={() => setActiveTab('reports')}
                     />
                 )}
 
-                {/* REPORT VIEW */}
-                {view === 'report' && sessionReport && (
-                    <ReportView
-                        sessionReport={sessionReport}
-                        isJourneyMode={isJourneyMode}
-                        journeyStep={journeyStep}
-                        nextJourneyStep={nextJourneyStep}
-                        resetSessionState={resetSessionState}
-                        setMode={setMode}
-                        setView={setView}
+                {/* Question Bank View */}
+                {!roomType && activeTab === 'question-bank' && (
+                    <QuestionBankView
+                        onStartPractice={(category, title) => {
+                            handleLaunchInterview('technical');
+                        }}
                     />
                 )}
 
-                {/* ATS CHECKER VIEW */}
-                {view === 'ats-checker' && (
-                    <ATSChecker
-                        atsFile={atsFile} setAtsFile={setAtsFile}
-                        atsJobDescription={atsJobDescription} setAtsJobDescription={setAtsJobDescription}
-                        atsResult={atsResult}
-                        isCheckingAts={isCheckingAts}
-                        checkATS={checkATS}
-                        isJourneyMode={isJourneyMode}
-                        nextJourneyStep={nextJourneyStep}
+                {/* My Interviews (History) View */}
+                {!roomType && activeTab === 'interviews' && (
+                    <MyInterviewsView
+                        onSelectSession={(sess) => {
+                            setActiveTab('reports');
+                        }}
                     />
                 )}
 
-                {/* JOURNEY FINAL REPORT */}
-                {view === 'journey-report' && (
-                    <JourneyFinalReport
-                        journeyReports={journeyReports}
-                        resetSessionState={resetSessionState}
-                    />
+                {/* Resume & ATS View */}
+                {!roomType && activeTab === 'ats' && (
+                    <div className="p-6 md:p-8 flex-1">
+                        <ATSChecker
+                            atsFile={atsFile}
+                            setAtsFile={setAtsFile}
+                            atsJobDescription={atsJobDescription}
+                            setAtsJobDescription={setAtsJobDescription}
+                            atsResult={atsResult}
+                            isCheckingAts={isCheckingAts}
+                            checkATS={checkATS}
+                        />
+                    </div>
                 )}
 
-                {/* HISTORY VIEW */}
-                {view === 'history' && (
-                    <HistoryView
-                        interviewHistory={interviewHistory}
-                        viewTranscript={viewTranscript}
+                {/* Reports View */}
+                {!roomType && activeTab === 'reports' && (
+                    <div className="p-6 md:p-8 flex-1">
+                        <ReportView
+                            sessionReport={sessionReport || {
+                                overallScore: 78,
+                                targetRole: 'Backend Developer',
+                                targetCompany: 'Google',
+                                mode: 'technical'
+                            }}
+                            resetSessionState={() => setActiveTab('dashboard')}
+                            setMode={setMode}
+                            setView={setView}
+                        />
+                    </div>
+                )}
+
+                {/* Practice Tab View */}
+                {!roomType && activeTab === 'practice' && (
+                    <GuidedInterviewWizard
+                        onCancel={() => setActiveTab('dashboard')}
+                        onLaunchInterview={handleLaunchInterview}
+                        onJoinExam={(code, reg) => {
+                            setExamCode(code);
+                            setRegistrationNumber(reg);
+                            handleJoinExam();
+                        }}
                     />
                 )}
-            </main>
+            </div>
         </div>
     );
 }
