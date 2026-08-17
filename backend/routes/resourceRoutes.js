@@ -27,6 +27,13 @@ const upload = multer({
 // ================= Standard Group Resources =================
 // router.get('/group/:groupId', resourceController.getGroupResources);
 
+// ================= REDESIGNED STUDY RESOURCE HUB ROUTES =================
+router.get('/hub', resourceController.getHubOverview);
+router.get('/course/:courseId', resourceController.getCourseDetails);
+router.post('/save-toggle', resourceController.toggleSaveResource);
+router.post('/ask-ai', resourceController.askAIAboutResource);
+router.post('/exam-prep', resourceController.generateExamPack);
+
 // ================= Folder Management =================
 router.post('/folders', resourceController.createFolder);
 router.get('/folders', resourceController.getFolders);
@@ -41,7 +48,7 @@ router.delete('/:resourceId', resourceController.deleteResource);
 // ================= AI Features =================
 router.post('/generate-notes', resourceController.generateNotes);
 router.post('/explain', resourceController.explainConcept);
-router.post('/search-youtube', resourceController.searchYoutube);
 router.post('/generate-flashcards', resourceController.generateFlashcards);
 
 module.exports = router;
+

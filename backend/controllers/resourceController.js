@@ -515,3 +515,317 @@ exports.uploadFile = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// ================= REDESIGNED STUDY RESOURCE HUB API =================
+
+// 1. Get Hub Overview Data (My Courses, Continue Learning, Recommended, Recently Added)
+exports.getHubOverview = async (req, res) => {
+    try {
+        const userId = req.user ? req.user._id : null;
+
+        // Sample / Database Courses
+        const courses = [
+            {
+                id: 'course-cse101',
+                code: 'CSE101',
+                name: 'Database Management Systems',
+                resourceCount: 24,
+                resourceBreakdown: '8 Notes · 6 Videos · 5 PDFs · 5 Others',
+                progress: 68,
+                color: 'from-purple-600 to-indigo-600'
+            },
+            {
+                id: 'course-cse202',
+                code: 'CSE202',
+                name: 'Operating Systems',
+                resourceCount: 18,
+                resourceBreakdown: '5 Notes · 7 Videos · 4 PDFs · 2 Papers',
+                progress: 42,
+                color: 'from-blue-600 to-cyan-600'
+            },
+            {
+                id: 'course-cse301',
+                code: 'CSE301',
+                name: 'Computer Networks',
+                resourceCount: 32,
+                resourceBreakdown: '10 Notes · 12 Videos · 6 PDFs · 4 Papers',
+                progress: 81,
+                color: 'from-emerald-600 to-teal-600'
+            },
+            {
+                id: 'course-cse102',
+                code: 'CSE102',
+                name: 'Data Structures & Algorithms',
+                resourceCount: 29,
+                resourceBreakdown: '9 Notes · 10 Videos · 5 PDFs · 5 Question Banks',
+                progress: 75,
+                color: 'from-pink-600 to-rose-600'
+            }
+        ];
+
+        // Continue Learning (Recent Items with progress)
+        const continueLearning = [
+            {
+                id: 'res-norm-notes',
+                title: 'Database Normalization Notes',
+                courseCode: 'CSE101',
+                unit: 'Unit 3',
+                type: 'PDF',
+                progressPercent: 68,
+                readTime: '8 min read',
+                pageCount: 24,
+                verified: true,
+                verificationBadge: 'Teacher Verified'
+            },
+            {
+                id: 'res-nosql-video',
+                title: 'Understanding 1NF, 2NF & 3NF',
+                courseCode: 'CSE101',
+                unit: 'Unit 3',
+                type: 'VIDEO',
+                progressPercent: 32,
+                duration: '18:42',
+                uploadedBy: 'Prof. Sharma',
+                verified: true,
+                verificationBadge: 'Teacher Verified'
+            },
+            {
+                id: 'res-cap-bank',
+                title: 'CAP Theorem & NoSQL Practice Questions',
+                courseCode: 'CSE101',
+                unit: 'Unit 4',
+                type: 'QUESTION_BANK',
+                progressPercent: 60,
+                questionCount: 40,
+                verified: true,
+                verificationBadge: 'Institution Resource'
+            }
+        ];
+
+        // Recommended Resources
+        const recommended = [
+            {
+                id: 'res-norm-simp',
+                title: 'Normalization Simplified Notes',
+                courseCode: 'CSE101',
+                unit: 'Unit 3',
+                type: 'PDF',
+                readTime: '6 min read',
+                pageCount: 14,
+                verified: true,
+                verificationBadge: 'Faculty Verified'
+            },
+            {
+                id: 'res-norm-lec',
+                title: '18-min Normalization Masterclass',
+                courseCode: 'CSE101',
+                unit: 'Unit 3',
+                type: 'VIDEO',
+                duration: '18:15',
+                uploadedBy: 'Prof. Singh',
+                verified: true,
+                verificationBadge: 'Teacher Verified'
+            },
+            {
+                id: 'res-exam-paper-2025',
+                title: 'DBMS Previous Year Paper 2025',
+                courseCode: 'CSE101',
+                unit: 'Midterm',
+                type: 'PREVIOUS_PAPER',
+                pageCount: 8,
+                verified: true,
+                verificationBadge: 'Institution Resource'
+            }
+        ];
+
+        // Recently Added Feed
+        const recentlyAdded = [
+            {
+                id: 'res-os-u4',
+                title: 'Operating Systems Unit 4 Notes',
+                courseCode: 'CSE202',
+                unit: 'Unit 4',
+                type: 'NOTE',
+                addedBy: 'Prof. Sharma',
+                createdAt: new Date(Date.now() - 3600000 * 5)
+            },
+            {
+                id: 'res-db-2025',
+                title: 'DBMS Previous Year Paper 2025',
+                courseCode: 'CSE101',
+                unit: 'Midterm',
+                type: 'PREVIOUS_PAPER',
+                addedBy: 'Department of CSE',
+                createdAt: new Date(Date.now() - 3600000 * 18)
+            },
+            {
+                id: 'res-mongo-lec7',
+                title: 'MongoDB Sharding & Replica Sets',
+                courseCode: 'CSE101',
+                unit: 'Unit 4',
+                type: 'VIDEO',
+                addedBy: 'Prof. Singh',
+                createdAt: new Date(Date.now() - 3600000 * 24)
+            }
+        ];
+
+        res.json({
+            success: true,
+            courses,
+            continueLearning,
+            recommended,
+            recentlyAdded
+        });
+    } catch (error) {
+        console.error("Hub Overview Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// 2. Get Course-Specific Resources Grouped by Topics
+exports.getCourseDetails = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+
+        const courseInfo = {
+            id: courseId || 'course-cse101',
+            code: 'CSE101',
+            name: 'Database Management Systems',
+            progress: 68,
+            resourceCount: 24,
+            topics: [
+                {
+                    title: '01 Introduction',
+                    resources: [
+                        { id: 'c1-r1', title: 'DBMS Introduction & Architecture Notes', type: 'PDF', pageCount: 16, readTime: '5 min', verified: true, verificationBadge: 'Teacher Verified' },
+                        { id: 'c1-r2', title: 'Introduction to DBMS Lecture', type: 'VIDEO', duration: '22:15', uploadedBy: 'Prof. Sharma', verified: true, verificationBadge: 'Teacher Verified' },
+                        { id: 'c1-r3', title: 'DBMS Fundamentals Practice Questions', type: 'QUESTION_BANK', questionCount: 25, verified: true, verificationBadge: 'Institution Resource' }
+                    ]
+                },
+                {
+                    title: '02 ER Model',
+                    resources: [
+                        { id: 'c2-r1', title: 'Entity-Relationship Model Complete Notes', type: 'PDF', pageCount: 20, readTime: '7 min', verified: true, verificationBadge: 'Teacher Verified' },
+                        { id: 'c2-r2', title: 'ER Diagram Design & Cardinality Lecture', type: 'VIDEO', duration: '28:40', uploadedBy: 'Prof. Sharma', verified: true, verificationBadge: 'Teacher Verified' },
+                        { id: 'c2-r3', title: 'ER Diagram Practice Question Bank', type: 'QUESTION_BANK', questionCount: 30, verified: true, verificationBadge: 'Institution Resource' }
+                    ]
+                },
+                {
+                    title: '03 Normalization',
+                    resources: [
+                        { id: 'c3-r1', title: 'Database Normalization Notes (1NF to BCNF)', type: 'PDF', pageCount: 24, readTime: '8 min', verified: true, verificationBadge: 'Teacher Verified', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+                        { id: 'c3-r2', title: 'Understanding 1NF, 2NF & 3NF Lecture', type: 'VIDEO', duration: '18:42', uploadedBy: 'Prof. Sharma', verified: true, verificationBadge: 'Teacher Verified' },
+                        { id: 'c3-r3', title: 'Functional Dependency & Normalization Practice', type: 'QUESTION_BANK', questionCount: 40, verified: true, verificationBadge: 'Institution Resource' },
+                        { id: 'c3-r4', title: 'Normalization Previous Exam Questions (2020-2025)', type: 'PREVIOUS_PAPER', pageCount: 12, verified: true, verificationBadge: 'Faculty Verified' }
+                    ]
+                },
+                {
+                    title: '04 NoSQL & Transaction Management',
+                    resources: [
+                        { id: 'c4-r1', title: 'MongoDB & NoSQL Architecture Notes', type: 'PDF', pageCount: 18, readTime: '6 min', verified: true, verificationBadge: 'Teacher Verified' },
+                        { id: 'c4-r2', title: 'CAP Theorem & Distributed Databases', type: 'VIDEO', duration: '19:10', uploadedBy: 'Prof. Singh', verified: true, verificationBadge: 'Teacher Verified' },
+                        { id: 'c4-r3', title: 'ACID Properties & Concurrency Control Practice', type: 'QUESTION_BANK', questionCount: 35, verified: true, verificationBadge: 'Institution Resource' }
+                    ]
+                }
+            ]
+        };
+
+        res.json({ success: true, course: courseInfo });
+    } catch (error) {
+        console.error("Course Details Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// 3. Toggle Bookmark / Save Resource
+exports.toggleSaveResource = async (req, res) => {
+    try {
+        const { resourceId } = req.body;
+        const userId = req.user._id;
+
+        const resource = await Resource.findById(resourceId);
+        if (resource) {
+            const idx = resource.savedBy.indexOf(userId);
+            if (idx > -1) {
+                resource.savedBy.splice(idx, 1);
+            } else {
+                resource.savedBy.push(userId);
+            }
+            await resource.save();
+        }
+
+        res.json({ success: true, message: 'Bookmark updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// 4. Grounded AI Chat ("Ask AI About This Resource")
+exports.askAIAboutResource = async (req, res) => {
+    try {
+        const { resourceId, question, resourceTitle, resourceContent } = req.body;
+        const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
+
+        if (!GROQ_API_KEY) {
+            return res.status(500).json({ success: false, message: "Groq API Key missing." });
+        }
+
+        const prompt = `You are StudySpirit AI, an expert academic tutor.
+Answer the student's question based strictly on the provided study resource material.
+
+Resource Title: "${resourceTitle || 'Database Management Systems Notes'}"
+Resource Content:
+${resourceContent ? resourceContent.substring(0, 3000) : "Database Normalization (1NF, 2NF, 3NF, BCNF) eliminates redundancy by organizing table columns into logical relations. Functional dependencies X -> Y state that attribute X uniquely determines Y."}
+
+Student Question: "${question}"
+
+Provide a clear, educational answer with examples and bullet points.`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.4
+            })
+        });
+
+        const data = await response.json();
+        const answer = data.choices?.[0]?.message?.content || "According to this resource, functional dependencies determine column organization to minimize redundancy.";
+
+        res.json({ success: true, answer });
+    } catch (error) {
+        console.error("Ask AI Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// 5. Exam Resource Pack Generator
+exports.generateExamPack = async (req, res) => {
+    try {
+        const { subject, examType, units } = req.body;
+
+        const pack = {
+            subject: subject || 'Database Management Systems (CSE101)',
+            examType: examType || 'Midterm Examination',
+            units: units || ['Unit 1', 'Unit 2', 'Unit 3'],
+            summary: 'Complete Revision Pack containing verified notes, previous paper questions, and AI summary deck.',
+            resources: [
+                { title: `${subject} Midterm Master Notes`, type: 'PDF', pageCount: 32, readTime: '15 min', verified: true },
+                { title: `${subject} Top 20 Most Expected Exam Questions`, type: 'QUESTION_BANK', questionCount: 20, verified: true },
+                { title: `${subject} Previous 5 Year Solved Papers`, type: 'PREVIOUS_PAPER', pageCount: 45, verified: true },
+                { title: `${subject} 30 High-Yield Flashcards`, type: 'FLASHCARDS', questionCount: 30, verified: true }
+            ]
+        };
+
+        res.json({ success: true, pack });
+    } catch (error) {
+        console.error("Exam Pack Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+

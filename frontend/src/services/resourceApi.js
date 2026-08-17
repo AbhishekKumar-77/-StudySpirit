@@ -7,6 +7,13 @@ const api = axios.create({
 });
 
 const resourceApi = {
+    // Redesigned Study Resource Hub
+    getHubOverview: () => api.get('/hub').then(res => res.data),
+    getCourseDetails: (courseId) => api.get(`/course/${courseId}`).then(res => res.data),
+    toggleSaveResource: (resourceId) => api.post('/save-toggle', { resourceId }).then(res => res.data),
+    askAIAboutResource: (data) => api.post('/ask-ai', data).then(res => res.data),
+    generateExamPack: (data) => api.post('/exam-prep', data).then(res => res.data),
+
     // Folders
     getFolders: () => api.get('/folders').then(res => res.data),
     createFolder: (data) => api.post('/folders', data).then(res => res.data),
@@ -22,11 +29,11 @@ const resourceApi = {
         headers: { 'Content-Type': 'multipart/form-data' }
     }).then(res => res.data),
 
-    // AI Features (Keeping existing but wrapped)
+    // Contextual AI Features
     generateNotes: (data) => api.post('/generate-notes', data).then(res => res.data),
     explainConcept: (data) => api.post('/explain', data).then(res => res.data),
-    searchYoutube: (query) => api.post('/search-youtube', { query }).then(res => res.data),
     generateFlashcards: (data) => api.post('/generate-flashcards', data).then(res => res.data)
 };
 
 export default resourceApi;
+
