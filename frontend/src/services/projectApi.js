@@ -23,84 +23,37 @@ const fetchWithAuth = async (endpoint, options = {}) => {
     }
 };
 
-// Get my projects
-export const getMyProjects = async () => {
-    return fetchWithAuth('/projects/my');
-};
-
-// Explore public projects
+// Core
+export const getMyProjects = async () => fetchWithAuth('/projects/my');
 export const exploreProjects = async (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return fetchWithAuth(`/projects/explore${query ? '?' + query : ''}`);
 };
+export const getProject = async (projectId) => fetchWithAuth(`/projects/${projectId}`);
+export const createProject = async (projectData) => fetchWithAuth('/projects', { method: 'POST', body: JSON.stringify(projectData) });
+export const updateProject = async (projectId, updates) => fetchWithAuth(`/projects/${projectId}`, { method: 'PATCH', body: JSON.stringify(updates) });
+export const deleteProject = async (projectId) => fetchWithAuth(`/projects/${projectId}`, { method: 'DELETE' });
 
-// Get single project
-export const getProject = async (projectId) => {
-    return fetchWithAuth(`/projects/${projectId}`);
-};
+// Files
+export const addFile = async (projectId, fileData) => fetchWithAuth(`/projects/${projectId}/files`, { method: 'POST', body: JSON.stringify(fileData) });
+export const deleteFile = async (projectId, filePath) => fetchWithAuth(`/projects/${projectId}/files/${encodeURIComponent(filePath)}`, { method: 'DELETE' });
 
-// Create project
-export const createProject = async (projectData) => {
-    return fetchWithAuth('/projects', {
-        method: 'POST',
-        body: JSON.stringify(projectData)
-    });
-};
+// Actions
+export const toggleStar = async (projectId) => fetchWithAuth(`/projects/${projectId}/star`, { method: 'POST' });
+export const forkProject = async (projectId) => fetchWithAuth(`/projects/${projectId}/fork`, { method: 'POST' });
+export const getUserProjects = async (userId) => fetchWithAuth(`/projects/user/${userId}`);
+export const generateReadme = async (projectId) => fetchWithAuth(`/projects/${projectId}/generate-readme`, { method: 'POST' });
 
-// Update project
-export const updateProject = async (projectId, updates) => {
-    return fetchWithAuth(`/projects/${projectId}`, {
-        method: 'PATCH',
-        body: JSON.stringify(updates)
-    });
-};
-
-// Delete project
-export const deleteProject = async (projectId) => {
-    return fetchWithAuth(`/projects/${projectId}`, {
-        method: 'DELETE'
-    });
-};
-
-// Add/Update file
-export const addFile = async (projectId, fileData) => {
-    return fetchWithAuth(`/projects/${projectId}/files`, {
-        method: 'POST',
-        body: JSON.stringify(fileData)
-    });
-};
-
-// Delete file
-export const deleteFile = async (projectId, filePath) => {
-    return fetchWithAuth(`/projects/${projectId}/files/${encodeURIComponent(filePath)}`, {
-        method: 'DELETE'
-    });
-};
-
-// Toggle star
-export const toggleStar = async (projectId) => {
-    return fetchWithAuth(`/projects/${projectId}/star`, {
-        method: 'POST'
-    });
-};
-
-// Fork project
-export const forkProject = async (projectId) => {
-    return fetchWithAuth(`/projects/${projectId}/fork`, {
-        method: 'POST'
-    });
-};
-
-// Get user's public projects
-export const getUserProjects = async (userId) => {
-    return fetchWithAuth(`/projects/user/${userId}`);
-};
-
-// Generate AI README
-export const generateReadme = async (projectId) => {
-    return fetchWithAuth(`/projects/${projectId}/generate-readme`, {
-        method: 'POST'
-    });
+// New features
+export const getProjectStats = async () => fetchWithAuth('/projects/stats');
+export const toggleFeatured = async (projectId) => fetchWithAuth(`/projects/${projectId}/featured`, { method: 'POST' });
+export const addBuildLog = async (projectId, logData) => fetchWithAuth(`/projects/${projectId}/build-log`, { method: 'POST', body: JSON.stringify(logData) });
+export const getPortfolio = async (userId) => fetchWithAuth(`/projects/portfolio/${userId}`);
+export const importGithub = async (projectId, githubUrl) => fetchWithAuth(`/projects/${projectId}/import-github`, { method: 'POST', body: JSON.stringify({ githubUrl }) });
+export const generateProjectSummary = async (projectId) => fetchWithAuth(`/projects/${projectId}/ai-summary`, { method: 'POST' });
+export const searchProjects = async (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return fetchWithAuth(`/projects/search${query ? '?' + query : ''}`);
 };
 
 export default {
@@ -115,5 +68,12 @@ export default {
     toggleStar,
     forkProject,
     getUserProjects,
-    generateReadme
+    generateReadme,
+    getProjectStats,
+    toggleFeatured,
+    addBuildLog,
+    getPortfolio,
+    importGithub,
+    generateProjectSummary,
+    searchProjects
 };

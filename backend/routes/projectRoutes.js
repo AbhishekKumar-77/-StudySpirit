@@ -2,38 +2,35 @@ const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/projectController');
 
-// My projects
+// ── NEW SPECIALIZED ENDPOINTS (placed before :projectId parameters) ──
+router.get('/stats', projectController.getProjectStats);
+router.get('/search', projectController.searchProjects);
+router.get('/portfolio/:userId', projectController.getPortfolio);
+
+// ── CORE ENDPOINTS ──
 router.get('/my', projectController.getMyProjects);
-
-// Explore public projects
 router.get('/explore', projectController.exploreProjects);
-
-// Get single project
-router.get('/:projectId', projectController.getProject);
+router.get('/user/:userId', projectController.getUserProjects);
 
 // Create new project
 router.post('/', projectController.createProject);
 
-// Update project
+// Single project operations
+router.get('/:projectId', projectController.getProject);
 router.patch('/:projectId', projectController.updateProject);
-
-// Delete project
 router.delete('/:projectId', projectController.deleteProject);
 
 // File operations
 router.post('/:projectId/files', projectController.addFile);
 router.delete('/:projectId/files/:filePath', projectController.deleteFile);
 
-// Star/Unstar
+// Interactions & Actions
 router.post('/:projectId/star', projectController.toggleStar);
-
-// Fork
 router.post('/:projectId/fork', projectController.forkProject);
-
-// AI README Generator
+router.post('/:projectId/featured', projectController.toggleFeatured);
+router.post('/:projectId/build-log', projectController.addBuildLog);
+router.post('/:projectId/import-github', projectController.importGithub);
 router.post('/:projectId/generate-readme', projectController.generateReadme);
-
-// Get user's public projects
-router.get('/user/:userId', projectController.getUserProjects);
+router.post('/:projectId/ai-summary', projectController.generateProjectSummary);
 
 module.exports = router;
