@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import projectApi from '../services/projectApi';
 
 import ProjectLabSidebar from '../components/projectlab/ProjectLabSidebar';
+import ProjectLabHeader from '../components/projectlab/ProjectLabHeader';
 import ProjectLabOverview from '../components/projectlab/ProjectLabOverview';
 import ProjectCard from '../components/projectlab/ProjectCard';
 import ProjectBuilder from '../components/projectlab/ProjectBuilder';
@@ -17,10 +18,11 @@ export default function ProjectLab() {
     const { user } = useApp();
     const navigate = useNavigate();
 
-    const [activeTab, setActiveTab] = useState('overview'); // overview | my-projects | build-logs | portfolio | explore
+    const [activeTab, setActiveTab] = useState('overview');
     const [projects, setProjects] = useState([]);
     const [stats, setStats] = useState({});
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Full-page builder mode
     const [showBuilder, setShowBuilder] = useState(false);
@@ -77,7 +79,6 @@ export default function ProjectLab() {
             const res = await projectApi.importGithub('preview', importGithubUrl.trim());
             setShowGithubModal(false);
             setImportGithubUrl('');
-            // Open builder with pre-filled github data
             setEditingProject({
                 name: res.meta?.name || 'GitHub Imported Project',
                 description: res.meta?.description || '',
@@ -92,7 +93,6 @@ export default function ProjectLab() {
         }
     };
 
-    // If builder mode is active, render full-page ProjectBuilder
     if (showBuilder) {
         return (
             <ProjectBuilder
@@ -109,99 +109,116 @@ export default function ProjectLab() {
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
-            {/* Left Fixed Navigation Sidebar */}
+            {/* Left Sidebar */}
             <ProjectLabSidebar
                 activeTab={activeTab}
-                setActiveTab={setActiveTab}
+                setActiveTab={(tab) => {
+                    if (tab === 'project-builder') {
+                        setEditingProject(null);
+                        setShowBuilder(true);
+                    } else {
+                        setActiveTab(tab);
+                    }
+                }}
                 onOpenBuilder={() => { setEditingProject(null); setShowBuilder(true); }}
                 onOpenGithubImport={() => setShowGithubModal(true)}
             />
 
-            {/* Main Content Area */}
-            <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto overflow-y-auto">
-                {loading ? (
-                    <div className="flex items-center justify-center h-96">
-                        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-                    </div>
-                ) : (
-                    <>
-                        {activeTab === 'overview' && (
-                            <ProjectLabOverview
-                                user={user}
-                                stats={stats}
-                                projects={projects}
-                                onOpenBuilder={() => { setEditingProject(null); setShowBuilder(true); }}
-                                onOpenGithubImport={() => setShowGithubModal(true)}
-                                onToggleFeatured={handleToggleFeatured}
-                                onDeleteProject={handleDeleteProject}
-                                onNavigateTab={setActiveTab}
-                            />
-                        )}
+            {/* Right Main Container (Header + Dashboard) */}
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+                {/* Global Search & User Profile Header Bar */}
+                <ProjectLabHeader
+                    user={user}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                />
 
-                        {activeTab === 'my-projects' && (
-                            <div className="space-y-6">
-                                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex items-center justify-between">
-                                    <div>
-                                        <h1 className="text-xl font-bold text-slate-900">My Workspace Projects</h1>
-                                        <p className="text-xs text-slate-500">Manage, edit, and organize all your engineering projects.</p>
-                                    </div>
-                                    <button
-                                        onClick={() => { setEditingProject(null); setShowBuilder(true); }}
-                                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm"
-                                    >
-                                        <Plus className="w-4 h-4" /> New Project
-                                    </button>
-                                </div>
+                {/* Tab View Container */}
+                <main className="p-6 md:p-8 max-w-[1400px] w-full mx-auto">
+                    {loading ? (
+                        <div className="flex items-center justify-center h-96">
+                            <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+                        </div>
+                    ) : (
+                        <>
+                            {activeTab === 'overview' && (
+                                <ProjectLabOverview
+                                    user={user}
+                                    stats={stats}
+                                    projects={projects}
+                                    onOpenBuilder={() => { setEditingProject(null); setShowBuilder(true); }}
+                                    onOpenGithubImport={() => setShowGithubModal(true)}
+                                    onToggleFeatured={handleToggleFeatured}
+                                    onDeleteProject={handleDeleteProject}
+                                    onNavigateTab={setActiveTab}
+                                />
+                            )}
 
-                                {projects.length > 0 ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {projects.map(project => (
-                                            <ProjectCard
-                                                key={project._id}
-                                                project={project}
-                                                isOwner={true}
-                                                onToggleFeatured={handleToggleFeatured}
-                                                onDelete={handleDeleteProject}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="p-12 text-center bg-white border border-slate-200 rounded-2xl">
-                                        <FolderGit2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                                        <h3 className="font-bold text-slate-800 text-sm">No Projects Created Yet</h3>
-                                        <p className="text-xs text-slate-500 mb-4">Start documenting your first project to build your verified portfolio.</p>
+                            {activeTab === 'my-projects' && (
+                                <div className="space-y-6">
+                                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs flex items-center justify-between">
+                                        <div>
+                                            <h1 className="text-xl font-bold text-slate-900">My Projects</h1>
+                                            <p className="text-xs text-slate-500">Manage, edit, and organize your technical projects.</p>
+                                        </div>
                                         <button
                                             onClick={() => { setEditingProject(null); setShowBuilder(true); }}
-                                            className="px-5 py-2.5 bg-emerald-600 text-white font-semibold text-xs rounded-xl"
+                                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-2xs"
                                         >
-                                            + Create New Project
+                                            <Plus className="w-4 h-4" /> New Project
                                         </button>
                                     </div>
-                                )}
-                            </div>
-                        )}
 
-                        {activeTab === 'build-logs' && (
-                            <BuildLogsPanel
-                                projects={projects}
-                                onRefresh={loadData}
-                            />
-                        )}
+                                    {projects.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {projects.map(project => (
+                                                <ProjectCard
+                                                    key={project._id}
+                                                    project={project}
+                                                    isOwner={true}
+                                                    onToggleFeatured={handleToggleFeatured}
+                                                    onDelete={handleDeleteProject}
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-12 text-center bg-white border border-slate-200 rounded-2xl">
+                                            <FolderGit2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                                            <h3 className="font-bold text-slate-800 text-sm">No Projects Created Yet</h3>
+                                            <p className="text-xs text-slate-500 mb-4">Start documenting your first project to build your verified portfolio.</p>
+                                            <button
+                                                onClick={() => { setEditingProject(null); setShowBuilder(true); }}
+                                                className="px-5 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl"
+                                            >
+                                                + Create New Project
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                        {activeTab === 'portfolio' && (
-                            <PortfolioPanel
-                                user={user}
-                                projects={projects}
-                                onToggleFeatured={handleToggleFeatured}
-                            />
-                        )}
+                            {activeTab === 'build-logs' && (
+                                <BuildLogsPanel
+                                    projects={projects}
+                                    onRefresh={loadData}
+                                />
+                            )}
 
-                        {activeTab === 'explore' && (
-                            <ExplorePanel />
-                        )}
-                    </>
-                )}
-            </main>
+                            {activeTab === 'portfolio' && (
+                                <PortfolioPanel
+                                    user={user}
+                                    projects={projects}
+                                    onToggleFeatured={handleToggleFeatured}
+                                />
+                            )}
+
+                            {activeTab === 'explore' && (
+                                <ExplorePanel />
+                            )}
+                        </>
+                    )}
+                </main>
+            </div>
 
             {/* GitHub Import Modal */}
             {showGithubModal && (
@@ -242,7 +259,7 @@ export default function ProjectLab() {
                             <button
                                 onClick={handleGithubImportSubmit}
                                 disabled={importing || !importGithubUrl.trim()}
-                                className="px-5 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5"
+                                className="px-5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5"
                             >
                                 {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Fetch Repository'}
                             </button>
