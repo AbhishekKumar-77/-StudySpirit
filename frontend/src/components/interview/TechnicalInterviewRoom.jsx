@@ -12,11 +12,16 @@ export default function TechnicalInterviewRoom({
     onBack
 }) {
     const navigate = useNavigate();
-    const [selectedTab, setSelectedTab] = useState('dsa'); // 'dsa', 'backend', 'system-design', 'cs-fundamentals'
-    const [language, setLanguage] = useState('javascript');
-    
-    // DSA Code State
-    const [code, setCode] = useState(`// Function to find two numbers that sum up to target
+    const problemData = {
+        dsa: {
+            title: 'Two Sum - Index Search',
+            difficulty: 'Easy',
+            category: 'Arrays & Hash Table',
+            description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume each input has exactly one solution.',
+            inputExample: 'nums = [2,7,11,15], target = 9',
+            outputExample: '[0, 1]',
+            explanation: 'Because nums[0] + nums[1] == 9, we return [0, 1].',
+            initialCode: `// Function to find two numbers that sum up to target
 function twoSum(nums, target) {
     const map = new Map();
     for (let i = 0; i < nums.length; i++) {
@@ -27,30 +32,104 @@ function twoSum(nums, target) {
         map.set(nums[i], i);
     }
     return [];
-}`);
+}`,
+            probeQuestion: "Why did you choose a Hash Map for this approach? What is the Time and Space Complexity?",
+            testCases: [
+                { id: 1, name: 'Test Case 1: [2,7,11,15], target = 9', passed: true, output: '[0, 1]', expected: '[0, 1]' },
+                { id: 2, name: 'Test Case 2: [3,2,4], target = 6', passed: true, output: '[1, 2]', expected: '[1, 2]' },
+                { id: 3, name: 'Test Case 3: [3,3], target = 6', passed: true, output: '[0, 1]', expected: '[0, 1]' }
+            ]
+        },
+        backend: {
+            title: 'Design a Sliding Window Rate Limiter Middleware',
+            difficulty: 'Medium',
+            category: 'Express & Redis Middleware',
+            description: 'Implement a rate limiter function that restricts IP addresses to a maximum of 100 requests per minute using Redis sliding log technique.',
+            inputExample: 'ip = "192.168.1.1", limit = 100, windowSeconds = 60',
+            outputExample: '{ allowed: true, remaining: 99 }',
+            explanation: 'Removes keys older than (now - 60s) from sorted set, then counts remaining elements.',
+            initialCode: `// Sliding Window Rate Limiter in Node.js
+async function isRateLimited(redis, userIp) {
+    const now = Date.now();
+    const windowStart = now - 60000; // 1 minute window
+    
+    // Remove old logs
+    await redis.zremrangebyscore(userIp, 0, windowStart);
+    const reqCount = await redis.zcard(userIp);
+    
+    if (reqCount >= 100) return { allowed: false };
+    
+    await redis.zadd(userIp, now, now);
+    return { allowed: true, remaining: 100 - reqCount - 1 };
+}`,
+            probeQuestion: "How would this sliding log algorithm handle 50,000 requests per second across multiple microservice replicas?",
+            testCases: [
+                { id: 1, name: 'Test Case 1: 50 requests under 1 min', passed: true, output: '{ allowed: true }', expected: '{ allowed: true }' },
+                { id: 2, name: 'Test Case 2: 101st request blocked', passed: true, output: '{ allowed: false }', expected: '{ allowed: false }' }
+            ]
+        },
+        'system-design': {
+            title: 'Design a Distributed URL Shortener (TinyURL)',
+            difficulty: 'Medium',
+            category: 'System Design & Scalability',
+            description: 'Design a scalable URL shortening service like TinyURL handling 100M new URLs created per month and 1B redirects per month.',
+            inputExample: 'Long URL: "https://studyspirit.in/career/dashboard"',
+            outputExample: 'Short URL: "https://sp.in/aB9xK"',
+            explanation: 'Uses Base62 encoding on auto-incrementing ID or MD5 hash prefix with DB indexing.',
+            initialCode: `// Base62 Short Code Generator
+const BASE62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    const [testResults, setTestResults] = useState(null);
-    const [isRunning, setIsRunning] = useState(false);
-    const [probeResponse, setProbeResponse] = useState('');
-    const [ariaProbeQuestion, setAriaProbeQuestion] = useState(
-        "Why did you choose a Hash Map for this approach? What is the Time and Space Complexity?"
-    );
+function encodeId(num) {
+    let sb = [];
+    while (num > 0) {
+        sb.push(BASE62[num % 62]);
+        num = Math.floor(num / 62);
+    }
+    return sb.reverse().join('');
+}`,
+            probeQuestion: "How do you prevent Base62 collision when multiple database nodes generate IDs concurrently?",
+            testCases: [
+                { id: 1, name: 'Encode ID: 125', passed: true, output: '"cb"', expected: '"cb"' },
+                { id: 2, name: 'Encode ID: 10000000', passed: true, output: '"fEM2"', expected: '"fEM2"' }
+            ]
+        },
+        'cs-fundamentals': {
+            title: 'Explain Process vs Thread & Deadlock Conditions',
+            difficulty: 'Medium',
+            category: 'Operating Systems & Concurrency',
+            description: 'Explain the difference between a Process and a Thread in operating systems. List Coffman\'s four necessary conditions for Deadlock.',
+            inputExample: 'Topic: OS Concurrency & Deadlocks',
+            outputExample: 'Conditions: Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait.',
+            explanation: 'Deadlock can only occur if all 4 Coffman conditions hold simultaneously.',
+            initialCode: `// Pseudo-code demonstrating deadlock scenario
+function acquireLocks(lockA, lockB) {
+    lockA.acquire(); // Thread 1 holds A, waits for B
+    // ...
+    lockB.acquire();
+    
+    lockB.release();
+    lockA.release();
+}`,
+            probeQuestion: "Which deadlock prevention strategy would you apply to break the Circular Wait condition in a distributed transaction?",
+            testCases: [
+                { id: 1, name: 'Concept Check: Coffman Conditions', passed: true, output: '4/4 Verified', expected: '4/4 Verified' }
+            ]
+        }
+    };
+
+    const currentProblem = problemData[selectedTab] || problemData.dsa;
 
     const handleRunTests = () => {
         setIsRunning(true);
         setTimeout(() => {
             setIsRunning(false);
-            setTestResults([
-                { id: 1, name: 'Test Case 1: [2,7,11,15], target = 9', passed: true, output: '[0, 1]', expected: '[0, 1]' },
-                { id: 2, name: 'Test Case 2: [3,2,4], target = 6', passed: true, output: '[1, 2]', expected: '[1, 2]' },
-                { id: 3, name: 'Test Case 3: [3,3], target = 6', passed: true, output: '[0, 1]', expected: '[0, 1]' }
-            ]);
-        }, 1200);
+            setTestResults(currentProblem.testCases);
+        }, 1000);
     };
 
     const handleAnswerProbe = () => {
         if (!probeResponse.trim()) return;
-        setAriaProbeQuestion("Excellent explanation! O(n) time and O(n) space. How would your code handle 10 million incoming elements at scale?");
+        setAriaProbeQuestion("Excellent technical reasoning! How would you write unit tests to handle edge cases like null or malformed inputs?");
         setProbeResponse('');
     };
 
@@ -90,10 +169,10 @@ function twoSum(nums, target) {
             </header>
 
             {/* Category Tabs */}
-            <div className="px-6 py-3 border-b border-slate-800/80 bg-slate-900/50 flex items-center gap-3">
+            <div className="px-6 py-3 border-b border-slate-800/80 bg-slate-900/50 flex items-center gap-3 overflow-x-auto">
                 <button
-                    onClick={() => setSelectedTab('dsa')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                    onClick={() => { setSelectedTab('dsa'); setCode(problemData.dsa.initialCode); setTestResults(null); setAriaProbeQuestion(problemData.dsa.probeQuestion); }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'dsa' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
                 >
@@ -102,8 +181,8 @@ function twoSum(nums, target) {
                 </button>
 
                 <button
-                    onClick={() => setSelectedTab('backend')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                    onClick={() => { setSelectedTab('backend'); setCode(problemData.backend.initialCode); setTestResults(null); setAriaProbeQuestion(problemData.backend.probeQuestion); }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'backend' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
                 >
@@ -112,8 +191,8 @@ function twoSum(nums, target) {
                 </button>
 
                 <button
-                    onClick={() => setSelectedTab('system-design')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                    onClick={() => { setSelectedTab('system-design'); setCode(problemData['system-design'].initialCode); setTestResults(null); setAriaProbeQuestion(problemData['system-design'].probeQuestion); }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'system-design' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
                 >
@@ -122,8 +201,8 @@ function twoSum(nums, target) {
                 </button>
 
                 <button
-                    onClick={() => setSelectedTab('cs-fundamentals')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                    onClick={() => { setSelectedTab('cs-fundamentals'); setCode(problemData['cs-fundamentals'].initialCode); setTestResults(null); setAriaProbeQuestion(problemData['cs-fundamentals'].probeQuestion); }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'cs-fundamentals' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
                 >
@@ -141,20 +220,20 @@ function twoSum(nums, target) {
                         <div>
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-800">
-                                    Easy • Two Sum
+                                    {currentProblem.difficulty} • {currentProblem.category}
                                 </span>
-                                <span className="text-xs text-slate-400">Arrays & Hash Table</span>
+                                <span className="text-xs text-slate-400">{currentProblem.category}</span>
                             </div>
 
-                            <h2 className="text-lg font-bold text-white mb-2">Two Sum - Index Search</h2>
+                            <h2 className="text-lg font-bold text-white mb-2">{currentProblem.title}</h2>
                             <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                                Given an array of integers <code className="text-blue-400 bg-slate-950 px-1.5 py-0.5 rounded">nums</code> and an integer <code className="text-blue-400 bg-slate-950 px-1.5 py-0.5 rounded">target</code>, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution.
+                                {currentProblem.description}
                             </p>
 
                             <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 text-xs font-mono space-y-1 mb-4">
-                                <p className="text-slate-400"><strong className="text-slate-200">Input:</strong> nums = [2,7,11,15], target = 9</p>
-                                <p className="text-slate-400"><strong className="text-slate-200">Output:</strong> [0,1]</p>
-                                <p className="text-slate-400"><strong className="text-slate-200">Explanation:</strong> Because nums[0] + nums[1] == 9, we return [0, 1].</p>
+                                <p className="text-slate-400"><strong className="text-slate-200">Input:</strong> {currentProblem.inputExample}</p>
+                                <p className="text-slate-400"><strong className="text-slate-200">Output:</strong> {currentProblem.outputExample}</p>
+                                <p className="text-slate-400"><strong className="text-slate-200">Explanation:</strong> {currentProblem.explanation}</p>
                             </div>
                         </div>
 
@@ -175,7 +254,7 @@ function twoSum(nums, target) {
                                     value={probeResponse}
                                     onChange={(e) => setProbeResponse(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleAnswerProbe()}
-                                    placeholder="Explain your complexity approach..."
+                                    placeholder="Explain your technical trade-offs..."
                                     className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
                                 />
                                 <button
@@ -250,7 +329,7 @@ function twoSum(nums, target) {
                             onClick={() => navigate('/codespirit')}
                             className="text-xs font-bold text-purple-400 hover:underline flex items-center gap-1"
                         >
-                            <span>Practice Weak Graph Concepts in CodeSpirit</span>
+                            <span>Practice in CodeSpirit</span>
                             <ExternalLink className="w-3.5 h-3.5" />
                         </button>
                     </div>

@@ -24,11 +24,15 @@ export default function AriaInterviewRoom({
     onEndInterview,
     onBack
 }) {
-    const [isPaused, setIsPaused] = useState(false);
-
-    // Latest question asked by Aria
-    const lastAiMessage = [...messages].reverse().find(m => m.role === 'ai')?.content ||
-        `Tell me about yourself and your experience as a ${targetRole}.`;
+    const handleTogglePause = () => {
+        if (!isPaused) {
+            if (isSpeaking) stopSpeaking && stopSpeaking();
+            if (isListening) onToggleListening && onToggleListening();
+            setIsPaused(true);
+        } else {
+            setIsPaused(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between font-sans">
@@ -69,18 +73,24 @@ export default function AriaInterviewRoom({
 
             {/* Main Center Video / Avatar Workspace */}
             <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6 justify-center">
+                {isPaused && (
+                    <div className="bg-amber-500/20 border border-amber-500/40 text-amber-300 px-4 py-2 rounded-2xl text-xs font-bold text-center animate-pulse">
+                        ⏸ Interview Session Paused. Click "Resume" below to continue.
+                    </div>
+                )}
+
                 {/* 2-Column AI & Candidate Stage */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[340px] md:h-[400px]">
                     {/* ARIA AI Avatar Box */}
                     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
                         <div className="absolute top-4 left-4 flex items-center gap-2 bg-slate-950/70 backdrop-blur-md border border-slate-800 px-3 py-1 rounded-full z-10">
-                            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                            <span className={`w-2 h-2 rounded-full ${isSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-purple-500 animate-pulse'}`} />
                             <span className="text-xs font-bold text-slate-200">ARIA</span>
                             <span className="text-[10px] text-slate-400">AI Interviewer</span>
                         </div>
 
                         <div className="w-48 h-48 md:w-56 md:h-56">
-                            <AriaAvatar isSpeaking={isSpeaking} currentSpeaker={currentSpeaker} />
+                            <AriaAvatar isSpeaking={isSpeaking && !isPaused} currentSpeaker={currentSpeaker} />
                         </div>
                     </div>
 
@@ -134,11 +144,12 @@ export default function AriaInterviewRoom({
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && onSendMessage()}
                             placeholder="Type your response or speak into the microphone..."
-                            className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                            disabled={isPaused || isLoading}
+                            className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500 disabled:opacity-50"
                         />
                         <button
                             onClick={onSendMessage}
-                            disabled={isLoading || !input.trim()}
+                            disabled={isLoading || isPaused || !input.trim()}
                             className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition"
                         >
                             Send
@@ -153,11 +164,12 @@ export default function AriaInterviewRoom({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={onToggleListening}
+                        disabled={isPaused}
                         className={`p-3 rounded-2xl flex items-center gap-2 text-xs font-bold transition shadow-lg ${
                             isListening
                                 ? 'bg-rose-500 text-white shadow-rose-500/25 animate-pulse'
                                 : 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-600/25'
-                        }`}
+                        } ${isPaused ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {isListening ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
                         <span>{isListening ? '🎙 Listening...' : 'Click to Speak'}</span>
@@ -167,7 +179,7 @@ export default function AriaInterviewRoom({
                 {/* Center Controls */}
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsPaused(!isPaused)}
+                        onClick={handleTogglePause}
                         className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold flex items-center gap-2 transition"
                     >
                         {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
