@@ -168,6 +168,7 @@ const resourceRoutes = require('./routes/resourceRoutes');
 const discussRoutes = require('./routes/discussRoutes');
 const careerRoutes = require('./routes/careerRoutes');
 const projectRoutes = require('./routes/projectRoutes');
+const englishLabRoutes = require('./routes/englishLabRoutes');
 const plannerRoutes = require('./routes/plannerRoutes');
 const codeSpiritRoutes = require('./routes/codeSpiritRoutes');
 const eventRoutes = require('./routes/eventRoutes');
@@ -185,6 +186,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 
 // AI-powered routes get AI rate limiting
 app.use('/api/solo', soloRoutes);
+app.use('/api/english', englishLabRoutes);
 app.use('/api/planner', plannerRoutes);
 app.use('/api/codespirit', aiLimiter, codeSpiritRoutes);
 
