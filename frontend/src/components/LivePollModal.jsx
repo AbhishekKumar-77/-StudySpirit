@@ -77,12 +77,13 @@ export default function LivePollModal({
 
     const handleVote = (optionIdx) => {
         if (hasVoted || !activePoll || !socket) return;
+        console.log('🗳️ Casting vote for option index:', optionIdx);
 
         socket.emit('room:votePoll', {
             roomId,
             pollId: activePoll.id,
             optionIndex: optionIdx,
-            userId: user?._id || user?.id
+            userId: user?._id || user?.id || 'user_' + Math.random().toString(36).substring(2, 7)
         });
         setHasVoted(true);
     };
@@ -138,21 +139,28 @@ export default function LivePollModal({
                                     return (
                                         <button
                                             key={idx}
+                                            type="button"
                                             disabled={hasVoted || isHost}
-                                            onClick={() => handleVote(idx)}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleVote(idx);
+                                            }}
                                             className={`w-full relative overflow-hidden p-3.5 rounded-xl border text-left transition-all ${
                                                 hasVoted 
                                                     ? 'bg-[#1e1e2e] border-white/10 cursor-default'
-                                                    : 'bg-[#242437] border-violet-500/20 hover:border-violet-400 text-white cursor-pointer'
+                                                    : isHost
+                                                        ? 'bg-[#242437] border-violet-500/20 opacity-90 cursor-not-allowed'
+                                                        : 'bg-[#242437] border-violet-500/20 hover:border-amber-400 text-white cursor-pointer hover:bg-violet-900/30'
                                             }`}
                                         >
                                             {/* Progress Fill Bar */}
                                             <div
                                                 style={{ width: `${percentage}%` }}
-                                                className="absolute left-0 top-0 bottom-0 bg-violet-600/30 transition-all duration-500"
+                                                className="absolute left-0 top-0 bottom-0 bg-violet-600/30 transition-all duration-500 pointer-events-none"
                                             />
 
-                                            <div className="relative z-10 flex items-center justify-between text-xs font-semibold">
+                                            <div className="relative z-10 flex items-center justify-between text-xs font-semibold pointer-events-none">
                                                 <span className="text-gray-200">{opt.text}</span>
                                                 <span className="text-violet-300 font-bold">{percentage}% ({opt.votes})</span>
                                             </div>

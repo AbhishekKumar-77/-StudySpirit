@@ -207,13 +207,21 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
 
     socket.on('room:votePoll', (data) => {
         const { roomId, pollId, optionIndex, userId } = data;
+        console.log('🗳️ Backend received votePoll:', data);
         if (roomId && activeRoomPolls.has(roomId)) {
             const poll = activeRoomPolls.get(roomId);
-            if (poll && !poll.voters.includes(userId)) {
-                poll.voters.push(userId);
-                poll.options[optionIndex].votes += 1;
-                poll.totalVotes += 1;
-                io.to(`room:${roomId}`).emit('room:pollUpdated', poll);
+            if (poll) {
+                if (!poll.voters) poll.voters = [];
+                const voterKey = userId || socket.id;
+                if (!poll.voters.includes(voterKey)) {
+                    poll.voters.push(voterKey);
+                    if (poll.options && poll.options[optionIndex]) {
+                        poll.options[optionIndex].votes = (poll.options[optionIndex].votes || 0) + 1;
+                        poll.totalVotes = (poll.totalVotes || 0) + 1;
+                    }
+                    console.log('📊 Poll updated state:', poll);
+                    io.to(`room:${roomId}`).emit('room:pollUpdated', poll);
+                }
             }
         }
     });

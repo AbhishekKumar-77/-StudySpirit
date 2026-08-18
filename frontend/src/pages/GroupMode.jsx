@@ -186,16 +186,23 @@ export default function GroupMode() {
             setLiveParticipants(formatted);
         };
 
+        const handlePollCreated = (pollData) => {
+            console.log('📊 Poll created event -> auto opening modal for student:', pollData);
+            setShowPollModal(true);
+        };
+
         socket.on('room:permissionUpdate', handlePermissionUpdate);
         socket.on('room:handRaised', handleHandRaised);
         socket.on('room:newMessage', handleNewMessage);
         socket.on('room:participants', handleRoomParticipants);
+        socket.on('room:pollCreated', handlePollCreated);
 
         return () => {
             socket.off('room:permissionUpdate', handlePermissionUpdate);
             socket.off('room:handRaised', handleHandRaised);
             socket.off('room:newMessage', handleNewMessage);
             socket.off('room:participants', handleRoomParticipants);
+            socket.off('room:pollCreated', handlePollCreated);
         };
     }, [currentUserId]);
 
@@ -204,14 +211,53 @@ export default function GroupMode() {
     const [announcements, setAnnouncements] = useState([]);
     const [loadingClassrooms, setLoadingClassrooms] = useState(true);
 
-    // Online Classmates Data
-    const onlineClassmates = [
-        { name: 'Aman', online: true, color: '#dcfce7', text: '#15803d' },
-        { name: 'Priya', online: true, color: '#f3e8ff', text: '#7c3aed' },
-        { name: 'Rohit', online: true, color: '#e0f2fe', text: '#0369a1' },
-        { name: 'Sneha', online: false, color: '#ffe4e6', text: '#e11d48' },
-        { name: 'Vikram', online: true, color: '#e0e7ff', text: '#4338ca' }
-    ];
+    // Dynamic Online Classmates Data
+    const activeOnlineClassmates = useMemo(() => {
+        if (liveParticipants.length > 0) {
+            return liveParticipants.map((p, idx) => {
+                const colors = [
+                    { color: '#dcfce7', text: '#15803d' },
+                    { color: '#f3e8ff', text: '#7c3aed' },
+                    { color: '#e0f2fe', text: '#0369a1' },
+                    { color: '#ffe4e6', text: '#e11d48' },
+                    { color: '#e0e7ff', text: '#4338ca' }
+                ];
+                const c = colors[idx % colors.length];
+                return {
+                    id: p.id,
+                    name: p.name,
+                    online: true,
+                    avatar: p.avatar || '👤',
+                    color: c.color,
+                    text: c.text
+                };
+            });
+        }
+        const allStudents = classrooms.flatMap(c => c.students || []);
+        if (allStudents.length > 0) {
+            return allStudents.map((s, idx) => {
+                const colors = [
+                    { color: '#dcfce7', text: '#15803d' },
+                    { color: '#f3e8ff', text: '#7c3aed' },
+                    { color: '#e0f2fe', text: '#0369a1' },
+                    { color: '#ffe4e6', text: '#e11d48' },
+                    { color: '#e0e7ff', text: '#4338ca' }
+                ];
+                const c = colors[idx % colors.length];
+                return {
+                    id: s._id || s.id,
+                    name: s.name,
+                    online: true,
+                    avatar: s.avatar || '👤',
+                    color: c.color,
+                    text: c.text
+                };
+            });
+        }
+        return [
+            { id: '1', name: user?.name || 'You', online: true, avatar: '👤', color: '#dcfce7', text: '#15803d' }
+        ];
+    }, [liveParticipants, classrooms, user]);
 
     // Fetch Classrooms & Announcements from Backend API
     const fetchClassrooms = useCallback(async () => {
@@ -834,7 +880,7 @@ export default function GroupMode() {
                                         </div>
 
                                         <div className="gh-avatars-row">
-                                            {onlineClassmates.map((user, idx) => (
+                                            {activeOnlineClassmates.map((user, idx) => (
                                                 <div key={idx} className="gh-user-circle">
                                                     <div className="gh-avatar-bubble" style={{ backgroundColor: user.color, color: user.text }}>
                                                         {user.name.charAt(0)}
