@@ -664,8 +664,8 @@ function ClassroomSection() {
             });
             const data = await res.json();
             if (data.success) {
-                fetchClassroomDetails(selectedClassroom._id);
-                navigate(`/group-mode?roomId=${data.liveRoomId}`);
+                // Use full page navigation so GroupMode mounts fresh with user loaded
+                window.location.href = `/group-mode?roomId=${data.liveRoomId}`;
             }
         } catch (error) { console.error(error); }
     };
@@ -930,7 +930,7 @@ function ClassroomSection() {
                                                         {lecture.isLive ? (
                                                             <>
                                                                 <button
-                                                                    onClick={() => navigate(`/group-mode?roomId=${lecture.liveRoomId}`)}
+                                                                    onClick={() => { window.location.href = `/group-mode?roomId=${lecture.liveRoomId}`; }}
                                                                     className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md"
                                                                 >
                                                                     <Video size={14} /> Join stream

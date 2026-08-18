@@ -342,16 +342,22 @@ export default function GroupMode() {
         };
     }, [fetchClassrooms, fetchAnnouncements]);
 
-    // Auto-launch live session from URL ?roomId= param — waits for user to be loaded
+    // Auto-launch live session from URL ?roomId= param
+    // This effect uses window.location.search directly to avoid stale closure issues
+    // launchLiveClass is called directly here because user is guaranteed loaded on full page reload
     useEffect(() => {
-        if (!user) return; // Wait for user to be available first
-        const queryParams = new URLSearchParams(location.search);
+        if (!user) return;
+        const queryParams = new URLSearchParams(window.location.search);
         const roomIdParam = queryParams.get('roomId');
         if (roomIdParam && !showStudyRoom) {
-            console.log('🚀 Auto-launching live room from URL param:', roomIdParam, 'user role:', user?.role);
-            launchLiveClass(roomIdParam, 'Live Lecture Room');
+            console.log('🚀 Auto-launching from URL roomId:', roomIdParam, '| Teacher:', user?.role === 'teacher');
+            // Use setTimeout to ensure all state is initialized before launching
+            setTimeout(() => {
+                launchLiveClass(roomIdParam, 'Live Lecture Room');
+            }, 100);
         }
-    }, [user, location.search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?._id, user?.role]);
 
     // Derived Schedule Data from Enrolled Classrooms
     const todaySchedule = useMemo(() => {
