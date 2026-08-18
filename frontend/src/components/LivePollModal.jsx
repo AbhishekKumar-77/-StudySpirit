@@ -88,7 +88,8 @@ export default function LivePollModal({
     };
 
     const handleClosePoll = () => {
-        if (socket && roomId) {
+        if (socket && roomId && activePoll) {
+            socket.emit('room:publishPoll', { roomId, poll: activePoll });
             socket.emit('room:closePoll', { roomId });
         }
         setActivePoll(null);

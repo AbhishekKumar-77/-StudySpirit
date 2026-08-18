@@ -264,8 +264,66 @@ const VideoGrid = ({
         });
     }
 
+    // Filter out student participants whose camera is OFF
+    const visibleVideos = allVideos.filter(v => {
+        if (v.userName.includes('(Screen)')) return true;
+        if (v.isLocal) return true; // Always keep local Teacher/user tile
+        if (v.isCameraOn) return true; // Keep remote users only if camera is explicitly ON
+        return false;
+    });
+
+    // Check if there is an active Screen Share video
+    const screenShareVideo = visibleVideos.find(v => v.userName.includes('(Screen)'));
+    const cameraVideos = visibleVideos.filter(v => !v.userName.includes('(Screen)'));
+
+    // If Screen Share is active: render Screen Share on full main stage, and Teacher/Local camera in floating PiP overlay
+    if (screenShareVideo) {
+        const teacherCam = cameraVideos.find(v => v.isLocal) || cameraVideos[0];
+        return (
+            <div className="relative w-full h-full bg-slate-950 overflow-hidden rounded-xl">
+                {/* Main Screen Share Stage */}
+                <div className="w-full h-full">
+                    <VideoPlayer
+                        key={screenShareVideo.userId}
+                        stream={screenShareVideo.stream}
+                        userId={screenShareVideo.userId}
+                        userName={screenShareVideo.userName}
+                        userAvatar={screenShareVideo.userAvatar}
+                        isMuted={true}
+                        isCameraOn={true}
+                        isLocal={screenShareVideo.isLocal}
+                        isSpotlight={true}
+                        onSpotlightClick={() => { }}
+                        onPinClick={() => handlePinClick(screenShareVideo.userId)}
+                        isPinned={pinnedUsers.has(screenShareVideo.userId)}
+                    />
+                </div>
+
+                {/* Teacher Camera Floating PiP Window */}
+                {teacherCam && (
+                    <div className="absolute bottom-5 right-5 w-64 aspect-video rounded-xl overflow-hidden shadow-2xl border-2 border-cyan-500 z-50 transition-all hover:scale-105">
+                        <VideoPlayer
+                            key={teacherCam.userId}
+                            stream={teacherCam.stream}
+                            userId={teacherCam.userId}
+                            userName={teacherCam.userName}
+                            userAvatar={teacherCam.userAvatar}
+                            isMuted={teacherCam.isMuted}
+                            isCameraOn={teacherCam.isCameraOn}
+                            isLocal={teacherCam.isLocal}
+                            isSpotlight={false}
+                            onSpotlightClick={() => { }}
+                            onPinClick={() => handlePinClick(teacherCam.userId)}
+                            isPinned={false}
+                        />
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     // Sort: pinned first, then others
-    const sortedVideos = [...allVideos].sort((a, b) => {
+    const sortedVideos = [...visibleVideos].sort((a, b) => {
         if (pinnedUsers.has(a.userId) && !pinnedUsers.has(b.userId)) return -1;
         if (!pinnedUsers.has(a.userId) && pinnedUsers.has(b.userId)) return 1;
         return 0;

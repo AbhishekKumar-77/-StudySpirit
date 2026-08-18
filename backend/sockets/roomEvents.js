@@ -224,6 +224,30 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
         io.to(`room:${roomId}`).emit('room:pollClosed');
     });
 
+    socket.on('room:publishPoll', (data) => {
+        const { roomId, poll } = data;
+        if (roomId && poll) {
+            const sortedOptions = [...(poll.options || [])].sort((a, b) => b.votes - a.votes);
+            const topOption = sortedOptions[0] || { text: 'N/A', votes: 0 };
+            const percent = poll.totalVotes > 0 ? Math.round((topOption.votes / poll.totalVotes) * 100) : 0;
+
+            const messageData = {
+                id: Date.now(),
+                message: `📊 POLL RESULTS PUBLISHED: "${poll.question}" | Top Answer: ${topOption.text} (${percent}% - ${topOption.votes} votes)`,
+                pollResults: {
+                    question: poll.question,
+                    options: poll.options,
+                    totalVotes: poll.totalVotes
+                },
+                sender: { name: 'INSTRUCTOR / POLL SYSTEM', avatar: '📊' },
+                createdAt: new Date().toISOString()
+            };
+
+            io.to(`room:${roomId}`).emit('room:newMessage', messageData);
+            io.to(`room:${roomId}`).emit('room:pollPublished', poll);
+        }
+    });
+
     // ============== LOBBY / WAITING ROOM SOCKET EVENTS ==============
     socket.on('room:lobbyJoin', (data) => {
         const { roomId, user } = data;
