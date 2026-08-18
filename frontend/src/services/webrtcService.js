@@ -11,7 +11,9 @@ class WebRTCService {
         this.iceServers = [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' }
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' }
         ];
     }
 
@@ -129,8 +131,9 @@ class WebRTCService {
             return this.peerConnections.get(targetUserId);
         }
 
-        console.log(`🔌 WebRTC: Creating PeerConnection for target user ${targetUserId}`);
+        console.log(`🔌 WebRTC Mesh: Creating PeerConnection for peer ${targetUserId}`);
         const pc = new RTCPeerConnection({ iceServers: this.iceServers });
+        pc._candidateQueue = [];
 
         // Add local tracks to peer connection
         if (this.localStream) {
@@ -141,20 +144,20 @@ class WebRTCService {
 
         // Handle incoming remote tracks
         pc.ontrack = (event) => {
-            console.log(`📹 WebRTC: Received remote stream track from ${targetUserId}`);
+            console.log(`📹 WebRTC Mesh: Received remote stream track from ${targetUserId}`);
             const remoteStream = event.streams[0] || new MediaStream([event.track]);
 
             if (this.callbacks.onRemoteStream) {
                 this.callbacks.onRemoteStream(targetUserId, remoteStream);
             }
 
-            // Dispatch global CustomEvent for UI components
+            // Dispatch global CustomEvent for GroupMode.jsx and VideoGrid UI
             window.dispatchEvent(new CustomEvent('webrtc:remoteStream', {
                 detail: { userId: targetUserId, stream: remoteStream }
             }));
         };
 
-        // Handle ICE candidates
+        // Handle local ICE candidates
         pc.onicecandidate = (event) => {
             if (event.candidate) {
                 const socket = getSocket();
@@ -180,7 +183,22 @@ class WebRTCService {
         return pc;
     }
 
-    // Join a room and bind Socket.io WebRTC signaling events
+    // Flush queued ICE candidates after remote description is set
+    async processCandidateQueue(pc) {
+        if (pc._candidateQueue && pc._candidateQueue.length > 0) {
+            console.log(`📦 Flushing ${pc._candidateQueue.length} queued ICE candidates`);
+            for (const cand of pc._candidateQueue) {
+                try {
+                    await pc.addIceCandidate(new RTCIceCandidate(cand));
+                } catch (e) {
+                    console.error('Error adding queued ICE candidate:', e);
+                }
+            }
+            pc._candidateQueue = [];
+        }
+    }
+
+    // Join room & setup Socket.io WebRTC signaling events
     async joinRoom(roomId, userId, shouldPublish = true) {
         this.currentRoomId = roomId;
         this.currentUserId = userId;
@@ -194,24 +212,24 @@ class WebRTCService {
 
         const socket = connectSocket();
 
-        // 1. Existing users in room handler
+        // 1. Existing users in room handler (Receiver of event is the NEW JOINER -> initiates offers to existing users)
         socket.off('webrtc:existingUsers');
         socket.on('webrtc:existingUsers', async (existingUserIds) => {
             console.log(`👥 Existing users in room:`, existingUserIds);
             for (const peerId of existingUserIds) {
-                if (peerId !== userId) {
+                if (peerId && peerId !== userId) {
                     await this.initiateOffer(peerId);
                 }
             }
         });
 
-        // 2. New user joined handler
+        // 2. New user joined handler (Receiver of event is EXISTING USER -> prepares peer connection, awaits offer)
         socket.off('webrtc:userJoined');
-        socket.on('webrtc:userJoined', async (data) => {
+        socket.on('webrtc:userJoined', (data) => {
             const peerId = data.userId;
             console.log(`👤 New user joined WebRTC room: ${peerId}`);
-            if (peerId !== userId) {
-                await this.initiateOffer(peerId);
+            if (peerId && peerId !== userId) {
+                this.createPeerConnection(peerId);
             }
         });
 
@@ -221,17 +239,23 @@ class WebRTCService {
             if (data.to === userId) {
                 console.log(`📡 Received WebRTC offer from ${data.from}`);
                 const pc = this.createPeerConnection(data.from);
-                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                
+                try {
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                    await this.processCandidateQueue(pc);
 
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
 
-                socket.emit('webrtc:answer', {
-                    from: userId,
-                    to: data.from,
-                    answer,
-                    roomId
-                });
+                    socket.emit('webrtc:answer', {
+                        from: userId,
+                        to: data.from,
+                        answer,
+                        roomId
+                    });
+                } catch (err) {
+                    console.error('Error handling WebRTC offer:', err);
+                }
             }
         });
 
@@ -242,7 +266,12 @@ class WebRTCService {
                 console.log(`📡 Received WebRTC answer from ${data.from}`);
                 const pc = this.peerConnections.get(data.from);
                 if (pc) {
-                    await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                    try {
+                        await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                        await this.processCandidateQueue(pc);
+                    } catch (err) {
+                        console.error('Error setting remote answer:', err);
+                    }
                 }
             }
         });
@@ -253,10 +282,14 @@ class WebRTCService {
             if (data.to === userId) {
                 const pc = this.peerConnections.get(data.from);
                 if (pc && data.candidate) {
-                    try {
-                        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-                    } catch (e) {
-                        console.error('Error adding ICE candidate:', e);
+                    if (pc.remoteDescription) {
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                        } catch (e) {
+                            console.error('Error adding ICE candidate:', e);
+                        }
+                    } else {
+                        pc._candidateQueue.push(data.candidate);
                     }
                 }
             }
@@ -273,9 +306,10 @@ class WebRTCService {
         socket.emit('webrtc:join', { roomId, userId });
     }
 
-    // Initiate WebRTC offer to a peer
+    // Initiate WebRTC offer to a target peer
     async initiateOffer(peerId) {
         try {
+            console.log(`🚀 Initiating WebRTC offer to ${peerId}`);
             const pc = this.createPeerConnection(peerId);
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
@@ -330,7 +364,6 @@ class WebRTCService {
         this.currentUserId = null;
     }
 
-    // Get all remote streams
     getRemoteStreams() {
         return new Map();
     }

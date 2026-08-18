@@ -62,7 +62,46 @@ export default function GroupMode() {
     const [localStream, setLocalStream] = useState(null);
     const [remoteStreams, setRemoteStreams] = useState(new Map());
     const [liveParticipants, setLiveParticipants] = useState([]);
-    const currentUserId = user?._id || 'user_student';
+    
+    const currentUserId = useMemo(() => {
+        if (user?._id) return String(user._id);
+        if (!window.__tempUserId) {
+            window.__tempUserId = 'usr_' + Math.random().toString(36).substring(2, 9);
+        }
+        return window.__tempUserId;
+    }, [user?._id]);
+
+    // Listen for WebRTC remote streams & user disconnects
+    useEffect(() => {
+        const handleRemoteStream = (e) => {
+            const { userId, stream } = e.detail;
+            console.log('🎥 GroupMode UI: Received remote stream for', userId);
+            setRemoteStreams(prev => new Map(prev).set(userId, stream));
+            setLiveParticipants(prev => {
+                if (prev.some(p => p.id === userId)) return prev;
+                return [...prev, { id: userId, name: `Participant (${userId.slice(-4)})`, avatar: '👤', isMuted: false, isCameraOn: true }];
+            });
+        };
+
+        const handleUserLeft = (e) => {
+            const { userId } = e.detail;
+            console.log('❌ GroupMode UI: User left room', userId);
+            setRemoteStreams(prev => {
+                const next = new Map(prev);
+                next.delete(userId);
+                return next;
+            });
+            setLiveParticipants(prev => prev.filter(p => p.id !== userId));
+        };
+
+        window.addEventListener('webrtc:remoteStream', handleRemoteStream);
+        window.addEventListener('webrtc:userLeft', handleUserLeft);
+
+        return () => {
+            window.removeEventListener('webrtc:remoteStream', handleRemoteStream);
+            window.removeEventListener('webrtc:userLeft', handleUserLeft);
+        };
+    }, []);
 
     // Real API Data States
     const [classrooms, setClassrooms] = useState([]);
@@ -697,6 +736,9 @@ export default function GroupMode() {
                                 localStream={localStream}
                                 remoteStreams={remoteStreams}
                                 participants={liveParticipants}
+                                currentUserId={currentUserId}
+                                currentUserName={user?.name || 'You'}
+                                currentUserAvatar={user?.avatar || '👤'}
                             />
                         </div>
 
