@@ -6,7 +6,7 @@
 module.exports = function registerRoomEvents(socket, io, roomParticipants) {
     // Join a study room
     socket.on('room:join', async (data) => {
-        const { roomId, userId, userName, userAvatar } = data;
+        const { roomId, userId, userName, userAvatar, role } = data;
         socket.join(`room:${roomId}`);
 
         if (!roomParticipants.has(roomId)) {
@@ -16,9 +16,17 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
             socketId: socket.id,
             name: userName,
             avatar: userAvatar,
-            isMuted: false,
-            isCameraOn: true,
-            status: 'active'
+            role: role || 'student',
+            isMuted: role === 'teacher' ? false : true,
+            isCameraOn: role === 'teacher' ? true : false,
+            status: 'active',
+            permissions: {
+                mic: true,
+                camera: role === 'teacher' ? true : false,
+                whiteboard: role === 'teacher' ? true : false,
+                codeEditor: role === 'teacher' ? true : false,
+                screenShare: role === 'teacher' ? true : false
+            }
         });
 
         io.to(`room:${roomId}`).emit('room:participants',
@@ -235,6 +243,28 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
     // ============== PERMISSIONS & HOST CONTROL EVENTS ==============
     socket.on('room:permissionUpdate', (data) => {
         const { roomId, targetUserId, permissions } = data;
+        if (roomParticipants.has(roomId)) {
+            const roomMap = roomParticipants.get(roomId);
+            if (targetUserId === 'all') {
+                roomMap.forEach((participant) => {
+                    if (participant.role !== 'teacher') {
+                        participant.permissions = { ...(participant.permissions || {}), ...permissions };
+                        if (permissions.camera === false) participant.isCameraOn = false;
+                        if (permissions.mic === false) participant.isMuted = true;
+                        if (permissions.camera === true) participant.isCameraOn = true;
+                        if (permissions.mic === true) participant.isMuted = false;
+                    }
+                });
+            } else if (roomMap.has(targetUserId)) {
+                const p = roomMap.get(targetUserId);
+                p.permissions = { ...(p.permissions || {}), ...permissions };
+                if (permissions.camera === false) p.isCameraOn = false;
+                if (permissions.mic === false) p.isMuted = true;
+                if (permissions.camera === true) p.isCameraOn = true;
+                if (permissions.mic === true) p.isMuted = false;
+            }
+            io.to(`room:${roomId}`).emit('room:participants', Array.from(roomMap.entries()));
+        }
         io.to(`room:${roomId}`).emit('room:permissionUpdate', { targetUserId, permissions });
     });
 

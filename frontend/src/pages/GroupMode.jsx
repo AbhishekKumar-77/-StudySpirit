@@ -161,14 +161,30 @@ export default function GroupMode() {
             setChatMessages(prev => [...prev, msg]);
         };
 
+        const handleRoomParticipants = (participantsList) => {
+            console.log('👥 Room participants updated:', participantsList);
+            const formatted = participantsList.map(([id, info]) => ({
+                id,
+                name: info.name || `User ${id.slice(-4)}`,
+                avatar: info.avatar || '👤',
+                role: info.role || 'student',
+                isMuted: info.isMuted ?? false,
+                isCameraOn: info.isCameraOn ?? false,
+                permissions: info.permissions || {}
+            }));
+            setLiveParticipants(formatted);
+        };
+
         socket.on('room:permissionUpdate', handlePermissionUpdate);
         socket.on('room:handRaised', handleHandRaised);
         socket.on('room:newMessage', handleNewMessage);
+        socket.on('room:participants', handleRoomParticipants);
 
         return () => {
             socket.off('room:permissionUpdate', handlePermissionUpdate);
             socket.off('room:handRaised', handleHandRaised);
             socket.off('room:newMessage', handleNewMessage);
+            socket.off('room:participants', handleRoomParticipants);
         };
     }, [currentUserId]);
 
@@ -335,10 +351,47 @@ export default function GroupMode() {
         setCurrentRoomName(courseName || 'Live Classroom');
         setShowStudyRoom(true);
 
+        const isTeacher = user?.role === 'teacher';
+
+        // For Students: Camera & Mic start OFF by default!
+        if (!isTeacher) {
+            setIsMicOn(false);
+            setIsCameraOn(false);
+            setStudentPermissions({
+                mic: true,
+                camera: false, // Locked camera by default
+                whiteboard: false,
+                codeEditor: false,
+                screenShare: false
+            });
+        } else {
+            setIsMicOn(true);
+            setIsCameraOn(true);
+        }
+
         try {
             const stream = await webrtcService.initializeLocalMedia({ video: true, audio: true });
             setLocalStream(stream);
+
+            // Mute & disable camera track for students on launch
+            if (!isTeacher && stream) {
+                stream.getVideoTracks().forEach(t => { t.enabled = false; });
+                stream.getAudioTracks().forEach(t => { t.enabled = false; });
+            }
+
             await webrtcService.joinRoom(targetRoomId, currentUserId, true);
+
+            // Emit room:join over socket for participant tracking & chat/poll room membership
+            const socket = connectSocket();
+            if (socket) {
+                socket.emit('room:join', {
+                    roomId: targetRoomId,
+                    userId: currentUserId,
+                    userName: user?.name || 'User',
+                    userAvatar: user?.avatar || '👤',
+                    role: user?.role || 'student'
+                });
+            }
         } catch (e) {
             console.log('WebRTC init fallback:', e);
         }
