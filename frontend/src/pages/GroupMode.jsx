@@ -36,6 +36,12 @@ export default function GroupMode() {
     const [classFilter, setClassFilter] = useState('all'); // all, live, upcoming, completed
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Modals & Join Code States
+    const [showJoinCodeModal, setShowJoinCodeModal] = useState(false);
+    const [showCreateClassModal, setShowCreateClassModal] = useState(false);
+    const [joinCodeInput, setJoinCodeInput] = useState('');
+    const [joinStatusMsg, setJoinStatusMsg] = useState('');
+
     // Study Room & WebRTC Overlay States
     const [showStudyRoom, setShowStudyRoom] = useState(false);
     const [currentRoomId, setCurrentRoomId] = useState(null);
@@ -830,7 +836,7 @@ export default function GroupMode() {
             {showStudyRoom && (
                 <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', zIndex: 200, display: 'flex', flexDirection: 'column', color: 'white' }}>
                     {/* Live Room Header */}
-                    <div style={{ height: '60px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyBetween: 'space-between', padding: '0 24px', background: '#0b0f19' }}>
+                    <div style={{ height: '60px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', background: '#0b0f19' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#e11d48', background: '#ffe4e6', padding: '2px 8px', borderRadius: '10px' }}>● LIVE CLASSROOM</span>
                             <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>{currentRoomName}</span>
