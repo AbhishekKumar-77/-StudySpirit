@@ -337,17 +337,21 @@ export default function GroupMode() {
             setChatMessages(prev => [...prev, msg]);
         });
 
-        // Parse ?roomId= query param for auto-launch live session
-        const queryParams = new URLSearchParams(location.search);
-        const roomIdParam = queryParams.get('roomId');
-        if (roomIdParam) {
-            launchLiveClass(roomIdParam, 'Live Lecture Room');
-        }
-
         return () => {
             socket.off('room:newMessage');
         };
-    }, [fetchClassrooms, fetchAnnouncements, location.search]);
+    }, [fetchClassrooms, fetchAnnouncements]);
+
+    // Auto-launch live session from URL ?roomId= param — waits for user to be loaded
+    useEffect(() => {
+        if (!user) return; // Wait for user to be available first
+        const queryParams = new URLSearchParams(location.search);
+        const roomIdParam = queryParams.get('roomId');
+        if (roomIdParam && !showStudyRoom) {
+            console.log('🚀 Auto-launching live room from URL param:', roomIdParam, 'user role:', user?.role);
+            launchLiveClass(roomIdParam, 'Live Lecture Room');
+        }
+    }, [user, location.search]);
 
     // Derived Schedule Data from Enrolled Classrooms
     const todaySchedule = useMemo(() => {
