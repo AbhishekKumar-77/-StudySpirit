@@ -615,6 +615,9 @@ function ClassroomSection() {
         e.preventDefault();
         if (!lectureTitle || !lectureStart) return;
 
+        // Parse datetime-local input string into ISO string with local timezone preserved
+        const isoScheduledStart = new Date(lectureStart).toISOString();
+
         try {
             const res = await fetch(`${API_BASE}/teacher/classroom/${selectedClassroom._id}/lecture`, {
                 method: 'POST',
@@ -622,7 +625,7 @@ function ClassroomSection() {
                 body: JSON.stringify({
                     title: lectureTitle,
                     description: lectureDesc,
-                    scheduledStart: lectureStart,
+                    scheduledStart: isoScheduledStart,
                     duration: parseInt(lectureDuration) || 60
                 }),
                 credentials: 'include'
@@ -662,7 +665,7 @@ function ClassroomSection() {
             const data = await res.json();
             if (data.success) {
                 fetchClassroomDetails(selectedClassroom._id);
-                window.open(`/group-mode?roomId=${data.liveRoomId}`, '_blank');
+                navigate(`/group-mode?roomId=${data.liveRoomId}`);
             }
         } catch (error) { console.error(error); }
     };
@@ -927,7 +930,7 @@ function ClassroomSection() {
                                                         {lecture.isLive ? (
                                                             <>
                                                                 <button
-                                                                    onClick={() => window.open(`/group-mode?roomId=${lecture.liveRoomId}`, '_blank')}
+                                                                    onClick={() => navigate(`/group-mode?roomId=${lecture.liveRoomId}`)}
                                                                     className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md"
                                                                 >
                                                                     <Video size={14} /> Join stream

@@ -565,6 +565,9 @@ export default function GroupMode() {
         } catch (e) { }
         setShowStudyRoom(false);
         setLocalStream(null);
+        if (isHost) {
+            navigate('/teacher-dashboard?tab=classrooms');
+        }
     };
 
     // Filter classes
@@ -590,28 +593,46 @@ export default function GroupMode() {
                         <span style={{ color: '#0f172a' }}>Study</span><span style={{ color: '#e07b00', fontWeight: 900 }}>Spirit</span>
                     </span>
                 </div>
-                <div className="gh-sidebar-tag">Group Study Hub</div>
+                <div className="gh-sidebar-tag">{isHost ? 'Teacher Portal' : 'Group Study Hub'}</div>
 
                 {/* Sidebar Nav Items */}
                 <div style={{ flex: 1 }}>
-                    {[
-                        { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-                        { id: 'my-classes', label: 'My Classes', icon: BookOpen },
-                        { id: 'live-classes', label: 'Live Classes', icon: Video },
-                        { id: 'discussions', label: 'Discussions', icon: MessageCircle },
-                        { id: 'resources', label: 'Resources', icon: Layers },
-                        { id: 'attendance', label: 'Attendance', icon: UserCheck },
-                        { id: 'leaderboard', label: 'Leaderboard', icon: Award }
-                    ].map(nav => (
-                        <button
-                            key={nav.id}
-                            className={`gh-nav-item ${activeTab === nav.id ? 'active' : ''}`}
-                            onClick={() => setActiveTab(nav.id)}
-                        >
-                            <nav.icon size={18} />
-                            <span>{nav.label}</span>
-                        </button>
-                    ))}
+                    {isHost ? (
+                        [
+                            { id: 'classrooms', label: 'Batches & Classrooms', icon: BookOpen, path: '/teacher-dashboard?tab=classrooms' },
+                            { id: 'toolkit', label: 'Teacher Toolkit', icon: Layers, path: '/teacher-dashboard?tab=toolkit' },
+                            { id: 'ai-assistant', label: 'AI Classroom Assistant', icon: MessageCircle, path: '/teacher-dashboard?tab=ai-assistant' },
+                            { id: 'teacher-home', label: 'Teacher Portal', icon: LayoutDashboard, path: '/teacher-dashboard' }
+                        ].map(nav => (
+                            <button
+                                key={nav.id}
+                                className={`gh-nav-item ${activeTab === nav.id ? 'active' : ''}`}
+                                onClick={() => navigate(nav.path)}
+                            >
+                                <nav.icon size={18} />
+                                <span>{nav.label}</span>
+                            </button>
+                        ))
+                    ) : (
+                        [
+                            { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                            { id: 'my-classes', label: 'My Classes', icon: BookOpen },
+                            { id: 'live-classes', label: 'Live Classes', icon: Video },
+                            { id: 'discussions', label: 'Discussions', icon: MessageCircle },
+                            { id: 'resources', label: 'Resources', icon: Layers },
+                            { id: 'attendance', label: 'Attendance', icon: UserCheck },
+                            { id: 'leaderboard', label: 'Leaderboard', icon: Award }
+                        ].map(nav => (
+                            <button
+                                key={nav.id}
+                                className={`gh-nav-item ${activeTab === nav.id ? 'active' : ''}`}
+                                onClick={() => setActiveTab(nav.id)}
+                            >
+                                <nav.icon size={18} />
+                                <span>{nav.label}</span>
+                            </button>
+                        ))
+                    )}
 
                     {/* Upcoming / Active Live Class Widget */}
                     <div className="gh-live-widget">
