@@ -8,7 +8,7 @@ import NotificationBell from '../components/NotificationBell';
 import confetti from 'canvas-confetti';
 import {
     LayoutDashboard, BookOpen, Users, Calendar, ClipboardCheck, Code,
-    Mic, Library, Briefcase, Folder, MessageCircle, Brain, Edit3,
+    Mic, Library, Briefcase, Folder, Brain, Edit3,
     Search, Flame, Zap, Star, Trophy, CheckCircle2, Clock, Play, Pause,
     RotateCcw, ChevronRight, ArrowRight, Shield, Award, Sparkles, Bot,
     FileCheck, Plus, Sparkle, ExternalLink, TrendingUp, Menu, X, Sun, Moon, Send
@@ -294,7 +294,6 @@ export default function Dashboard() {
         { id: 'resources', name: 'Study Resources', path: '/resources', icon: Library },
         { id: 'career', name: 'CareerSprint', path: '/career', icon: Briefcase },
         { id: 'project', name: 'Project Lab', path: '/project-lab', icon: Folder },
-        { id: 'discuss', name: 'DiscussVerse', path: '/discuss', icon: MessageCircle },
         { id: 'softskills', name: 'Soft Skills', path: '/soft-skills', icon: Brain },
         { id: 'editors', name: 'Code Editor', path: '/code-editor', icon: Edit3 },
     ];
@@ -308,7 +307,6 @@ export default function Dashboard() {
         { name: 'Interview Prep', icon: Mic, color: '#f43f5e', bg: '#fff1f2', path: '/interview' },
         { name: 'CareerSprint', icon: Briefcase, color: '#84cc16', bg: '#f7fee7', path: '/career' },
         { name: 'Project Lab', icon: Folder, color: '#f97316', bg: '#fff7ed', path: '/project-lab' },
-        { name: 'DiscussVerse', icon: MessageCircle, color: '#14b8a6', bg: '#f0fdfa', path: '/discuss' },
         { name: 'Soft Skills', icon: Brain, color: '#a855f7', bg: '#faf5ff', path: '/soft-skills' }
     ];
 

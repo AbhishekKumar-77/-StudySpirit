@@ -18,7 +18,6 @@ const Resources = lazy(() => import('./pages/Resources'));
 const CodeSpirit = lazy(() => import('./pages/CodeSpirit'));
 const CodeEditor = lazy(() => import('./pages/CodeEditor'));
 const SoftSkills = lazy(() => import('./pages/SoftSkills'));
-const DiscussVerse = lazy(() => import('./pages/DiscussVerse'));
 const CareerSprint = lazy(() => import('./pages/CareerSprint'));
 const AIInterview = lazy(() => import('./pages/AIInterview'));
 const ProjectLab = lazy(() => import('./pages/ProjectLab'));
@@ -143,7 +142,6 @@ function App() {
               <Route path="/project-lab" element={<ProjectLab />} />
               <Route path="/project-lab/:projectId" element={<ProjectDetail />} />
               <Route path="/events" element={<EventsHub />} />
-              <Route path="/discuss" element={<DiscussVerse />} />
               <Route path="/certification" element={<Certification />} />
               <Route path="/soft-skills" element={<SoftSkills />} />
               <Route path="/exams" element={<Exams />} />
