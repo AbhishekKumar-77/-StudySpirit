@@ -73,6 +73,8 @@ exports.getClassroomDetails = async (req, res) => {
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
+};
+
 exports.deleteClassroom = async (req, res) => {
     try {
         const classroom = await Classroom.findOneAndDelete({
