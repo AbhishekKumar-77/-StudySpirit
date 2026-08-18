@@ -249,8 +249,6 @@ export default function TeacherDashboard() {
         { id: 'analytics', label: 'Q-Analytics', icon: BarChart },
         { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-        { id: 'classrooms', label: 'Classrooms', icon: School },
-        { id: 'announcements', label: 'Announcements', icon: Megaphone },
     ];
 
     return (
@@ -333,6 +331,8 @@ export default function TeacherDashboard() {
                             {activeTab === 'live' && '🔴 Live Exam Monitor'}
                             {activeTab === 'leaderboard' && 'Student Leaderboard'}
                             {activeTab === 'analytics' && '📊 Question Analytics'}
+                            {activeTab === 'classrooms' && '🏫 Classrooms & Batches'}
+                            {activeTab === 'announcements' && '📢 Batch Announcements'}
                         </h1>
                         <p className="text-[var(--text-secondary)] mt-1">
                             {activeTab === 'overview' && "Here's your teaching dashboard at a glance."}
@@ -340,11 +340,15 @@ export default function TeacherDashboard() {
                             {activeTab === 'live' && 'Real-time view of who is taking your exam right now.'}
                             {activeTab === 'leaderboard' && 'See how students are performing across all quizzes.'}
                             {activeTab === 'analytics' && 'See which questions students struggled with the most.'}
+                            {activeTab === 'classrooms' && 'Manage student classrooms, schedule live lectures, and track enrollments.'}
+                            {activeTab === 'announcements' && 'Post and manage announcements across your student batches.'}
                         </p>
                     </div>
-                    <button onClick={() => navigate('/quiz')} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 hover:scale-105 transition-all duration-200">
-                        <PlusCircle size={18} /> Create New Quiz
-                    </button>
+                    {activeTab !== 'classrooms' && activeTab !== 'announcements' && (
+                        <button onClick={() => navigate('/quiz')} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 hover:scale-105 transition-all duration-200">
+                            <PlusCircle size={18} /> Create New Quiz
+                        </button>
+                    )}
                 </div>
 
                 {/* ── OVERVIEW ── */}
