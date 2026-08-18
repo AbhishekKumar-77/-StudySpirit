@@ -231,4 +231,27 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
         const { targetSocketId } = data;
         io.to(targetSocketId).emit('room:lobbyDenied');
     });
+
+    // ============== PERMISSIONS & HOST CONTROL EVENTS ==============
+    socket.on('room:permissionUpdate', (data) => {
+        const { roomId, targetUserId, permissions } = data;
+        io.to(`room:${roomId}`).emit('room:permissionUpdate', { targetUserId, permissions });
+    });
+
+    socket.on('room:handRaise', (data) => {
+        const { roomId, userId, userName, raised } = data;
+        io.to(`room:${roomId}`).emit('room:handRaised', { userId, userName, raised, timestamp: Date.now() });
+    });
+
+    socket.on('room:fileShare', (data) => {
+        const { roomId, sender, senderAvatar, fileName, fileUrl, fileType, fileSize } = data;
+        const messageData = {
+            id: Date.now(),
+            message: `Shared a file: ${fileName}`,
+            file: { name: fileName, url: fileUrl, type: fileType, size: fileSize },
+            sender: { name: sender, avatar: senderAvatar || '👤' },
+            createdAt: new Date().toISOString()
+        };
+        io.to(`room:${roomId}`).emit('room:newMessage', messageData);
+    });
 };
