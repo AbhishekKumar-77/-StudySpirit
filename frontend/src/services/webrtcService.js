@@ -1,25 +1,51 @@
-import { Room, RoomEvent } from 'livekit-client';
-import { webrtcAPI } from './groupAPI';
+import { getSocket, connectSocket } from './groupAPI';
 
 class WebRTCService {
     constructor() {
-        this.room = null;
         this.localStream = null;
         this.screenStream = null;
         this.currentRoomId = null;
         this.currentUserId = null;
+        this.peerConnections = new Map(); // targetUserId -> RTCPeerConnection
+        this.callbacks = {};
+        this.iceServers = [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' }
+        ];
     }
 
     // Initialize local media (camera + microphone)
     async initializeLocalMedia(constraints = { video: true, audio: true }) {
         try {
+            if (this.localStream) {
+                return this.localStream;
+            }
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             this.localStream = stream;
             return stream;
         } catch (error) {
             console.error('Error accessing media devices:', error);
-            throw error;
+            // Fallback: audio only if camera is blocked/busy
+            try {
+                const audioOnly = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+                this.localStream = audioOnly;
+                return audioOnly;
+            } catch (err2) {
+                console.error('Media devices completely unavailable:', err2);
+                return null;
+            }
         }
+    }
+
+    // Legacy helper to init WebRTC with callbacks
+    async initWebRTC(userId, roomId, callbacks = {}) {
+        this.callbacks = callbacks;
+        const stream = await this.initializeLocalMedia();
+        if (callbacks.onLocalStream && stream) {
+            callbacks.onLocalStream(stream);
+        }
+        await this.joinRoom(roomId, userId, true);
     }
 
     // Get local stream
@@ -34,11 +60,6 @@ class WebRTCService {
                 track.enabled = enabled;
             });
         }
-        if (this.room && this.room.localParticipant) {
-            this.room.localParticipant.setMicrophoneEnabled(enabled).catch(err => {
-                console.error('Error toggling microphone in LiveKit:', err);
-            });
-        }
     }
 
     // Toggle camera
@@ -48,33 +69,31 @@ class WebRTCService {
                 track.enabled = enabled;
             });
         }
-        if (this.room && this.room.localParticipant) {
-            this.room.localParticipant.setCameraEnabled(enabled).catch(err => {
-                console.error('Error toggling camera in LiveKit:', err);
-            });
-        }
     }
 
     // Start screen sharing
     async startScreenShare() {
         try {
-            if (this.room && this.room.localParticipant) {
-                // Enable screen share track in LiveKit SFU
-                const screenShareTracks = await this.room.localParticipant.setScreenShareEnabled(true);
-                // Return a MediaStream from the track to keep return type contract intact
-                const track = screenShareTracks?.track;
-                if (track) {
-                    this.screenStream = new MediaStream([track.mediaStreamTrack]);
-                    return this.screenStream;
-                }
-            }
-
-            // Fallback for demo/unconfigured rooms
             const screenStream = await navigator.mediaDevices.getDisplayMedia({
                 video: { cursor: 'always' },
                 audio: false
             });
             this.screenStream = screenStream;
+
+            // Replace video track for all active peer connections
+            const screenTrack = screenStream.getVideoTracks()[0];
+            this.peerConnections.forEach((pc) => {
+                const senders = pc.getSenders();
+                const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+                if (videoSender) {
+                    videoSender.replaceTrack(screenTrack);
+                }
+            });
+
+            screenTrack.onended = () => {
+                this.stopScreenShare();
+            };
+
             return screenStream;
         } catch (error) {
             console.error('Error starting screen share:', error);
@@ -84,126 +103,217 @@ class WebRTCService {
 
     // Stop screen sharing
     stopScreenShare() {
-        if (this.room && this.room.localParticipant) {
-            this.room.localParticipant.setScreenShareEnabled(false).catch(err => {
-                console.error('Error stopping screen share in LiveKit:', err);
-            });
-        }
         if (this.screenStream) {
             this.screenStream.getTracks().forEach(track => track.stop());
             this.screenStream = null;
         }
+
+        // Revert back to camera track
+        if (this.localStream) {
+            const cameraTrack = this.localStream.getVideoTracks()[0];
+            if (cameraTrack) {
+                this.peerConnections.forEach((pc) => {
+                    const senders = pc.getSenders();
+                    const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+                    if (videoSender) {
+                        videoSender.replaceTrack(cameraTrack);
+                    }
+                });
+            }
+        }
     }
 
-    // Join a room and connect to LiveKit SFU
+    // Create RTCPeerConnection for a target user
+    createPeerConnection(targetUserId) {
+        if (this.peerConnections.has(targetUserId)) {
+            return this.peerConnections.get(targetUserId);
+        }
+
+        console.log(`🔌 WebRTC: Creating PeerConnection for target user ${targetUserId}`);
+        const pc = new RTCPeerConnection({ iceServers: this.iceServers });
+
+        // Add local tracks to peer connection
+        if (this.localStream) {
+            this.localStream.getTracks().forEach(track => {
+                pc.addTrack(track, this.localStream);
+            });
+        }
+
+        // Handle incoming remote tracks
+        pc.ontrack = (event) => {
+            console.log(`📹 WebRTC: Received remote stream track from ${targetUserId}`);
+            const remoteStream = event.streams[0] || new MediaStream([event.track]);
+
+            if (this.callbacks.onRemoteStream) {
+                this.callbacks.onRemoteStream(targetUserId, remoteStream);
+            }
+
+            // Dispatch global CustomEvent for UI components
+            window.dispatchEvent(new CustomEvent('webrtc:remoteStream', {
+                detail: { userId: targetUserId, stream: remoteStream }
+            }));
+        };
+
+        // Handle ICE candidates
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                const socket = getSocket();
+                if (socket) {
+                    socket.emit('webrtc:iceCandidate', {
+                        from: this.currentUserId,
+                        to: targetUserId,
+                        candidate: event.candidate,
+                        roomId: this.currentRoomId
+                    });
+                }
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            console.log(`📡 PeerConnection state with ${targetUserId}: ${pc.connectionState}`);
+            if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+                this.removePeer(targetUserId);
+            }
+        };
+
+        this.peerConnections.set(targetUserId, pc);
+        return pc;
+    }
+
+    // Join a room and bind Socket.io WebRTC signaling events
     async joinRoom(roomId, userId, shouldPublish = true) {
         this.currentRoomId = roomId;
         this.currentUserId = userId;
 
-        try {
-            console.log(`🎥 LiveKit: Joining room ${roomId} (user: ${userId})`);
+        console.log(`🎥 WebRTC Mesh: Joining room ${roomId} as user ${userId}`);
 
-            // Fetch token from our backend API
-            const tokenRes = await webrtcAPI.getToken(roomId, userId, userId);
-            if (!tokenRes.success) {
-                throw new Error(tokenRes.message || 'Failed to generate token');
-            }
+        // Ensure local media is initialized
+        if (shouldPublish && !this.localStream) {
+            await this.initializeLocalMedia();
+        }
 
-            const { token, serverUrl, isMock } = tokenRes;
+        const socket = connectSocket();
 
-            if (isMock) {
-                console.warn('⚠️ LiveKit credentials are not configured. Standard mock connections only.');
-                return;
-            }
-
-            // Create LiveKit Room
-            this.room = new Room({
-                adaptiveStream: true, // Optimizes bandwidth dynamically based on video tile size
-                dynacast: true       // Automatically pauses publishing when video is off-screen
-            });
-
-            // Track subscribed handler
-            this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
-                if (track.kind === 'video' || track.kind === 'audio') {
-                    console.log(`📡 LiveKit: Subscribed to track (${track.kind}) from ${participant.identity}`);
-
-                    // Build a unified MediaStream for the participant (or reuse track stream)
-                    const stream = new MediaStream([track.mediaStreamTrack]);
-
-                    // Dispatch event matching the existing interface to update GroupMode.jsx UI
-                    const event = new CustomEvent('webrtc:remoteStream', {
-                        detail: { userId: participant.identity, stream }
-                    });
-                    window.dispatchEvent(event);
-
-                    const trackEvent = new CustomEvent('webrtc:remoteTrack', {
-                        detail: { userId: participant.identity, stream, track }
-                    });
-                    window.dispatchEvent(trackEvent);
+        // 1. Existing users in room handler
+        socket.off('webrtc:existingUsers');
+        socket.on('webrtc:existingUsers', async (existingUserIds) => {
+            console.log(`👥 Existing users in room:`, existingUserIds);
+            for (const peerId of existingUserIds) {
+                if (peerId !== userId) {
+                    await this.initiateOffer(peerId);
                 }
-            });
+            }
+        });
 
-            // Track unsubscribed handler
-            this.room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
-                console.log(`📡 LiveKit: Unsubscribed track (${track.kind}) from ${participant.identity}`);
-                // Trigger left event to clean up player
-                const event = new CustomEvent('webrtc:userLeft', {
-                    detail: { userId: participant.identity }
+        // 2. New user joined handler
+        socket.off('webrtc:userJoined');
+        socket.on('webrtc:userJoined', async (data) => {
+            const peerId = data.userId;
+            console.log(`👤 New user joined WebRTC room: ${peerId}`);
+            if (peerId !== userId) {
+                await this.initiateOffer(peerId);
+            }
+        });
+
+        // 3. WebRTC Offer handler
+        socket.off('webrtc:offer');
+        socket.on('webrtc:offer', async (data) => {
+            if (data.to === userId) {
+                console.log(`📡 Received WebRTC offer from ${data.from}`);
+                const pc = this.createPeerConnection(data.from);
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+
+                socket.emit('webrtc:answer', {
+                    from: userId,
+                    to: data.from,
+                    answer,
+                    roomId
                 });
-                window.dispatchEvent(event);
-            });
+            }
+        });
 
-            // Participant connected/disconnected events
-            this.room.on(RoomEvent.ParticipantConnected, (participant) => {
-                console.log(`👤 Participant connected to SFU: ${participant.identity}`);
-            });
+        // 4. WebRTC Answer handler
+        socket.off('webrtc:answer');
+        socket.on('webrtc:answer', async (data) => {
+            if (data.to === userId) {
+                console.log(`📡 Received WebRTC answer from ${data.from}`);
+                const pc = this.peerConnections.get(data.from);
+                if (pc) {
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                }
+            }
+        });
 
-            this.room.on(RoomEvent.ParticipantDisconnected, (participant) => {
-                console.log(`👤 Participant left SFU: ${participant.identity}`);
-                const event = new CustomEvent('webrtc:userLeft', {
-                    detail: { userId: participant.identity }
-                });
-                window.dispatchEvent(event);
-            });
-
-            // Connect to LiveKit server
-            await this.room.connect(serverUrl, token);
-            console.log('✅ Connected to LiveKit Room successfully!');
-
-            // If we have an existing localStream from initializeLocalMedia and shouldPublish is true, publish those tracks
-            if (this.localStream && shouldPublish) {
-                console.log('📡 LiveKit: Publishing existing media tracks...');
-                for (const track of this.localStream.getTracks()) {
-                    if (track.kind === 'video') {
-                        await this.room.localParticipant.publishTrack(track, { name: 'camera' });
-                    } else if (track.kind === 'audio') {
-                        await this.room.localParticipant.publishTrack(track, { name: 'microphone' });
+        // 5. ICE Candidate handler
+        socket.off('webrtc:iceCandidate');
+        socket.on('webrtc:iceCandidate', async (data) => {
+            if (data.to === userId) {
+                const pc = this.peerConnections.get(data.from);
+                if (pc && data.candidate) {
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    } catch (e) {
+                        console.error('Error adding ICE candidate:', e);
                     }
                 }
-            } else if (shouldPublish) {
-                // Otherwise fallback to enabling directly
-                await this.room.localParticipant.enableCameraAndMicrophone();
-            } else {
-                console.log('📡 LiveKit: Joined as viewer (no media published)');
             }
+        });
 
-        } catch (error) {
-            console.error('❌ LiveKit connection error:', error);
-            // Fallback for development if local node-server or token generation errors out
-            console.warn('⚠️ Could not establish LiveKit SFU connection. Falling back to local/demo streaming.');
+        // 6. User Left handler
+        socket.off('webrtc:userLeft');
+        socket.on('webrtc:userLeft', (data) => {
+            console.log(`👤 User left room: ${data.userId}`);
+            this.removePeer(data.userId);
+        });
+
+        // Emit join event to room
+        socket.emit('webrtc:join', { roomId, userId });
+    }
+
+    // Initiate WebRTC offer to a peer
+    async initiateOffer(peerId) {
+        try {
+            const pc = this.createPeerConnection(peerId);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            const socket = getSocket();
+            if (socket) {
+                socket.emit('webrtc:offer', {
+                    from: this.currentUserId,
+                    to: peerId,
+                    offer,
+                    roomId: this.currentRoomId
+                });
+            }
+        } catch (err) {
+            console.error(`Error initiating offer to ${peerId}:`, err);
         }
     }
 
-    // Leave room
-    leaveRoom() {
-        if (this.room) {
-            try {
-                this.room.disconnect();
-            } catch (err) {
-                console.error('Error disconnecting from LiveKit room:', err);
-            }
-            this.room = null;
+    // Remove single peer connection
+    removePeer(userId) {
+        if (this.peerConnections.has(userId)) {
+            const pc = this.peerConnections.get(userId);
+            pc.close();
+            this.peerConnections.delete(userId);
         }
+        window.dispatchEvent(new CustomEvent('webrtc:userLeft', { detail: { userId } }));
+    }
+
+    // Leave room and cleanup all connections
+    leaveRoom() {
+        const socket = getSocket();
+        if (socket && this.currentRoomId && this.currentUserId) {
+            socket.emit('webrtc:leave', { roomId: this.currentRoomId, userId: this.currentUserId });
+        }
+
+        // Close all peer connections
+        this.peerConnections.forEach((pc) => pc.close());
+        this.peerConnections.clear();
 
         // Stop local streams
         if (this.localStream) {
@@ -222,29 +332,9 @@ class WebRTCService {
 
     // Get all remote streams
     getRemoteStreams() {
-        const streams = new Map();
-        if (this.room) {
-            this.room.participants.forEach((participant, identity) => {
-                const videoPub = participant.getTrackPublication('camera');
-                const audioPub = participant.getTrackPublication('microphone');
-                
-                const tracks = [];
-                if (videoPub && videoPub.track?.mediaStreamTrack) {
-                    tracks.push(videoPub.track.mediaStreamTrack);
-                }
-                if (audioPub && audioPub.track?.mediaStreamTrack) {
-                    tracks.push(audioPub.track.mediaStreamTrack);
-                }
-
-                if (tracks.length > 0) {
-                    streams.set(identity, new MediaStream(tracks));
-                }
-            });
-        }
-        return streams;
+        return new Map();
     }
 
-    // Check if media devices are available
     static async checkMediaDevices() {
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
@@ -260,6 +350,5 @@ class WebRTCService {
     }
 }
 
-// Export singleton instance
 const webrtcService = new WebRTCService();
 export default webrtcService;

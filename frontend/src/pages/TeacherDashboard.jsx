@@ -242,7 +242,7 @@ export default function TeacherDashboard() {
     const publishedCount = myQuizzes.filter(q => q.status === 'published').length;
     const draftCount = myQuizzes.filter(q => q.status === 'draft').length;
 
-    const navItems = [
+    const quizNavItems = [
         { id: 'overview', label: 'Overview', icon: BarChart2 },
         { id: 'quizzes', label: 'My Quizzes', icon: FileQuestion },
         { id: 'live', label: 'Live Monitor', icon: Radio, badge: monitoringCode ? liveStudents.filter(s => s.status === 'active').length : null },
@@ -250,6 +250,18 @@ export default function TeacherDashboard() {
         { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     ];
+
+    const classroomNavItems = [
+        { id: 'classrooms', label: 'Batches & Classrooms', icon: School },
+    ];
+
+    const announcementNavItems = [
+        { id: 'announcements', label: 'Batch Announcements', icon: Megaphone },
+    ];
+
+    const currentNavItems = activeTab === 'classrooms' 
+        ? classroomNavItems 
+        : (activeTab === 'announcements' ? announcementNavItems : quizNavItems);
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex">
@@ -289,7 +301,7 @@ export default function TeacherDashboard() {
                 </div>
 
                 <nav className="flex-1 p-3 mt-2 space-y-1">
-                    {navItems.map(item => (
+                    {currentNavItems.map(item => (
                         <button key={item.id}
                             onClick={() => item.external ? navigate(item.path) : setActiveTab(item.id)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${activeTab === item.id && !item.external
@@ -514,14 +526,15 @@ function ClassroomSection() {
         setLoading(false);
     };
 
-    const createClassroom = async () => {
-        if (!name) return;
+    const createClassroom = async (e) => {
+        if (e) e.preventDefault();
+        if (!name.trim()) return alert('Please enter a batch name');
         try {
             const code = 'CL-' + Math.random().toString(36).substring(2, 8).toUpperCase();
             const res = await fetch(`${API_BASE}/teacher/classroom`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, code }),
+                body: JSON.stringify({ name: name.trim(), description: description.trim(), code }),
                 credentials: 'include'
             });
             const data = await res.json();
@@ -529,8 +542,36 @@ function ClassroomSection() {
                 setName('');
                 setDescription('');
                 fetchClassrooms();
+            } else {
+                alert(data.error || 'Failed to create batch');
             }
-        } catch (e) { console.error(e); }
+        } catch (err) {
+            console.error(err);
+            alert('Error creating batch');
+        }
+    };
+
+    const handleDeleteClassroom = async (classroomId, e) => {
+        if (e) e.stopPropagation();
+        if (!window.confirm("Are you sure you want to delete this classroom batch? All associated data will be permanently removed.")) return;
+        try {
+            const res = await fetch(`${API_BASE}/teacher/classroom/${classroomId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setClassrooms(prev => prev.filter(c => c._id !== classroomId));
+                if (selectedClassroom?._id === classroomId) {
+                    setSelectedClassroom(null);
+                }
+            } else {
+                alert(data.error || 'Failed to delete classroom batch');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting batch');
+        }
     };
 
     const fetchClassroomDetails = async (id) => {
@@ -1035,12 +1076,13 @@ function ClassroomSection() {
             {/* Create Batch Card */}
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 shadow-md">
                 <h3 className="font-black text-lg mb-4 text-[var(--text-primary)]">Create New Batch</h3>
-                <div className="flex flex-col md:flex-row gap-3">
+                <form onSubmit={createClassroom} className="flex flex-col md:flex-row gap-3">
                     <input
                         value={name}
                         onChange={e => setName(e.target.value)}
                         placeholder="Batch Name e.g. CS-2024-B"
                         className="flex-1 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
+                        required
                     />
                     <input
                         value={description}
@@ -1049,12 +1091,12 @@ function ClassroomSection() {
                         className="flex-[1.5] p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl outline-none text-sm text-[var(--text-primary)]"
                     />
                     <button
-                        onClick={createClassroom}
-                        className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-sm transition-colors"
+                        type="submit"
+                        className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-sm transition-colors cursor-pointer"
                     >
-                        Create
+                        Create Batch
                     </button>
-                </div>
+                </form>
             </div>
 
             {/* Grid of Classrooms */}
@@ -1070,10 +1112,19 @@ function ClassroomSection() {
                     {classrooms.map(c => (
                         <div
                             key={c._id}
-                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 hover:border-violet-500/30 hover:shadow-lg transition-all flex flex-col justify-between"
+                            className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-6 hover:border-violet-500/30 hover:shadow-lg transition-all flex flex-col justify-between relative group"
                         >
                             <div className="space-y-2">
-                                <h4 className="font-black text-lg text-[var(--text-primary)]">{c.name}</h4>
+                                <div className="flex items-center justify-between gap-2">
+                                    <h4 className="font-black text-lg text-[var(--text-primary)]">{c.name}</h4>
+                                    <button
+                                        onClick={(e) => handleDeleteClassroom(c._id, e)}
+                                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-all opacity-80 hover:opacity-100"
+                                        title="Delete Batch"
+                                    >
+                                        <Trash2 size={15} />
+                                    </button>
+                                </div>
                                 {c.description && <p className="text-xs text-[var(--text-secondary)] line-clamp-2">{c.description}</p>}
                                 <div className="flex items-center gap-1.5 pt-1 text-xs">
                                     <span className="text-[var(--text-muted)] font-semibold">Join Code:</span>

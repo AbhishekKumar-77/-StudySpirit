@@ -18,6 +18,7 @@ router.get('/classroom', auth, teacherController.getClassrooms); // Fallback GET
 
 // Classroom Sub-Routes for Details, Lectures, Announcements
 router.get('/classroom/:classroomId', auth, isTeacher, teacherController.getClassroomDetails);
+router.delete('/classroom/:classroomId', auth, isTeacher, teacherController.deleteClassroom);
 router.post('/classroom/:classroomId/lecture', auth, isTeacher, teacherController.scheduleLecture);
 router.delete('/classroom/:classroomId/lecture/:lectureId', auth, isTeacher, teacherController.deleteLecture);
 router.post('/classroom/:classroomId/lecture/:lectureId/start', auth, isTeacher, teacherController.startLecture);

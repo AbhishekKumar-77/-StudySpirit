@@ -73,6 +73,21 @@ exports.getClassroomDetails = async (req, res) => {
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
+exports.deleteClassroom = async (req, res) => {
+    try {
+        const classroom = await Classroom.findOneAndDelete({
+            _id: req.params.classroomId,
+            teacher: req.user._id
+        });
+        if (!classroom) return res.status(404).json({ success: false, error: 'Classroom not found or unauthorized' });
+        
+        // Clean up announcements associated with this classroom
+        await Announcement.deleteMany({ classroom: req.params.classroomId });
+        
+        res.json({ success: true, message: 'Classroom deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 };
 
 // ── Lectures Management ──
