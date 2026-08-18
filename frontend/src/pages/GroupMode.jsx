@@ -603,21 +603,25 @@ export default function GroupMode() {
                         <span style={{ color: '#0f172a' }}>Study</span><span style={{ color: '#e07b00', fontWeight: 900 }}>Spirit</span>
                     </span>
                 </div>
-                <div className="gh-sidebar-tag">{isHost ? 'Teacher Portal' : 'Group Study Hub'}</div>
-
                 {/* Sidebar Nav Items */}
                 <div style={{ flex: 1 }}>
                     {isHost ? (
                         [
                             { id: 'classrooms', label: 'Batches & Classrooms', icon: BookOpen, path: '/teacher-dashboard?tab=classrooms' },
+                            { id: 'resources', label: 'Upload Resources', icon: Layers },
+                            { id: 'attendance', label: 'Attendance Log', icon: UserCheck },
+                            { id: 'discussions', label: 'Discussions & Notices', icon: MessageCircle },
                             { id: 'toolkit', label: 'Teacher Toolkit', icon: Layers, path: '/teacher-dashboard?tab=toolkit' },
-                            { id: 'ai-assistant', label: 'AI Classroom Assistant', icon: MessageCircle, path: '/teacher-dashboard?tab=ai-assistant' },
+                            { id: 'ai-assistant', label: 'AI Classroom Assistant', icon: Sparkles, path: '/teacher-dashboard?tab=ai-assistant' },
                             { id: 'teacher-home', label: 'Teacher Portal', icon: LayoutDashboard, path: '/teacher-dashboard' }
                         ].map(nav => (
                             <button
                                 key={nav.id}
                                 className={`gh-nav-item ${activeTab === nav.id ? 'active' : ''}`}
-                                onClick={() => navigate(nav.path)}
+                                onClick={() => {
+                                    if (nav.path) navigate(nav.path);
+                                    else setActiveTab(nav.id);
+                                }}
                             >
                                 <nav.icon size={18} />
                                 <span>{nav.label}</span>
@@ -627,11 +631,8 @@ export default function GroupMode() {
                         [
                             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                             { id: 'my-classes', label: 'My Classes', icon: BookOpen },
-                            { id: 'live-classes', label: 'Live Classes', icon: Video },
                             { id: 'discussions', label: 'Discussions', icon: MessageCircle },
-                            { id: 'resources', label: 'Resources', icon: Layers },
-                            { id: 'attendance', label: 'Attendance', icon: UserCheck },
-                            { id: 'leaderboard', label: 'Leaderboard', icon: Award }
+                            { id: 'resources', label: 'Resources & Notes', icon: Layers }
                         ].map(nav => (
                             <button
                                 key={nav.id}
@@ -645,7 +646,7 @@ export default function GroupMode() {
                     )}
 
                     {/* Upcoming / Active Live Class Widget */}
-                    <div className="gh-live-widget">
+                    <div className="gh-live-widget" style={{ marginTop: '24px' }}>
                         <div className="gh-widget-badge">
                             <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: activeLiveClass ? '#e11d48' : '#3b82f6', display: 'inline-block' }} />
                             {activeLiveClass ? 'LIVE CLASS NOW' : 'Next Scheduled Class'}
@@ -660,19 +661,6 @@ export default function GroupMode() {
                             {activeLiveClass ? '📹 Join Live Class Now' : 'Join Classroom Room'}
                         </button>
                     </div>
-
-                    {/* Quick Actions Title & Buttons */}
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: '#64748b', padding: '12px 20px 6px', letterSpacing: '0.05em' }}>
-                        Quick Actions
-                    </div>
-                    <button className="gh-nav-item" onClick={() => setShowJoinCodeModal(true)}>
-                        <Plus size={16} color="#6366f1" />
-                        <span>Join with Code</span>
-                    </button>
-                    <button className="gh-nav-item" onClick={() => navigate('/resources')}>
-                        <FileText size={16} color="#f59e0b" />
-                        <span>Study Resources</span>
-                    </button>
                 </div>
             </aside>
 
@@ -681,168 +669,152 @@ export default function GroupMode() {
                 {/* Top Header */}
                 <header className="gh-top-header">
                     <div>
-                        <div className="gh-top-left-title">Welcome back, {user?.name || 'Student'} 👋</div>
+                        <div className="gh-top-left-title">Welcome back, {user?.name || (isHost ? 'Instructor' : 'Student')} 👋</div>
                         <div className="gh-top-left-sub">Learn together, achieve together.</div>
                     </div>
                     <div className="gh-top-actions">
-                        <button className="gh-btn-join-code" onClick={() => setShowJoinCodeModal(true)}>
-                            <Plus size={18} />
-                            + Join with Code
-                        </button>
+                        {!isHost && (
+                            <button className="gh-btn-join-code" onClick={() => setShowJoinCodeModal(true)}>
+                                <Plus size={18} />
+                                + Join with Code
+                            </button>
+                        )}
                         <button className="gh-action-pill" style={{ padding: '8px 12px' }} title="Notifications">
                             <Bell size={18} />
                         </button>
                         <div style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#e0e7ff', color: '#4338ca', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.95rem' }}>
-                            {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+                            {user?.name ? user.name.charAt(0).toUpperCase() : (isHost ? 'T' : 'S')}
                         </div>
                     </div>
                 </header>
 
                 {/* Content Body */}
                 <div className="gh-content-body">
-                    {/* Top Banner (Your Learning Classes) */}
-                    <div className="gh-banner-card">
-                        <div className="gh-banner-left">
-                            <div className="gh-banner-icon">🎓</div>
-                            <div>
-                                <h2 className="gh-banner-title">Your Enrolled Batches & Classes</h2>
-                                <p className="gh-banner-sub">Join live classes, collaborate with classmates and track your progress.</p>
-                            </div>
-                        </div>
-
-                        <div className="gh-banner-stats">
-                            <div className="gh-stat-box">
-                                <div className="gh-stat-num">{classrooms.length}</div>
-                                <div className="gh-stat-lbl">Enrolled Batches</div>
-                            </div>
-                            <div className="gh-stat-box">
-                                <div className="gh-stat-num" style={{ color: activeLiveClass ? '#e11d48' : '#6366f1' }}>
-                                    {activeLiveClass ? 1 : 0}
-                                </div>
-                                <div className="gh-stat-lbl">Live Classes Now</div>
-                            </div>
-                            <div className="gh-stat-box">
-                                <div className="gh-stat-num" style={{ color: '#10b981' }}>95%</div>
-                                <div className="gh-stat-lbl">Attendance Rate</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* OVERVIEW TAB CONTENT */}
+                    {/* OVERVIEW TAB */}
                     {activeTab === 'overview' && (
                         <>
-                            <div className="gh-split-grid">
-                                {/* Left Main Area: My Classes */}
-                                <div className="gh-classes-card">
-                                    <div className="gh-filter-bar">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ fontSize: '1.05rem', fontWeight: 800 }}>My Enrolled Batches</span>
-                                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4338ca', backgroundColor: '#e0e7ff', padding: '2px 8px', borderRadius: '10px' }}>
-                                                {classrooms.length} Active
-                                            </span>
+                            {/* Top Banner (Your Learning Classes) */}
+                            <div className="gh-banner-card">
+                                <div className="gh-banner-left">
+                                    <div className="gh-banner-icon">🎓</div>
+                                    <div>
+                                        <h2 className="gh-banner-title">Your Enrolled Batches & Classes</h2>
+                                        <p className="gh-banner-sub">Join live classes, collaborate with classmates and track your progress.</p>
+                                    </div>
+                                </div>
+                                <div className="gh-stats-pills">
+                                    <div className="gh-stat-box">
+                                        <div className="gh-stat-num">{classrooms.length}</div>
+                                        <div className="gh-stat-lbl">Enrolled Batches</div>
+                                    </div>
+                                    <div className="gh-stat-box">
+                                        <div className="gh-stat-num" style={{ color: activeLiveClass ? '#ef4444' : '#6366f1' }}>
+                                            {activeLiveClass ? 1 : 0}
+                                        </div>
+                                        <div className="gh-stat-lbl">Live Classes Now</div>
+                                    </div>
+                                    <div className="gh-stat-box">
+                                        <div className="gh-stat-num" style={{ color: '#10b981' }}>95%</div>
+                                        <div className="gh-stat-lbl">Attendance Rate</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Main Two-Column Layout */}
+                            <div className="gh-grid-layout">
+                                {/* Left Main Section: Class Cards */}
+                                <div className="gh-main-col">
+                                    <div className="gh-section-header">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <h3 className="gh-section-title">My Enrolled Batches</h3>
+                                            <span className="gh-count-pill">{classrooms.length} Active</span>
                                         </div>
 
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            {/* Search input */}
-                                            <div className="gh-search-small">
-                                                <Search size={14} color="#64748b" />
+                                        <div className="gh-filter-actions">
+                                            <div className="gh-search-input-wrapper">
+                                                <Search size={16} color="#64748b" />
                                                 <input
                                                     type="text"
                                                     placeholder="Search classes..."
-                                                    style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.8rem', width: '120px' }}
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
+                                                    className="gh-search-input"
                                                 />
                                             </div>
 
-                                            {/* Tabs Filter */}
-                                            <div className="gh-tabs-group">
-                                                {['all', 'live', 'upcoming', 'scheduled'].map(f => (
+                                            <div className="gh-tab-pills">
+                                                {['all', 'live', 'upcoming'].map(f => (
                                                     <button
                                                         key={f}
-                                                        className={`gh-tab-btn ${classFilter === f ? 'active' : ''}`}
+                                                        className={`gh-pill ${classFilter === f ? 'active' : ''}`}
                                                         onClick={() => setClassFilter(f)}
                                                     >
-                                                        {f === 'all' ? 'All' : f === 'live' ? 'Live Now' : f === 'upcoming' ? 'Upcoming' : 'Scheduled'}
+                                                        {f.charAt(0).toUpperCase() + f.slice(1)}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Loading / Empty State or Real Classrooms List */}
-                                    {loadingClassrooms ? (
-                                        <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b' }}>
-                                            Loading your enrolled classrooms...
-                                        </div>
-                                    ) : filteredClassrooms.length === 0 ? (
-                                        <div style={{ textAlign: 'center', padding: '40px 20px', background: '#f8fafc', borderRadius: '16px', border: '2px dashed #e2e8f0' }}>
-                                            <GraduationCap size={48} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
-                                            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>No Enrolled Classrooms Found</h3>
-                                            <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '4px 0 16px' }}>Ask your teacher for a Class Join Code to enroll in a batch.</p>
-                                            <button className="gh-btn-join-purple" style={{ padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => setShowJoinCodeModal(true)}>
-                                                <Plus size={16} /> Enter Class Join Code
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        filteredClassrooms.map(c => (
-                                            <div key={c.id} className="gh-course-item">
-                                                <div className="gh-course-header">
-                                                    <div className="gh-course-left">
-                                                        <div className="gh-course-icon" style={{ backgroundColor: c.iconBg, color: c.iconColor }}>
-                                                            {c.icon}
-                                                        </div>
-                                                        <div>
-                                                            <div className="gh-course-title">
-                                                                {c.name}
-                                                                <span className={`gh-status-pill ${c.status}`}>
-                                                                    {c.status === 'live' ? '● Live Now' : c.status}
-                                                                </span>
-                                                            </div>
-                                                            <div className="gh-course-sub">{c.teacher} &nbsp;•&nbsp; Code: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{c.code}</span></div>
-                                                            <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px' }}>
-                                                                🕒 {c.schedule} &nbsp;|&nbsp; 👥 {c.studentsCount} Enrolled Students
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Countdown / Next Class Box */}
-                                                    <div className="gh-countdown-box">
-                                                        <div className="gh-countdown-lbl">Schedule</div>
-                                                        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>{c.nextClassTime}</div>
-                                                        {c.status === 'live' ? (
-                                                            <button className="gh-btn-join-purple" style={{ marginTop: '8px', fontSize: '0.8rem', padding: '6px 12px' }} onClick={() => launchLiveClass(c.liveRoomId || c.id, c.name)}>
-                                                                📹 Join Live Class
-                                                            </button>
-                                                        ) : (
-                                                            <button className="gh-action-pill" style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }} onClick={() => setActiveTab('my-classes')}>
-                                                                View Details
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Progress bar & action pills */}
-                                                <div style={{ marginTop: '10px' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#64748b', marginBottom: '4px' }}>
-                                                        <span>Batch Completion Progress</span>
-                                                        <span style={{ fontWeight: 800, color: '#6366f1' }}>{c.progress}%</span>
-                                                    </div>
-                                                    <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                                                        <div style={{ height: '100%', width: `${c.progress}%`, background: 'linear-gradient(90deg, #6366f1, #4f46e5)', borderRadius: '4px' }} />
-                                                    </div>
-
-                                                    <div className="gh-action-pills">
-                                                        <button className="gh-action-pill" onClick={() => navigate('/resources')}><FileText size={12} /> Materials</button>
-                                                        <button className="gh-action-pill" onClick={() => setActiveTab('discussions')}><MessageCircle size={12} /> Class Discussion</button>
-                                                    </div>
-                                                </div>
+                                    {/* Classroom Cards Grid */}
+                                    <div className="gh-cards-stack">
+                                        {filteredClassrooms.length === 0 ? (
+                                            <div style={{ textAlign: 'center', padding: '40px 20px', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                                                <BookOpen size={48} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
+                                                <p style={{ color: '#64748b', fontSize: '0.95rem' }}>No active classes found.</p>
                                             </div>
-                                        ))
-                                    )}
+                                        ) : (
+                                            filteredClassrooms.map((c) => (
+                                                <div key={c.id} className="gh-course-item">
+                                                    <div className="gh-course-header">
+                                                        <div className="gh-course-left">
+                                                            <div className="gh-course-icon" style={{ backgroundColor: c.iconBg, color: c.iconColor }}>
+                                                                {c.icon}
+                                                            </div>
+                                                            <div>
+                                                                <div className="gh-course-title">
+                                                                    {c.name}
+                                                                    {c.status === 'live' && (
+                                                                        <span className="gh-status-pill live">● LIVE NOW</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="gh-course-sub">{c.teacher} &nbsp;•&nbsp; Code: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{c.code}</span></div>
+                                                                <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px' }}>
+                                                                    🗓 {c.schedule} &nbsp;|&nbsp; 👥 {c.studentsCount} Enrolled Students
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
-                                    <div style={{ textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8', marginTop: '16px' }}>
-                                        Showing {filteredClassrooms.length} of {classrooms.length} batches
+                                                        <div className="gh-countdown-box">
+                                                            <div className="gh-countdown-lbl">Schedule</div>
+                                                            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>{c.nextClassTime}</div>
+                                                            <button
+                                                                className="gh-btn-join-purple"
+                                                                style={{ marginTop: '8px', fontSize: '0.8rem', padding: '6px 12px' }}
+                                                                onClick={() => launchLiveClass(c.liveRoomId || `room_${c.id}`, c.name)}
+                                                            >
+                                                                {c.status === 'live' ? '📹 Join Live Class' : 'Enter Classroom'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div style={{ marginTop: '10px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#64748b', marginBottom: '4px' }}>
+                                                            <span>Batch Completion Progress</span>
+                                                            <span style={{ fontWeight: 800, color: '#6366f1' }}>{c.progress}%</span>
+                                                        </div>
+                                                        <div style={{ height: '6px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                                                            <div style={{ height: '100%', width: `${c.progress}%`, background: 'linear-gradient(90deg, #6366f1, #4f46e5)', borderRadius: '4px' }} />
+                                                        </div>
+
+                                                        <div className="gh-action-pills" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                                                            <button className="gh-action-pill" onClick={() => setActiveTab('resources')}><FileText size={12} /> Materials</button>
+                                                            <button className="gh-action-pill" onClick={() => setActiveTab('discussions')}><MessageCircle size={12} /> Class Discussion</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
                                     </div>
                                 </div>
 
