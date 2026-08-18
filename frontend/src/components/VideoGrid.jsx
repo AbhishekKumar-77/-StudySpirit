@@ -221,13 +221,17 @@ const VideoGrid = ({
         streams.forEach((stream, index) => {
             // Usually the second stream or one without active camera track is the screen share
             const isScreen = index > 0 || (stream && stream.getVideoTracks()[0]?.label.toLowerCase().includes('screen'));
+            const isStudent = participant.role === 'student' || participant.role !== 'teacher';
+            const hasCamPerm = participant.permissions?.camera === true;
+            const camVisible = isScreen ? true : (isStudent ? hasCamPerm : (participant.isCameraOn ?? true));
+
             allVideos.push({
                 userId: `${participant.id}_${index}`,
                 stream,
                 userName: participant.name + (isScreen ? ' (Screen)' : ''),
                 userAvatar: participant.avatar || '👤',
                 isMuted: isScreen ? true : (participant.isMuted ?? false),
-                isCameraOn: participant.isCameraOn ?? true,
+                isCameraOn: camVisible,
                 isLocal: false
             });
         });
@@ -251,7 +255,7 @@ const VideoGrid = ({
                         userName: `Participant${isScreen ? ' (Screen)' : ''}`,
                         userAvatar: '👤',
                         isMuted: isScreen ? true : false,
-                        isCameraOn: true,
+                        isCameraOn: isScreen ? true : false, // Default remote student stream to camera OFF
                         isLocal: false
                     });
                 });

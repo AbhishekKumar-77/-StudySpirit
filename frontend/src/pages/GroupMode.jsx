@@ -126,22 +126,30 @@ export default function GroupMode() {
 
         const handlePermissionUpdate = (data) => {
             const { targetUserId, permissions } = data;
-            if (targetUserId === currentUserId || targetUserId === 'all') {
-                console.log('🔒 Permissions updated:', permissions);
-                setStudentPermissions(prev => {
-                    const updated = { ...prev, ...permissions };
-                    // Force shut off media if revoked by teacher
-                    if (permissions.mic === false) {
-                        setIsMicOn(false);
-                        webrtcService.toggleMicrophone(false);
-                    }
-                    if (permissions.camera === false) {
-                        setIsCameraOn(false);
-                        webrtcService.toggleCamera(false);
-                    }
-                    return updated;
-                });
+            // TEACHER IS EXEMPT! Only enforce camera/mic shut-off on student accounts
+            if (!isHost && (targetUserId === currentUserId || targetUserId === 'all')) {
+                console.log('🔒 Permissions updated for student:', permissions);
+                setStudentPermissions(prev => ({ ...prev, ...permissions }));
+                if (permissions.camera === false) {
+                    setIsCameraOn(false);
+                    webrtcService.toggleCamera(false);
+                }
+                if (permissions.mic === false) {
+                    setIsMicOn(false);
+                    webrtcService.toggleMicrophone(false);
+                }
             }
+
+            // Update liveParticipants state so Teacher Host Control drawer reflects current toggle states
+            setLiveParticipants(prev => prev.map(p => {
+                if (p.id === targetUserId || targetUserId === 'all') {
+                    return {
+                        ...p,
+                        permissions: { ...(p.permissions || {}), ...permissions }
+                    };
+                }
+                return p;
+            }));
         };
 
         const handleHandRaised = (data) => {
@@ -158,7 +166,10 @@ export default function GroupMode() {
         };
 
         const handleNewMessage = (msg) => {
-            setChatMessages(prev => [...prev, msg]);
+            setChatMessages(prev => {
+                if (prev.some(m => m.id === msg.id)) return prev;
+                return [...prev, msg];
+            });
         };
 
         const handleRoomParticipants = (participantsList) => {
@@ -1082,46 +1093,60 @@ export default function GroupMode() {
                                     {liveParticipants.length === 0 ? (
                                         <div style={{ textTransform: 'capitalize', color: '#6c7086', fontSize: '0.85rem', textAlign: 'center', padding: '20px' }}>Waiting for students to join...</div>
                                     ) : (
-                                        liveParticipants.map(p => (
-                                            <div key={p.id} style={{ background: '#181825', padding: '12px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                <div style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                    <span>{p.avatar || '👤'}</span>
-                                                    <span>{p.name}</span>
+                                        liveParticipants.map(p => {
+                                            const pPerm = p.permissions || {};
+                                            const hasMic = pPerm.mic !== false;
+                                            const hasCam = pPerm.camera === true;
+                                            const hasBoard = pPerm.whiteboard === true;
+                                            const hasEditor = pPerm.codeEditor === true;
+                                            const hasScreen = pPerm.screenShare === true;
+
+                                            return (
+                                                <div key={p.id} style={{ background: '#181825', padding: '12px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                    <div style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                            <span>{p.avatar || '👤'}</span>
+                                                            <span>{p.name}</span>
+                                                        </div>
+                                                        <span style={{ fontSize: '0.7rem', color: p.role === 'teacher' ? '#38bdf8' : '#a6adc8', background: '#313244', padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
+                                                            {p.role || 'student'}
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                        <button
+                                                            style={{ padding: '4px 8px', background: hasMic ? '#059669' : '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 700 }}
+                                                            onClick={() => handleUpdatePermission(p.id, { mic: !hasMic })}
+                                                        >
+                                                            🎙️ Mic {hasMic ? 'ON' : 'OFF'}
+                                                        </button>
+                                                        <button
+                                                            style={{ padding: '4px 8px', background: hasCam ? '#059669' : '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 700 }}
+                                                            onClick={() => handleUpdatePermission(p.id, { camera: !hasCam })}
+                                                        >
+                                                            📹 Cam {hasCam ? 'ON' : 'OFF'}
+                                                        </button>
+                                                        <button
+                                                            style={{ padding: '4px 8px', background: hasBoard ? '#059669' : '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 700 }}
+                                                            onClick={() => handleUpdatePermission(p.id, { whiteboard: !hasBoard })}
+                                                        >
+                                                            🎨 Board {hasBoard ? 'ON' : 'OFF'}
+                                                        </button>
+                                                        <button
+                                                            style={{ padding: '4px 8px', background: hasEditor ? '#059669' : '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 700 }}
+                                                            onClick={() => handleUpdatePermission(p.id, { codeEditor: !hasEditor })}
+                                                        >
+                                                            💻 Editor {hasEditor ? 'ON' : 'OFF'}
+                                                        </button>
+                                                        <button
+                                                            style={{ padding: '4px 8px', background: hasScreen ? '#059669' : '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 700 }}
+                                                            onClick={() => handleUpdatePermission(p.id, { screenShare: !hasScreen })}
+                                                        >
+                                                            🖥️ Screen {hasScreen ? 'ON' : 'OFF'}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                                    <button
-                                                        style={{ padding: '4px 8px', background: '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}
-                                                        onClick={() => handleUpdatePermission(p.id, { mic: true })}
-                                                    >
-                                                        🎙️ Mic
-                                                    </button>
-                                                    <button
-                                                        style={{ padding: '4px 8px', background: '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}
-                                                        onClick={() => handleUpdatePermission(p.id, { camera: true })}
-                                                    >
-                                                        📹 Cam
-                                                    </button>
-                                                    <button
-                                                        style={{ padding: '4px 8px', background: '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}
-                                                        onClick={() => handleUpdatePermission(p.id, { whiteboard: true })}
-                                                    >
-                                                        🎨 Board
-                                                    </button>
-                                                    <button
-                                                        style={{ padding: '4px 8px', background: '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}
-                                                        onClick={() => handleUpdatePermission(p.id, { codeEditor: true })}
-                                                    >
-                                                        💻 Editor
-                                                    </button>
-                                                    <button
-                                                        style={{ padding: '4px 8px', background: '#313244', border: '1px solid #45475a', color: 'white', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}
-                                                        onClick={() => handleUpdatePermission(p.id, { screenShare: true })}
-                                                    >
-                                                        🖥️ Screen
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     )}
                                 </div>
                             </div>
