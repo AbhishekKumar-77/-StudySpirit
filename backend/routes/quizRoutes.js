@@ -9,6 +9,8 @@ router.post('/generate-from-image', auth, quizController.generateFromImage);
 router.post('/grade-subjective', auth, quizController.gradeSubjective);
 router.post('/explain-answer', auth, quizController.explainAnswer);
 router.post('/adaptive-practice', auth, quizController.adaptivePractice);
+router.post('/generate-remedial', auth, quizController.generateRemedialQuiz);
+router.get('/:code/export-html', quizController.exportQuizHTML);
 
 // Create Quiz (auth required — prevents anonymous DB flooding)
 router.post('/create', auth, quizController.createQuiz);

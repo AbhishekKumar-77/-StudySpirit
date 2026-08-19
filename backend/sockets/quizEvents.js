@@ -174,6 +174,54 @@ module.exports = function registerQuizEvents(socket, io) {
         }
     });
 
+    // ── GAMIFIED LIVE ARENA (Kahoot / Quizizz Mode) ───────────────
+    socket.on('quiz:arena:start', (data) => {
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+        if (!quizCode) return;
+        console.log(`🎮 Live Arena started for quiz ${quizCode}`);
+        io.to(`quiz:${quizCode}`).emit('quiz:arena:started', { quizCode });
+    });
+
+    socket.on('quiz:arena:next-question', (data) => {
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+        const { questionIndex, questionData, timeLimit = 30 } = data || {};
+        if (!quizCode) return;
+
+        io.to(`quiz:${quizCode}`).emit('quiz:arena:question', {
+            quizCode,
+            questionIndex,
+            questionData,
+            timeLimit
+        });
+    });
+
+    socket.on('quiz:arena:answer', (data) => {
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+        const { studentId, studentName, answer, isCorrect, speedBonus = 0 } = data || {};
+        if (!quizCode || !studentId) return;
+
+        // Broadcast to teacher room
+        io.to(`teacher:${quizCode}`).emit('quiz:arena:student:answered', {
+            studentId,
+            studentName,
+            answer,
+            isCorrect,
+            speedBonus
+        });
+    });
+
+    socket.on('quiz:arena:reveal', (data) => {
+        const quizCode = (data?.quizCode || '').toUpperCase().trim();
+        const { correctAnswer, leaderboard } = data || {};
+        if (!quizCode) return;
+
+        io.to(`quiz:${quizCode}`).emit('quiz:arena:revealed', {
+            quizCode,
+            correctAnswer,
+            leaderboard
+        });
+    });
+
     // ── Debug: log all registered quiz events ────────────────────
     console.log(`🎯 Quiz socket events registered for socket: ${socket.id}`);
 };

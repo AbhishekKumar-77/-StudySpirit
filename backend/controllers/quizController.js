@@ -431,12 +431,20 @@ exports.checkReAttempt = async (req, res) => {
         }
 
         const QuizSubmission = require('../models/QuizSubmission');
-        const existing = await QuizSubmission.findOne({
+        const quiz = await Quiz.findOne({ code: code.toUpperCase() });
+        const maxAttempts = quiz?.maxAttempts || 1;
+
+        const count = await QuizSubmission.countDocuments({
             quizCode: code.toUpperCase(),
             registrationNumber: registrationNumber.trim().toUpperCase()
         });
 
-        res.json({ success: true, alreadySubmitted: !!existing });
+        res.json({
+            success: true,
+            alreadySubmitted: count >= maxAttempts,
+            attemptsUsed: count,
+            maxAttempts
+        });
     } catch (error) {
         console.error("Check Re-Attempt Error:", error);
         res.status(500).json({ success: false, message: "Server error" });
@@ -472,19 +480,20 @@ exports.submitResult = async (req, res) => {
             const regNo = (req.body.registrationNumber || '').trim().toUpperCase();
 
             // Block submissions if exam is closed
-            const examCheck = await Quiz.findOne({ code: req.body.quizCode.toUpperCase() }).select('isClosed title');
+            const examCheck = await Quiz.findOne({ code: req.body.quizCode.toUpperCase() }).select('isClosed title maxAttempts');
             if (examCheck?.isClosed) {
                 return res.status(403).json({ success: false, message: "This exam has been closed by the teacher." });
             }
             req.examTitle = examCheck?.title || 'General Quiz';
+            const maxAttempts = examCheck?.maxAttempts || 1;
 
-            // Block re-attempt: if same regNo already submitted this quiz
+            // Block re-attempt: if same regNo has reached maxAttempts
             if (regNo) {
-                const existing = await QuizSubmission.findOne({
+                const submissionCount = await QuizSubmission.countDocuments({
                     quizCode: req.body.quizCode.toUpperCase(),
                     registrationNumber: regNo
                 });
-                if (existing) {
+                if (submissionCount >= maxAttempts) {
                     // Still update the career passport for logged-in users on re-attempts
                     if (req.user) {
                         const CareerProfile = require('../models/CareerProfile');
@@ -514,7 +523,7 @@ exports.submitResult = async (req, res) => {
                     }
                     return res.status(409).json({
                         success: false,
-                        message: "You have already submitted this quiz.",
+                        message: `Maximum allowed attempts (${maxAttempts}) reached for registration number "${regNo}".`,
                         alreadySubmitted: true
                     });
                 }
@@ -1055,5 +1064,150 @@ exports.adaptivePractice = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to generate adaptive question" });
     }
 };
+
+// ── AI Remedial Quiz Generation ─────────────────────────────
+exports.generateRemedialQuiz = async (req, res) => {
+    try {
+        if (!requireApiKey(res)) return;
+        const { missedQuestions } = req.body;
+        const apiKey = GROQ_API_KEY;
+
+        if (!missedQuestions || !Array.isArray(missedQuestions) || missedQuestions.length === 0) {
+            return res.status(400).json({ success: false, message: "Missed questions array is required" });
+        }
+
+        const prompt = `You are a personalized AI Tutor. A student recently took a quiz and answered the following questions incorrectly:
+${missedQuestions.map((m, i) => `${i+1}. Question: "${m.question}" (Student chose: "${m.studentAnswer}", Correct: "${m.correctAnswer}")`).join('\n')}
+
+Generate EXACTLY 5 targeted remedial practice questions that focus specifically on helping the student master the underlying concepts they got wrong above.
+
+Return ONLY a JSON object containing a "questions" array:
+{
+  "questions": [
+    {
+      "type": "mcq",
+      "question": "Clear remedial question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0,
+      "difficulty": "medium",
+      "explanation": "Short explanation of why this answer is correct."
+    }
+  ]
+}`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: 'Output format must be a strictly valid JSON object.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.7,
+                response_format: { type: "json_object" }
+            })
+        });
+
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        let parsed = JSON.parse(content);
+        let questions = parsed.questions || parsed.quiz || parsed;
+
+        if (!Array.isArray(questions)) {
+            throw new Error("AI did not return a valid questions array");
+        }
+
+        questions = questions.map((q, i) => ({
+            ...q,
+            id: Date.now() + i,
+            type: q.type || 'mcq'
+        }));
+
+        res.json({ success: true, questions });
+    } catch (error) {
+        console.error("Generate Remedial Quiz Error:", error);
+        res.status(500).json({ success: false, message: "Failed to generate remedial quiz: " + error.message });
+    }
+};
+
+// ── Export Quiz HTML (Printable Question Paper & Answer Key) ────────
+exports.exportQuizHTML = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const includeAnswers = req.query.answers === 'true';
+        const quiz = await Quiz.findOne({ code: code.toUpperCase() });
+        if (!quiz) return res.status(404).send("<h1>Quiz Not Found</h1>");
+
+        const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>${quiz.title} - Question Paper</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
+        .header { border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; }
+        .title { font-size: 24px; font-weight: bold; color: #0f172a; }
+        .meta { font-size: 14px; color: #64748b; margin-top: 5px; }
+        .q-card { margin-bottom: 25px; padding: 18px; border: 1px solid #e2e8f0; border-radius: 8px; page-break-inside: avoid; }
+        .q-num { font-weight: bold; color: #2563eb; }
+        .q-text { font-size: 16px; margin-bottom: 12px; font-weight: 600; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-left: 20px; }
+        .option { font-size: 14px; padding: 6px; }
+        .answer-badge { display: inline-block; margin-top: 10px; padding: 4px 10px; background: #dcfce7; color: #166534; font-weight: bold; border-radius: 4px; font-size: 13px; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">🖨️ Print Question Paper</button>
+    </div>
+    <div class="header">
+        <div>
+            <div class="title">${quiz.title}</div>
+            <div class="meta">Quiz Code: <strong>${quiz.code}</strong> | Total Questions: ${quiz.questions.length} | Time Limit: ${quiz.settings.timeLimit} mins</div>
+        </div>
+        <div style="text-align: right;">
+            <div class="meta">Student Name: _______________________</div>
+            <div class="meta">Reg No: _____________________________</div>
+        </div>
+    </div>
+    ${quiz.questions.map((q, idx) => `
+        <div class="q-card">
+            <div class="q-text"><span class="q-num">Q${idx + 1}.</span> ${q.question}</div>
+            ${q.type === 'mcq' || q.type === 'msq' ? `
+                <div class="options">
+                    ${(q.options || []).map((opt, oIdx) => `
+                        <div class="option">(${String.fromCharCode(65 + oIdx)}) ${opt}</div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            ${q.type === 'fill-blanks' ? `<div style="margin-top: 10px;">Answer: _______________________________</div>` : ''}
+            ${q.type === 'subjective' ? `<div style="margin-top: 10px; height: 80px; border: 1px dashed #cbd5e1; border-radius: 4px;"></div>` : ''}
+            ${includeAnswers ? `
+                <div class="answer-badge">
+                    Correct Answer: ${
+                        q.type === 'mcq' ? `(${String.fromCharCode(65 + Number(q.correct))}) ${q.options?.[q.correct] || ''}` :
+                        q.type === 'fill-blanks' ? q.blankAnswer :
+                        q.correct
+                    }
+                </div>
+            ` : ''}
+        </div>
+    `).join('')}
+</body>
+</html>
+        `;
+        res.send(html);
+    } catch (error) {
+        console.error("Export Quiz HTML Error:", error);
+        res.status(500).send("Failed to generate printable paper.");
+    }
+};
+
 
 

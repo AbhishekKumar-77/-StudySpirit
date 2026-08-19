@@ -30,6 +30,12 @@ import LearningAnalyticsView from "../components/practice/LearningAnalyticsView"
 import AIQuestionStudioView from "../components/practice/AIQuestionStudioView";
 import LeaderboardView from "../components/practice/LeaderboardView";
 
+// Modular Quiz Engine Components
+import QuestionPalette from "../components/quiz/QuestionPalette";
+import QuestionRenderer from "../components/quiz/QuestionRenderers";
+import LiveProctorPanel from "../components/quiz/LiveProctorPanel";
+import GamifiedQuizArena from "../components/quiz/GamifiedQuizArena";
+
 export default function StudySprintQuiz() {
     const { user } = useApp();
     const navigate = useNavigate();
@@ -99,8 +105,11 @@ export default function StudySprintQuiz() {
     const [fullscreenActive, setFullscreenActive] = useState(false);
     const [isReviewingAnswers, setIsReviewingAnswers] = useState(false);
     const [isTabHidden, setIsTabHidden] = useState(false);
-    const [alreadySubmittedError, setAlreadySubmittedError] = useState(""); // Re-attempt block message
     const [codingSubmissions, setCodingSubmissions] = useState([]); // coding answers to store on submit
+    const [markedForReview, setMarkedForReview] = useState({}); // { questionId: boolean }
+    const [visitedQuestions, setVisitedQuestions] = useState({}); // { questionId: boolean }
+    const [isRemedialLoading, setIsRemedialLoading] = useState(false);
+    const [isArenaMode, setIsArenaMode] = useState(false);
     const fullscreenRef = useRef(null);
     // Ref keeps latest userAnswers accessible in timer callback (avoids stale closure)
     const userAnswersRef = useRef({});
@@ -482,6 +491,8 @@ export default function StudySprintQuiz() {
         setUserAnswers({});
         setCurrentQuestionIndex(0);
         setShowResult(false);
+        setVisitedQuestions({ [joinedQuiz.questions[0]?._id || joinedQuiz.questions[0]?.id || 0]: true });
+        setMarkedForReview({});
 
         // Notify teacher: student joined exam
         try {
@@ -494,6 +505,55 @@ export default function StudySprintQuiz() {
             });
             if (socket.connected) { doJoin(); console.log("📡 Socket quiz:join emitted from startExam"); } else { socket.once('connect', () => { doJoin(); console.log("📡 Socket quiz:join emitted from startExam (after connect)"); }); }
         } catch (e) { console.error('Socket join error', e); }
+    };
+
+    const handleGenerateRemedial = async () => {
+        if (!joinedQuiz || !joinedQuiz.questions) return;
+        setIsRemedialLoading(true);
+        try {
+            const missed = joinedQuiz.questions.filter(q => {
+                const qId = q._id || q.id;
+                return userAnswers[qId] !== q.correct;
+            }).map(q => {
+                const qId = q._id || q.id;
+                return {
+                    question: q.question,
+                    studentAnswer: q.options?.[userAnswers[qId]] || userAnswers[qId] || "None",
+                    correctAnswer: q.options?.[q.correct] || q.correct || "N/A"
+                };
+            });
+
+            if (missed.length === 0) {
+                alert("Great job! You answered all questions correctly. No remedial practice needed.");
+                setIsRemedialLoading(false);
+                return;
+            }
+
+            const res = await fetch(`${API_BASE}/quiz/generate-remedial`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ missedQuestions: missed })
+            });
+            const data = await res.json();
+
+            if (data.success && data.questions) {
+                setAiQuestions(data.questions);
+                setPracticeStarted(true);
+                setPracticeFinished(false);
+                setPracticeIndex(0);
+                setPracticeScore(0);
+                setPracticeAnswered(false);
+                setActiveTab("practice");
+            } else {
+                alert("Failed to generate remedial quiz: " + (data.message || "Unknown error"));
+            }
+        } catch (e) {
+            console.error("Remedial Error:", e);
+            alert("Error generating remedial practice quiz.");
+        } finally {
+            setIsRemedialLoading(false);
+        }
     };
 
     // ✅ FIX: accepts latestAnswers param so timer auto-submit passes fresh answers via ref
@@ -952,7 +1012,7 @@ export default function StudySprintQuiz() {
             ref={fullscreenRef}
         >
             {/* Background Glow */}
-            <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-cyan-500 /15 rounded-full blur-[100px] z-0 pointer-events-none"></div>
+            <div className="absolute top-[10%] left-[10%] w-[600px] h-[600px] bg-cyan-500/15 rounded-full blur-[100px] z-0 pointer-events-none"></div>
             <div className="absolute bottom-[10%] right-[10%] w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-[100px] z-0 pointer-events-none"></div>
 
             {/* ── Secure Browser Gate (shown AFTER exam ends if somehow in regular browser) ── */}
@@ -992,7 +1052,7 @@ export default function StudySprintQuiz() {
 
             <div className="max-w-[1400px] mx-auto px-8 py-10 relative z-10">
                 {/* Hero Header */}
-                <div className="bg-gradient-to-br from-cyan-500 /20 to-pink-500/20 backdrop-blur-xl rounded-3xl p-10 mb-8 border border-cyan-500/20 shadow-[0_20px_60px_rgba(139,92,246,0.2)] relative overflow-hidden transition-all duration-300 group">
+                <div className="bg-gradient-to-br from-cyan-500/20 to-pink-500/20 backdrop-blur-xl rounded-3xl p-10 mb-8 border border-cyan-500/20 shadow-[0_20px_60px_rgba(139,92,246,0.2)] relative overflow-hidden transition-all duration-300 group">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50"></div>
 
                     <div className="flex items-center justify-between flex-wrap gap-6">
@@ -1908,7 +1968,7 @@ export default function StudySprintQuiz() {
                                 <p className="text-xl text-[var(--text-secondary)] mb-8">
                                     You answered <span className="text-[var(--text-primary)] font-bold">{joinedQuiz.questions.filter(q => userAnswers[(q._id || q.id)] === q.correct).length}</span> out of {joinedQuiz.questions.length} correctly.
                                 </p>
-                                <div className="flex gap-4 justify-center">
+                                <div className="flex flex-wrap gap-4 justify-center">
                                     {joinedQuiz.settings.allowReview && (
                                         <button
                                             onClick={() => setIsReviewingAnswers(true)}
@@ -1917,6 +1977,14 @@ export default function StudySprintQuiz() {
                                             Review Answers
                                         </button>
                                     )}
+                                    <button
+                                        onClick={handleGenerateRemedial}
+                                        disabled={isRemedialLoading}
+                                        className="px-8 py-4 bg-gradient-to-br from-purple-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-purple-600/30 transition-all hover:scale-105 flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        <Brain size={20} className="text-amber-400" />
+                                        {isRemedialLoading ? "Generating..." : "Practice Weak Areas (AI)"}
+                                    </button>
                                     <button
                                         onClick={() => { setShowResult(false); setJoinedQuiz(null); setStudentQuizCodeInput(""); setStudentRegNoInput(""); setIsReviewingAnswers(false); }}
                                         className="px-8 py-4 bg-[var(--border-color)] text-[var(--text-primary)] font-bold rounded-xl hover:bg-[var(--bg-secondary)] transition-all hover:scale-105"
@@ -2241,7 +2309,7 @@ export default function StudySprintQuiz() {
                                         className={`
                                         flex items-center gap-6 p-6 rounded-2xl transition-all duration-300 hover:scale-[1.01]
                                         ${player.isYou
-                                                ? "bg-cyan-500 /20 border border-cyan-500/30 shadow-[0_0_30px_rgba(139,92,246,0.1)]"
+                                                ? "bg-cyan-500/20 border border-cyan-500/30 shadow-[0_0_30px_rgba(139,92,246,0.1)]"
                                                 : "bg-[var(--glass-bg)] border border-[var(--border-color)] hover:bg-[var(--glass-bg)]"
                                             }
                                     `}

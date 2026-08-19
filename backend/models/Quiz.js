@@ -8,10 +8,12 @@ const questionSchema = new mongoose.Schema({
     videoUrl: { type: String, default: '' }, // Supporting video snippets
     mathFormula: { type: String, default: '' }, // Supporting KaTeX/LaTeX math strings
     options: [{ type: String }],
-    correct: { type: mongoose.Schema.Types.Mixed }, // Index for MCQ, ideal text for Subjective
-    type: { type: String, default: 'mcq', enum: ['mcq', 'subjective', 'coding', 'true-false'] },
+    correct: { type: mongoose.Schema.Types.Mixed }, // Index for MCQ, array of indices for MSQ, ideal text for Subjective
+    type: { type: String, default: 'mcq', enum: ['mcq', 'msq', 'fill-blanks', 'matching', 'subjective', 'coding', 'true-false'] },
     difficulty: { type: String, default: 'medium' },
     rubric: { type: String, default: '' }, // Grading criteria for AI evaluating subjective answers
+    blankAnswer: { type: String, default: '' }, // Expected text for fill-in-the-blanks
+    matchingPairs: [{ left: String, right: String }], // Array of { left: "A", right: "B" } pairs
     starterCode: { type: String },
     testCases: [{ input: String, expectedOutput: String, output: String }]
 }, { strict: false });
@@ -28,7 +30,7 @@ const quizSchema = new mongoose.Schema({
         showResults: { type: Boolean, default: true },
         randomizeQuestions: { type: Boolean, default: false },
         secureMode: { type: Boolean, default: false },
-        // Scheduling: quiz is only joinable between these timestamps
+        perQuestionTimer: { type: Number, default: 0 }, // 0 = off, >0 = seconds per question
         scheduledStart: { type: Date, default: null },
         scheduledEnd: { type: Date, default: null }
     },
