@@ -42,19 +42,12 @@ export default function QuestionPlayer({
         topic: 'OOP Concepts'
     };
 
-    const handleSelectOption = (idx) => {
+    const handleSelectOption = async (idx) => {
         if (isSubmitted) return;
         setSelectedOption(idx);
-    };
-
-    const handleSubmitAnswer = async () => {
-        if (selectedOption === null) {
-            alert("Please select an option first!");
-            return;
-        }
-
         setIsSubmitted(true);
-        const isRight = selectedOption === currentQ.correct;
+
+        const isRight = idx === currentQ.correct;
         if (isRight) setScoreCount(prev => prev + 1);
 
         // Submit attempt to backend analytics
@@ -67,7 +60,7 @@ export default function QuestionPlayer({
                     questionId: currentQ.id || currentQ._id,
                     questionText: currentQ.question,
                     options: currentQ.options,
-                    selectedAnswer: selectedOption,
+                    selectedAnswer: idx,
                     correctAnswer: currentQ.correct,
                     isCorrect: isRight,
                     subject: currentQ.subject || 'General',
@@ -243,16 +236,6 @@ export default function QuestionPlayer({
                         );
                     })}
                 </div>
-
-                {/* Submit Button (Before submission) */}
-                {!isSubmitted && (
-                    <button
-                        onClick={handleSubmitAnswer}
-                        className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-2xl shadow-md shadow-indigo-200 transition-all hover:scale-[1.005]"
-                    >
-                        Submit Answer
-                    </button>
-                )}
 
                 {/* Feedback Panel (After submission) */}
                 {isSubmitted && (

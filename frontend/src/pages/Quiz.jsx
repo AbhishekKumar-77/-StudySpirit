@@ -36,6 +36,8 @@ import QuestionRenderer from "../components/quiz/QuestionRenderers";
 import LiveProctorPanel from "../components/quiz/LiveProctorPanel";
 import GamifiedQuizArena from "../components/quiz/GamifiedQuizArena";
 
+import { PYTHON_MODULE_1_QUESTIONS } from "../data/pythonQuestions";
+
 export default function StudySprintQuiz() {
     const { user } = useApp();
     const navigate = useNavigate();
@@ -931,30 +933,13 @@ export default function StudySprintQuiz() {
     // Helper to start practice runner
     const handleStartPracticeRunner = (opts = {}) => {
         if (opts.mode === 'smart' || opts.mode === 'topic' || opts.mode === 'mistake') {
+            const selectedQuestions = (opts.questions && opts.questions.length > 0) 
+                ? opts.questions 
+                : PYTHON_MODULE_1_QUESTIONS;
+
             setActiveRunnerSession({
-                title: `${opts.mode.toUpperCase()} Practice — ${opts.topic || 'Python OOP'}`,
-                questions: [
-                    {
-                        id: 'runner-1',
-                        question: `Which OOP concept enables dynamic method overriding at runtime in ${opts.subject || 'Python'}?`,
-                        options: ['Method Overloading', 'Method Overriding (Runtime Polymorphism)', 'Encapsulation', 'Abstraction'],
-                        correct: 1,
-                        explanation: 'Method overriding allows a subclass to provide a specific implementation of a method that is already defined in its superclass, resolved dynamically at runtime.',
-                        keyConcept: 'Runtime Polymorphism resolves method execution dynamically based on object instance.',
-                        subject: opts.subject || 'Python',
-                        topic: opts.topic || 'OOP'
-                    },
-                    {
-                        id: 'runner-2',
-                        question: `In Python, which keyword is used to raise a custom exception?`,
-                        options: ['throw', 'raise', 'catch', 'error'],
-                        correct: 1,
-                        explanation: 'The raise keyword in Python is used to explicitly throw/raise exceptions.',
-                        keyConcept: 'raise propagates custom or built-in exceptions in Python.',
-                        subject: opts.subject || 'Python',
-                        topic: opts.topic || 'Exception Handling'
-                    }
-                ]
+                title: `${opts.topic || 'Module 1 : Introduction to Programming'}`,
+                questions: selectedQuestions
             });
         } else if (opts.questions) {
             setActiveRunnerSession({

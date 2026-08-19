@@ -10,32 +10,9 @@ export default function TopicPracticeView({ onStartSession }) {
             subject: "Python Programming",
             chapters: [
                 {
-                    name: "Basics & Fundamentals",
+                    name: "Module 1 : Introduction to Programming",
                     topics: [
-                        { name: "Variables & Data Types", questionsCount: 15, mastery: 96 },
-                        { name: "Control Flow (if, loops)", questionsCount: 12, mastery: 88 }
-                    ]
-                },
-                {
-                    name: "Functions & Modules",
-                    topics: [
-                        { name: "Function Definitions & Arguments", questionsCount: 18, mastery: 91 },
-                        { name: "Lambda & Higher Order Functions", questionsCount: 10, mastery: 72 }
-                    ]
-                },
-                {
-                    name: "Object Oriented Programming (OOP)",
-                    topics: [
-                        { name: "Classes & Objects", questionsCount: 20, mastery: 85 },
-                        { name: "Inheritance & Method Overriding", questionsCount: 15, mastery: 64 },
-                        { name: "Polymorphism & MRO", questionsCount: 14, mastery: 58 },
-                        { name: "Encapsulation & Private Members", questionsCount: 12, mastery: 70 }
-                    ]
-                },
-                {
-                    name: "Exception Handling",
-                    topics: [
-                        { name: "try-except Blocks & Custom Exceptions", questionsCount: 10, mastery: 58 }
+                        { name: "Module 1 : Introduction to Programming", questionsCount: 20, mastery: 100 }
                     ]
                 }
             ]
