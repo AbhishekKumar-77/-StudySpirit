@@ -2,27 +2,27 @@ import React from 'react';
 import { AlertCircle, RefreshCw, CheckCircle2, Play, ChevronRight, RotateCcw } from 'lucide-react';
 
 export default function MistakePracticeView({ mistakesData, onStartSession }) {
-    const mistakes = mistakesData || [
-        {
-            subject: "Python",
-            topics: [
-                { topic: "OOP Concepts", mistakeCount: 8, lastAttemptDate: "Yesterday" },
-                { topic: "Exception Handling", mistakeCount: 5, lastAttemptDate: "3 days ago" }
-            ]
-        },
-        {
-            subject: "DBMS",
-            topics: [
-                { topic: "SQL Joins", mistakeCount: 6, lastAttemptDate: "2 days ago" }
-            ]
-        },
-        {
-            subject: "Operating Systems",
-            topics: [
-                { topic: "Deadlock & Semaphores", mistakeCount: 4, lastAttemptDate: "5 days ago" }
-            ]
-        }
-    ];
+    // Load real mistakes from localStorage or passed props (no mock fallback)
+    const rawLoggedMistakes = JSON.parse(localStorage.getItem('study_spirit_logged_mistakes') || '[]');
+
+    // Structure raw mistakes into subject/topic groups if present
+    let mistakes = mistakesData || [];
+    if (!mistakesData && rawLoggedMistakes.length > 0) {
+        const grouped = {};
+        rawLoggedMistakes.forEach(item => {
+            const sub = item.subject || "Python Programming";
+            const top = item.topic || "Module 1 : Introduction to Programming";
+            if (!grouped[sub]) grouped[sub] = {};
+            if (!grouped[sub][top]) grouped[sub][top] = { topic: top, mistakeCount: 0, questions: [] };
+            grouped[sub][top].mistakeCount++;
+            grouped[sub][top].questions.push(item);
+        });
+
+        mistakes = Object.keys(grouped).map(sub => ({
+            subject: sub,
+            topics: Object.values(grouped[sub])
+        }));
+    }
 
     const totalMistakes = mistakes.reduce((acc, sub) => acc + sub.topics.reduce((tAcc, top) => tAcc + top.mistakeCount, 0), 0);
 

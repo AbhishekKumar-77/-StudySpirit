@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { BookOpen, ChevronRight, ChevronDown, Play, Sparkles, Folder, FileText } from 'lucide-react';
 
 export default function TopicPracticeView({ onStartSession }) {
-    const [expandedSubjects, setExpandedSubjects] = useState({ 'Python': true });
-    const [expandedChapters, setExpandedChapters] = useState({ 'OOP': true });
+    const [expandedSubjects, setExpandedSubjects] = useState({ 'Python Programming': true });
+    const [expandedChapters, setExpandedChapters] = useState({ 'Module 1 : Introduction to Programming': true });
+
+    // Load actual student mastery percentage (0% if unattempted)
+    const savedScore = localStorage.getItem('study_spirit_python_m1_score');
+    const pythonMastery = savedScore !== null ? parseInt(savedScore, 10) : 0;
 
     const topicTree = [
         {
@@ -12,7 +16,7 @@ export default function TopicPracticeView({ onStartSession }) {
                 {
                     name: "Module 1 : Introduction to Programming",
                     topics: [
-                        { name: "Module 1 : Introduction to Programming", questionsCount: 20, mastery: 100 }
+                        { name: "Module 1 : Introduction to Programming", questionsCount: 20, mastery: pythonMastery }
                     ]
                 }
             ]

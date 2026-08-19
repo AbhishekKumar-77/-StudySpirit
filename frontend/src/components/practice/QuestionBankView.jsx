@@ -1,27 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { Bookmark, Trash2, Search, Filter, Play, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Bookmark, Trash2, Search, Filter, Play, CheckCircle2, AlertCircle, BookOpen } from 'lucide-react';
 import { API_BASE } from '../../config';
+import { PYTHON_MODULE_1_QUESTIONS } from '../../data/pythonQuestions';
 
 export default function QuestionBankView({ onStartSession }) {
-    const [activeTab, setActiveTab] = useState('saved'); // 'saved' | 'mistakes' | 'difficult' | 'important'
+    const [activeTab, setActiveTab] = useState('module1'); // 'module1' | 'saved' | 'mistakes' | 'difficult'
     const [questions, setQuestions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        const fetchQuestions = async () => {
-            try {
-                const res = await fetch(`${API_BASE}/practice/question-bank?category=${activeTab}&search=${encodeURIComponent(searchTerm)}`, {
-                    credentials: 'include'
-                });
-                const data = await res.json();
-                if (data.success) {
-                    setQuestions(data.questions);
-                }
-            } catch (e) {
-                console.error("Fetch QB Error:", e);
+        if (activeTab === 'module1') {
+            const formatted = PYTHON_MODULE_1_QUESTIONS.map((q, idx) => ({
+                _id: q.id || `py-m1-${idx}`,
+                questionText: q.question,
+                options: q.options,
+                correctIndex: q.correct,
+                explanation: q.explanation,
+                keyConcept: q.keyConcept,
+                subject: q.subject,
+                topic: q.topic
+            }));
+
+            if (searchTerm.trim()) {
+                const filtered = formatted.filter(q => 
+                    q.questionText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    q.explanation.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                setQuestions(filtered);
+            } else {
+                setQuestions(formatted);
             }
-        };
-        fetchQuestions();
+        } else {
+            const fetchQuestions = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/practice/question-bank?category=${activeTab}&search=${encodeURIComponent(searchTerm)}`, {
+                        credentials: 'include'
+                    });
+                    const data = await res.json();
+                    if (data.success && data.questions?.length > 0) {
+                        setQuestions(data.questions);
+                    } else if (activeTab === 'mistakes') {
+                        const rawLogged = JSON.parse(localStorage.getItem('study_spirit_logged_mistakes') || '[]');
+                        setQuestions(rawLogged.map(m => ({
+                            _id: m.id,
+                            questionText: m.question,
+                            options: m.options,
+                            correctIndex: m.correct,
+                            explanation: m.explanation,
+                            subject: m.subject,
+                            topic: m.topic
+                        })));
+                    } else {
+                        setQuestions([]);
+                    }
+                } catch (e) {
+                    console.error("Fetch QB Error:", e);
+                }
+            };
+            fetchQuestions();
+        }
     }, [activeTab, searchTerm]);
 
     const handleRemoveQuestion = async (id) => {
@@ -39,20 +76,20 @@ export default function QuestionBankView({ onStartSession }) {
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-6">
             <div>
-                <h1 className="text-xl font-black text-slate-800">My Question Bank</h1>
+                <h1 className="text-xl font-black text-slate-800">Question Bank Module</h1>
                 <p className="text-xs text-slate-500 font-medium mt-1">
-                    Manage and practice your saved, difficult, and key questions.
+                    Inspect, search, and practice questions from Python Module 1 and your saved repository.
                 </p>
             </div>
 
             {/* Filter Tabs & Search */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-1 w-full md:w-auto">
+                <div className="flex items-center gap-1 w-full md:w-auto flex-wrap">
                     {[
+                        { id: 'module1', label: 'Python Module 1 (20 Qs)' },
                         { id: 'saved', label: 'Saved' },
-                        { id: 'mistakes', label: 'Mistakes' },
-                        { id: 'difficult', label: 'Difficult' },
-                        { id: 'important', label: 'Important' }
+                        { id: 'mistakes', label: 'Logged Mistakes' },
+                        { id: 'difficult', label: 'Difficult' }
                     ].map((tab) => (
                         <button
                             key={tab.id}
