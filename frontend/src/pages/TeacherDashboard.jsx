@@ -247,7 +247,7 @@ export default function TeacherDashboard() {
         { id: 'quizzes', label: 'My Quizzes', icon: FileQuestion },
         { id: 'live', label: 'Live Monitor', icon: Radio, badge: monitoringCode ? liveStudents.filter(s => s.status === 'active').length : null },
         { id: 'analytics', label: 'Q-Analytics', icon: BarChart },
-        { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz' },
+        { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz?mode=teacher' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     ];
 
@@ -357,7 +357,7 @@ export default function TeacherDashboard() {
                         </p>
                     </div>
                     {activeTab !== 'classrooms' && activeTab !== 'announcements' && (
-                        <button onClick={() => navigate('/quiz')} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 hover:scale-105 transition-all duration-200">
+                        <button onClick={() => navigate('/quiz?mode=teacher')} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 hover:scale-105 transition-all duration-200">
                             <PlusCircle size={18} /> Create New Quiz
                         </button>
                     )}
@@ -384,7 +384,7 @@ export default function TeacherDashboard() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <button onClick={() => navigate('/quiz')} className="flex items-center gap-4 p-6 bg-gradient-to-br from-violet-500 to-indigo-600 text-white rounded-2xl shadow-lg hover:scale-[1.02] transition-all text-left">
+                            <button onClick={() => navigate('/quiz?mode=teacher')} className="flex items-center gap-4 p-6 bg-gradient-to-br from-violet-500 to-indigo-600 text-white rounded-2xl shadow-lg hover:scale-[1.02] transition-all text-left">
                                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center"><PlusCircle size={24} /></div>
                                 <div><div className="font-black text-lg">Create Quiz</div><div className="text-white/70 text-sm">Build or AI-generate questions</div></div>
                             </button>
@@ -406,7 +406,7 @@ export default function TeacherDashboard() {
                                 <div className="bg-[var(--bg-secondary)] border border-dashed border-[var(--border-color)] rounded-2xl p-12 text-center">
                                     <FileQuestion size={48} className="mx-auto mb-3 text-[var(--text-muted)] opacity-50" />
                                     <p className="text-[var(--text-muted)] mb-4">No quizzes yet.</p>
-                                    <button onClick={() => navigate('/quiz')} className="px-6 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all">Create Quiz</button>
+                                    <button onClick={() => navigate('/quiz?mode=teacher')} className="px-6 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all">Create Quiz</button>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -428,7 +428,7 @@ export default function TeacherDashboard() {
                             <div className="text-center py-20">
                                 <FileQuestion size={64} className="mx-auto mb-4 text-[var(--text-muted)] opacity-40" />
                                 <p className="text-xl text-[var(--text-muted)] mb-6">No quizzes yet</p>
-                                <button onClick={() => navigate('/quiz')} className="px-8 py-4 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-all">Create Your First Quiz</button>
+                                <button onClick={() => navigate('/quiz?mode=teacher')} className="px-8 py-4 bg-gradient-to-br from-violet-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-all">Create Your First Quiz</button>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -1491,7 +1491,7 @@ function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete }) {
                 </div>
             )}
             <div className="flex gap-2">
-                <button onClick={() => onNavigate('/quiz')} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--border-color)] hover:bg-violet-500/10 hover:text-violet-500 text-[var(--text-secondary)] rounded-xl text-sm font-semibold transition-all">
+                <button onClick={() => onnavigate('/quiz?mode=teacher')} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--border-color)] hover:bg-violet-500/10 hover:text-violet-500 text-[var(--text-secondary)] rounded-xl text-sm font-semibold transition-all">
                     <Eye size={15} /> Edit
                 </button>
                 {quiz.status === 'published' && (

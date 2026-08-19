@@ -398,68 +398,6 @@ export default function QuestionPlayer({
                                 )}
                             </div>
 
-                            {/* AI Tutor Actions */}
-                            <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 space-y-3">
-                                <p className="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-                                    <Sparkles className="w-4 h-4 text-indigo-600" />
-                                    AI Tutor Intelligence
-                                </p>
-
-                                <div className="flex flex-wrap gap-2">
-                                    <button 
-                                        onClick={() => handleFetchAIHelp('explain')}
-                                        className="px-3 py-1.5 bg-white border border-indigo-200 hover:border-indigo-500 text-indigo-700 text-xs font-bold rounded-xl shadow-2xs transition-all"
-                                    >
-                                        Explain More
-                                    </button>
-                                    <button 
-                                        onClick={() => handleFetchAIHelp('hint')}
-                                        className="px-3 py-1.5 bg-white border border-indigo-200 hover:border-indigo-500 text-indigo-700 text-xs font-bold rounded-xl shadow-2xs transition-all"
-                                    >
-                                        Give Hint
-                                    </button>
-                                    <button 
-                                        onClick={() => onAskAITutor({ question: currentQ.question, answer: currentQ.options[selectedOption] })}
-                                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1"
-                                    >
-                                        <Bot className="w-3.5 h-3.5" />
-                                        Ask AI Tutor
-                                    </button>
-                                </div>
-
-                                {/* AI Output preview */}
-                                {aiHelpMode && (
-                                    <div className="mt-3 p-3 bg-white rounded-xl border border-indigo-200 text-xs text-slate-700 leading-relaxed">
-                                        {isLoadingAi ? 'AI Tutor is generating explanation...' : aiHelpText}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Confidence Tracking Selector */}
-                            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 space-y-2">
-                                <p className="text-xs font-bold text-slate-700">How confident were you with this question?</p>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                    {[
-                                        { id: 'guessing', label: 'Guessing', style: 'border-slate-200 text-slate-600' },
-                                        { id: 'unsure', label: 'Unsure', style: 'border-amber-200 text-amber-700' },
-                                        { id: 'fairly_sure', label: 'Fairly Sure', style: 'border-blue-200 text-blue-700' },
-                                        { id: 'very_confident', label: 'Very Confident', style: 'border-emerald-200 text-emerald-700' }
-                                    ].map((conf) => (
-                                        <button
-                                            key={conf.id}
-                                            onClick={() => setConfidence(conf.id)}
-                                            className={`py-2 px-3 rounded-xl border text-xs font-bold text-center transition-all ${
-                                                confidence === conf.id 
-                                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
-                                                    : `bg-slate-50 hover:bg-slate-100 ${conf.style}`
-                                            }`}
-                                        >
-                                            {conf.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
                             {/* Next / Finish Button */}
                             <button
                                 onClick={handleNextQuestion}

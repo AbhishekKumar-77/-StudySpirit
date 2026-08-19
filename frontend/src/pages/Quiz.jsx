@@ -29,6 +29,7 @@ import QuestionBankView from "../components/practice/QuestionBankView";
 import LearningAnalyticsView from "../components/practice/LearningAnalyticsView";
 import AIQuestionStudioView from "../components/practice/AIQuestionStudioView";
 import LeaderboardView from "../components/practice/LeaderboardView";
+import TeacherQuestionBankView from "../components/practice/TeacherQuestionBankView";
 
 // Modular Quiz Engine Components
 import QuestionPalette from "../components/quiz/QuestionPalette";
@@ -49,7 +50,9 @@ export default function StudySprintQuiz() {
 
     // Note: Secure Browser Integration moved below state hooks to fix ReferenceError
     // Main Tab State (Default to 'dashboard' for student learning experience)
-    const [activeTab, setActiveTab] = useState(user?.role === 'teacher' ? "teacher" : "dashboard");
+    // Determine default tab: teacher role or ?mode=teacher param lands on teacher portal
+    const isForcedTeacherMode = searchParams.get('mode') === 'teacher';
+    const [activeTab, setActiveTab] = useState((user?.role === 'teacher' || isForcedTeacherMode) ? "teacher" : "dashboard");
     const [activeRunnerSession, setActiveRunnerSession] = useState(null); // active QuestionPlayer session
 
     // Teacher Mode
@@ -1079,6 +1082,7 @@ export default function StudySprintQuiz() {
                 <div className="flex gap-3 mb-10 flex-wrap">
                     {[
                         { id: "teacher", label: "Create Quiz", icon: "FilePlus" },
+                        { id: "question_bank", label: "Question Bank", icon: "BookOpen" },
                         { id: "practice", label: "AI Practice", icon: "Bot" },
                         { id: "leaderboard", label: "Leaderboard", icon: "Trophy" }
                     ].map(tab => (
@@ -1488,6 +1492,41 @@ export default function StudySprintQuiz() {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {/* TEACHER QUESTION BANK */}
+                {activeTab === "question_bank" && (
+                    <TeacherQuestionBankView
+                        onAddToQuiz={(qs) => {
+                            setQuestions(prev => [
+                                ...prev,
+                                ...qs.map(q => ({
+                                    id: q.id || `py-${Date.now()}-${Math.random()}`,
+                                    question: q.question,
+                                    options: q.options,
+                                    correct: q.correct,
+                                    explanation: q.explanation,
+                                    type: 'mcq'
+                                }))
+                            ]);
+                            setActiveTab('teacher');
+                        }}
+                        onAddToPaper={(qs) => {
+                            setQuestions(prev => [
+                                ...prev,
+                                ...qs.map(q => ({
+                                    id: q.id || `py-${Date.now()}-${Math.random()}`,
+                                    question: q.question,
+                                    options: q.options,
+                                    correct: q.correct,
+                                    explanation: q.explanation,
+                                    type: 'mcq'
+                                }))
+                            ]);
+                            setQuizTitle('Python Module 1 - Exam Paper');
+                            setActiveTab('teacher');
+                        }}
+                    />
                 )}
 
                 {/* MY DRAFTS */}

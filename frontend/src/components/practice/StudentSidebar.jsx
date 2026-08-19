@@ -1,8 +1,8 @@
 import React from 'react';
 import { 
-    LayoutDashboard, Brain, BookOpen, AlertCircle, Target, RefreshCw,
-    FileText, Award, Layers, Bookmark, FolderHeart, History, BarChart2,
-    Trophy, Swords, Medal, Crown, Sparkles, ChevronRight
+    LayoutDashboard, Brain, BookOpen, Target, RefreshCw,
+    FileText, Award, Layers, FolderHeart, History, BarChart2,
+    Trophy, Swords, Medal, Crown, ChevronRight
 } from 'lucide-react';
 
 export default function StudentSidebar({ activeTab, setActiveTab }) {
@@ -18,7 +18,6 @@ export default function StudentSidebar({ activeTab, setActiveTab }) {
             items: [
                 { id: 'smart_practice', label: 'Smart Practice', icon: Brain, badge: 'AI' },
                 { id: 'topic_practice', label: 'Topic Practice', icon: BookOpen },
-                { id: 'mistake_practice', label: 'Mistake Practice', icon: AlertCircle },
                 { id: 'daily_challenge', label: 'Daily Challenge', icon: Target },
                 { id: 'revision', label: 'Revision (Spaced)', icon: RefreshCw }
             ]
@@ -34,7 +33,6 @@ export default function StudentSidebar({ activeTab, setActiveTab }) {
         {
             title: "MY LEARNING",
             items: [
-                { id: 'question_bank', label: 'Question Bank', icon: Bookmark },
                 { id: 'my_library', label: 'Saved Quizzes', icon: FolderHeart },
                 { id: 'history', label: 'History', icon: History },
                 { id: 'analytics', label: 'Analytics', icon: BarChart2 }
