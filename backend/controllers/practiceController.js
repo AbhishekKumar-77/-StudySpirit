@@ -12,12 +12,11 @@ exports.getDashboardSummary = async (req, res) => {
     try {
         const userId = req.user ? req.user.id : null;
 
-        // Default stats if guest or new user
         let userProfile = {
             name: req.user ? req.user.name : "Student",
             avatar: req.user ? (req.user.avatar || '👨‍🎓') : '👨‍🎓',
-            streak: 8,
-            bestStreak: 12
+            streak: 0,
+            bestStreak: 0
         };
 
         if (userId) {
@@ -25,173 +24,90 @@ exports.getDashboardSummary = async (req, res) => {
             if (u) {
                 userProfile.name = u.name;
                 userProfile.avatar = u.avatar || '👨‍🎓';
-                userProfile.streak = u.stats?.streak || 8;
-                userProfile.bestStreak = Math.max(u.stats?.streak || 8, 12);
+                userProfile.streak = u.stats?.streak || 0;
+                userProfile.bestStreak = u.stats?.streak || 0;
             }
         }
 
         // Fetch aggregate mastery & attempts data
-        let totalSolved = 247;
-        let avgAccuracy = 78;
-        let overallMastery = 68;
+        let totalSolved = 0;
+        let avgAccuracy = 0;
 
         if (userId) {
-            const totalAttemptsCount = await QuestionAttempt.countDocuments({ userId });
-            if (totalAttemptsCount > 0) {
-                totalSolved = totalAttemptsCount;
+            totalSolved = await QuestionAttempt.countDocuments({ userId });
+            if (totalSolved > 0) {
                 const correctCount = await QuestionAttempt.countDocuments({ userId, isCorrect: true });
-                avgAccuracy = Math.round((correctCount / totalAttemptsCount) * 100);
+                avgAccuracy = Math.round((correctCount / totalSolved) * 100);
+            }
+        }
+
+        // Target 1st Semester Subjects
+        const targetSubjects = [
+            "Python Programming",
+            "HTML & CSS",
+            "JavaScript Fundamentals",
+            "Basics of Computers",
+            "Digital Logic & Systems"
+        ];
+
+        const topicMasteryList = [];
+        let totalMasterySum = 0;
+        let attemptedSubjectsCount = 0;
+
+        for (const subName of targetSubjects) {
+            let mastery = 0;
+            let totalAtt = 0;
+            let correctAtt = 0;
+
+            if (userId) {
+                const regex = new RegExp(subName.split(' ')[0], 'i');
+                totalAtt = await QuestionAttempt.countDocuments({ userId, subject: { $regex: regex } });
+                if (totalAtt > 0) {
+                    correctAtt = await QuestionAttempt.countDocuments({ userId, subject: { $regex: regex }, isCorrect: true });
+                    const acc = (correctAtt / totalAtt) * 100;
+                    mastery = Math.min(100, Math.round(acc * 0.8 + Math.min(20, totalAtt * 2)));
+                    totalMasterySum += mastery;
+                    attemptedSubjectsCount++;
+                }
             }
 
-            const masteries = await TopicMastery.find({ userId });
-            if (masteries.length > 0) {
-                const sumMastery = masteries.reduce((acc, curr) => acc + curr.masteryPercentage, 0);
-                overallMastery = Math.round(sumMastery / masteries.length);
-            }
+            topicMasteryList.push({
+                name: subName,
+                mastery: mastery,
+                totalAttempts: totalAtt,
+                correctAttempts: correctAtt
+            });
+        }
+
+        const overallMastery = attemptedSubjectsCount > 0 ? Math.round(totalMasterySum / attemptedSubjectsCount) : 0;
+
+        // Calculate Today's attempts
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        let todayAttempts = 0;
+        if (userId) {
+            todayAttempts = await QuestionAttempt.countDocuments({
+                userId,
+                createdAt: { $gte: startOfToday }
+            });
         }
 
         // Summary stats cards
         const summaryCards = {
-            overallMastery: { value: overallMastery, changeThisWeek: "+12%" },
-            questionsSolved: { value: totalSolved, changeThisWeek: "+32" },
-            averageAccuracy: { value: avgAccuracy, changeThisWeek: "+8%" },
-            currentStreak: { value: userProfile.streak, best: userProfile.bestStreak }
+            overallMastery: { value: overallMastery },
+            questionsSolved: { value: totalSolved },
+            averageAccuracy: { value: avgAccuracy }
         };
-
-        // Continue Learning Card
-        let continueLearning = {
-            subject: "Python",
-            topic: "OOP",
-            title: "Object Oriented Programming",
-            masteryPercentage: 68,
-            completedTopics: 12,
-            totalTopics: 20
-        };
-
-        if (userId) {
-            const recentTopic = await TopicMastery.findOne({ userId, masteryPercentage: { $lt: 100 } })
-                .sort({ lastPracticedAt: -1 });
-            if (recentTopic) {
-                continueLearning = {
-                    subject: recentTopic.subject,
-                    topic: recentTopic.topic,
-                    title: `${recentTopic.subject} → ${recentTopic.topic}`,
-                    masteryPercentage: recentTopic.masteryPercentage,
-                    completedTopics: Math.round((recentTopic.masteryPercentage / 100) * 20),
-                    totalTopics: 20
-                };
-            }
-        }
-
-        // Recommended For You
-        const recommendations = [
-            {
-                id: 'rec-1',
-                subject: 'Python',
-                topic: 'OOP Concepts',
-                badge: 'Weak Area',
-                badgeStyle: 'pink',
-                reason: 'Based on your recent performance',
-                actionLabel: 'Practice',
-                actionType: 'smart_practice'
-            },
-            {
-                id: 'rec-2',
-                subject: 'DBMS',
-                topic: 'SQL Joins',
-                badge: 'Due for Revision',
-                badgeStyle: 'amber',
-                reason: 'Review before you forget',
-                actionLabel: 'Revise',
-                actionType: 'revision'
-            },
-            {
-                id: 'rec-3',
-                subject: 'Data Structures',
-                topic: 'Binary Search Trees',
-                badge: 'Strong',
-                badgeStyle: 'emerald',
-                reason: 'Keep it up!',
-                actionLabel: 'Challenge',
-                actionType: 'challenge'
-            },
-            {
-                id: 'rec-4',
-                subject: 'Computer Networks',
-                topic: 'TCP/IP Model',
-                badge: 'New Topic',
-                badgeStyle: 'purple',
-                reason: 'Start your learning',
-                actionLabel: 'Start',
-                actionType: 'start'
-            }
-        ];
-
-        // Practice Modes counts
-        let mistakeCount = 27;
-        if (userId) {
-            const unres = await QuestionAttempt.countDocuments({ userId, isMistake: true, resolved: false });
-            if (unres > 0 || totalSolved > 0) mistakeCount = unres;
-        }
-
-        const practiceModes = [
-            {
-                id: 'smart_practice',
-                title: 'Smart Practice',
-                description: 'AI selects questions based on your weak areas.',
-                badge: 'Best for you',
-                icon: 'brain'
-            },
-            {
-                id: 'topic_practice',
-                title: 'Topic Practice',
-                description: 'Practice questions by specific topics.',
-                actionText: 'Choose topic',
-                icon: 'book'
-            },
-            {
-                id: 'mistake_practice',
-                title: 'Mistake Practice',
-                description: 'Practice questions you got wrong.',
-                displayCount: `${mistakeCount} Questions`,
-                icon: 'x-circle'
-            },
-            {
-                id: 'daily_challenge',
-                title: 'Daily Challenge',
-                description: '10 questions every day.',
-                displayCount: 'Keep your streak',
-                icon: 'target'
-            },
-            {
-                id: 'revision',
-                title: 'Revision',
-                description: 'Spaced repetition for better retention.',
-                displayCount: '5 Topics Due',
-                icon: 'calendar'
-            }
-        ];
-
-        // Due for Revision widget
-        const dueForRevision = [
-            { topic: "Functions in Python", due: "Due Tomorrow", subject: "Python" },
-            { topic: "SQL Joins", due: "Due in 2 days", subject: "DBMS" },
-            { topic: "Exception Handling", due: "Due in 4 days", subject: "Python" }
-        ];
 
         res.json({
             success: true,
             userProfile,
             summaryCards,
-            continueLearning,
-            recommendations,
-            practiceModes,
-            dueForRevision,
-            performanceThisWeek: {
-                accuracy: avgAccuracy,
-                questions: 86,
-                improvement: 14
-            }
+            topicMasteryList,
+            todayAttempts,
+            totalSolved,
+            avgAccuracy,
+            overallMastery
         });
     } catch (error) {
         console.error("Practice Dashboard Summary Error:", error);

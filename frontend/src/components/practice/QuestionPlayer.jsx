@@ -78,6 +78,21 @@ export default function QuestionPlayer({
             }
         }
 
+        // Save attempt locally for instant real-time UI reaction
+        try {
+            const attemptsLog = JSON.parse(localStorage.getItem('study_spirit_practice_attempts') || '[]');
+            attemptsLog.push({
+                questionId: currentQ.id || currentQ._id || Date.now(),
+                subject: currentQ.subject || 'Python Programming',
+                topic: currentQ.topic || 'General',
+                isCorrect: isRight,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('study_spirit_practice_attempts', JSON.stringify(attemptsLog));
+        } catch (e) {
+            console.error("Local attempt log error:", e);
+        }
+
         // Submit attempt to backend analytics
         try {
             await fetch(`${API_BASE}/practice/attempt`, {

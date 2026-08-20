@@ -150,8 +150,23 @@ export default function StudySprintQuiz() {
         }
     }, [isPreviewMode, previewCode]);
 
+    const [dashboardData, setDashboardData] = useState(null);
+
     useEffect(() => {
-        if (activeTab === "leaderboard") {
+        if (activeTab === "dashboard") {
+            const fetchDashboardData = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/practice/dashboard`, { credentials: 'include' });
+                    const data = await res.json();
+                    if (data.success) {
+                        setDashboardData(data);
+                    }
+                } catch (e) {
+                    console.error("Practice dashboard fetch error", e);
+                }
+            };
+            fetchDashboardData();
+        } else if (activeTab === "leaderboard") {
             const fetchLeaderboard = async () => {
                 try {
                     const res = await fetch(`${API_BASE}/quiz/leaderboard`, { credentials: 'include' });
@@ -968,7 +983,7 @@ export default function StudySprintQuiz() {
                                 onAskAITutor={(ctx) => alert(`Connecting StudySpirit AI Tutor for: "${ctx.question}"`)}
                             />
                         ) : activeTab === 'dashboard' ? (
-                            <StudentDashboardView setActiveTab={setActiveTab} onStartPractice={handleStartPracticeRunner} />
+                            <StudentDashboardView dashboardData={dashboardData} setActiveTab={setActiveTab} onStartPractice={handleStartPracticeRunner} />
                         ) : activeTab === 'smart_practice' ? (
                             <SmartPracticeView onStartSession={handleStartPracticeRunner} />
                         ) : activeTab === 'topic_practice' ? (
@@ -986,7 +1001,7 @@ export default function StudySprintQuiz() {
                         ) : activeTab === 'leaderboard' || activeTab === 'challenges' || activeTab === 'achievements' ? (
                             <LeaderboardView />
                         ) : (
-                            <StudentDashboardView setActiveTab={setActiveTab} onStartPractice={handleStartPracticeRunner} />
+                            <StudentDashboardView dashboardData={dashboardData} setActiveTab={setActiveTab} onStartPractice={handleStartPracticeRunner} />
                         )}
                     </main>
                 </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Brain, BookOpen, Target, TrendingUp, CheckCircle, ChevronRight,
     Sparkles, Calendar, Layers, Code, Laptop, Cpu
@@ -8,27 +8,17 @@ import { useApp } from '../../context/AppContext';
 export default function StudentDashboardView({ dashboardData, setActiveTab, onStartPractice }) {
     const { user } = useApp();
 
-    // Compute real statistics from user stats or dashboard summary
-    const totalSolvedReal = user?.stats?.totalProblems || dashboardData?.summaryCards?.questionsSolved?.value || 0;
-    const avgAccuracyReal = user?.stats?.accuracy || dashboardData?.summaryCards?.averageAccuracy?.value || (totalSolvedReal > 0 ? 82 : 0);
-    const overallMasteryReal = user?.stats?.mastery || dashboardData?.summaryCards?.overallMastery?.value || (totalSolvedReal > 0 ? 76 : 0);
+    // State for local & API aggregated practice metrics
+    const [realStats, setRealStats] = useState({
+        totalSolved: 0,
+        avgAccuracy: 0,
+        overallMastery: 0,
+        todayAttempts: 0,
+        topicMasteries: [],
+        heatmap: []
+    });
 
-    const summary = {
-        overallMastery: overallMasteryReal,
-        questionsSolved: totalSolvedReal,
-        averageAccuracy: avgAccuracyReal
-    };
-
-    // Topic Performance & Mastery Data (matching prompt design)
-    const topicMasteryList = [
-        { name: "Python Programming", mastery: 82, color: "bg-indigo-600 text-indigo-600" },
-        { name: "Database Systems (DBMS)", mastery: 68, color: "bg-amber-500 text-amber-500" },
-        { name: "Data Structures & Algorithms", mastery: 74, color: "bg-amber-500 text-amber-500" },
-        { name: "Operating Systems", mastery: 61, color: "bg-rose-500 text-rose-500" },
-        { name: "Computer Networks", mastery: 79, color: "bg-indigo-600 text-indigo-600" }
-    ];
-
-    // 1st Semester Registered Subjects
+    // 1st Semester Registered Subjects (Shared across Recommended & Topic Performance)
     const firstSemSubjects = [
         { id: 'python', name: "Python Programming", icon: "🐍", tag: "1st Semester Core", bg: "bg-emerald-50 text-emerald-600 border-emerald-200" },
         { id: 'html_css', name: "HTML & CSS", icon: "🌐", tag: "1st Semester Web", bg: "bg-orange-50 text-orange-600 border-orange-200" },
@@ -37,32 +27,114 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
         { id: 'digital_logic', name: "Digital Logic & Systems", icon: "🔢", tag: "1st Semester Hardware", bg: "bg-purple-50 text-purple-600 border-purple-200" }
     ];
 
-    // Previous Week Heatmap Data (Days Mon - Sun for Previous & Current Week)
-    const heatmapDays = [
-        // Previous Week
-        { day: "Mon", week: "Previous", attempts: 12 },
-        { day: "Tue", week: "Previous", attempts: 8 },
-        { day: "Wed", week: "Previous", attempts: 15 },
-        { day: "Thu", week: "Previous", attempts: 5 },
-        { day: "Fri", week: "Previous", attempts: 20 },
-        { day: "Sat", week: "Previous", attempts: 18 },
-        { day: "Sun", week: "Previous", attempts: 10 },
-        // Current Week
-        { day: "Mon", week: "Current", attempts: 14 },
-        { day: "Tue", week: "Current", attempts: 9 },
-        { day: "Wed", week: "Current", attempts: 22 },
-        { day: "Thu", week: "Current", attempts: 16 },
-        { day: "Fri", week: "Current", attempts: 0 },
-        { day: "Sat", week: "Current", attempts: 0 },
-        { day: "Sun", week: "Current", attempts: 0 },
-    ];
+    useEffect(() => {
+        // Read local attempt logs from localStorage
+        let localAttempts = [];
+        try {
+            localAttempts = JSON.parse(localStorage.getItem('study_spirit_practice_attempts') || '[]');
+        } catch (e) {
+            console.error("Error reading local attempts:", e);
+        }
+
+        // Aggregate stats
+        const dbTotal = dashboardData?.totalSolved || dashboardData?.summaryCards?.questionsSolved?.value || 0;
+        const totalSolved = Math.max(dbTotal, localAttempts.length);
+
+        let totalCorrect = 0;
+        if (localAttempts.length > 0) {
+            totalCorrect = localAttempts.filter(a => a.isCorrect).length;
+        } else if (dashboardData?.avgAccuracy) {
+            totalCorrect = Math.round((dashboardData.avgAccuracy / 100) * dbTotal);
+        }
+
+        const avgAccuracy = totalSolved > 0 ? Math.round((totalCorrect / totalSolved) * 100) : 0;
+
+        // Calculate mastery per 1st semester subject
+        let totalMasterySum = 0;
+        let attemptedSubjectsCount = 0;
+
+        const topicMasteries = firstSemSubjects.map(sub => {
+            const apiMasteryObj = dashboardData?.topicMasteryList?.find(
+                t => t.name.toLowerCase().includes(sub.name.split(' ')[0].toLowerCase())
+            );
+
+            const subAttempts = localAttempts.filter(a => 
+                a.subject && a.subject.toLowerCase().includes(sub.name.split(' ')[0].toLowerCase())
+            );
+
+            let mastery = 0;
+            let attCount = subAttempts.length;
+
+            if (attCount > 0) {
+                const correctCount = subAttempts.filter(a => a.isCorrect).length;
+                const acc = (correctCount / attCount) * 100;
+                mastery = Math.min(100, Math.round(acc * 0.8 + Math.min(20, attCount * 2)));
+            } else if (apiMasteryObj && apiMasteryObj.mastery > 0) {
+                mastery = apiMasteryObj.mastery;
+                attCount = apiMasteryObj.totalAttempts || 0;
+            }
+
+            if (mastery > 0 || attCount > 0) {
+                totalMasterySum += mastery;
+                attemptedSubjectsCount++;
+            }
+
+            let barColor = "bg-indigo-600 text-indigo-600";
+            if (mastery < 65 && mastery > 0) barColor = "bg-rose-500 text-rose-500";
+            else if (mastery < 80 && mastery > 0) barColor = "bg-amber-500 text-amber-500";
+
+            return {
+                name: sub.name,
+                mastery,
+                totalAttempts: attCount,
+                color: barColor
+            };
+        });
+
+        const overallMastery = attemptedSubjectsCount > 0 ? Math.round(totalMasterySum / attemptedSubjectsCount) : 0;
+
+        // Calculate Today's attempts
+        const todayStr = new Date().toDateString();
+        const todayCount = localAttempts.filter(a => new Date(a.timestamp || Date.now()).toDateString() === todayStr).length;
+        const apiToday = dashboardData?.todayAttempts || 0;
+        const todayAttempts = Math.max(apiToday, todayCount);
+
+        // Build 14-day Heatmap (Previous Week & Current Week)
+        const daysMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const now = new Date();
+        const heatmap = [];
+
+        // Build last 14 days
+        for (let i = 13; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(now.getDate() - i);
+            const dStr = d.toDateString();
+            const count = localAttempts.filter(a => new Date(a.timestamp || Date.now()).toDateString() === dStr).length;
+
+            heatmap.push({
+                day: daysMap[d.getDay()],
+                dateStr: dStr,
+                attempts: count,
+                week: i >= 7 ? "Previous" : "Current"
+            });
+        }
+
+        setRealStats({
+            totalSolved,
+            avgAccuracy,
+            overallMastery,
+            todayAttempts,
+            topicMasteries,
+            heatmap
+        });
+    }, [dashboardData]);
 
     const getHeatmapColor = (attempts) => {
-        if (attempts === 0) return "bg-slate-100 border-slate-200";
-        if (attempts < 6) return "bg-emerald-200 border-emerald-300";
-        if (attempts < 12) return "bg-emerald-400 border-emerald-500 text-white";
-        if (attempts < 18) return "bg-emerald-600 border-emerald-700 text-white";
-        return "bg-emerald-700 border-emerald-800 text-white font-bold";
+        if (attempts === 0) return "bg-slate-100 border-slate-200 text-slate-400";
+        if (attempts < 3) return "bg-emerald-200 border-emerald-300 text-emerald-900 font-bold";
+        if (attempts < 7) return "bg-emerald-400 border-emerald-500 text-white font-bold";
+        if (attempts < 12) return "bg-emerald-600 border-emerald-700 text-white font-bold";
+        return "bg-emerald-700 border-emerald-800 text-white font-black";
     };
 
     return (
@@ -73,10 +145,10 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                     <div>
                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overall Mastery</p>
-                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.overallMastery}%</h3>
+                        <h3 className="text-2xl font-black text-slate-800 mt-1">{realStats.overallMastery}%</h3>
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            Real-time calculation
+                            {realStats.totalSolved > 0 ? 'Calculated from practice' : 'Start practicing to score'}
                         </p>
                     </div>
                     <div className="relative w-14 h-14 flex items-center justify-center">
@@ -86,7 +158,7 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                                 cx="28" cy="28" r="22" 
                                 stroke="#6366f1" strokeWidth="5" 
                                 strokeDasharray={138} 
-                                strokeDashoffset={138 - (138 * summary.overallMastery) / 100}
+                                strokeDashoffset={138 - (138 * realStats.overallMastery) / 100}
                                 strokeLinecap="round"
                                 fill="transparent" 
                             />
@@ -98,7 +170,7 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                     <div>
                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Questions Solved</p>
-                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.questionsSolved}</h3>
+                        <h3 className="text-2xl font-black text-slate-800 mt-1">{realStats.totalSolved}</h3>
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                             <TrendingUp className="w-3.5 h-3.5" />
                             Total attempts logged
@@ -113,10 +185,10 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                     <div>
                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Average Accuracy</p>
-                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.averageAccuracy}%</h3>
+                        <h3 className="text-2xl font-black text-slate-800 mt-1">{realStats.avgAccuracy}%</h3>
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            Practice accuracy
+                            Real practice accuracy
                         </p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
@@ -132,20 +204,25 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                     {/* Topic Performance & Mastery Section */}
                     <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h2 className="text-lg font-bold text-slate-800 tracking-tight">
-                                Topic Performance & Mastery
-                            </h2>
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-800 tracking-tight">
+                                    Topic Performance & Mastery
+                                </h2>
+                                <p className="text-xs text-slate-500 font-medium">Real-time mastery across registered 1st semester subjects</p>
+                            </div>
                             <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
                                 Semester Overview
                             </span>
                         </div>
 
                         <div className="space-y-5">
-                            {topicMasteryList.map((item, idx) => (
+                            {realStats.topicMasteries.map((item, idx) => (
                                 <div key={idx} className="space-y-2">
                                     <div className="flex justify-between items-center text-xs font-bold">
                                         <span className="text-slate-800">{item.name}</span>
-                                        <span className={item.color.split(' ')[1]}>{item.mastery}% Mastery</span>
+                                        <span className={item.color.split(' ')[1]}>
+                                            {item.mastery > 0 ? `${item.mastery}% Mastery` : '0% Mastery'}
+                                        </span>
                                     </div>
                                     <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                                         <div 
@@ -215,10 +292,10 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                             <div>
                                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Previous Week</p>
                                 <div className="grid grid-cols-7 gap-1.5">
-                                    {heatmapDays.slice(0, 7).map((item, idx) => (
+                                    {realStats.heatmap.slice(0, 7).map((item, idx) => (
                                         <div key={idx} className="text-center">
                                             <div 
-                                                title={`${item.attempts} questions attempted on ${item.day} (Previous Week)`}
+                                                title={`${item.attempts} questions attempted on ${item.day} (${item.dateStr})`}
                                                 className={`h-9 rounded-lg border flex items-center justify-center text-[10px] cursor-pointer transition-transform hover:scale-110 ${getHeatmapColor(item.attempts)}`}
                                             >
                                                 {item.attempts > 0 ? item.attempts : '-'}
@@ -233,10 +310,10 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                             <div>
                                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Current Week</p>
                                 <div className="grid grid-cols-7 gap-1.5">
-                                    {heatmapDays.slice(7, 14).map((item, idx) => (
+                                    {realStats.heatmap.slice(7, 14).map((item, idx) => (
                                         <div key={idx} className="text-center">
                                             <div 
-                                                title={`${item.attempts} questions attempted on ${item.day} (Current Week)`}
+                                                title={`${item.attempts} questions attempted on ${item.day} (${item.dateStr})`}
                                                 className={`h-9 rounded-lg border flex items-center justify-center text-[10px] cursor-pointer transition-transform hover:scale-110 ${getHeatmapColor(item.attempts)}`}
                                             >
                                                 {item.attempts > 0 ? item.attempts : '-'}
@@ -265,16 +342,21 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                     <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
                         <div className="flex items-center justify-between">
                             <h4 className="text-xs font-bold text-slate-800">Daily Practice Goal</h4>
-                            <span className="text-xs font-bold text-indigo-600">60%</span>
+                            <span className="text-xs font-bold text-indigo-600">
+                                {Math.min(100, Math.round((realStats.todayAttempts / 20) * 100))}%
+                            </span>
                         </div>
 
                         <div className="space-y-2">
                             <div className="flex justify-between text-xs font-semibold text-slate-600">
-                                <span>12 / 20 Questions Attempted</span>
-                                <span>8 Remaining</span>
+                                <span>{realStats.todayAttempts} / 20 Questions Attempted</span>
+                                <span>{Math.max(0, 20 - realStats.todayAttempts)} Remaining</span>
                             </div>
                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-indigo-600 rounded-full w-[60%]"></div>
+                                <div 
+                                    className="h-full bg-indigo-600 rounded-full transition-all duration-500" 
+                                    style={{ width: `${Math.min(100, Math.round((realStats.todayAttempts / 20) * 100))}%` }}
+                                />
                             </div>
                         </div>
                     </div>
