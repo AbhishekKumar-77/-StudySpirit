@@ -682,6 +682,7 @@ export default function StudySprintQuiz() {
                 credentials: 'include', // Needed for auth/creatorId
                 body: JSON.stringify({
                     title: quizTitle,
+                    code: quizCode,
                     questions,
                     settings: formattedSettings,
                     creatorName: user?.name || "Teacher",
@@ -985,7 +986,9 @@ export default function StudySprintQuiz() {
     };
 
     // --------------------------- RENDER ---------------------------
-    if (activeTab !== "teacher") {
+    const isTeacherWorkspace = user?.role === "teacher" || isForcedTeacherMode || ["teacher", "question_bank", "smart_practice", "practice", "drafts"].includes(activeTab);
+
+    if (!isTeacherWorkspace) {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800" ref={fullscreenRef}>
                 <StudentHeader userProfile={{ name: user?.name }} />
@@ -1082,12 +1085,14 @@ export default function StudySprintQuiz() {
                     <div className="flex items-center justify-between flex-wrap gap-6">
                         <div>
                             <h1 className="text-5xl font-black text-[var(--text-primary)] mb-3">
-                                {activeTab === "teacher" ? quizTitle : activeTab === "student" ? "Live Exam Mode" : activeTab === "practice" ? "AI Practice Arena" : "Global Leaderboard"}
+                                {activeTab === "teacher" ? quizTitle : activeTab === "question_bank" ? "Question Bank" : activeTab === "smart_practice" || activeTab === "practice" ? "Smart Practice" : "My Saved Quizzes"}
                             </h1>
                             <p className="text-xl text-[var(--text-secondary)]">
-                                {(activeTab === "teacher" && questions.length > 0) || (activeTab === "student" && joinedQuiz?.questions.length > 0)
-                                    ? `${(activeTab === "teacher" ? questions.length : joinedQuiz.questions.length)} Questions • ${settings.timeLimit} min • ${settings.difficulty.toUpperCase()}`
-                                    : "Create or join a quiz to begin"}
+                                {activeTab === "teacher" && questions.length > 0
+                                    ? `${questions.length} Questions • ${settings.timeLimit} min • ${settings.difficulty.toUpperCase()}`
+                                    : activeTab === "question_bank" ? "Select Python questions module-wise and add to quiz draft"
+                                    : activeTab === "smart_practice" || activeTab === "practice" ? "Generate adaptive practice sessions for any topic"
+                                    : "Create or manage your saved quizzes"}
                             </p>
                         </div>
 
@@ -1119,15 +1124,14 @@ export default function StudySprintQuiz() {
                     {[
                         { id: "teacher", label: "Create Quiz", icon: "FilePlus" },
                         { id: "question_bank", label: "Question Bank", icon: "BookOpen" },
-                        { id: "practice", label: "AI Practice", icon: "Bot" },
-                        { id: "leaderboard", label: "Leaderboard", icon: "Trophy" }
+                        { id: "smart_practice", label: "Smart Practice", icon: "Bot" }
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`
                                 flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-[10px] sm:text-sm uppercase tracking-wider transition-all duration-300
-                                ${activeTab === tab.id
+                                ${(activeTab === tab.id || (tab.id === 'smart_practice' && activeTab === 'practice'))
                                     ? "bg-gradient-to-br from-cyan-500  to-pink-500 text-[var(--text-primary)] shadow-lg shadow-violet-500/30 scale-105"
                                     : "bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--border-color)]/80 hover:shadow-md"
                                 }
@@ -1563,6 +1567,13 @@ export default function StudySprintQuiz() {
                             setActiveTab('teacher');
                         }}
                     />
+                )}
+
+                {/* SMART PRACTICE */}
+                {(activeTab === "smart_practice" || activeTab === "practice") && (
+                    <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+                        <SmartPracticeView onStartSession={handleStartPracticeRunner} />
+                    </div>
                 )}
 
                 {/* MY DRAFTS */}

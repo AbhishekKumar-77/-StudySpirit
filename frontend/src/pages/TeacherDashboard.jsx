@@ -322,10 +322,6 @@ export default function TeacherDashboard() {
                 </nav>
 
                 <div className="p-3 border-t border-[var(--border-color)] space-y-1">
-                    <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)] transition-all">
-                        {isLight ? <Moon size={18} /> : <Sun size={18} />}
-                        {isLight ? 'Dark Mode' : 'Light Mode'}
-                    </button>
                     <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-red-500 hover:bg-red-500/10 transition-all">
                         <LogOut size={18} /> Logout
                     </button>
@@ -1491,7 +1487,7 @@ function QuizCard({ quiz, onNavigate, showFull = false, onMonitor, onDelete }) {
                 </div>
             )}
             <div className="flex gap-2">
-                <button onClick={() => onnavigate('/quiz?mode=teacher')} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--border-color)] hover:bg-violet-500/10 hover:text-violet-500 text-[var(--text-secondary)] rounded-xl text-sm font-semibold transition-all">
+                <button onClick={() => onNavigate('/quiz?mode=teacher')} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--border-color)] hover:bg-violet-500/10 hover:text-violet-500 text-[var(--text-secondary)] rounded-xl text-sm font-semibold transition-all">
                     <Eye size={15} /> Edit
                 </button>
                 {quiz.status === 'published' && (

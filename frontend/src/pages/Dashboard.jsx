@@ -385,13 +385,7 @@ export default function Dashboard() {
                     })}
                 </nav>
 
-                {/* Enhancement 2: Dark / Light Mode Switcher in Sidebar Footer */}
-                <div className="sidebar-footer">
-                    <button className="theme-toggle-footer-btn" onClick={toggleTheme}>
-                        {isDarkMode ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
-                        <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-                    </button>
-                </div>
+
             </aside>
 
             {/* MAIN CONTENT AREA */}

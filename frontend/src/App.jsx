@@ -106,7 +106,7 @@ function RoleGuard({ children, allowedRoles }) {
   React.useEffect(() => {
     if (!loading && user && !allowedRoles.includes(user.role)) {
       // Redirect based on their actual role
-      if (user.role === 'teacher') navigate('/teacher-dashboard', { replace: true });
+      if (user.role === 'teacher') navigate('/teacher-toolkit', { replace: true });
       else if (user.role === 'recruiter') navigate('/recruiter-dashboard', { replace: true });
       else navigate('/dashboard', { replace: true });
     }

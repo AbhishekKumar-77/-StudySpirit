@@ -230,7 +230,7 @@ exports.generateAIQuestions = async (req, res) => {
         
         REMEMBER: The "questions" array MUST contain EXACTLY ${mcqCount} items. Output the JSON object now:`;
 
-        const safeMaxTokens = Math.min(4000, Math.max(1500, Number(mcqCount) * 250 + 500));
+        const safeMaxTokens = Math.min(8000, Math.max(3000, Number(mcqCount) * 450 + 1000));
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -239,7 +239,7 @@ exports.generateAIQuestions = async (req, res) => {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
+                model: 'llama-3.3-70b-versatile',
                 messages: [
                     { role: 'system', content: `You are an educational AI assistant. You MUST output a strictly valid JSON object containing a "questions" array with EXACTLY ${mcqCount} questions. No markdown, no extra text. Do not output fewer than ${mcqCount} questions under any circumstances.` },
                     { role: 'user', content: prompt }
@@ -339,8 +339,22 @@ exports.generateAIQuestions = async (req, res) => {
 // Create Quiz (Save to DB)
 exports.createQuiz = async (req, res) => {
     try {
-        const { title, questions, settings, creatorName, status } = req.body;
+        const { title, questions, settings, creatorName, status, code: existingCode } = req.body;
         const creatorId = req.user ? req.user.id : null;
+
+        // If existing quiz code is provided and belongs to creator, update it
+        if (existingCode) {
+            const existingQuiz = await Quiz.findOneAndUpdate(
+                { code: existingCode, creatorId },
+                { title, questions, settings, creatorName, status: status || 'published' },
+                { new: true }
+            );
+            if (existingQuiz) {
+                return res.status(200).json({ success: true, quizCode: existingCode, message: "Quiz updated successfully!" });
+            }
+        }
+
+        // Otherwise create new quiz
         const code = "SP" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
         const quiz = await Quiz.create({

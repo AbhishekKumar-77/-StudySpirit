@@ -501,7 +501,7 @@ export default function Login() {
             loginUser({ ...data.user, role: finalRole, isAdmin });
 
             if (isAdmin) navigate('/admin');
-            else if (finalRole === 'teacher') navigate('/teacher-dashboard');
+            else if (finalRole === 'teacher') navigate('/teacher-toolkit');
             else if (finalRole === 'recruiter') navigate('/recruiter-dashboard');
             else navigate('/dashboard');
         } catch (err) {

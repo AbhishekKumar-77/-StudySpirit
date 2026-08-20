@@ -218,57 +218,19 @@
 @layer base {
     :root {
         /* Core backgrounds */
-        --bg-primary: #06080e;
-        --bg-secondary: #0d1117;
-        --glass-bg: rgba(13, 17, 23, 0.65);
-
-        /* Text hierarchy */
-        --text-primary: #e6edf3;
-        --text-secondary: #8b949e;
-        --text-muted: #484f58;
-
-        /* Borders & surfaces */
-        --border-color: rgba(0, 255, 136, 0.08);
-
-        /* Gaming accent colors */
-        --neon-primary: #00ff88;
-        --neon-secondary: #00d4ff;
-        --neon-accent: #ff00ea;
-        --neon-warning: #ffaa00;
-        --neon-danger: #ff3366;
-        --neon-glow: rgba(0, 255, 136, 0.4);
-
-        /* XP & Level colors */
-        --xp-bar: linear-gradient(90deg, #00ff88, #00d4ff);
-        --health-bar: linear-gradient(90deg, #ff3366, #ff6b6b);
-        --mana-bar: linear-gradient(90deg, #6366f1, #a855f7);
-
-        /* Card surfaces */
-        --card-bg: rgba(13, 17, 23, 0.8);
-        --card-hover: rgba(0, 255, 136, 0.03);
-        --card-border: rgba(0, 255, 136, 0.12);
-        --card-glow: 0 0 30px rgba(0, 255, 136, 0.08);
-
-        /* Gaming fonts */
-        --font-gaming: 'Orbitron', 'Inter', sans-serif;
-        --font-hud: 'Rajdhani', 'Inter', sans-serif;
-        --font-body: 'Inter', -apple-system, sans-serif;
-    }
-
-    /* ========================================
-       ☀️ LIGHT MODE — CLEAN GAMING
-       ======================================== */
-    html.light {
         --bg-primary: #f0f2f5;
         --bg-secondary: #ffffff;
-        --glass-bg: rgba(255, 255, 255, 0.75);
+        --glass-bg: rgba(255, 255, 255, 0.85);
 
-        --text-primary: #1a1a2e;
-        --text-secondary: #4a5568;
-        --text-muted: #a0aec0;
+        /* Text hierarchy */
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #94a3b8;
 
-        --border-color: rgba(99, 102, 241, 0.12);
+        /* Borders & surfaces */
+        --border-color: rgba(99, 102, 241, 0.15);
 
+        /* Gaming accent colors */
         --neon-primary: #6366f1;
         --neon-secondary: #0ea5e9;
         --neon-accent: #ec4899;
@@ -276,15 +238,18 @@
         --neon-danger: #ef4444;
         --neon-glow: rgba(99, 102, 241, 0.3);
 
+        /* XP & Level colors */
         --xp-bar: linear-gradient(90deg, #6366f1, #8b5cf6);
         --health-bar: linear-gradient(90deg, #ef4444, #f97316);
         --mana-bar: linear-gradient(90deg, #8b5cf6, #d946ef);
 
-        --card-bg: rgba(255, 255, 255, 0.9);
+        /* Card surfaces */
+        --card-bg: rgba(255, 255, 255, 0.95);
         --card-hover: rgba(99, 102, 241, 0.04);
         --card-border: rgba(99, 102, 241, 0.15);
         --card-glow: 0 4px 24px rgba(99, 102, 241, 0.1);
 
+        /* Gaming fonts */
         --font-gaming: 'Orbitron', 'Inter', sans-serif;
         --font-hud: 'Rajdhani', 'Inter', sans-serif;
         --font-body: 'Inter', -apple-system, sans-serif;
