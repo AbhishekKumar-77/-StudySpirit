@@ -31,6 +31,9 @@ import AIQuestionStudioView from "../components/practice/AIQuestionStudioView";
 import LeaderboardView from "../components/practice/LeaderboardView";
 import TeacherQuestionBankView from "../components/practice/TeacherQuestionBankView";
 import DailyChallengeView from "../components/practice/DailyChallengeView";
+import SavedQuizzesView from "../components/practice/SavedQuizzesView";
+import PracticeHistoryView from "../components/practice/PracticeHistoryView";
+import CompetitionView from "../components/practice/CompetitionView";
 
 // Modular Quiz Engine Components
 import QuestionPalette from "../components/quiz/QuestionPalette";
@@ -1008,14 +1011,16 @@ export default function StudySprintQuiz() {
                             <MistakePracticeView onStartSession={handleStartPracticeRunner} />
                         ) : activeTab === 'exam_simulator' || activeTab === 'mock_tests' || activeTab === 'previous_papers' ? (
                             <ExamSimulatorView onFinishExam={() => setActiveTab('dashboard')} />
-                        ) : activeTab === 'question_bank' || activeTab === 'my_library' || activeTab === 'history' ? (
-                            <QuestionBankView onStartSession={handleStartPracticeRunner} />
+                        ) : activeTab === 'my_library' || activeTab === 'saved_quizzes' ? (
+                            <SavedQuizzesView />
+                        ) : activeTab === 'history' ? (
+                            <PracticeHistoryView onStartSession={handleStartPracticeRunner} />
                         ) : activeTab === 'analytics' ? (
                             <LearningAnalyticsView />
                         ) : activeTab === 'ai_studio' ? (
                             <AIQuestionStudioView onStartSession={handleStartPracticeRunner} />
                         ) : activeTab === 'leaderboard' || activeTab === 'challenges' || activeTab === 'achievements' ? (
-                            <LeaderboardView />
+                            <CompetitionView activeSubTab={activeTab} onStartSession={handleStartPracticeRunner} />
                         ) : (
                             <StudentDashboardView dashboardData={dashboardData} setActiveTab={setActiveTab} onStartPractice={handleStartPracticeRunner} />
                         )}

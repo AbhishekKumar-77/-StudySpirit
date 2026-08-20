@@ -137,6 +137,24 @@ export default function QuestionPlayer({
             // Update local storage mastery for Python Module 1
             localStorage.setItem('study_spirit_python_m1_score', percentage.toString());
 
+            // Save session history entry
+            try {
+                const historyEntry = {
+                    id: Date.now(),
+                    topic: sessionTitle || currentQ.topic || 'Python Programming',
+                    subject: currentQ.subject || 'Python Programming',
+                    score: finalScore,
+                    total: total,
+                    percentage: percentage,
+                    date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                };
+                const existingHistory = JSON.parse(localStorage.getItem('study_spirit_practice_history') || '[]');
+                existingHistory.unshift(historyEntry);
+                localStorage.setItem('study_spirit_practice_history', JSON.stringify(existingHistory));
+            } catch (e) {
+                console.error("History log error:", e);
+            }
+
             setShowResults(true);
         }
     };
@@ -163,6 +181,24 @@ export default function QuestionPlayer({
         const finalScore = scoreCount;
         const total = questions.length || 20;
         const percentage = Math.round((finalScore / total) * 100);
+
+        // Save session history entry on exit
+        try {
+            const historyEntry = {
+                id: Date.now(),
+                topic: sessionTitle || currentQ.topic || 'Python Programming',
+                subject: currentQ.subject || 'Python Programming',
+                score: finalScore,
+                total: total,
+                percentage: percentage,
+                date: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+            };
+            const existingHistory = JSON.parse(localStorage.getItem('study_spirit_practice_history') || '[]');
+            existingHistory.unshift(historyEntry);
+            localStorage.setItem('study_spirit_practice_history', JSON.stringify(existingHistory));
+        } catch (e) {
+            console.error("History exit log error:", e);
+        }
 
         onFinish({
             total,
@@ -197,6 +233,24 @@ export default function QuestionPlayer({
 
     const handleSaveToBank = async () => {
         try {
+            const savedQuestion = {
+                id: currentQ.id || Date.now(),
+                question: currentQ.question,
+                options: currentQ.options,
+                correct: currentQ.correct,
+                explanation: currentQ.explanation || 'Refer to fundamental concepts.',
+                keyConcept: currentQ.keyConcept || 'Core Concept',
+                subject: currentQ.subject || 'Python Programming',
+                topic: currentQ.topic || 'General Practice',
+                savedAt: new Date().toLocaleDateString()
+            };
+            const existingSaved = JSON.parse(localStorage.getItem('study_spirit_saved_questions') || '[]');
+            const alreadySaved = existingSaved.some(q => q.question === currentQ.question);
+            if (!alreadySaved) {
+                existingSaved.unshift(savedQuestion);
+                localStorage.setItem('study_spirit_saved_questions', JSON.stringify(existingSaved));
+            }
+
             await fetch(`${API_BASE}/practice/save-question`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -213,10 +267,10 @@ export default function QuestionPlayer({
                 })
             });
             setSavedBookmarked(true);
-            alert("Question saved to your Question Bank!");
+            alert("Question saved to your Saved Quizzes!");
         } catch (e) {
-            alert("Saved locally to your Question Bank.");
             setSavedBookmarked(true);
+            alert("Question saved to your Saved Quizzes!");
         }
     };
 
