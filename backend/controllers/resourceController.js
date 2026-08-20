@@ -143,7 +143,7 @@ exports.generateNotes = async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'llama3-70b-8192',
+                model: 'qwen/qwen3.6-27b',
                 messages: [
                     { role: "system", content: "You are an expert academic tutor." },
                     { role: "user", content: prompt }
@@ -181,7 +181,7 @@ exports.explainConcept = async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'llama3-70b-8192',
+                model: 'qwen/qwen3.6-27b',
                 messages: [{ role: "user", content: prompt }]
             })
         });
@@ -270,7 +270,7 @@ Generate ${cardCount} flashcards now:`;
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama3-70b-8192',
+                        model: 'qwen/qwen3.6-27b',
                         messages: [
                             { role: "system", content: "You are a flashcard generator. Return ONLY valid JSON arrays. No markdown, no explanations, no code fences, just the raw JSON array." },
                             { role: "user", content: prompt }
@@ -788,7 +788,7 @@ Provide a clear, educational answer with examples and bullet points.`;
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'llama3-70b-8192',
+                model: 'qwen/qwen3.6-27b',
                 messages: [{ role: "user", content: prompt }],
                 temperature: 0.4
             })

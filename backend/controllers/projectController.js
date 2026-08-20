@@ -366,7 +366,7 @@ Output ONLY raw markdown.`;
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'llama3-70b-8192',
+                model: 'qwen/qwen3.6-27b',
                 messages: [
                     { role: 'system', content: 'You are a technical documentation expert. Write excellent GitHub README files in markdown. Output ONLY raw markdown, no code fences, no wrapper.' },
                     { role: 'user', content: prompt }
@@ -666,7 +666,7 @@ SKILLS_JSON: ["skill1","skill2",...]`;
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'llama3-70b-8192',
+                model: 'qwen/qwen3.6-27b',
                 messages: [
                     { role: 'system', content: 'You are a technical recruiter analyst. Write concise, accurate project summaries from real data only. Never fabricate skills or achievements.' },
                     { role: 'user', content: prompt }
