@@ -22,14 +22,6 @@ export default function StudentSidebar({ activeTab, setActiveTab }) {
             ]
         },
         {
-            title: "ASSESSMENTS",
-            items: [
-                { id: 'mock_tests', label: 'Mock Tests', icon: FileText },
-                { id: 'exam_simulator', label: 'Exam Simulator', icon: Award },
-                { id: 'previous_papers', label: 'Previous Papers', icon: Layers }
-            ]
-        },
-        {
             title: "MY LEARNING",
             items: [
                 { id: 'my_library', label: 'Saved Quizzes', icon: FolderHeart },
