@@ -30,6 +30,7 @@ import LearningAnalyticsView from "../components/practice/LearningAnalyticsView"
 import AIQuestionStudioView from "../components/practice/AIQuestionStudioView";
 import LeaderboardView from "../components/practice/LeaderboardView";
 import TeacherQuestionBankView from "../components/practice/TeacherQuestionBankView";
+import DailyChallengeView from "../components/practice/DailyChallengeView";
 
 // Modular Quiz Engine Components
 import QuestionPalette from "../components/quiz/QuestionPalette";
@@ -1001,6 +1002,8 @@ export default function StudySprintQuiz() {
                             <SmartPracticeView onStartSession={handleStartPracticeRunner} />
                         ) : activeTab === 'topic_practice' ? (
                             <TopicPracticeView onStartSession={handleStartPracticeRunner} />
+                        ) : activeTab === 'daily_challenge' ? (
+                            <DailyChallengeView onStartSession={handleStartPracticeRunner} />
                         ) : activeTab === 'mistake_practice' ? (
                             <MistakePracticeView onStartSession={handleStartPracticeRunner} />
                         ) : activeTab === 'exam_simulator' || activeTab === 'mock_tests' || activeTab === 'previous_papers' ? (

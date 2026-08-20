@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Brain, Sparkles, ArrowRight, Zap, Target, BookOpen, Layers, Loader2 } from 'lucide-react';
+import { Brain, Sparkles, ArrowRight, Zap, Target, BookOpen, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { API_BASE } from '../../config';
 import { PYTHON_MODULE_1_QUESTIONS } from '../../data/pythonQuestions';
 
@@ -8,6 +8,8 @@ export default function SmartPracticeView({ onStartSession }) {
     const [difficultyLevel, setDifficultyLevel] = useState("medium");
     const [questionCount, setQuestionCount] = useState(10);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
 
     const popularTopics = [
         "Python Programming",
@@ -20,51 +22,51 @@ export default function SmartPracticeView({ onStartSession }) {
 
     const handleGeneratePractice = async () => {
         if (!topicName.trim()) {
-            alert("Please enter a topic name for your practice session.");
+            setErrorMsg("Please enter a topic name for your practice session.");
             return;
         }
-
+        setErrorMsg('');
+        setSuccessMsg('');
         setIsGenerating(true);
+
         try {
             const res = await fetch(`${API_BASE}/quiz/generate-ai`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
                 body: JSON.stringify({
                     topic: topicName.trim(),
                     difficulty: difficultyLevel,
-                    count: Number(questionCount) || 5,
+                    mcqCount: Number(questionCount) || 10,
+                    count: Number(questionCount) || 10,
+                    codingCount: 0,
                     type: 'mcq'
                 })
             });
 
-            const data = await res.json();
-
-            let questionsToUse = [];
-            if (data.success && data.questions && data.questions.length > 0) {
-                questionsToUse = data.questions;
-            } else {
-                // Fallback demo questions if API response unavailable
-                questionsToUse = PYTHON_MODULE_1_QUESTIONS.slice(0, Number(questionCount) || 5);
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || `Server error: ${res.status}`);
             }
 
-            if (onStartSession) {
-                onStartSession({
-                    mode: 'smart',
-                    topic: topicName.trim(),
-                    questions: questionsToUse
-                });
+            const data = await res.json();
+
+            if (data.success && data.questions && data.questions.length > 0) {
+                setSuccessMsg(`✓ ${data.questions.length} questions generated for "${topicName.trim()}"! Starting session...`);
+                setTimeout(() => {
+                    if (onStartSession) {
+                        onStartSession({
+                            mode: 'smart',
+                            topic: topicName.trim(),
+                            questions: data.questions
+                        });
+                    }
+                }, 800);
+            } else {
+                throw new Error(data.message || "No questions returned from AI. Try a different topic.");
             }
         } catch (error) {
             console.error("AI Practice generation error:", error);
-            // Fallback practice runner
-            if (onStartSession) {
-                onStartSession({
-                    mode: 'smart',
-                    topic: topicName.trim(),
-                    questions: PYTHON_MODULE_1_QUESTIONS.slice(0, Number(questionCount) || 5)
-                });
-            }
+            setErrorMsg(`AI generation failed: ${error.message}. Please check your internet connection and try again.`);
         } finally {
             setIsGenerating(false);
         }
@@ -89,6 +91,22 @@ export default function SmartPracticeView({ onStartSession }) {
             <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-md space-y-7 relative overflow-hidden">
                 {/* Background Decor */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/60 rounded-full blur-3xl pointer-events-none" />
+
+                {/* Error Banner */}
+                {errorMsg && (
+                    <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold rounded-2xl p-4 relative z-10">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-500" />
+                        <span>{errorMsg}</span>
+                    </div>
+                )}
+
+                {/* Success Banner */}
+                {successMsg && (
+                    <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-2xl p-4 relative z-10">
+                        <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-500" />
+                        <span>{successMsg}</span>
+                    </div>
+                )}
 
                 {/* Step 1: Topic Input */}
                 <div className="space-y-3 relative z-10">

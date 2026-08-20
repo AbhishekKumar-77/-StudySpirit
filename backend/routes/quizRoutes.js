@@ -3,8 +3,8 @@ const router = express.Router();
 const quizController = require('../controllers/quizController');
 const auth = require('../middleware/auth');
 
-// ── AI Endpoints (auth required — prevents API key abuse by anonymous users) ──
-router.post('/generate-ai', auth, quizController.generateAIQuestions);
+// ── AI Endpoints ──
+router.post('/generate-ai', quizController.generateAIQuestions);
 router.post('/generate-from-image', auth, quizController.generateFromImage);
 router.post('/grade-subjective', auth, quizController.gradeSubjective);
 router.post('/explain-answer', auth, quizController.explainAnswer);

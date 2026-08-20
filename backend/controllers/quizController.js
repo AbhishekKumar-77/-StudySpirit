@@ -209,6 +209,8 @@ exports.generateAIQuestions = async (req, res) => {
             "question": "Question text here",
             "options": ["Option A", "Option B", "Option C", "Option D"],
             "correct": 0,
+            "explanation": "Detailed step-by-step explanation of why the correct option is right.",
+            "keyConcept": "Key concept summary for this question",
             "difficulty": "${difficulty || 'medium'}"
         }
         ${codingCount > 0 ? `
