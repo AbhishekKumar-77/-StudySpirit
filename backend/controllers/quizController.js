@@ -194,23 +194,25 @@ exports.generateAIQuestions = async (req, res) => {
 
         ${selectedDifficultyGuide}
 
-        Generate EXACTLY ${mcqCount} multiple choice questions${codingCount > 0 ? ` and ${codingCount} coding problems` : ''}.
+        YOU MUST GENERATE EXACTLY ${mcqCount} MULTIPLE CHOICE QUESTIONS. Not fewer, not more — EXACTLY ${mcqCount}.${codingCount > 0 ? ` Also generate EXACTLY ${codingCount} coding problems.` : ''}
         ALL questions MUST match the ${(difficulty || 'medium').toUpperCase()} difficulty level described above.
         
         CRITICAL RULES:
-        - Return ONLY a JSON object containing a "questions" array. No markdown, no explanation, no extra text.
+        - Return ONLY a JSON object with a "questions" array containing EXACTLY ${mcqCount} objects.
+        - The "questions" array MUST have a length of ${mcqCount}. This is mandatory.
         - For MCQ questions: vary the correct answer position randomly — do NOT always put the correct answer at index 0 or 2.
         - Each question MUST be strongly relevant to the topic "${topic}".
         - Difficulty MUST be strictly enforced as described above.
+        - Keep explanations concise (1-2 sentences max) to save space.
 
-        Structure inside the "questions" array:
+        Each object in the "questions" array must follow this structure:
         {
             "type": "mcq",
             "question": "Question text here",
             "options": ["Option A", "Option B", "Option C", "Option D"],
             "correct": 0,
-            "explanation": "Detailed step-by-step explanation of why the correct option is right.",
-            "keyConcept": "Key concept summary for this question",
+            "explanation": "Brief explanation of why the correct option is right.",
+            "keyConcept": "Key concept",
             "difficulty": "${difficulty || 'medium'}"
         }
         ${codingCount > 0 ? `
@@ -226,7 +228,7 @@ exports.generateAIQuestions = async (req, res) => {
             "difficulty": "${difficulty || 'medium'}"
         }` : ''}
         
-        Output the JSON object now:`;
+        REMEMBER: The "questions" array MUST contain EXACTLY ${mcqCount} items. Output the JSON object now:`;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -237,11 +239,11 @@ exports.generateAIQuestions = async (req, res) => {
             body: JSON.stringify({
                 model: 'qwen/qwen3.6-27b',
                 messages: [
-                    { role: 'system', content: 'You are an educational AI assistant. Output format must be a strictly valid JSON object containing a "questions" array. No markdown formatting.' },
+                    { role: 'system', content: `You are an educational AI assistant. You MUST output a strictly valid JSON object containing a "questions" array with EXACTLY ${mcqCount} questions. No markdown, no extra text. Do not output fewer than ${mcqCount} questions under any circumstances.` },
                     { role: 'user', content: prompt }
                 ],
-                temperature: 0.7,
-                max_tokens: 4000,
+                temperature: 0.5,
+                max_tokens: 16384,
                 response_format: { type: "json_object" }
             })
         });
