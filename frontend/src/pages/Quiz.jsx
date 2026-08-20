@@ -1484,10 +1484,7 @@ export default function StudySprintQuiz() {
                                                     ))}
                                                 </div>
                                             </div>
-                                        )}                          onChange={(e) => setSettings({ ...settings, showResults: e.target.checked })}
-                                                className="w-5 h-5 accent-violet-500 cursor-pointer"
-                                            />
-                                        </div>
+                                        )}
 
                                         {/* Schedule Section */}
                                         <div className="pt-3 border-t border-[var(--border-color)] mt-1">
