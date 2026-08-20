@@ -37,7 +37,11 @@ import QuestionRenderer from "../components/quiz/QuestionRenderers";
 import LiveProctorPanel from "../components/quiz/LiveProctorPanel";
 import GamifiedQuizArena from "../components/quiz/GamifiedQuizArena";
 
-import { PYTHON_MODULE_1_QUESTIONS } from "../data/pythonQuestions";
+import { 
+    PYTHON_MODULE_1_QUESTIONS, 
+    PYTHON_MODULE_2_VARIABLES_QUESTIONS, 
+    PYTHON_MODULE_2_DATA_QUESTIONS 
+} from "../data/pythonQuestions";
 
 export default function StudySprintQuiz() {
     const { user } = useApp();
@@ -951,9 +955,18 @@ export default function StudySprintQuiz() {
     // Helper to start practice runner
     const handleStartPracticeRunner = (opts = {}) => {
         if (opts.mode === 'smart' || opts.mode === 'topic' || opts.mode === 'mistake') {
-            const selectedQuestions = (opts.questions && opts.questions.length > 0) 
-                ? opts.questions 
-                : PYTHON_MODULE_1_QUESTIONS;
+            let selectedQuestions = (opts.questions && opts.questions.length > 0) ? opts.questions : null;
+
+            if (!selectedQuestions) {
+                const topicName = (opts.topic || '').toLowerCase();
+                if (topicName.includes('variable')) {
+                    selectedQuestions = PYTHON_MODULE_2_VARIABLES_QUESTIONS;
+                } else if (topicName.includes('data')) {
+                    selectedQuestions = PYTHON_MODULE_2_DATA_QUESTIONS;
+                } else {
+                    selectedQuestions = PYTHON_MODULE_1_QUESTIONS;
+                }
+            }
 
             setActiveRunnerSession({
                 title: `${opts.topic || 'Module 1 : Introduction to Programming'}`,

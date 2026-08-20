@@ -18,6 +18,13 @@ export default function TopicPracticeView({ onStartSession }) {
                     topics: [
                         { name: "Module 1 : Introduction to Programming", questionsCount: 20, mastery: pythonMastery }
                     ]
+                },
+                {
+                    name: "Module 2 : Variables & Core Concepts",
+                    topics: [
+                        { name: "Module 2 : Variables", questionsCount: 20, mastery: 0 },
+                        { name: "Module 2 : Data Types", questionsCount: 20, mastery: 0 }
+                    ]
                 }
             ]
         },
