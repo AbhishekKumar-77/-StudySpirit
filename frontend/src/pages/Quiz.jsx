@@ -34,6 +34,7 @@ import DailyChallengeView from "../components/practice/DailyChallengeView";
 import SavedQuizzesView from "../components/practice/SavedQuizzesView";
 import PracticeHistoryView from "../components/practice/PracticeHistoryView";
 import CompetitionView from "../components/practice/CompetitionView";
+import GamifiedPlayer from "../components/practice/GamifiedPlayer";
 
 // Modular Quiz Engine Components
 import QuestionPalette from "../components/quiz/QuestionPalette";
@@ -79,7 +80,10 @@ export default function StudySprintQuiz() {
         allowReview: true,
         showResults: true,
         randomizeQuestions: false,
-        secureMode: true,
+        secureMode: false,
+        quizMode: "unsecure",
+        perQuestionTimer: 30,
+        speedBonus: true,
         scheduledStart: "",  // ISO datetime string (empty = no schedule)
         scheduledEnd: "",
     });
@@ -1399,7 +1403,7 @@ export default function StudySprintQuiz() {
                                         </div>
 
                                         <div className="flex items-center justify-between py-2 border-t border-[var(--border-color)] mt-2">
-                                            <label className="text-[var(--text-secondary)] text-sm">Randomize</label>
+                                            <label className="text-[var(--text-secondary)] text-sm">Randomize Questions</label>
                                             <input
                                                 type="checkbox"
                                                 checked={settings.randomizeQuestions}
@@ -1407,23 +1411,80 @@ export default function StudySprintQuiz() {
                                                 className="w-5 h-5 accent-violet-500 cursor-pointer"
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between py-2 border-t border-[var(--border-color)]">
-                                            <label className="text-[var(--text-secondary)] text-sm flex items-center gap-2">
-                                                Secure Mode <AlertCircle size={14} className="text-amber-500" />
-                                            </label>
-                                            <input
-                                                type="checkbox"
-                                                checked={settings.secureMode}
-                                                onChange={(e) => setSettings({ ...settings, secureMode: e.target.checked })}
-                                                className="w-5 h-5 accent-violet-500 cursor-pointer"
-                                            />
+
+                                        <div className="pt-2 border-t border-[var(--border-color)]">
+                                            <label className="text-[var(--text-secondary)] text-xs mb-2 block font-bold uppercase tracking-wider">Quiz Mode & Format</label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings({ ...settings, quizMode: 'unsecure', secureMode: false })}
+                                                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                                        settings.quizMode === 'unsecure'
+                                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                            : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                                                    }`}
+                                                >
+                                                    📄 Unsecure Mode
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings({ ...settings, quizMode: 'secure', secureMode: true })}
+                                                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                                        settings.secureMode || settings.quizMode === 'secure'
+                                                            ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                                                            : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                                                    }`}
+                                                >
+                                                    🛡️ Secure Mode
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings({ ...settings, quizMode: 'instant', showResults: true, secureMode: false })}
+                                                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                                        settings.quizMode === 'instant'
+                                                            ? 'bg-cyan-600 text-white border-cyan-600 shadow-sm'
+                                                            : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                                                    }`}
+                                                >
+                                                    ⚡ Instant Result
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSettings({ ...settings, quizMode: 'gamified', secureMode: false, perQuestionTimer: settings.perQuestionTimer || 30 })}
+                                                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                                        settings.quizMode === 'gamified'
+                                                            ? 'bg-rose-600 text-white border-rose-600 shadow-sm scale-105'
+                                                            : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                                                    }`}
+                                                >
+                                                    🎮 Gamified Mode
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center justify-between py-2 border-t border-[var(--border-color)]">
-                                            <label className="text-[var(--text-secondary)] text-sm">Instant Results</label>
-                                            <input
-                                                type="checkbox"
-                                                checked={settings.showResults}
-                                                onChange={(e) => setSettings({ ...settings, showResults: e.target.checked })}
+
+                                        {settings.quizMode === 'gamified' && (
+                                            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl space-y-2 mt-2 animate-in fade-in">
+                                                <label className="text-rose-600 dark:text-rose-400 text-xs font-bold block">
+                                                    ⏳ Per-Question Timer
+                                                </label>
+                                                <div className="flex gap-1.5">
+                                                    {[15, 30, 45, 60, 90].map(sec => (
+                                                        <button
+                                                            key={sec}
+                                                            type="button"
+                                                            onClick={() => setSettings({ ...settings, perQuestionTimer: sec })}
+                                                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                                                                settings.perQuestionTimer === sec
+                                                                    ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
+                                                                    : 'bg-white text-slate-700 border-slate-200 hover:bg-rose-50'
+                                                            }`}
+                                                        >
+                                                            {sec}s
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}                          onChange={(e) => setSettings({ ...settings, showResults: e.target.checked })}
                                                 className="w-5 h-5 accent-violet-500 cursor-pointer"
                                             />
                                         </div>
@@ -1844,7 +1905,17 @@ export default function StudySprintQuiz() {
                             </div>
                         )}
 
-                        {examStarted && joinedQuiz && joinedQuiz.questions[currentQuestionIndex] && (
+                        {examStarted && joinedQuiz && (joinedQuiz.settings?.quizMode === 'gamified' || joinedQuiz.settings?.perQuestionTimer > 0) ? (
+                            <GamifiedPlayer
+                                questions={joinedQuiz.questions}
+                                sessionTitle={joinedQuiz.title}
+                                perQuestionTimer={joinedQuiz.settings?.perQuestionTimer || 30}
+                                onFinish={() => {
+                                    setExamStarted(false);
+                                    setShowResult(true);
+                                }}
+                            />
+                        ) : examStarted && joinedQuiz && joinedQuiz.questions[currentQuestionIndex] && (
                             <div className="fixed inset-0 z-[200] bg-[var(--bg-secondary)] flex flex-col items-center justify-center p-6 overflow-y-auto">
                                 <div className="w-full max-w-5xl relative animate-fade-in-up">
 

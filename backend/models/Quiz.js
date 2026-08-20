@@ -30,7 +30,10 @@ const quizSchema = new mongoose.Schema({
         showResults: { type: Boolean, default: true },
         randomizeQuestions: { type: Boolean, default: false },
         secureMode: { type: Boolean, default: false },
+        quizMode: { type: String, enum: ['secure', 'unsecure', 'instant', 'gamified'], default: 'unsecure' },
         perQuestionTimer: { type: Number, default: 0 }, // 0 = off, >0 = seconds per question
+        speedBonus: { type: Boolean, default: true },
+        streakMultiplier: { type: Boolean, default: true },
         scheduledStart: { type: Date, default: null },
         scheduledEnd: { type: Date, default: null }
     },
