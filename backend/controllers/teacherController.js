@@ -253,7 +253,7 @@ Identify which specific concepts the students are struggling with the most, and 
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{ role: 'user', content: prompt }],
                 temperature: 0.3,
                 max_tokens: 150

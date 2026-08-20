@@ -292,7 +292,7 @@ exports.generateDailyChallenge = async (req, res) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [
                     { role: "system", content: "You are a coding contest platform generator. You output ONLY valid JSON arrays of coding problems. CRITICAL RULES: 1) The starterCode must be SKELETON ONLY — include imports, main function, input reading, and a TODO comment. NEVER include the solution or algorithm. The student must write the logic themselves. 2) All string values in JSON must properly escape newlines as \\n, tabs as \\t, quotes as \\\", and backslashes as \\\\. 3) Never output markdown code fences. Output ONLY the JSON array." },
                     { role: "user", content: prompt }
@@ -726,7 +726,7 @@ Rules:
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [
                     { role: "system", content: "You are a precise code reviewer. You output ONLY valid JSON. No markdown, no extra text." },
                     { role: "user", content: prompt }
@@ -832,7 +832,7 @@ Rules:
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [
                     { role: "system", content: "You output purely valid JSON arrays of coding problems. No markdown." },
                     { role: "user", content: prompt }

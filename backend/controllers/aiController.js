@@ -286,7 +286,7 @@ ALWAYS return valid JSON in this exact format:
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [
                     { role: 'system', content: systemPrompt },
                     ...context,
@@ -318,7 +318,7 @@ exports.generateVocabulary = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{
                     role: 'system',
                     content: `Generate a list of exactly 50 advanced English vocabulary words useful for professional and academic communication.
@@ -353,7 +353,7 @@ exports.generateWritingTopic = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{
                     role: 'system',
                     content: `Generate 1 professional writing topic suitable for a 5-minute essay by an engineering/tech student.
@@ -385,7 +385,7 @@ exports.evaluateWriting = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{
                     role: 'system',
                     content: `You are an expert English writing evaluator. Evaluate the following student essay.
@@ -432,7 +432,7 @@ exports.generateSpeakingTopic = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{
                     role: 'system',
                     content: `Generate 1 extempore speaking topic for an engineering or tech student (2 minute talk).
@@ -464,7 +464,7 @@ exports.evaluateSpeech = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{
                     role: 'system',
                     content: `You are an expert public speaking coach. Evaluate the following student's extempore speech.
@@ -543,7 +543,7 @@ exports.checkATSScore = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{ role: 'user', content: prompt }],
                 temperature: 0.3,
                 response_format: { type: "json_object" }

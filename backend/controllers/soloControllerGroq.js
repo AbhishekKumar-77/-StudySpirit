@@ -69,7 +69,7 @@ Groq is FREE, FAST, and has NO rate limits! 🚀`;
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'qwen/qwen3.6-27b',
+                        model: 'openai/gpt-oss-20b',
                         messages: [
                             {
                                 role: 'system',

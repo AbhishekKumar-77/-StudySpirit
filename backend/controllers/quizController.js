@@ -230,6 +230,8 @@ exports.generateAIQuestions = async (req, res) => {
         
         REMEMBER: The "questions" array MUST contain EXACTLY ${mcqCount} items. Output the JSON object now:`;
 
+        const safeMaxTokens = Math.min(4000, Math.max(1500, Number(mcqCount) * 250 + 500));
+
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -237,13 +239,13 @@ exports.generateAIQuestions = async (req, res) => {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [
                     { role: 'system', content: `You are an educational AI assistant. You MUST output a strictly valid JSON object containing a "questions" array with EXACTLY ${mcqCount} questions. No markdown, no extra text. Do not output fewer than ${mcqCount} questions under any circumstances.` },
                     { role: 'user', content: prompt }
                 ],
-                temperature: 0.5,
-                max_tokens: 16384,
+                temperature: 0.3,
+                max_tokens: safeMaxTokens,
                 response_format: { type: "json_object" }
             })
         });
@@ -304,8 +306,14 @@ exports.generateAIQuestions = async (req, res) => {
 
         questions = questions.map((q, i) => {
             const opts = q.options || ["True", "False"];
-            const correctIdx = typeof q.correct === 'number' ? q.correct : 0;
-            const correctAnswer = opts[correctIdx];
+            let correctIdx = 0;
+            if (typeof q.correct === 'number') {
+                correctIdx = (q.correct >= 0 && q.correct < opts.length) ? q.correct : 0;
+            } else if (typeof q.correct === 'string') {
+                const foundIdx = opts.findIndex(o => String(o).toLowerCase().trim() === String(q.correct).toLowerCase().trim());
+                if (foundIdx >= 0) correctIdx = foundIdx;
+            }
+            const correctAnswer = opts[correctIdx] || opts[0];
             const shuffled = [...opts];
             for (let j = shuffled.length - 1; j > 0; j--) {
                 const k = Math.floor(Math.random() * (j + 1));
@@ -957,7 +965,7 @@ exports.gradeSubjective = async (req, res) => {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{ role: 'system', content: 'You evaluate student answers strictly based on the rubric.' }, { role: 'user', content: prompt }],
                 temperature: 0.2, // Low temp for consistent grading
                 response_format: { type: "json_object" }
@@ -996,7 +1004,7 @@ exports.explainAnswer = async (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{ role: 'user', content: prompt }],
                 temperature: 0.5
             })
@@ -1046,7 +1054,7 @@ exports.adaptivePractice = async (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [{ role: 'system', content: 'Output strictly a raw JSON object.' }, { role: 'user', content: prompt }],
                 temperature: 0.7,
                 response_format: { type: "json_object" }
@@ -1106,7 +1114,7 @@ Return ONLY a JSON object containing a "questions" array:
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'qwen/qwen3.6-27b',
+                model: 'openai/gpt-oss-20b',
                 messages: [
                     { role: 'system', content: 'Output format must be a strictly valid JSON object.' },
                     { role: 'user', content: prompt }
