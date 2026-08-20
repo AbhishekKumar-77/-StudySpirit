@@ -593,21 +593,49 @@ JSON format required:
   ]
 }`;
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
-                messages: [{ role: 'system', content: 'Output strictly valid JSON.' }, { role: 'user', content: prompt }],
-                temperature: 0.5,
-                response_format: { type: "json_object" }
-            })
-        });
+        const candidateModels = [
+            'openai/gpt-oss-20b',
+            'llama-3.1-8b-instant',
+            'llama3-8b-8192',
+            'mixtral-8x7b-32768',
+            'llama3-70b-8192',
+            'llama-3.3-70b-versatile'
+        ];
 
-        const data = await response.json();
+        let data = null;
+        let lastErr = null;
+        for (const modelCandidate of candidateModels) {
+            try {
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: modelCandidate,
+                        messages: [{ role: 'system', content: 'Output strictly valid JSON.' }, { role: 'user', content: prompt }],
+                        temperature: 0.5,
+                        response_format: { type: "json_object" }
+                    })
+                });
+                const resData = await res.json();
+                if (resData.choices && resData.choices[0]?.message?.content) {
+                    data = resData;
+                    break;
+                }
+                if (resData.error?.message) {
+                    lastErr = new Error(resData.error.message);
+                }
+            } catch (e) {
+                lastErr = e;
+            }
+        }
+
+        if (!data || !data.choices || !data.choices[0]?.message?.content) {
+            throw lastErr || new Error("Failed to generate AI Studio questions");
+        }
+
         let content = data.choices[0]?.message?.content;
         let parsed = JSON.parse(content);
         let questions = parsed.questions || parsed.quiz || [];

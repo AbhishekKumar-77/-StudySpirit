@@ -19,6 +19,55 @@ const requireApiKey = (res) => {
     return true;
 };
 
+// Resilient Groq AI Caller with Automatic Model Fallback
+const callGroqAI = async (messages, options = {}) => {
+    const candidateModels = [
+        'openai/gpt-oss-20b',
+        'llama-3.1-8b-instant',
+        'llama3-8b-8192',
+        'mixtral-8x7b-32768',
+        'llama3-70b-8192',
+        'llama-3.3-70b-versatile'
+    ];
+
+    let lastError = null;
+    for (const model of candidateModels) {
+        try {
+            const body = {
+                model,
+                messages,
+                temperature: options.temperature ?? 0.3,
+                max_tokens: options.max_tokens || 4000
+            };
+            if (options.response_format) {
+                body.response_format = options.response_format;
+            }
+
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+            if (data.choices && data.choices[0]?.message?.content) {
+                return data;
+            }
+            if (data.error?.message) {
+                console.warn(`Groq model '${model}' error: ${data.error.message}. Retrying next model...`);
+                lastError = new Error(data.error.message);
+            }
+        } catch (err) {
+            console.warn(`Groq fetch exception with model '${model}': ${err.message}. Retrying next...`);
+            lastError = err;
+        }
+    }
+    throw lastError || new Error("All Groq AI candidate models failed.");
+};
+
 
 // ── Generate MCQ Questions FROM an Image (Vision AI) ──────────────────────────
 exports.generateFromImage = async (req, res) => {
@@ -231,31 +280,15 @@ exports.generateAIQuestions = async (req, res) => {
         REMEMBER: The "questions" array MUST contain EXACTLY ${mcqCount} items. Output the JSON object now:`;
 
         const safeMaxTokens = Math.min(8000, Math.max(3000, Number(mcqCount) * 450 + 1000));
+        const messages = [
+            { role: 'system', content: `You are an educational AI assistant. You MUST output a strictly valid JSON object containing a "questions" array with EXACTLY ${mcqCount} questions. No markdown, no extra text. Do not output fewer than ${mcqCount} questions under any circumstances.` },
+            { role: 'user', content: prompt }
+        ];
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    { role: 'system', content: `You are an educational AI assistant. You MUST output a strictly valid JSON object containing a "questions" array with EXACTLY ${mcqCount} questions. No markdown, no extra text. Do not output fewer than ${mcqCount} questions under any circumstances.` },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.3,
-                max_tokens: safeMaxTokens,
-                response_format: { type: "json_object" }
-            })
+        const data = await callGroqAI(messages, {
+            max_tokens: safeMaxTokens,
+            response_format: { type: "json_object" }
         });
-
-        const data = await response.json();
-
-        if (!data.choices || !data.choices[0]?.message?.content) {
-            console.error("GROQ API ERROR RESPONSE:", JSON.stringify(data, null, 2));
-            throw new Error(data.error?.message || "Invalid response from AI provider");
-        }
 
         let questions = [];
         const content = data.choices[0].message.content;
@@ -1064,18 +1097,15 @@ exports.adaptivePractice = async (req, res) => {
           }]
         }`;
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-            body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
-                messages: [{ role: 'system', content: 'Output strictly a raw JSON object.' }, { role: 'user', content: prompt }],
-                temperature: 0.7,
-                response_format: { type: "json_object" }
-            })
-        });
+        const messages = [
+            { role: 'system', content: 'Output strictly a raw JSON object.' },
+            { role: 'user', content: prompt }
+        ];
 
-        const data = await response.json();
+        const data = await callGroqAI(messages, {
+            temperature: 0.7,
+            response_format: { type: "json_object" }
+        });
         let content = data.choices[0].message.content;
         let parsed = JSON.parse(content);
 
