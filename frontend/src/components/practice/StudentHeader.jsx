@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Flame, Bell, ChevronDown, User, Sparkles, BookOpen } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export default function StudentHeader({ userProfile, onSearch }) {
     const { user } = useApp();
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -20,16 +22,23 @@ export default function StudentHeader({ userProfile, onSearch }) {
     return (
         <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between shadow-sm transition-all">
             {/* Left: Brand Logo & Subtitle */}
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-indigo-200">
-                    ✨
-                </div>
+            <div 
+                className="flex items-center gap-3 cursor-pointer group"
+                onClick={() => navigate('/dashboard')}
+                title="Go to Main Dashboard"
+            >
+                <img
+                    src="/logo-icon.png"
+                    alt="StudySpirit Logo"
+                    className="w-10 h-10 object-contain transition-transform group-hover:scale-105"
+                />
                 <div>
-                    <div className="flex items-center gap-1.5 font-black text-slate-800 text-lg tracking-tight">
-                        StudySpirit
+                    <div className="flex items-center font-black text-lg tracking-tight">
+                        <span className="text-indigo-600">Study</span>
+                        <span className="text-slate-800">Spirit</span>
                     </div>
-                    <p className="text-xs text-indigo-600 font-medium tracking-wide">
-                        Learn. Practice. Master.
+                    <p className="text-[10px] text-slate-500 font-medium tracking-wide">
+                        Learn • Practice • Grow
                     </p>
                 </div>
             </div>

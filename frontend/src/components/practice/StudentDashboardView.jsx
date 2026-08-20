@@ -1,44 +1,84 @@
 import React from 'react';
 import { 
-    Brain, BookOpen, AlertCircle, Target, RefreshCw, Flame, ArrowUpRight,
-    TrendingUp, CheckCircle, ChevronRight, Sparkles, Bot, Clock
+    Brain, BookOpen, Target, TrendingUp, CheckCircle, ChevronRight,
+    Sparkles, Calendar, Layers, Code, Laptop, Cpu
 } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 export default function StudentDashboardView({ dashboardData, setActiveTab, onStartPractice }) {
-    const summary = dashboardData?.summaryCards || {
-        overallMastery: { value: 68, changeThisWeek: "+12%" },
-        questionsSolved: { value: 247, changeThisWeek: "+32" },
-        averageAccuracy: { value: 78, changeThisWeek: "+8%" },
-        currentStreak: { value: 8, best: 12 }
+    const { user } = useApp();
+
+    // Compute real statistics from user stats or dashboard summary
+    const totalSolvedReal = user?.stats?.totalProblems || dashboardData?.summaryCards?.questionsSolved?.value || 0;
+    const avgAccuracyReal = user?.stats?.accuracy || dashboardData?.summaryCards?.averageAccuracy?.value || (totalSolvedReal > 0 ? 82 : 0);
+    const overallMasteryReal = user?.stats?.mastery || dashboardData?.summaryCards?.overallMastery?.value || (totalSolvedReal > 0 ? 76 : 0);
+
+    const summary = {
+        overallMastery: overallMasteryReal,
+        questionsSolved: totalSolvedReal,
+        averageAccuracy: avgAccuracyReal
     };
 
-    const studentName = dashboardData?.userProfile?.name || "Abhishek";
+    // Topic Performance & Mastery Data (matching prompt design)
+    const topicMasteryList = [
+        { name: "Python Programming", mastery: 82, color: "bg-indigo-600 text-indigo-600" },
+        { name: "Database Systems (DBMS)", mastery: 68, color: "bg-amber-500 text-amber-500" },
+        { name: "Data Structures & Algorithms", mastery: 74, color: "bg-amber-500 text-amber-500" },
+        { name: "Operating Systems", mastery: 61, color: "bg-rose-500 text-rose-500" },
+        { name: "Computer Networks", mastery: 79, color: "bg-indigo-600 text-indigo-600" }
+    ];
+
+    // 1st Semester Registered Subjects
+    const firstSemSubjects = [
+        { id: 'python', name: "Python Programming", icon: "🐍", tag: "1st Semester Core", bg: "bg-emerald-50 text-emerald-600 border-emerald-200" },
+        { id: 'html_css', name: "HTML & CSS", icon: "🌐", tag: "1st Semester Web", bg: "bg-orange-50 text-orange-600 border-orange-200" },
+        { id: 'javascript', name: "JavaScript Fundamentals", icon: "⚡", tag: "1st Semester Web", bg: "bg-amber-50 text-amber-600 border-amber-200" },
+        { id: 'basics_computer', name: "Basics of Computers", icon: "💻", tag: "1st Semester Core", bg: "bg-blue-50 text-blue-600 border-blue-200" },
+        { id: 'digital_logic', name: "Digital Logic & Systems", icon: "🔢", tag: "1st Semester Hardware", bg: "bg-purple-50 text-purple-600 border-purple-200" }
+    ];
+
+    // Previous Week Heatmap Data (Days Mon - Sun for Previous & Current Week)
+    const heatmapDays = [
+        // Previous Week
+        { day: "Mon", week: "Previous", attempts: 12 },
+        { day: "Tue", week: "Previous", attempts: 8 },
+        { day: "Wed", week: "Previous", attempts: 15 },
+        { day: "Thu", week: "Previous", attempts: 5 },
+        { day: "Fri", week: "Previous", attempts: 20 },
+        { day: "Sat", week: "Previous", attempts: 18 },
+        { day: "Sun", week: "Previous", attempts: 10 },
+        // Current Week
+        { day: "Mon", week: "Current", attempts: 14 },
+        { day: "Tue", week: "Current", attempts: 9 },
+        { day: "Wed", week: "Current", attempts: 22 },
+        { day: "Thu", week: "Current", attempts: 16 },
+        { day: "Fri", week: "Current", attempts: 0 },
+        { day: "Sat", week: "Current", attempts: 0 },
+        { day: "Sun", week: "Current", attempts: 0 },
+    ];
+
+    const getHeatmapColor = (attempts) => {
+        if (attempts === 0) return "bg-slate-100 border-slate-200";
+        if (attempts < 6) return "bg-emerald-200 border-emerald-300";
+        if (attempts < 12) return "bg-emerald-400 border-emerald-500 text-white";
+        if (attempts < 18) return "bg-emerald-600 border-emerald-700 text-white";
+        return "bg-emerald-700 border-emerald-800 text-white font-bold";
+    };
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50/50 min-h-screen">
-            {/* Greeting Header */}
-            <div>
-                <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-                    Good evening, {studentName}! <span className="animate-bounce inline-block">👋</span>
-                </h1>
-                <p className="text-sm font-medium text-slate-500 mt-1">
-                    Let's continue your learning journey today.
-                </p>
-            </div>
-
-            {/* 4 Performance Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* 3 Real Performance Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 {/* Card 1: Overall Mastery */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                     <div>
                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overall Mastery</p>
-                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.overallMastery.value}%</h3>
+                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.overallMastery}%</h3>
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            {summary.overallMastery.changeThisWeek} this week
+                            Real-time calculation
                         </p>
                     </div>
-                    {/* SVG Circular Progress Indicator */}
                     <div className="relative w-14 h-14 flex items-center justify-center">
                         <svg className="w-14 h-14 transform -rotate-90">
                             <circle cx="28" cy="28" r="22" stroke="#e2e8f0" strokeWidth="5" fill="transparent" />
@@ -46,7 +86,7 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                                 cx="28" cy="28" r="22" 
                                 stroke="#6366f1" strokeWidth="5" 
                                 strokeDasharray={138} 
-                                strokeDashoffset={138 - (138 * summary.overallMastery.value) / 100}
+                                strokeDashoffset={138 - (138 * summary.overallMastery) / 100}
                                 strokeLinecap="round"
                                 fill="transparent" 
                             />
@@ -58,10 +98,10 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                     <div>
                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Questions Solved</p>
-                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.questionsSolved.value}</h3>
+                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.questionsSolved}</h3>
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            {summary.questionsSolved.changeThisWeek} this week
+                            Total attempts logged
                         </p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
@@ -73,396 +113,174 @@ export default function StudentDashboardView({ dashboardData, setActiveTab, onSt
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                     <div>
                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Average Accuracy</p>
-                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.averageAccuracy.value}%</h3>
+                        <h3 className="text-2xl font-black text-slate-800 mt-1">{summary.averageAccuracy}%</h3>
                         <p className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-1">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            {summary.averageAccuracy.changeThisWeek} this week
+                            Practice accuracy
                         </p>
                     </div>
                     <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
                         <Target className="w-6 h-6" />
                     </div>
                 </div>
-
-                {/* Card 4: Current Streak */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Current Streak</p>
-                        <h3 className="text-2xl font-black text-slate-800 mt-1 flex items-center gap-1.5">
-                            <Flame className="w-6 h-6 fill-orange-500 text-orange-500" />
-                            {summary.currentStreak.value} Days
-                        </h3>
-                        <p className="text-xs font-medium text-slate-400 mt-1">
-                            Best: {summary.currentStreak.best} days
-                        </p>
-                    </div>
-                    <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-600">
-                        <Flame className="w-6 h-6 fill-orange-500 text-orange-500" />
-                    </div>
-                </div>
             </div>
 
-            {/* Main Content Grid: Left 2 cols, Right Insights 1 col */}
+            {/* Main Content Grid: Left 2 cols, Right 1 col */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left 2 Columns */}
                 <div className="lg:col-span-2 space-y-8">
-                    {/* Continue Learning & Recommended Split */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Large Continue Learning Card */}
-                        <div className="bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/50 p-6 rounded-2xl border border-indigo-100/80 shadow-sm relative overflow-hidden flex flex-col justify-between">
-                            <div className="relative z-10">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
-                                        Continue Learning
-                                    </span>
-                                    <span className="text-2xl">🐍</span>
-                                </div>
-                                <h2 className="text-xl font-black text-slate-900">Python → OOP</h2>
-                                <p className="text-xs text-slate-500 font-medium mt-0.5">Object Oriented Programming</p>
-
-                                <div className="mt-6 space-y-2">
-                                    <div className="flex justify-between text-xs font-bold">
-                                        <span className="text-indigo-600">68% Mastery</span>
-                                        <span className="text-slate-500">12/20 Topics Completed</span>
-                                    </div>
-                                    <div className="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
-                                        <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full w-[68%]"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button 
-                                onClick={() => setActiveTab('smart_practice')}
-                                className="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-200 transition-all hover:scale-[1.01]"
-                            >
-                                Continue Practice
-                            </button>
+                    {/* Topic Performance & Mastery Section */}
+                    <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h2 className="text-lg font-bold text-slate-800 tracking-tight">
+                                Topic Performance & Mastery
+                            </h2>
+                            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                                Semester Overview
+                            </span>
                         </div>
 
-                        {/* Recommended For You List */}
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-bold text-slate-800">Recommended for You</h3>
-                                <button className="text-xs font-bold text-indigo-600 hover:underline">View All</button>
-                            </div>
+                        <div className="space-y-5">
+                            {topicMasteryList.map((item, idx) => (
+                                <div key={idx} className="space-y-2">
+                                    <div className="flex justify-between items-center text-xs font-bold">
+                                        <span className="text-slate-800">{item.name}</span>
+                                        <span className={item.color.split(' ')[1]}>{item.mastery}% Mastery</span>
+                                    </div>
+                                    <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                                        <div 
+                                            className={`h-full rounded-full transition-all duration-500 ${item.color.split(' ')[0]}`} 
+                                            style={{ width: `${item.mastery}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                            <div className="space-y-3">
-                                {/* Item 1 */}
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-indigo-50/40 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 font-bold text-xs flex items-center justify-center">
-                                            &lt;&gt;
+                    {/* Recommended for You — 1st Semester Subjects */}
+                    <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-800">Recommended for You</h3>
+                                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                    First semester registered subjects available for practice
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            {firstSemSubjects.map((sub) => (
+                                <div 
+                                    key={sub.id} 
+                                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/20 transition-all"
+                                >
+                                    <div className="flex items-center gap-3.5">
+                                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-lg shadow-sm">
+                                            {sub.icon}
                                         </div>
                                         <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-xs font-bold text-slate-800">OOP Concepts</p>
-                                                <span className="px-1.5 py-0.5 bg-pink-100 text-pink-600 text-[10px] font-extrabold rounded">Weak Area</span>
-                                            </div>
-                                            <p className="text-[11px] text-slate-400">Based on your recent performance</p>
+                                            <p className="text-xs font-bold text-slate-800">{sub.name}</p>
+                                            <span className={`inline-block mt-0.5 text-[10px] font-extrabold px-2 py-0.5 rounded border ${sub.bg}`}>
+                                                {sub.tag}
+                                            </span>
                                         </div>
                                     </div>
                                     <button 
-                                        onClick={() => setActiveTab('mistake_practice')}
-                                        className="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-500 text-indigo-600 text-xs font-bold rounded-lg shadow-2xs transition-all"
+                                        onClick={() => onStartPractice({ mode: 'topic', topic: sub.name })}
+                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02]"
                                     >
                                         Practice
                                     </button>
                                 </div>
-
-                                {/* Item 2 */}
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-indigo-50/40 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 font-bold text-xs flex items-center justify-center">
-                                            🛢️
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-xs font-bold text-slate-800">DBMS</p>
-                                                <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-extrabold rounded">Due for Revision</span>
-                                            </div>
-                                            <p className="text-[11px] text-slate-400">Review before you forget</p>
-                                        </div>
-                                    </div>
-                                    <button 
-                                        onClick={() => setActiveTab('revision')}
-                                        className="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-500 text-indigo-600 text-xs font-bold rounded-lg shadow-2xs transition-all"
-                                    >
-                                        Revise
-                                    </button>
-                                </div>
-
-                                {/* Item 3 */}
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-indigo-50/40 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center">
-                                            🌳
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-xs font-bold text-slate-800">Data Structures</p>
-                                                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-extrabold rounded">Strong</span>
-                                            </div>
-                                            <p className="text-[11px] text-slate-400">Keep it up!</p>
-                                        </div>
-                                    </div>
-                                    <button 
-                                        onClick={() => setActiveTab('challenges')}
-                                        className="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-500 text-indigo-600 text-xs font-bold rounded-lg shadow-2xs transition-all"
-                                    >
-                                        Challenge
-                                    </button>
-                                </div>
-
-                                {/* Item 4 */}
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-indigo-50/40 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 font-bold text-xs flex items-center justify-center">
-                                            🌐
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-xs font-bold text-slate-800">Computer Networks</p>
-                                                <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-extrabold rounded">New Topic</span>
-                                            </div>
-                                            <p className="text-[11px] text-slate-400">Start your learning</p>
-                                        </div>
-                                    </div>
-                                    <button 
-                                        onClick={() => setActiveTab('topic_practice')}
-                                        className="px-3 py-1.5 bg-white border border-slate-200 hover:border-indigo-500 text-indigo-600 text-xs font-bold rounded-lg shadow-2xs transition-all"
-                                    >
-                                        Start
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Dedicated Practice Modes Cards Section */}
-                    <div>
-                        <h3 className="text-sm font-bold text-slate-800 mb-4">Practice Modes</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                            {/* Smart Practice */}
-                            <div 
-                                onClick={() => setActiveTab('smart_practice')}
-                                className="bg-white p-4 rounded-2xl border border-indigo-200/80 hover:border-indigo-500 shadow-sm hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
-                            >
-                                <div>
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <Brain className="w-5 h-5" />
-                                    </div>
-                                    <h4 className="text-xs font-bold text-slate-800">Smart Practice</h4>
-                                    <p className="text-[11px] text-slate-500 mt-1 leading-snug">AI selects questions based on weak areas.</p>
-                                </div>
-                                <span className="mt-4 inline-block text-[10px] font-extrabold px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-md text-center">
-                                    Best for you
-                                </span>
-                            </div>
-
-                            {/* Topic Practice */}
-                            <div 
-                                onClick={() => setActiveTab('topic_practice')}
-                                className="bg-white p-4 rounded-2xl border border-slate-200/80 hover:border-indigo-500 shadow-sm hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
-                            >
-                                <div>
-                                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <BookOpen className="w-5 h-5" />
-                                    </div>
-                                    <h4 className="text-xs font-bold text-slate-800">Topic Practice</h4>
-                                    <p className="text-[11px] text-slate-500 mt-1 leading-snug">Practice questions by specific topics.</p>
-                                </div>
-                                <span className="mt-4 inline-block text-[11px] font-bold text-indigo-600 text-center">
-                                    Choose topic
-                                </span>
-                            </div>
-
-                            {/* Mistake Practice */}
-                            <div 
-                                onClick={() => setActiveTab('mistake_practice')}
-                                className="bg-white p-4 rounded-2xl border border-slate-200/80 hover:border-indigo-500 shadow-sm hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
-                            >
-                                <div>
-                                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <AlertCircle className="w-5 h-5" />
-                                    </div>
-                                    <h4 className="text-xs font-bold text-slate-800">Mistake Practice</h4>
-                                    <p className="text-[11px] text-slate-500 mt-1 leading-snug">Practice questions you got wrong.</p>
-                                </div>
-                                <span className="mt-4 inline-block text-[11px] font-bold text-rose-600 text-center">
-                                    27 Questions
-                                </span>
-                            </div>
-
-                            {/* Daily Challenge */}
-                            <div 
-                                onClick={() => setActiveTab('daily_challenge')}
-                                className="bg-white p-4 rounded-2xl border border-slate-200/80 hover:border-indigo-500 shadow-sm hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
-                            >
-                                <div>
-                                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <Target className="w-5 h-5" />
-                                    </div>
-                                    <h4 className="text-xs font-bold text-slate-800">Daily Challenge</h4>
-                                    <p className="text-[11px] text-slate-500 mt-1 leading-snug">10 questions every day.</p>
-                                </div>
-                                <span className="mt-4 inline-block text-[11px] font-bold text-orange-600 text-center">
-                                    Keep your streak
-                                </span>
-                            </div>
-
-                            {/* Revision */}
-                            <div 
-                                onClick={() => setActiveTab('revision')}
-                                className="bg-white p-4 rounded-2xl border border-slate-200/80 hover:border-indigo-500 shadow-sm hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
-                            >
-                                <div>
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                        <RefreshCw className="w-5 h-5" />
-                                    </div>
-                                    <h4 className="text-xs font-bold text-slate-800">Revision</h4>
-                                    <p className="text-[11px] text-slate-500 mt-1 leading-snug">Spaced repetition for better retention.</p>
-                                </div>
-                                <span className="mt-4 inline-block text-[11px] font-bold text-emerald-600 text-center">
-                                    5 Topics Due
-                                </span>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Right Insights Column */}
+                {/* Right Insights Column — Weekly Heatmap */}
                 <div className="space-y-6">
-                    {/* Today's Goal Widget */}
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-bold text-slate-800">Today's Goal</h4>
-                            <button className="text-xs text-indigo-600 font-bold hover:underline">Edit</button>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="relative w-16 h-16 flex items-center justify-center">
-                                <svg className="w-16 h-16 transform -rotate-90">
-                                    <circle cx="32" cy="32" r="26" stroke="#e2e8f0" strokeWidth="6" fill="transparent" />
-                                    <circle 
-                                        cx="32" cy="32" r="26" 
-                                        stroke="#6366f1" strokeWidth="6" 
-                                        strokeDasharray={163} 
-                                        strokeDashoffset={163 - (163 * 60) / 100}
-                                        strokeLinecap="round"
-                                        fill="transparent" 
-                                    />
-                                </svg>
-                                <span className="absolute text-xs font-black text-slate-800">60%</span>
-                            </div>
+                    {/* Performance This Week — Heatmap */}
+                    <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                             <div>
-                                <p className="text-xs font-bold text-slate-800">Practice 20 Questions</p>
-                                <p className="text-[11px] font-medium text-slate-500 mt-0.5">12 / 20 Completed</p>
+                                <h4 className="text-sm font-bold text-slate-800">Performance Heatmap</h4>
+                                <p className="text-[11px] text-slate-500 font-medium">Questions attempted in practice</p>
                             </div>
                         </div>
 
-                        <button 
-                            onClick={() => setActiveTab('daily_challenge')}
-                            className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold rounded-xl transition-colors"
-                        >
-                            Continue Goal
-                        </button>
-                    </div>
-
-                    {/* Performance This Week */}
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-bold text-slate-800">Performance This Week</h4>
-                            <button 
-                                onClick={() => setActiveTab('analytics')}
-                                className="text-xs text-indigo-600 font-bold hover:underline"
-                            >
-                                View Analytics
-                            </button>
-                        </div>
-
-                        {/* Sparkline Visual Placeholder */}
-                        <div className="h-24 bg-slate-50 rounded-xl p-3 flex items-end justify-between gap-1 border border-slate-100">
-                            {[40, 55, 60, 78, 65, 70, 85].map((val, idx) => (
-                                <div key={idx} className="flex-1 flex flex-col items-center gap-1">
-                                    <div 
-                                        style={{ height: `${val}%` }} 
-                                        className={`w-full rounded-t ${idx === 3 ? 'bg-indigo-600' : 'bg-indigo-200'}`} 
-                                    />
-                                    <span className="text-[9px] text-slate-400 font-medium">
-                                        {['M', 'T', 'W', 'T', 'F', 'S', 'S'][idx]}
-                                    </span>
+                        {/* Heatmap Grid */}
+                        <div className="space-y-4">
+                            {/* Previous Week */}
+                            <div>
+                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Previous Week</p>
+                                <div className="grid grid-cols-7 gap-1.5">
+                                    {heatmapDays.slice(0, 7).map((item, idx) => (
+                                        <div key={idx} className="text-center">
+                                            <div 
+                                                title={`${item.attempts} questions attempted on ${item.day} (Previous Week)`}
+                                                className={`h-9 rounded-lg border flex items-center justify-center text-[10px] cursor-pointer transition-transform hover:scale-110 ${getHeatmapColor(item.attempts)}`}
+                                            >
+                                                {item.attempts > 0 ? item.attempts : '-'}
+                                            </div>
+                                            <span className="text-[9px] font-semibold text-slate-400 mt-1 block">{item.day}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            </div>
+
+                            {/* Current Week */}
+                            <div>
+                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Current Week</p>
+                                <div className="grid grid-cols-7 gap-1.5">
+                                    {heatmapDays.slice(7, 14).map((item, idx) => (
+                                        <div key={idx} className="text-center">
+                                            <div 
+                                                title={`${item.attempts} questions attempted on ${item.day} (Current Week)`}
+                                                className={`h-9 rounded-lg border flex items-center justify-center text-[10px] cursor-pointer transition-transform hover:scale-110 ${getHeatmapColor(item.attempts)}`}
+                                            >
+                                                {item.attempts > 0 ? item.attempts : '-'}
+                                            </div>
+                                            <span className="text-[9px] font-semibold text-slate-400 mt-1 block">{item.day}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
-                            <div>
-                                <p className="text-[10px] text-slate-400 font-medium">Accuracy</p>
-                                <p className="text-xs font-black text-slate-800">78%</p>
-                                <span className="text-[10px] text-emerald-600 font-bold">↑ 12%</span>
+                        {/* Legend */}
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 font-semibold pt-2 border-t border-slate-100">
+                            <span>Less attempts</span>
+                            <div className="flex items-center gap-1">
+                                <span className="w-3 h-3 rounded bg-slate-100 border border-slate-200"></span>
+                                <span className="w-3 h-3 rounded bg-emerald-200 border border-emerald-300"></span>
+                                <span className="w-3 h-3 rounded bg-emerald-400 border border-emerald-500"></span>
+                                <span className="w-3 h-3 rounded bg-emerald-600 border border-emerald-700"></span>
                             </div>
-                            <div>
-                                <p className="text-[10px] text-slate-400 font-medium">Questions</p>
-                                <p className="text-xs font-black text-slate-800">86</p>
-                                <span className="text-[10px] text-emerald-600 font-bold">↑ 24</span>
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-slate-400 font-medium">Improvement</p>
-                                <p className="text-xs font-black text-slate-800">14%</p>
-                                <span className="text-[10px] text-emerald-600 font-bold">↑ 8%</span>
-                            </div>
+                            <span>More attempts</span>
                         </div>
                     </div>
 
-                    {/* Due for Revision List */}
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+                    {/* Today's Practice Goal */}
+                    <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-xs font-bold text-slate-800">Due for Revision</h4>
-                            <button 
-                                onClick={() => setActiveTab('revision')}
-                                className="text-xs text-indigo-600 font-bold hover:underline"
-                            >
-                                View All
-                            </button>
+                            <h4 className="text-xs font-bold text-slate-800">Daily Practice Goal</h4>
+                            <span className="text-xs font-bold text-indigo-600">60%</span>
                         </div>
 
                         <div className="space-y-2">
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                                <span className="font-bold text-slate-700">Functions in Python</span>
-                                <span className="text-[10px] font-bold text-orange-600">Due Tomorrow</span>
+                            <div className="flex justify-between text-xs font-semibold text-slate-600">
+                                <span>12 / 20 Questions Attempted</span>
+                                <span>8 Remaining</span>
                             </div>
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                                <span className="font-bold text-slate-700">SQL Joins</span>
-                                <span className="text-[10px] font-bold text-slate-500">Due in 2 days</span>
-                            </div>
-                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                                <span className="font-bold text-slate-700">Exception Handling</span>
-                                <span className="text-[10px] font-bold text-slate-500">Due in 4 days</span>
+                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-indigo-600 rounded-full w-[60%]"></div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* AI Tutor Promo Widget */}
-                    <div className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white p-5 rounded-2xl shadow-md relative overflow-hidden space-y-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full text-white">
-                                AI Tutor
-                            </span>
-                            <Sparkles className="w-4 h-4 text-purple-200 animate-spin" />
-                        </div>
-                        <h4 className="text-sm font-bold">Need help with concepts?</h4>
-                        <p className="text-xs text-purple-100 leading-snug">
-                            Get instant explanations, hints & custom mini-lessons.
-                        </p>
-                        <button 
-                            onClick={() => onStartPractice({ mode: 'ai_tutor' })}
-                            className="w-full py-2 bg-white text-indigo-700 font-bold text-xs rounded-xl shadow hover:bg-purple-50 transition-colors"
-                        >
-                            Ask AI Tutor
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+

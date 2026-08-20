@@ -18,8 +18,7 @@ export default function StudentSidebar({ activeTab, setActiveTab }) {
             items: [
                 { id: 'smart_practice', label: 'Smart Practice', icon: Brain, badge: 'AI' },
                 { id: 'topic_practice', label: 'Topic Practice', icon: BookOpen },
-                { id: 'daily_challenge', label: 'Daily Challenge', icon: Target },
-                { id: 'revision', label: 'Revision (Spaced)', icon: RefreshCw }
+                { id: 'daily_challenge', label: 'Daily Challenge', icon: Target }
             ]
         },
         {
@@ -34,8 +33,7 @@ export default function StudentSidebar({ activeTab, setActiveTab }) {
             title: "MY LEARNING",
             items: [
                 { id: 'my_library', label: 'Saved Quizzes', icon: FolderHeart },
-                { id: 'history', label: 'History', icon: History },
-                { id: 'analytics', label: 'Analytics', icon: BarChart2 }
+                { id: 'history', label: 'History', icon: History }
             ]
         },
         {
@@ -88,20 +86,6 @@ export default function StudentSidebar({ activeTab, setActiveTab }) {
                         </div>
                     </div>
                 ))}
-            </div>
-
-            {/* Bottom Upgrade to Pro Promo Card */}
-            <div className="mt-8 p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100/80 shadow-sm text-center relative overflow-hidden">
-                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-2 text-amber-600 shadow-sm">
-                    <Crown className="w-4 h-4 fill-amber-500 text-amber-500" />
-                </div>
-                <h4 className="text-xs font-bold text-slate-800">Upgrade to Pro</h4>
-                <p className="text-[11px] text-slate-500 mt-1 leading-snug">
-                    Unlock unlimited tests, AI tutor & adaptive engine.
-                </p>
-                <button className="mt-3 w-full py-2 px-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-200 transition-all hover:scale-[1.02]">
-                    Upgrade Now
-                </button>
             </div>
         </aside>
     );

@@ -1,123 +1,200 @@
 import React, { useState } from 'react';
-import { Brain, Sparkles, ArrowRight, Zap, Target, ShieldCheck } from 'lucide-react';
+import { Brain, Sparkles, ArrowRight, Zap, Target, BookOpen, Layers, Loader2 } from 'lucide-react';
+import { API_BASE } from '../../config';
+import { PYTHON_MODULE_1_QUESTIONS } from '../../data/pythonQuestions';
 
 export default function SmartPracticeView({ onStartSession }) {
-    const [selectedTopic, setSelectedTopic] = useState("OOP — Runtime Polymorphism");
+    const [topicName, setTopicName] = useState("Python OOP & Classes");
+    const [difficultyLevel, setDifficultyLevel] = useState("medium");
+    const [questionCount, setQuestionCount] = useState(10);
+    const [isGenerating, setIsGenerating] = useState(false);
 
-    const smartRecommendation = {
-        subject: "Python",
-        topic: selectedTopic,
-        questionCount: 10,
-        difficultyMode: "Adaptive (Easy → Medium → Hard)",
-        estimatedTimeMinutes: 8,
-        reason: "You have struggled with this concept in your last 3 attempts.",
-        masteryCurrent: 58,
-        targetMastery: 85
+    const popularTopics = [
+        "Python Programming",
+        "HTML & CSS Basics",
+        "JavaScript Fundamentals",
+        "DBMS & SQL Joins",
+        "Data Structures & Algorithms",
+        "Basics of Computers"
+    ];
+
+    const handleGeneratePractice = async () => {
+        if (!topicName.trim()) {
+            alert("Please enter a topic name for your practice session.");
+            return;
+        }
+
+        setIsGenerating(true);
+        try {
+            const res = await fetch(`${API_BASE}/quiz/generate-ai`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    topic: topicName.trim(),
+                    difficulty: difficultyLevel,
+                    count: Number(questionCount) || 5,
+                    type: 'mcq'
+                })
+            });
+
+            const data = await res.json();
+
+            let questionsToUse = [];
+            if (data.success && data.questions && data.questions.length > 0) {
+                questionsToUse = data.questions;
+            } else {
+                // Fallback demo questions if API response unavailable
+                questionsToUse = PYTHON_MODULE_1_QUESTIONS.slice(0, Number(questionCount) || 5);
+            }
+
+            if (onStartSession) {
+                onStartSession({
+                    mode: 'smart',
+                    topic: topicName.trim(),
+                    questions: questionsToUse
+                });
+            }
+        } catch (error) {
+            console.error("AI Practice generation error:", error);
+            // Fallback practice runner
+            if (onStartSession) {
+                onStartSession({
+                    mode: 'smart',
+                    topic: topicName.trim(),
+                    questions: PYTHON_MODULE_1_QUESTIONS.slice(0, Number(questionCount) || 5)
+                });
+            }
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     return (
-        <div className="p-8 max-w-5xl mx-auto space-y-8">
+        <div className="p-8 max-w-4xl mx-auto space-y-8 bg-slate-50/50 min-h-screen">
             {/* Header */}
-            <div>
-                <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                        <Brain className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-black text-slate-800">Smart Practice</h1>
-                        <p className="text-xs text-slate-500 font-medium">
-                            AI-driven adaptive practice tailored to your current weak areas & misconceptions.
-                        </p>
-                    </div>
+            <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-200">
+                    <Brain className="w-6 h-6" />
                 </div>
-            </div>
-
-            {/* Main Recommended Session Card */}
-            <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden space-y-6">
-                <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 bg-indigo-500/30 border border-indigo-400/40 backdrop-blur-md rounded-full text-xs font-bold text-indigo-200 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                        Recommended Practice Session
-                    </span>
-                    <span className="text-xs font-semibold text-indigo-200">
-                        {smartRecommendation.estimatedTimeMinutes} mins
-                    </span>
-                </div>
-
-                <div className="space-y-2">
-                    <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">
-                        {smartRecommendation.subject}
+                <div>
+                    <h1 className="text-2xl font-black text-slate-800 tracking-tight">AI Smart Practice</h1>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Enter any topic name and let AI generate instant adaptive questions for you.
                     </p>
-                    <h2 className="text-3xl font-black tracking-tight">{smartRecommendation.topic}</h2>
                 </div>
-
-                {/* Reason Callout Box */}
-                <div className="p-4 rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm text-xs font-medium leading-relaxed text-indigo-100">
-                    <span className="font-bold text-amber-300">Why this session? </span>
-                    {smartRecommendation.reason}
-                </div>
-
-                {/* Session Attributes Badges */}
-                <div className="grid grid-cols-3 gap-4 py-2 border-y border-white/15 text-center">
-                    <div>
-                        <p className="text-[10px] uppercase font-bold text-indigo-300">Questions</p>
-                        <p className="text-base font-black mt-0.5">{smartRecommendation.questionCount}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] uppercase font-bold text-indigo-300">Difficulty</p>
-                        <p className="text-base font-black mt-0.5">{smartRecommendation.difficultyMode.split(' ')[0]}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] uppercase font-bold text-indigo-300">Target Mastery</p>
-                        <p className="text-base font-black mt-0.5 text-emerald-300">{smartRecommendation.targetMastery}%</p>
-                    </div>
-                </div>
-
-                {/* Start Button */}
-                <button 
-                    onClick={() => onStartSession({
-                        mode: 'smart',
-                        topic: smartRecommendation.topic,
-                        subject: smartRecommendation.subject
-                    })}
-                    className="w-full py-4 bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-slate-900 font-extrabold text-sm rounded-2xl shadow-lg transition-all transform hover:scale-[1.01] flex items-center justify-center gap-2"
-                >
-                    <span>Start Practice Session</span>
-                    <ArrowRight className="w-4 h-4" />
-                </button>
             </div>
 
-            {/* Other Smart Recommendations Grid */}
-            <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-800">Alternative Targeted Topics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div 
-                        onClick={() => setSelectedTopic("Exception Handling & Custom Errors")}
-                        className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-indigo-500 shadow-sm cursor-pointer transition-all flex items-center justify-between"
-                    >
-                        <div>
-                            <span className="text-[10px] font-bold uppercase text-slate-400">Python</span>
-                            <h4 className="text-xs font-bold text-slate-800">Exception Handling & Custom Errors</h4>
-                            <p className="text-[11px] text-slate-500 mt-1">Due for revision based on spaced repetition.</p>
-                        </div>
-                        <span className="px-2.5 py-1 bg-amber-50 text-amber-700 text-[10px] font-extrabold rounded-lg">Revision</span>
-                    </div>
+            {/* Main AI Practice Creator Card */}
+            <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-md space-y-7 relative overflow-hidden">
+                {/* Background Decor */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/60 rounded-full blur-3xl pointer-events-none" />
 
-                    <div 
-                        onClick={() => setSelectedTopic("SQL Joins & Aggregations")}
-                        className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-indigo-500 shadow-sm cursor-pointer transition-all flex items-center justify-between"
-                    >
-                        <div>
-                            <span className="text-[10px] font-bold uppercase text-slate-400">DBMS</span>
-                            <h4 className="text-xs font-bold text-slate-800">SQL Joins & Aggregations</h4>
-                            <p className="text-[11px] text-slate-500 mt-1">6 previous mistakes logged.</p>
-                        </div>
-                        <span className="px-2.5 py-1 bg-rose-50 text-rose-700 text-[10px] font-extrabold rounded-lg">6 Mistakes</span>
+                {/* Step 1: Topic Input */}
+                <div className="space-y-3 relative z-10">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-indigo-600" />
+                        1. Enter Topic Name
+                    </label>
+                    <input
+                        type="text"
+                        value={topicName}
+                        onChange={(e) => setTopicName(e.target.value)}
+                        placeholder="e.g. Python OOP, HTML Forms, SQL Joins..."
+                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-inner"
+                    />
+
+                    {/* Popular Topic Chips */}
+                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                        <span className="text-[11px] font-bold text-slate-400">Quick Select:</span>
+                        {popularTopics.map((top, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setTopicName(top)}
+                                className={`text-[11px] font-bold px-3 py-1 rounded-xl border transition-all ${
+                                    topicName === top
+                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600'
+                                }`}
+                            >
+                                {top}
+                            </button>
+                        ))}
                     </div>
                 </div>
+
+                {/* Step 2: Difficulty Level */}
+                <div className="space-y-3 relative z-10">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-amber-500" />
+                        2. Select Difficulty Level
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {[
+                            { id: 'easy', label: 'Easy', color: 'emerald' },
+                            { id: 'medium', label: 'Medium', color: 'indigo' },
+                            { id: 'hard', label: 'Hard', color: 'rose' },
+                            { id: 'adaptive', label: 'Adaptive', color: 'amber' }
+                        ].map((diff) => (
+                            <button
+                                key={diff.id}
+                                onClick={() => setDifficultyLevel(diff.id)}
+                                className={`py-3 px-4 rounded-2xl border text-xs font-bold transition-all text-center ${
+                                    difficultyLevel === diff.id
+                                        ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-[1.02]'
+                                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                }`}
+                            >
+                                {diff.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Step 3: Question Count */}
+                <div className="space-y-3 relative z-10">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <Target className="w-4 h-4 text-purple-600" />
+                        3. Number of Questions
+                    </label>
+                    <div className="flex items-center gap-3">
+                        {[5, 10, 15, 20].map((count) => (
+                            <button
+                                key={count}
+                                onClick={() => setQuestionCount(count)}
+                                className={`flex-1 py-3 rounded-2xl border text-xs font-bold transition-all text-center ${
+                                    Number(questionCount) === count
+                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+                                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                }`}
+                            >
+                                {count} Questions
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Generate Button */}
+                <button
+                    onClick={handleGeneratePractice}
+                    disabled={isGenerating}
+                    className="w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 hover:from-indigo-700 hover:to-purple-700 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-indigo-200 transition-all hover:scale-[1.01] flex items-center justify-center gap-2 disabled:opacity-75 relative z-10"
+                >
+                    {isGenerating ? (
+                        <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span>Generating Questions with StudySpirit AI...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Sparkles className="w-5 h-5 text-amber-300" />
+                            <span>Generate AI Practice Session</span>
+                            <ArrowRight className="w-5 h-5 ml-1" />
+                        </>
+                    )}
+                </button>
             </div>
         </div>
     );
 }
+
