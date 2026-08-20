@@ -549,7 +549,7 @@ Return ONLY a JSON object like this:
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [
                     { role: 'system', content: 'You are a career advisor. Return ONLY valid JSON, no extra text.' },
                     { role: 'user', content: prompt }
@@ -615,7 +615,7 @@ Do NOT include addresses or dates. Start directly with "Dear Hiring Manager,". B
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [
                     { role: 'system', content: 'You are a professional career writer. Write compelling, tailored cover letters.' },
                     { role: 'user', content: prompt }

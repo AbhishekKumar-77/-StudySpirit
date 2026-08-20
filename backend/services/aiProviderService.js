@@ -236,7 +236,7 @@ class AIProviderService {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: messages,
                 temperature: 0.7,
                 max_tokens: 2000,
@@ -349,7 +349,7 @@ class AIProviderService {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [
                     { role: 'system', content: 'You are an interview performance evaluator. Return ONLY valid JSON.' },
                     { role: 'user', content: reportPrompt }

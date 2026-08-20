@@ -235,7 +235,7 @@ exports.generateAIQuestions = async (req, res) => {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [
                     { role: 'system', content: 'You are an educational AI assistant. Output format must be a strictly valid JSON object containing a "questions" array. No markdown formatting.' },
                     { role: 'user', content: prompt }
@@ -955,7 +955,7 @@ exports.gradeSubjective = async (req, res) => {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [{ role: 'system', content: 'You evaluate student answers strictly based on the rubric.' }, { role: 'user', content: prompt }],
                 temperature: 0.2, // Low temp for consistent grading
                 response_format: { type: "json_object" }
@@ -994,7 +994,7 @@ exports.explainAnswer = async (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [{ role: 'user', content: prompt }],
                 temperature: 0.5
             })
@@ -1044,7 +1044,7 @@ exports.adaptivePractice = async (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [{ role: 'system', content: 'Output strictly a raw JSON object.' }, { role: 'user', content: prompt }],
                 temperature: 0.7,
                 response_format: { type: "json_object" }
@@ -1104,7 +1104,7 @@ Return ONLY a JSON object containing a "questions" array:
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [
                     { role: 'system', content: 'Output format must be a strictly valid JSON object.' },
                     { role: 'user', content: prompt }

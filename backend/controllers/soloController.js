@@ -414,7 +414,7 @@ exports.chatWithAI = async (req, res) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama-3.3-70b-versatile',
+                        model: 'llama3-70b-8192',
                         messages: [
                             {
                                 role: 'system',
@@ -1498,7 +1498,7 @@ Do not include markdown formatting. Return raw JSON only.`;
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama-3.3-70b-versatile',
+                        model: 'llama3-70b-8192',
                         messages: [
                             {
                                 role: 'system',
@@ -1628,7 +1628,7 @@ For each Topic, list key **Subtopics**.
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
+                    model: 'llama3-70b-8192',
                     messages: [
                         {
                             role: 'system',
@@ -1753,7 +1753,7 @@ Generate 4 weeks × 7 days = 28 day entries (days 1–28), then 2 bonus days (da
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'llama-3.3-70b-versatile',
+                        model: 'llama3-70b-8192',
                         messages: [
                             { role: 'system', content: 'You are an expert study planner. Output ONLY valid JSON. No markdown, no extra text.' },
                             { role: 'user', content: prompt }

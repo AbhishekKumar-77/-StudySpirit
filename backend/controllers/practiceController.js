@@ -600,7 +600,7 @@ JSON format required:
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
+                model: 'llama3-70b-8192',
                 messages: [{ role: 'system', content: 'Output strictly valid JSON.' }, { role: 'user', content: prompt }],
                 temperature: 0.5,
                 response_format: { type: "json_object" }
