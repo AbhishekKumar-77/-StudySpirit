@@ -324,6 +324,7 @@ export default function CodeEditor() {
                 mode: executionMode,
                 sessionId,
                 challengeId: currentProblem.id,
+                functionName: currentProblem.functionName || 'solution',
                 onLoadStart: (msg) => {
                     setLoadingEngine(true);
                     setEngineProgress(msg);

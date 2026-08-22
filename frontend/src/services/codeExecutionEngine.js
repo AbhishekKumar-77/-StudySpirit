@@ -781,7 +781,8 @@ export const codeExecutionEngine = {
                     sessionId: options.sessionId,
                     challengeId: options.challengeId,
                     code,
-                    language
+                    language,
+                    functionName: options.functionName || 'solution'
                 })
             });
             const data = await res.json();
