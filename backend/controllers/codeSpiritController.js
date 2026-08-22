@@ -971,9 +971,15 @@ exports.getDashboardStats = async (req, res) => {
         const userId = req.user.id;
         const user = await User.findById(userId);
         
-        // Fetch all solved & attempted sessions for user
+        // Fetch all solved & attempted sessions and submissions for user
         const sessions = await CodeSession.find({ userId }).sort({ createdAt: -1 });
         const submissions = await Submission.find({ userId }).sort({ createdAt: -1 });
+
+        // Calculate Total Registered Students & User's Coding Rank
+        const totalStudents = Math.max(1, await User.countDocuments({ role: { $ne: 'admin' } }));
+        const allUsers = await User.find({ role: { $ne: 'admin' } }, 'stats xp').sort({ 'stats.xp': -1, 'stats.totalProblems': -1 });
+        const userIndex = allUsers.findIndex(u => u._id.toString() === userId.toString());
+        const userRank = userIndex !== -1 ? userIndex + 1 : 1;
 
         let totalProblemsSolved = 0;
         let totalAttempts = submissions.length;
@@ -981,13 +987,13 @@ exports.getDashboardStats = async (req, res) => {
 
         // Subject breakdown counters
         const subjectStats = {
-            python: { mastery: 82, solved: 0, total: 50 },
-            c: { mastery: 74, solved: 0, total: 48 },
-            cpp: { mastery: 71, solved: 0, total: 80 },
-            java: { mastery: 58, solved: 0, total: 50 },
-            javascript: { mastery: 46, solved: 0, total: 52 },
-            dsa: { mastery: 64, solved: 0, total: 110 },
-            sql: { mastery: 69, solved: 0, total: 26 }
+            python: { mastery: 0, solved: 0, total: 50 },
+            c: { mastery: 0, solved: 0, total: 48 },
+            cpp: { mastery: 0, solved: 0, total: 80 },
+            java: { mastery: 0, solved: 0, total: 50 },
+            javascript: { mastery: 0, solved: 0, total: 52 },
+            dsa: { mastery: 0, solved: 0, total: 110 },
+            sql: { mastery: 0, solved: 0, total: 26 }
         };
 
         sessions.forEach(sess => {
@@ -1010,88 +1016,60 @@ exports.getDashboardStats = async (req, res) => {
             });
         });
 
-        // Ensure base display counts for new users
+        // Compute dynamic mastery percentages per subject based on solved count
         for (const k in subjectStats) {
-            subjectStats[k].solved = Math.max(subjectStats[k].solved, k === 'python' ? 42 : k === 'cpp' ? 58 : 24);
+            const s = subjectStats[k];
+            s.mastery = s.total > 0 ? Math.min(100, Math.round((s.solved / s.total) * 100)) : 0;
         }
 
         // Overall stats calculation
         const userXP = user?.stats?.xp || 0;
-        const streak = user?.stats?.streak || 12;
+        const streak = user?.stats?.streak || 0;
         const rating = Math.min(2400, 1200 + Math.floor(userXP / 5) + totalProblemsSolved * 3);
         const accuracy = totalAttempts > 0 
             ? Math.round((Math.max(acceptedSubmissions, totalProblemsSolved) / totalAttempts) * 100) 
-            : 74;
+            : 0;
 
-        // Calculate real weekly progress from last 7 days
+        // Build Quiz-style 14-day Heatmap Grid (Previous Week & Current Week)
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const now = new Date();
-        const weeklyProgress = [];
-        for (let i = 6; i >= 0; i--) {
+        const heatmap = [];
+
+        for (let i = 13; i >= 0; i--) {
             const d = new Date(now);
-            d.setDate(d.getDate() - i);
-            const dayName = days[d.getDay()];
-            const startOfDay = new Date(d.setHours(0,0,0,0));
-            const endOfDay = new Date(d.setHours(23,59,59,999));
-            
+            d.setDate(now.getDate() - i);
+            const dStr = d.toDateString();
+            const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+            const endOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+
             const count = submissions.filter(s => s.createdAt >= startOfDay && s.createdAt <= endOfDay).length;
-            weeklyProgress.push({ day: dayName, count: count > 0 ? count : (i % 2 === 0 ? 4 : 2) });
+            
+            heatmap.push({
+                day: days[d.getDay()],
+                dateStr: dStr,
+                attempts: count,
+                week: i >= 7 ? "Previous" : "Current"
+            });
         }
 
-        // Smart practice recommendation based on user performance
-        const smartPractice = {
-            subject: "Python",
-            topic: "Functions & Recursion",
-            problemsCount: 5,
-            difficulty: "Medium",
-            estTime: "~30 min",
-            mastery: 32,
-            status: "Weak Area",
-            reasons: [
-                "You are strong in Basics and Loops",
-                "Your recursion skills need improvement",
-                "Practice will increase your mastery by ~8%"
-            ]
-        };
-
-        // Unfinished/Continue learning topics
-        const continueLearning = [
-            { id: '1', topic: 'Binary Search', difficulty: 'Medium', solved: 12, total: 20, progress: 60, subject: 'dsa' },
-            { id: '2', topic: 'Trees', difficulty: 'Hard', solved: 8, total: 20, progress: 40, subject: 'dsa' },
-            { id: '3', topic: 'Dynamic Programming', difficulty: 'Hard', solved: 4, total: 20, progress: 20, subject: 'dsa' },
-            { id: '4', topic: 'Hashing', difficulty: 'Medium', solved: 10, total: 20, progress: 50, subject: 'python' }
-        ];
-
-        // Recommended Problems
-        const recommendedProblems = [
-            { id: 'rec_1', title: 'Two Sum', difficulty: 'Easy', topic: 'Arrays', matchScore: 92, subject: 'python' },
-            { id: 'rec_2', title: 'Valid Parentheses', difficulty: 'Easy', topic: 'Stack', matchScore: 94, subject: 'python' },
-            { id: 'rec_3', title: 'Merge Intervals', difficulty: 'Medium', topic: 'Arrays', matchScore: 89, subject: 'cpp' },
-            { id: 'rec_4', title: 'Kth Largest Element', difficulty: 'Medium', topic: 'Heap', matchScore: 91, subject: 'java' },
-            { id: 'rec_5', title: 'Clone Graph', difficulty: 'Hard', topic: 'Graphs', matchScore: 75, subject: 'dsa' }
-        ];
+        // Calculate Today's Attempts
+        const todayStr = new Date().toDateString();
+        const todayAttempts = submissions.filter(s => new Date(s.createdAt).toDateString() === todayStr).length;
 
         res.json({
             success: true,
             stats: {
-                problemsSolved: Math.max(428, totalProblemsSolved),
-                problemsSolvedWeeklyDelta: "+34 this week",
-                accuracy: Math.min(100, Math.max(60, accuracy)),
-                accuracyWeeklyDelta: "+6% this week",
-                codingMastery: 68,
-                codingMasteryStatus: "Improving",
-                timeSpent: "56h 20m",
-                timeSpentWeeklyDelta: "+8h this week",
+                userRank: userRank,
+                totalStudents: totalStudents,
+                problemsSolved: totalProblemsSolved,
+                accuracy: accuracy,
                 currentStreak: streak,
-                bestStreak: 31,
                 rating: rating,
-                userXP: userXP
+                userXP: userXP,
+                todayAttempts: todayAttempts
             },
             subjectStats,
-            smartPractice,
-            continueLearning,
-            recommendedProblems,
-            weeklyProgress
+            heatmap
         });
     } catch (error) {
         console.error("Dashboard Stats Error:", error);

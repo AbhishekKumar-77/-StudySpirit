@@ -75,13 +75,21 @@ export default function CodeSpiritSidebar({
         <aside className="w-64 bg-white border-r border-gray-100 flex flex-col justify-between h-screen sticky top-0 overflow-y-auto p-4 select-none shadow-sm z-20">
             <div>
                 {/* Logo */}
-                <div className="flex items-center gap-2.5 px-2 py-3 mb-4">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white font-black text-lg shadow-md shadow-purple-500/20">
-                        {`</>`}
+                <div className="flex items-center gap-2.5 px-2 py-3 mb-4 cursor-pointer" onClick={() => setActiveTab('home')}>
+                    <img
+                        src="/logo-icon.png"
+                        alt="StudySpirit Logo"
+                        className="w-9 h-9 object-contain"
+                    />
+                    <div>
+                        <div className="flex items-center font-black text-lg tracking-tight leading-none">
+                            <span className="text-indigo-600">Study</span>
+                            <span className="text-slate-800">Spirit</span>
+                        </div>
+                        <p className="text-[9px] text-slate-400 font-medium tracking-wide mt-0.5">
+                            Code • Practice • Grow
+                        </p>
                     </div>
-                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-purple-900 to-indigo-800">
-                        CodeSpirit
-                    </span>
                 </div>
 
                 {/* Navigation Sections */}

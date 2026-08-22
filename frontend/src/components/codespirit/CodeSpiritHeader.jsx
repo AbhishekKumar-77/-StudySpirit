@@ -20,40 +20,47 @@ export default function CodeSpiritHeader({ stats, selectedSubject, setSelectedSu
 
     return (
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-gray-100/80 shadow-sm">
-            {/* Left Greeting & Subtitle */}
-            <div>
-                <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        Good morning, {userName} <span className="animate-bounce inline-block">👋</span>
-                    </h1>
-                    
-                    {/* Subject Switcher Context Dropdown */}
-                    <div className="relative group">
-                        <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-medium text-xs border border-purple-100 hover:bg-purple-100 transition-colors">
-                            <span>{currentSubjectObj.icon}</span>
-                            <span>{currentSubjectObj.name}</span>
-                            <ChevronDown size={12} />
-                        </button>
-                        <div className="absolute left-0 top-full mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1 hidden group-hover:block z-30 animate-in fade-in slide-in-from-top-1">
-                            <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase">Switch Context</p>
-                            {subjects.map(s => (
-                                <button
-                                    key={s.id}
-                                    onClick={() => setSelectedSubject(s.id)}
-                                    className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-50 ${
-                                        selectedSubject?.toLowerCase() === s.id ? 'font-bold text-purple-600 bg-purple-50/50' : 'text-gray-700'
-                                    }`}
-                                >
-                                    <span>{s.icon}</span>
-                                    <span>{s.name}</span>
-                                </button>
-                            ))}
+            {/* Left Branding, Greeting & Subtitle */}
+            <div className="flex items-center gap-3.5">
+                <img
+                    src="/logo-icon.png"
+                    alt="StudySpirit Logo"
+                    className="w-11 h-11 object-contain hidden sm:block"
+                />
+                <div>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                            Good morning, {userName} <span className="animate-bounce inline-block">👋</span>
+                        </h1>
+                        
+                        {/* Subject Switcher Context Dropdown */}
+                        <div className="relative group">
+                            <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-medium text-xs border border-purple-100 hover:bg-purple-100 transition-colors">
+                                <span>{currentSubjectObj.icon}</span>
+                                <span>{currentSubjectObj.name}</span>
+                                <ChevronDown size={12} />
+                            </button>
+                            <div className="absolute left-0 top-full mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1 hidden group-hover:block z-30 animate-in fade-in slide-in-from-top-1">
+                                <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase">Switch Context</p>
+                                {subjects.map(s => (
+                                    <button
+                                        key={s.id}
+                                        onClick={() => setSelectedSubject(s.id)}
+                                        className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-50 ${
+                                            selectedSubject?.toLowerCase() === s.id ? 'font-bold text-purple-600 bg-purple-50/50' : 'text-gray-700'
+                                        }`}
+                                    >
+                                        <span>{s.icon}</span>
+                                        <span>{s.name}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
+                    <p className="text-sm text-gray-500 mt-0.5 font-normal">
+                        Code, practice and master together on <strong className="text-indigo-600 font-bold">StudySpirit</strong>.
+                    </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-0.5 font-normal">
-                    Let's code, practice and master together.
-                </p>
             </div>
 
             {/* Right Side Widgets: Streak, Rating, Notifications, Profile */}
