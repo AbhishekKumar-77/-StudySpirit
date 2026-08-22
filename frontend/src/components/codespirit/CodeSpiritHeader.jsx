@@ -1,103 +1,98 @@
-import React from 'react';
-import { Flame, Shield, Bell, Search, ChevronDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Flame, Bell, ChevronDown, User, BookOpen, LogOut } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
-export default function CodeSpiritHeader({ stats, selectedSubject, setSelectedSubject }) {
-    const { user } = useApp();
-    const userName = user?.name ? user.name.split(' ')[0] : 'Abhishek';
+export default function CodeSpiritHeader({ stats, onSearch }) {
+    const { user, logout } = useApp();
+    const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
 
-    const subjects = [
-        { id: 'python', name: 'Python', icon: '🐍' },
-        { id: 'c', name: 'C', icon: '⚡' },
-        { id: 'cpp', name: 'C++', icon: '🔷' },
-        { id: 'java', name: 'Java', icon: '☕' },
-        { id: 'javascript', name: 'JavaScript', icon: '🟨' },
-        { id: 'dsa', name: 'DSA', icon: '🌳' },
-        { id: 'sql', name: 'SQL', icon: '🗄️' }
-    ];
+    const handleSearchChange = (e) => {
+        const val = e.target.value;
+        setSearchTerm(val);
+        if (onSearch) onSearch(val);
+    };
 
-    const currentSubjectObj = subjects.find(s => s.id === selectedSubject?.toLowerCase()) || subjects[0];
+    const studentName = user?.name || "Student";
+    const avatar = user?.avatar || "👨‍🎓";
+    const streak = stats?.currentStreak ?? user?.stats?.streak ?? 1;
 
     return (
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-gray-100/80 shadow-sm">
-            {/* Left Branding, Greeting & Subtitle */}
-            <div className="flex items-center gap-3.5">
-                <img
-                    src="/logo-icon.png"
-                    alt="StudySpirit Logo"
-                    className="w-11 h-11 object-contain hidden sm:block"
-                />
-                <div>
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                            Good morning, {userName} <span className="animate-bounce inline-block">👋</span>
-                        </h1>
-                        
-                        {/* Subject Switcher Context Dropdown */}
-                        <div className="relative group">
-                            <button className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-medium text-xs border border-purple-100 hover:bg-purple-100 transition-colors">
-                                <span>{currentSubjectObj.icon}</span>
-                                <span>{currentSubjectObj.name}</span>
-                                <ChevronDown size={12} />
-                            </button>
-                            <div className="absolute left-0 top-full mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-1 hidden group-hover:block z-30 animate-in fade-in slide-in-from-top-1">
-                                <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase">Switch Context</p>
-                                {subjects.map(s => (
-                                    <button
-                                        key={s.id}
-                                        onClick={() => setSelectedSubject(s.id)}
-                                        className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-50 ${
-                                            selectedSubject?.toLowerCase() === s.id ? 'font-bold text-purple-600 bg-purple-50/50' : 'text-gray-700'
-                                        }`}
-                                    >
-                                        <span>{s.icon}</span>
-                                        <span>{s.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-0.5 font-normal">
-                        Code, practice and master together on <strong className="text-indigo-600 font-bold">StudySpirit</strong>.
-                    </p>
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between shadow-sm transition-all rounded-2xl mb-6">
+            {/* Center / Left: Global Search Bar */}
+            <div className="flex-1 max-w-xl">
+                <div className="relative">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        placeholder="Search topics, problems, languages, subjects..."
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-inner"
+                    />
                 </div>
             </div>
 
-            {/* Right Side Widgets: Streak, Rating, Notifications, Profile */}
-            <div className="flex items-center gap-3 self-end md:self-auto">
+            {/* Right: Streak, Notifications, Profile Dropdown */}
+            <div className="flex items-center gap-4">
                 {/* Streak Badge */}
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-orange-50/80 border border-orange-100/80 text-orange-700 shadow-sm">
-                    <div className="w-7 h-7 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-                        <Flame size={18} className="fill-orange-500" />
-                    </div>
-                    <div>
-                        <div className="text-xs font-bold leading-tight">{stats?.currentStreak || 12}</div>
-                        <div className="text-[10px] text-orange-600 font-medium">day streak</div>
-                    </div>
+                <div className="flex items-center gap-2 px-3.5 py-1.5 bg-orange-50 border border-orange-200/60 rounded-full text-orange-600 font-semibold text-xs shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                    <Flame className="w-4 h-4 fill-orange-500 text-orange-500 animate-pulse" />
+                    <span>{streak} Day Streak</span>
                 </div>
 
-                {/* Rating Badge */}
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-teal-50/80 border border-teal-100/80 text-teal-800 shadow-sm">
-                    <div className="w-7 h-7 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-600">
-                        <Shield size={18} />
-                    </div>
-                    <div>
-                        <div className="text-xs font-bold leading-tight">{stats?.rating || 1428}</div>
-                        <div className="text-[10px] text-teal-600 font-medium">CodeSpirit Rating</div>
-                    </div>
-                </div>
-
-                {/* Notification Bell */}
-                <button className="w-10 h-10 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:shadow-md transition-all relative">
-                    <Bell size={18} />
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 border-2 border-white" />
+                {/* Notifications Bell */}
+                <button className="relative p-2 rounded-full text-slate-500 hover:bg-slate-100 transition-colors">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-600 rounded-full ring-2 ring-white"></span>
                 </button>
 
-                {/* User Avatar */}
-                <div className="flex items-center gap-2 pl-1">
-                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold flex items-center justify-center text-base shadow-md shadow-purple-500/20 border-2 border-white">
-                        {user?.avatar || '👨‍🎓'}
-                    </div>
+                {/* Student Profile Dropdown */}
+                <div className="relative">
+                    <button 
+                        onClick={() => setShowProfileMenu(!showProfileMenu)}
+                        className="flex items-center gap-2.5 px-2 py-1 rounded-full hover:bg-slate-100 transition-colors border border-slate-200/80 bg-white"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-lg shadow-inner">
+                            {avatar}
+                        </div>
+                        <div className="text-left hidden sm:block pr-1">
+                            <p className="text-xs font-bold text-slate-800 leading-none">{studentName}</p>
+                            <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5">Student</p>
+                        </div>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 mr-1" />
+                    </button>
+
+                    {showProfileMenu && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                            <div className="px-4 py-2 border-b border-slate-100">
+                                <p className="text-xs font-bold text-slate-800">{studentName}</p>
+                                <p className="text-[11px] text-slate-500">Student Account</p>
+                            </div>
+                            <button 
+                                onClick={() => navigate('/dashboard')}
+                                className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2"
+                            >
+                                <User className="w-3.5 h-3.5" /> Dashboard & Stats
+                            </button>
+                            <button 
+                                onClick={() => navigate('/profile')}
+                                className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2"
+                            >
+                                <BookOpen className="w-3.5 h-3.5" /> Profile Settings
+                            </button>
+                            {logout && (
+                                <button 
+                                    onClick={logout}
+                                    className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 border-t border-slate-100 mt-1"
+                                >
+                                    <LogOut className="w-3.5 h-3.5" /> Logout
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </header>
