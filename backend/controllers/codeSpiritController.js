@@ -77,23 +77,41 @@ class MemoryQueue {
 
 const wandboxQueue = new MemoryQueue(3); // Process max 3 requests concurrently to avoid Wandbox rate limits
 
-// ============== HELPER: EXECUTE CODE VIA PISTON API ==============
+// ============== HELPER: EXECUTE CODE VIA JUDGE0 (WITH PISTON FALLBACK) ==============
 async function executeViaPiston(language, code, stdin = '') {
-    const langKey = language.toLowerCase();
-    const pistonLang = PISTON_LANGUAGES[langKey];
+    const langKey = (language || 'python').toLowerCase();
     
-    if (!pistonLang) {
-        throw new Error(`Unsupported language: ${language}. Supported: ${Object.keys(PISTON_LANGUAGES).join(', ')}`);
-    }
-
     // Check Distributed Cache first
-    const cacheKey = cacheService.generateKey('piston', `${language}:${code}:${stdin}`);
+    const cacheKey = cacheService.generateKey('code_exec', `${langKey}:${code}:${stdin}`);
     const cached = await cacheService.get(cacheKey);
     if (cached) {
         return cached;
     }
 
-    // Wrap execution in a task function to be executed by the Memory Queue
+    // Try Judge0 API Execution First
+    try {
+        const j0Result = await judge0Service.executeCode(langKey, code, stdin);
+        if (j0Result && j0Result.success) {
+            const result = {
+                engine: 'judge0',
+                run: {
+                    stdout: j0Result.run.stdout,
+                    stderr: j0Result.run.stderr,
+                    code: j0Result.run.exitCode,
+                    runtimeMs: j0Result.run.runtimeMs,
+                    memoryKb: j0Result.run.memoryKb,
+                    statusDescription: j0Result.run.statusDescription
+                }
+            };
+            await cacheService.set(cacheKey, result, 300);
+            return result;
+        }
+    } catch (j0Err) {
+        console.warn("Judge0 execution unavailable. Falling back to Piston API:", j0Err.message);
+    }
+
+    // Fallback to Piston API
+    const pistonLang = PISTON_LANGUAGES[langKey] || 'python';
     const executeTask = async () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second request timeout limit
@@ -126,6 +144,7 @@ async function executeViaPiston(language, code, stdin = '') {
             const errText = await response.text().catch(() => '');
             if (response.status === 401 || errText.includes('whitelist')) {
                 return {
+                    engine: 'wasm',
                     run: {
                         stdout: '',
                         stderr: 'Public compilation API is restricted. Executing seamlessly via Local WASM engine in browser.',
@@ -150,6 +169,7 @@ async function executeViaPiston(language, code, stdin = '') {
         }
 
         const result = {
+            engine: 'piston',
             run: {
                 stdout: stdout,
                 stderr: stderr,

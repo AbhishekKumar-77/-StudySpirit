@@ -695,7 +695,10 @@ export const codeExecutionEngine = {
             });
             const data = await res.json();
             if (data.success && data.run) {
-                return data;
+                return {
+                    ...data,
+                    engine: data.engine || 'judge0'
+                };
             }
 
             // If Cloud API failed or returned 401 whitelist error, fall back to local in-browser execution automatically!
