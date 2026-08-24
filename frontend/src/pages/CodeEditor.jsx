@@ -5,7 +5,7 @@ import { API_BASE } from "../config";
 import { codeExecutionEngine } from "../services/codeExecutionEngine";
 import {
     ArrowLeft, Play, Download, Upload, Copy, Trash2, Terminal,
-    Settings, Sun, Moon, Code, FileText, Save, FolderOpen, Zap,
+    Settings, Code, FileText, Save, FolderOpen, Zap,
     CheckCircle, Sparkles, RotateCcw, ChevronLeft, ChevronRight,
     Trophy, Target, Hash, AlertCircle, MessageSquare, Clock,
     Loader, Shield, Star, XCircle, Bookmark
@@ -104,7 +104,7 @@ export default function CodeEditor() {
         }
         return scratchpadCodes[LANGUAGES[0].id];
     });
-    const [theme, setTheme] = useState("vs-dark");
+    const [theme] = useState("light");
     const [output, setOutput] = useState("");
     const [isRunning, setIsRunning] = useState(false);
     const [executionMode, setExecutionMode] = useState(() => {
@@ -368,7 +368,8 @@ export default function CodeEditor() {
                     code,
                     language: language.id,
                     problemTitle: currentProblem.title,
-                    problemDescription: currentProblem.description
+                    problemDescription: currentProblem.description,
+                    allTestsPassed: verificationResults?.allPassed || false
                 })
             });
             const data = await res.json();
@@ -663,7 +664,7 @@ export default function CodeEditor() {
     const completedCount = completedQuestions.filter(Boolean).length;
 
     return (
-        <div className={`min-h-screen font-sans ${theme === "light" ? "bg-gray-100 text-gray-900" : "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-[var(--text-primary)]"}`}>
+        <div className="min-h-screen font-sans bg-gray-100 text-gray-900">
             
             {/* Global Loader for Client-Side Engines */}
             {loadingEngine && (
@@ -693,9 +694,9 @@ export default function CodeEditor() {
             )}
 
             {/* Navbar */}
-            <nav className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 ${theme === "light" ? "bg-white/80 border-gray-200" : "bg-[var(--glass-bg)] border-cyan-500/10"}`}>
+            <nav className="sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-4 bg-white/80 border-gray-200">
                 <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-                    <button onClick={() => navigate(isChallengeMode ? "/codespirit" : "/dashboard")} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${theme === "light" ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-cyan-500/10 text-violet-300 hover:bg-cyan-500/20"}`}>
+                    <button onClick={() => navigate(isChallengeMode ? "/codespirit" : "/dashboard")} className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all bg-violet-100 text-violet-700 hover:bg-violet-200">
                         <ArrowLeft size={18} /> {isChallengeMode ? "Exit Challenge" : "Back"}
                     </button>
 
@@ -724,11 +725,8 @@ export default function CodeEditor() {
                                 <Hash size={16} /> Q{currentIndex + 1}/{totalQuestions}
                             </button>
                         )}
-                        <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-lg transition-all ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--bg-secondary)] hover:bg-[var(--border-color)]"}`}>
+                        <button onClick={() => setShowSettings(!showSettings)} className="p-2 rounded-lg transition-all bg-gray-200 hover:bg-gray-300">
                             <Settings size={20} />
-                        </button>
-                        <button onClick={() => setTheme(theme === "vs-dark" ? "light" : "vs-dark")} className={`p-2 rounded-lg transition-all ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-[var(--bg-secondary)] hover:bg-[var(--border-color)]"}`}>
-                            {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
                         </button>
                     </div>
                 </div>
@@ -1213,12 +1211,12 @@ export default function CodeEditor() {
                         )}
 
                         {/* Output */}
-                        <div className={`rounded-xl p-4 max-h-[200px] overflow-hidden flex flex-col ${theme === "light" ? "bg-white border border-gray-200" : "bg-[var(--glass-bg)] border border-[var(--border-color)]"}`}>
+                        <div className="rounded-xl p-4 max-h-[200px] overflow-hidden flex flex-col bg-white border border-gray-200">
                             <div className="flex justify-between items-center mb-2">
                                 <div className="text-sm font-semibold flex items-center gap-2"><Terminal size={16} /> Output</div>
-                                <button onClick={clearOutput} className="text-xs px-3 py-1 rounded-lg bg-[var(--border-color)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]">Clear</button>
+                                <button onClick={clearOutput} className="text-xs px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">Clear</button>
                             </div>
-                            <pre className={`flex-1 overflow-auto p-3 rounded-lg font-mono text-sm ${theme === "light" ? "bg-gray-900 text-green-400" : "bg-[var(--bg-secondary)]lack/40 text-green-400"}`}>
+                            <pre className="flex-1 overflow-auto p-3 rounded-lg font-mono text-sm bg-gray-50 border border-gray-200 text-gray-800">
                                 {output || "Run code to see output..."}
                             </pre>
                         </div>

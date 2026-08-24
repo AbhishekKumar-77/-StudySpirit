@@ -1099,7 +1099,7 @@ exports.verifyCode = async (req, res) => {
 // ============== AI CODE REVIEW ==============
 exports.reviewCode = async (req, res) => {
     try {
-        const { code, language, problemTitle, problemDescription } = req.body;
+        const { code, language, problemTitle, problemDescription, allTestsPassed } = req.body;
 
         // Check if code is empty or unedited skeleton code
         if (!code || !code.trim() || code.includes('// TODO:') || code.includes('# TODO:')) {
@@ -1114,6 +1114,38 @@ exports.reviewCode = async (req, res) => {
                     bugs: ["Solution code is missing or contains incomplete TODO placeholders."],
                     optimizedApproach: "Implement your logic and submit your solution.",
                     overallFeedback: "No complete code solution was provided for evaluation. Score: 0/100."
+                }
+            });
+        }
+
+        // Detect trivially simple programs (only print/output statements, no logic)
+        const cleanCode = code.trim();
+        const lines = cleanCode.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('//')).map(l => l.trim());
+        const isSimplePrintOnly = lines.every(l =>
+            l.startsWith('print(') || l.startsWith('printf(') || l.startsWith('cout') ||
+            l.startsWith('System.out') || l.startsWith('console.log')
+        );
+        if (isSimplePrintOnly && lines.length <= 10) {
+            const score = allTestsPassed ? 95 : 70;
+            return res.json({
+                success: true,
+                review: {
+                    timeComplexity: "O(1)",
+                    spaceComplexity: "O(1)",
+                    score,
+                    strengths: [
+                        "Code is clean, concise, and directly solves the problem.",
+                        "Output matches exactly what was expected.",
+                        "Proper use of print/output statements."
+                    ],
+                    improvements: allTestsPassed
+                        ? ["Great job! Try harder challenges to further improve."]
+                        : ["Ensure the output matches exactly, including spacing and punctuation."],
+                    bugs: [],
+                    optimizedApproach: "For beginner output problems, your direct print-based approach is perfect.",
+                    overallFeedback: allTestsPassed
+                        ? `Excellent! Your solution produces the correct output. Score: ${score}/100. This is the ideal approach for an output-based problem — clean and correct.`
+                        : `Your code runs but the output may not match exactly. Double-check spacing, newlines, and the exact text. Score: ${score}/100.`
                 }
             });
         }
@@ -1200,17 +1232,27 @@ Rules:
         }
 
         if (!content) {
+            // Smart fallback: don't give a generic 50 — use allTestsPassed signal
+            const fallbackScore = allTestsPassed ? 80 : 40;
             return res.json({
                 success: true,
                 review: {
-                    timeComplexity: "O(N)",
+                    timeComplexity: "O(1)",
                     spaceComplexity: "O(1)",
-                    score: 50,
-                    strengths: ["Code syntactically runs"],
-                    improvements: ["Test against hidden edge cases"],
+                    score: fallbackScore,
+                    strengths: allTestsPassed
+                        ? ["Code runs correctly and produces expected output.", "Solution is clean and readable."]
+                        : ["Code runs without errors."],
+                    improvements: allTestsPassed
+                        ? ["Keep practicing more advanced challenges!"]
+                        : ["Review the expected output and ensure your code matches exactly.", "Check spacing, newlines, and edge cases."],
                     bugs: [],
-                    optimizedApproach: "Ensure all edge conditions are handled.",
-                    overallFeedback: "Code evaluation complete. Practice further test cases."
+                    optimizedApproach: allTestsPassed
+                        ? "Your current approach is well-suited for this problem."
+                        : "Review your logic to ensure the output matches exactly.",
+                    overallFeedback: allTestsPassed
+                        ? `Your solution passed all test cases. Score: ${fallbackScore}/100.`
+                        : `Your code runs but may not produce the exact expected output. Score: ${fallbackScore}/100.`
                 }
             });
         }
