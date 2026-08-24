@@ -17,9 +17,7 @@ export default function CodeSpiritSidebar({
         { id: 'c', name: 'C', icon: '⚡' },
         { id: 'cpp', name: 'C++', icon: '🔷' },
         { id: 'java', name: 'Java', icon: '☕' },
-        { id: 'javascript', name: 'JavaScript', icon: '🟨' },
-        { id: 'dsa', name: 'DSA', icon: '🌳' },
-        { id: 'sql', name: 'SQL', icon: '🗄️' }
+        { id: 'dsa', name: 'DSA', icon: '🌳' }
     ];
 
     const mainNav = [
@@ -29,7 +27,6 @@ export default function CodeSpiritSidebar({
     const practiceNav = [
         { id: 'smart-practice', label: 'Smart Practice', icon: Zap },
         { id: 'problems', label: 'Problems', icon: ListFilter },
-        { id: 'topics', label: 'Topics', icon: BookOpen },
         { id: 'mistakes', label: 'My Mistakes', icon: AlertTriangle },
         { id: 'daily-challenge', label: 'Daily Challenge', icon: Calendar }
     ];
@@ -47,7 +44,6 @@ export default function CodeSpiritSidebar({
 
     const progressNav = [
         { id: 'skill-tree', label: 'Skill Tree', icon: BarChart2 },
-        { id: 'analytics', label: 'Analytics', icon: BarChart2 },
         { id: 'history', label: 'History', icon: History },
         { id: 'saved-problems', label: 'Saved Problems', icon: Bookmark }
     ];
@@ -113,17 +109,17 @@ export default function CodeSpiritSidebar({
                         </div>
                         <div className="space-y-1">
                             {subjects.map(s => {
-                                const isSelected = selectedSubject?.toLowerCase() === s.id;
+                                const isSelected = selectedSubject?.toLowerCase() === s.id && activeTab === 'subject-detail';
                                 return (
                                     <button
                                         key={s.id}
                                         onClick={() => {
                                             setSelectedSubject(s.id);
-                                            setActiveTab('home');
+                                            setActiveTab('subject-detail');
                                         }}
                                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all ${
                                             isSelected 
-                                                ? 'bg-indigo-50/80 text-indigo-700 font-semibold border-l-4 border-indigo-600' 
+                                                ? 'bg-indigo-50/80 text-indigo-700 font-semibold border-l-4 border-indigo-600 shadow-sm' 
                                                 : 'text-gray-600 hover:bg-gray-50'
                                         }`}
                                     >
@@ -135,13 +131,6 @@ export default function CodeSpiritSidebar({
                                     </button>
                                 );
                             })}
-                            <button 
-                                onClick={() => setActiveTab('topics')}
-                                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-purple-600 hover:text-purple-700 transition-colors mt-1"
-                            >
-                                <span>View All Subjects</span>
-                                <ChevronRight size={14} />
-                            </button>
                         </div>
                     </div>
 

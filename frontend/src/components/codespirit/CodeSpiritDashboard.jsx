@@ -40,9 +40,7 @@ export default function CodeSpiritDashboard({
         { id: 'c', name: 'C', icon: '⚡' },
         { id: 'cpp', name: 'C++', icon: '🔷' },
         { id: 'java', name: 'Java', icon: '☕' },
-        { id: 'javascript', name: 'JavaScript', icon: '🟨' },
-        { id: 'dsa', name: 'DSA', icon: '🌳' },
-        { id: 'sql', name: 'SQL', icon: '🗄️' }
+        { id: 'dsa', name: 'DSA', icon: '🌳' }
     ];
 
     const heatmap = dashboardData?.heatmap || Array.from({ length: 14 }, (_, i) => ({
@@ -94,7 +92,7 @@ export default function CodeSpiritDashboard({
                     </div>
                 </div>
 
-                {/* Leaderboard Position / Rank (Replaces Coding Mastery 68%) */}
+                {/* Leaderboard Position / Rank */}
                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                     <div>
                         <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Coding Rank</span>
@@ -128,26 +126,22 @@ export default function CodeSpiritDashboard({
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h2 className="text-lg font-bold text-gray-900">Coding Subjects</h2>
-                        <p className="text-xs text-gray-500">Your practice progress in core subjects</p>
+                        <p className="text-xs text-gray-500">Select a subject to view modules and practice questions</p>
                     </div>
-                    <button 
-                        onClick={() => setActiveTab('topics')}
-                        className="text-xs font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1"
-                    >
-                        <span>View All Subjects</span>
-                        <ArrowRight size={14} />
-                    </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                     {subjectsList.map(s => {
                         const st = subjectStats[s.id] || { mastery: 0, solved: 0 };
                         const isCurrentActive = selectedSubject?.toLowerCase() === s.id;
                         return (
                             <div
                                 key={s.id}
-                                onClick={() => setSelectedSubject(s.id)}
-                                className={`bg-white p-4 rounded-2xl border transition-all cursor-pointer group hover:scale-[1.03] hover:shadow-lg ${
+                                onClick={() => {
+                                    setSelectedSubject(s.id);
+                                    setActiveTab('subject-detail');
+                                }}
+                                className={`bg-white p-5 rounded-2xl border transition-all cursor-pointer group hover:scale-[1.03] hover:shadow-lg ${
                                     isCurrentActive 
                                         ? 'border-purple-500 ring-2 ring-purple-500/20 shadow-md' 
                                         : 'border-gray-100 hover:border-purple-200'
@@ -158,29 +152,27 @@ export default function CodeSpiritDashboard({
                                 </div>
                                 <h3 className="font-bold text-sm text-gray-900 group-hover:text-purple-600 transition-colors">{s.name}</h3>
                                 
-                                <div className="flex items-center justify-between text-xs font-medium text-gray-500 mt-2 mb-1">
-                                    <span>{st.mastery}% Mastery</span>
+                                <div className="flex items-center justify-between text-xs font-semibold text-indigo-600 mt-2 mb-1">
+                                    <span>{st.solved} Solved</span>
                                 </div>
 
                                 {/* Progress Bar */}
                                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
                                     <div 
                                         className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
-                                        style={{ width: `${st.mastery}%` }}
+                                        style={{ width: `${st.mastery || 0}%` }}
                                     />
                                 </div>
-
-                                <div className="text-[11px] text-gray-500 font-medium mb-3">{st.solved} solved</div>
 
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setSelectedSubject(s.id);
-                                        onStartPractice(s.id);
+                                        setActiveTab('subject-detail');
                                     }}
-                                    className="w-full text-xs font-bold py-1.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center gap-1"
+                                    className="w-full text-xs font-bold py-2 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all flex items-center justify-center gap-1"
                                 >
-                                    <span>Practice</span>
+                                    <span>View Modules</span>
                                     <ArrowRight size={12} />
                                 </button>
                             </div>

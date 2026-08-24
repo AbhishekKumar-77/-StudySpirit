@@ -10,12 +10,15 @@ import CodeSpiritHeader from "../components/codespirit/CodeSpiritHeader";
 import CodeSpiritDashboard from "../components/codespirit/CodeSpiritDashboard";
 import SmartPracticeView from "../components/codespirit/SmartPracticeView";
 import ProblemsView from "../components/codespirit/ProblemsView";
-import TopicsView from "../components/codespirit/TopicsView";
 import MyMistakesView from "../components/codespirit/MyMistakesView";
 import DailyChallengeView from "../components/codespirit/DailyChallengeView";
 import SkillTreeView from "../components/codespirit/SkillTreeView";
 import CompanyPrepView from "../components/codespirit/CompanyPrepView";
-import AnalyticsView from "../components/codespirit/AnalyticsView";
+import SubjectModulesView from "../components/codespirit/SubjectModulesView";
+import ContestsView from "../components/codespirit/ContestsView";
+import LeaderboardView from "../components/codespirit/LeaderboardView";
+import SavedProblemsView from "../components/codespirit/SavedProblemsView";
+import HistoryView from "../components/codespirit/HistoryView";
 import AICodingTutorModal from "../components/codespirit/AICodingTutorModal";
 
 export default function CodeSpirit() {
@@ -161,6 +164,14 @@ export default function CodeSpirit() {
                     />
                 )}
 
+                {activeTab === 'subject-detail' && (
+                    <SubjectModulesView
+                        selectedSubject={selectedSubject}
+                        dashboardData={dashboardData}
+                        onStartPractice={handleStartPractice}
+                    />
+                )}
+
                 {activeTab === 'smart-practice' && (
                     <SmartPracticeView
                         selectedSubject={selectedSubject}
@@ -172,13 +183,6 @@ export default function CodeSpirit() {
                     <ProblemsView
                         selectedSubject={selectedSubject}
                         onOpenProblem={handleOpenProblem}
-                    />
-                )}
-
-                {activeTab === 'topics' && (
-                    <TopicsView
-                        selectedSubject={selectedSubject}
-                        onStartPractice={handleStartPractice}
                     />
                 )}
 
@@ -194,6 +198,22 @@ export default function CodeSpirit() {
                     />
                 )}
 
+                {activeTab === 'company-prep' && (
+                    <CompanyPrepView
+                        onStartPractice={handleStartPractice}
+                    />
+                )}
+
+                {activeTab === 'contests' && (
+                    <ContestsView
+                        onStartPractice={handleStartPractice}
+                    />
+                )}
+
+                {activeTab === 'leaderboard' && (
+                    <LeaderboardView />
+                )}
+
                 {activeTab === 'skill-tree' && (
                     <SkillTreeView
                         selectedSubject={selectedSubject}
@@ -201,15 +221,15 @@ export default function CodeSpirit() {
                     />
                 )}
 
-                {activeTab === 'company-prep' && (
-                    <CompanyPrepView
+                {activeTab === 'history' && (
+                    <HistoryView
                         onStartPractice={handleStartPractice}
                     />
                 )}
 
-                {(activeTab === 'analytics' || activeTab === 'history') && (
-                    <AnalyticsView
-                        stats={dashboardData?.stats}
+                {activeTab === 'saved-problems' && (
+                    <SavedProblemsView
+                        onStartPractice={handleStartPractice}
                     />
                 )}
             </main>

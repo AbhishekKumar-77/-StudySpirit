@@ -250,6 +250,19 @@ const userSchema = new mongoose.Schema({
             notes: String
         }]
     },
+    savedProblems: [{
+        title: String,
+        topic: String,
+        difficulty: String,
+        language: String,
+        description: String,
+        starterCode: String,
+        testCases: [{
+            input: String,
+            output: String
+        }],
+        savedAt: { type: Date, default: Date.now }
+    }],
     createdAt: {
         type: Date,
         default: Date.now

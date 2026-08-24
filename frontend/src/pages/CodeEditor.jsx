@@ -8,7 +8,7 @@ import {
     Settings, Sun, Moon, Code, FileText, Save, FolderOpen, Zap,
     CheckCircle, Sparkles, RotateCcw, ChevronLeft, ChevronRight,
     Trophy, Target, Hash, AlertCircle, MessageSquare, Clock,
-    Loader, Shield, Star, XCircle
+    Loader, Shield, Star, XCircle, Bookmark
 } from "lucide-react";
 
 const normalizeOutput = (str) => {
@@ -381,6 +381,34 @@ export default function CodeEditor() {
             setReviewData({ overallFeedback: 'Network error: ' + err.message, score: 0 });
         } finally {
             setIsReviewing(false);
+        }
+    };
+
+    const handleBookmarkProblem = async () => {
+        if (!currentProblem) return;
+        try {
+            const res = await fetch(`${API_BASE}/codespirit/save-problem`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    problem: {
+                        title: currentProblem.title,
+                        topic: currentProblem.topic || location.state?.topic || 'Coding Challenge',
+                        difficulty: currentProblem.difficulty || 'medium',
+                        language: language.id,
+                        description: currentProblem.description,
+                        starterCode: currentProblem.starterCode || code,
+                        testCases: currentProblem.testCases || []
+                    }
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message || "Problem bookmarked!");
+            }
+        } catch (e) {
+            alert("Failed to bookmark problem: " + e.message);
         }
     };
 
@@ -820,7 +848,12 @@ export default function CodeEditor() {
                         </div>
                     )}
 
-                    <button onClick={saveFile} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-[var(--bg-secondary)]lue-100 text-blue-700 hover:bg-[var(--bg-secondary)]lue-200" : "bg-[var(--bg-secondary)]lue-500/20 text-blue-400 hover:bg-[var(--bg-secondary)]lue-500/30"}`}>
+                    {isChallengeMode && currentProblem && (
+                        <button onClick={handleBookmarkProblem} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-amber-100 text-amber-800 hover:bg-amber-200" : "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"}`} title="Bookmark problem to Saved Problems">
+                            <Bookmark size={16} /> Save Problem
+                        </button>
+                    )}
+                    <button onClick={saveFile} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"}`}>
                         <Save size={16} /> Save
                     </button>
                     <button onClick={exportPDF} className={`px-4 py-2 rounded-lg font-semibold flex items-center gap-2 ${theme === "light" ? "bg-purple-100 text-purple-700 hover:bg-purple-200" : "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"}`}>

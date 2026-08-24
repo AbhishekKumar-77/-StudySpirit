@@ -49,4 +49,8 @@ router.post('/review', auth, codeSpiritController.reviewCode);
 // Delete a session
 router.delete('/session/:id', auth, codeSpiritController.deleteSession);
 
+// Saved problems
+router.post('/save-problem', auth, codeSpiritController.saveProblem);
+router.get('/saved-problems', auth, codeSpiritController.getSavedProblems);
+
 module.exports = router;
