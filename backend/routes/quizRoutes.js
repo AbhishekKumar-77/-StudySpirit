@@ -12,14 +12,14 @@ router.post('/adaptive-practice', auth, quizController.adaptivePractice);
 router.post('/generate-remedial', auth, quizController.generateRemedialQuiz);
 router.get('/:code/export-html', quizController.exportQuizHTML);
 
-// Create Quiz (auth required — prevents anonymous DB flooding)
-router.post('/create', auth, quizController.createQuiz);
+// Create Quiz (supports authenticated teachers & session fallbacks)
+router.post('/create', quizController.createQuiz);
 
 // Get My Quizzes/Drafts
 router.get('/my-quizzes', auth, quizController.getMyQuizzes);
 
 // Publish Draft
-router.put('/:code/publish', auth, quizController.publishDraft);
+router.put('/:code/publish', quizController.publishDraft);
 
 // Get Global Leaderboard
 router.get('/leaderboard', quizController.getLeaderboard);

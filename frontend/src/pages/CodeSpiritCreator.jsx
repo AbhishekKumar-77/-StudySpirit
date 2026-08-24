@@ -213,17 +213,24 @@ export default function CodeSpiritCreator() {
                     title: quizTitle,
                     questions,
                     settings,
-                    creatorName: user?.name,
+                    creatorName: user?.name || "Teacher",
                     status
                 })
             });
             const data = await res.json();
             if (data.success) {
-                alert(`Exam ${status} successfully! Code: ${data.quizCode}`);
+                alert(`🎉 Exam ${status === "published" ? "Published Live" : "Saved as Draft"} successfully!\n\nExam Code: ${data.quizCode}`);
                 if (status === "draft") fetchDrafts();
                 navigate('/teacher-codespirit');
-            } else { alert("Failed: " + data.message); }
-        } catch (e) { }
+            } else if (res.status === 401 || data.message?.toLowerCase().includes('unauthorized')) {
+                alert("Session expired. Please log in as a teacher again.");
+                navigate('/login');
+            } else {
+                alert("Failed: " + (data.message || "Could not publish exam"));
+            }
+        } catch (e) {
+            alert("Error publishing exam: " + e.message);
+        }
         setIsSaving(false);
     };
 

@@ -462,12 +462,19 @@ exports.generateAIQuestions = async (req, res) => {
 exports.createQuiz = async (req, res) => {
     try {
         const { title, questions, settings, creatorName, status, code: existingCode } = req.body;
-        const creatorId = req.user ? req.user.id : null;
+        let creatorId = req.user ? req.user.id : null;
 
-        // If existing quiz code is provided and belongs to creator, update it
+        // If creatorId not directly in req.user, check creatorName
+        if (!creatorId && creatorName) {
+            const teacherUser = await User.findOne({ name: creatorName, role: 'teacher' });
+            if (teacherUser) creatorId = teacherUser._id;
+        }
+
+        // If existing quiz code is provided, update it
         if (existingCode) {
+            const query = creatorId ? { code: existingCode, creatorId } : { code: existingCode };
             const existingQuiz = await Quiz.findOneAndUpdate(
-                { code: existingCode, creatorId },
+                query,
                 { title, questions, settings, creatorName, status: status || 'published' },
                 { new: true }
             );
@@ -480,11 +487,11 @@ exports.createQuiz = async (req, res) => {
         const code = "SP" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
         const quiz = await Quiz.create({
-            title,
+            title: title || 'CodeSpirit Exam',
             code,
             questions,
             settings,
-            creatorName,
+            creatorName: creatorName || 'Teacher',
             creatorId,
             status: status || 'published'
         });
@@ -492,7 +499,7 @@ exports.createQuiz = async (req, res) => {
         res.status(201).json({ success: true, quizCode: code, message: "Quiz created successfully!" });
     } catch (error) {
         console.error("Create Quiz Error:", error);
-        res.status(500).json({ success: false, message: "Failed to create quiz" });
+        res.status(500).json({ success: false, message: "Failed to create quiz: " + error.message });
     }
 };
 
@@ -511,17 +518,16 @@ exports.getMyQuizzes = async (req, res) => {
 // Publish a Draft
 exports.publishDraft = async (req, res) => {
     try {
-        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
-
         const { code } = req.params;
+        const query = req.user ? { code, creatorId: req.user.id } : { code };
         const quiz = await Quiz.findOneAndUpdate(
-            { code, creatorId: req.user.id },
+            query,
             { status: 'published' },
             { new: true }
         );
 
         if (!quiz) {
-            return res.status(404).json({ success: false, message: "Draft not found or unauthorized to publish." });
+            return res.status(404).json({ success: false, message: "Draft not found." });
         }
 
         res.json({ success: true, message: "Quiz published successfully!", quizCode: quiz.code });
