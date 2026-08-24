@@ -53,7 +53,14 @@ export default function TeacherCodeSpirit() {
                 const res = await fetch(`${API_BASE}/quiz/my-quizzes`, { credentials: 'include' });
                 const data = await res.json();
                 if (data.success) {
-                    setMyQuizzes(data.quizzes || []);
+                    const isCodeSpiritQuiz = (q) => Boolean(
+                        q.isCodeSpirit === true ||
+                        q.examType === 'codespirit' ||
+                        q.settings?.isCodeSpirit === true ||
+                        (q.questions && Array.isArray(q.questions) && q.questions.some(qu => qu.type === 'coding')) ||
+                        (q.title && q.title.toLowerCase().includes('codespirit'))
+                    );
+                    setMyQuizzes((data.quizzes || []).filter(isCodeSpiritQuiz));
                 }
             } catch (e) { console.error('Failed to fetch quizzes', e); }
             finally { setLoadingQuizzes(false); }

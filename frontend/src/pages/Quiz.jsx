@@ -685,10 +685,12 @@ export default function StudySprintQuiz() {
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include', // Needed for auth/creatorId
                 body: JSON.stringify({
-                    title: quizTitle,
+                    title: quizTitle || "Untitled Quiz",
                     code: quizCode,
                     questions,
-                    settings: formattedSettings,
+                    settings: { ...formattedSettings, isCodeSpirit: false },
+                    isCodeSpirit: false,
+                    examType: "quiz",
                     creatorName: user?.name || "Teacher",
                     status
                 })

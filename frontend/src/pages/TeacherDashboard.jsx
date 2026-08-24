@@ -70,8 +70,15 @@ export default function TeacherDashboard() {
                 const res = await fetch(`${API_BASE}/quiz/my-quizzes`, { credentials: 'include' });
                 const data = await res.json();
                 if (data.success) {
-                    const onlyQuizzes = (data.quizzes || []).filter(q => !q.questions?.some(qu => qu.type === 'coding'));
-                    setMyQuizzes(onlyQuizzes);
+                    const isCodeSpiritQuiz = (q) => Boolean(
+                        q.isCodeSpirit === true ||
+                        q.examType === 'codespirit' ||
+                        q.settings?.isCodeSpirit === true ||
+                        (q.questions && Array.isArray(q.questions) && q.questions.some(qu => qu.type === 'coding')) ||
+                        (q.title && q.title.toLowerCase().includes('codespirit'))
+                    );
+                    const onlyStandardQuizzes = (data.quizzes || []).filter(q => !isCodeSpiritQuiz(q));
+                    setMyQuizzes(onlyStandardQuizzes);
                 }
             } catch (e) { console.error('Failed to fetch quizzes', e); }
             finally { setLoadingQuizzes(false); }

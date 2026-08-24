@@ -461,7 +461,7 @@ exports.generateAIQuestions = async (req, res) => {
 // Create Quiz (Save to DB)
 exports.createQuiz = async (req, res) => {
     try {
-        const { title, questions, settings, creatorName, status, code: existingCode } = req.body;
+        const { title, questions, settings, creatorName, status, isCodeSpirit, examType, code: existingCode } = req.body;
         let creatorId = req.user ? req.user.id : null;
 
         // If creatorId not directly in req.user, check creatorName or default teacher in DB
@@ -475,14 +475,30 @@ exports.createQuiz = async (req, res) => {
             if (defaultTeacher) creatorId = defaultTeacher._id;
         }
 
-        const mergedSettings = { ...(settings || {}), isCodeSpirit: true };
+        const isCS = Boolean(
+            isCodeSpirit === true ||
+            examType === 'codespirit' ||
+            (settings && settings.isCodeSpirit === true) ||
+            (questions && Array.isArray(questions) && questions.some(q => q.type === 'coding')) ||
+            (title && title.toLowerCase().includes('codespirit'))
+        );
+
+        const mergedSettings = { ...(settings || {}), isCodeSpirit: isCS };
 
         // If existing quiz code is provided, update it
         if (existingCode) {
             const query = creatorId ? { code: existingCode, creatorId } : { code: existingCode };
             const existingQuiz = await Quiz.findOneAndUpdate(
                 query,
-                { title, questions, settings: mergedSettings, creatorName, status: status || 'published' },
+                {
+                    title,
+                    questions,
+                    settings: mergedSettings,
+                    isCodeSpirit: isCS,
+                    examType: isCS ? 'codespirit' : 'quiz',
+                    creatorName,
+                    status: status || 'published'
+                },
                 { new: true }
             );
             if (existingQuiz) {
@@ -494,10 +510,12 @@ exports.createQuiz = async (req, res) => {
         const code = "SP" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
         const quiz = await Quiz.create({
-            title: title || 'CodeSpirit Exam',
+            title: title || (isCS ? 'CodeSpirit Exam' : 'Untitled Quiz'),
             code,
             questions,
             settings: mergedSettings,
+            isCodeSpirit: isCS,
+            examType: isCS ? 'codespirit' : 'quiz',
             creatorName: creatorName || (req.user ? req.user.name : 'Teacher'),
             creatorId,
             status: status || 'published'

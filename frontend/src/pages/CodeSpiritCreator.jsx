@@ -210,9 +210,11 @@ export default function CodeSpiritCreator() {
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({
-                    title: quizTitle,
+                    title: quizTitle || "CodeSpirit Exam",
                     questions,
-                    settings,
+                    settings: { ...(settings || {}), isCodeSpirit: true },
+                    isCodeSpirit: true,
+                    examType: "codespirit",
                     creatorName: user?.name || "Teacher",
                     status
                 })
