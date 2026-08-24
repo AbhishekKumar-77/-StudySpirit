@@ -464,18 +464,25 @@ exports.createQuiz = async (req, res) => {
         const { title, questions, settings, creatorName, status, code: existingCode } = req.body;
         let creatorId = req.user ? req.user.id : null;
 
-        // If creatorId not directly in req.user, check creatorName
+        // If creatorId not directly in req.user, check creatorName or default teacher in DB
         if (!creatorId && creatorName) {
-            const teacherUser = await User.findOne({ name: creatorName, role: 'teacher' });
+            const teacherUser = await User.findOne({ name: creatorName });
             if (teacherUser) creatorId = teacherUser._id;
         }
+
+        if (!creatorId) {
+            const defaultTeacher = await User.findOne({ role: 'teacher' });
+            if (defaultTeacher) creatorId = defaultTeacher._id;
+        }
+
+        const mergedSettings = { ...(settings || {}), isCodeSpirit: true };
 
         // If existing quiz code is provided, update it
         if (existingCode) {
             const query = creatorId ? { code: existingCode, creatorId } : { code: existingCode };
             const existingQuiz = await Quiz.findOneAndUpdate(
                 query,
-                { title, questions, settings, creatorName, status: status || 'published' },
+                { title, questions, settings: mergedSettings, creatorName, status: status || 'published' },
                 { new: true }
             );
             if (existingQuiz) {
@@ -490,8 +497,8 @@ exports.createQuiz = async (req, res) => {
             title: title || 'CodeSpirit Exam',
             code,
             questions,
-            settings,
-            creatorName: creatorName || 'Teacher',
+            settings: mergedSettings,
+            creatorName: creatorName || (req.user ? req.user.name : 'Teacher'),
             creatorId,
             status: status || 'published'
         });
@@ -507,7 +514,31 @@ exports.createQuiz = async (req, res) => {
 exports.getMyQuizzes = async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
-        const quizzes = await Quiz.find({ creatorId: req.user.id }).sort({ createdAt: -1 });
+        
+        const user = await User.findById(req.user.id);
+        const nameQuery = user ? user.name : (req.user.name || '');
+
+        // Match quizzes by creatorId OR creatorName OR unassigned quizzes for teacher
+        const filter = {
+            $or: [
+                { creatorId: req.user.id },
+                ...(nameQuery ? [{ creatorName: nameQuery }] : []),
+                { creatorId: { $exists: false } },
+                { creatorId: null }
+            ]
+        };
+
+        const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
+
+        // Auto-heal unassigned/missing creatorId quizzes so they belong to this teacher permanently
+        const unassigned = quizzes.filter(q => !q.creatorId);
+        if (unassigned.length > 0) {
+            await Quiz.updateMany(
+                { _id: { $in: unassigned.map(q => q._id) } },
+                { $set: { creatorId: req.user.id, creatorName: nameQuery || 'Teacher' } }
+            );
+        }
+
         res.json({ success: true, quizzes });
     } catch (error) {
         console.error("Fetch My Quizzes Error:", error);

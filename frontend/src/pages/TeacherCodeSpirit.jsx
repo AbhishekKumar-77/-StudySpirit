@@ -53,8 +53,7 @@ export default function TeacherCodeSpirit() {
                 const res = await fetch(`${API_BASE}/quiz/my-quizzes`, { credentials: 'include' });
                 const data = await res.json();
                 if (data.success) {
-                    const codeSpiritExams = (data.quizzes || []).filter(q => q.questions?.some(qu => qu.type === 'coding'));
-                    setMyQuizzes(codeSpiritExams);
+                    setMyQuizzes(data.quizzes || []);
                 }
             } catch (e) { console.error('Failed to fetch quizzes', e); }
             finally { setLoadingQuizzes(false); }
