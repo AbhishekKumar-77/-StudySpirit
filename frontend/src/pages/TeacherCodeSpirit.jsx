@@ -311,10 +311,6 @@ export default function TeacherCodeSpirit() {
                 </nav>
 
                 <div className="p-3 border-t border-[var(--border-color)] space-y-1">
-                    <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)] transition-all">
-                        {isLight ? <Moon size={18} /> : <Sun size={18} />}
-                        {isLight ? 'Dark Mode' : 'Light Mode'}
-                    </button>
                     <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm text-red-500 hover:bg-red-500/10 transition-all">
                         <LogOut size={18} /> Logout
                     </button>
