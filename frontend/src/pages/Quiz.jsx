@@ -65,22 +65,29 @@ export default function StudySprintQuiz() {
     const [activeTab, setActiveTab] = useState((user?.role === 'teacher' || isForcedTeacherMode) ? "teacher" : "dashboard");
     const [activeRunnerSession, setActiveRunnerSession] = useState(null); // active QuestionPlayer session
 
-    // Auto-launch Python Module Quiz when coming from Study Resources
+    // Auto-launch Python Module Quiz in QuestionPlayer when coming from Study Resources
     useEffect(() => {
         if (location.state?.module || location.state?.subject) {
             const modName = (location.state.module || '').toLowerCase();
             let qSet = PYTHON_MODULE_1_QUESTIONS;
-            if (modName.includes('2') || modName.includes('variable')) qSet = PYTHON_MODULE_2_VARIABLES_QUESTIONS;
-            if (modName.includes('3') || modName.includes('data')) qSet = PYTHON_MODULE_2_DATA_QUESTIONS;
+            let titleName = 'MODULE 1 : INTRODUCTION TO PROGRAMMING';
 
-            setAiQuestions(qSet);
-            setPracticeStarted(true);
-            setPracticeFinished(false);
-            setPracticeIndex(0);
-            setPracticeScore(0);
-            setPracticeAnswered(false);
-            setStudentPracticeTopic(location.state.title || `${location.state.subject} - ${location.state.module}`);
-            setActiveTab("practice");
+            if (modName.includes('2') || modName.includes('variable')) {
+                qSet = PYTHON_MODULE_2_VARIABLES_QUESTIONS;
+                titleName = 'MODULE 2 : VARIABLES';
+            } else if (modName.includes('3') || modName.includes('data')) {
+                qSet = PYTHON_MODULE_2_DATA_QUESTIONS;
+                titleName = 'MODULE 3 : DATA TYPES';
+            }
+
+            if (location.state.title) {
+                titleName = location.state.title.toUpperCase();
+            }
+
+            setActiveRunnerSession({
+                title: titleName,
+                questions: qSet
+            });
         }
     }, [location.state]);
 
@@ -1012,6 +1019,22 @@ export default function StudySprintQuiz() {
     };
 
     // --------------------------- RENDER ---------------------------
+    if (activeRunnerSession) {
+        return (
+            <QuestionPlayer 
+                questions={activeRunnerSession.questions}
+                sessionTitle={activeRunnerSession.title}
+                onFinish={() => {
+                    setActiveRunnerSession(null);
+                    if (location.state) {
+                        navigate('/quiz', { replace: true, state: null });
+                    }
+                }}
+                onAskAITutor={(ctx) => alert(`Connecting StudySpirit AI Tutor for: "${ctx.question}"`)}
+            />
+        );
+    }
+
     const isTeacherWorkspace = user?.role === "teacher" || isForcedTeacherMode || ["teacher", "question_bank", "smart_practice", "practice", "drafts"].includes(activeTab);
 
     if (!isTeacherWorkspace) {
