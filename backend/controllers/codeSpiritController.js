@@ -247,6 +247,296 @@ exports.generateDailyChallenge = async (req, res) => {
         const questionCount = Math.min(Math.max(parseInt(count) || 1, 1), 15);
         const langPref = language || "python";
 
+        // Check for Curated Python Modules
+        if (langPref.toLowerCase() === 'python' || topic.toLowerCase().includes('python')) {
+            const pythonCuratedBank = [
+                {
+                    title: 'Coding Question 1 — Welcome Message',
+                    description: 'Write a Python program to print the following message:\nWelcome to StudySpirit',
+                    language: 'python',
+                    starterCode: '# TODO: Write a Python program to print "Welcome to StudySpirit"\n',
+                    testCases: [{ input: '', output: 'Welcome to StudySpirit' }],
+                    hints: ['Use print() statement in Python'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 2 — Python Introduction',
+                    description: 'Write a Python program to print the following three lines:\nI am learning Python\nPython is easy to learn\nI love programming',
+                    language: 'python',
+                    starterCode: '# TODO: Write a Python program to print the three lines\n',
+                    testCases: [{ input: '', output: 'I am learning Python\nPython is easy to learn\nI love programming' }],
+                    hints: ['Call print() for each line'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 3 — Student Welcome',
+                    description: 'Write a Python program that prints a welcome message for a student joining StudySpirit.',
+                    language: 'python',
+                    starterCode: '# TODO: Write a Python program that prints the student welcome message\n',
+                    testCases: [{ input: '', output: 'Welcome Student\nWelcome to StudySpirit\nStart Your Programming Journey' }],
+                    hints: ['Print all 3 lines in sequence'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 4 — Python Information',
+                    description: 'Write a Python program to display the following information about Python:\nLanguage: Python\nType: High-Level\nPurpose: Programming',
+                    language: 'python',
+                    starterCode: '# TODO: Display the Python information\n',
+                    testCases: [{ input: '', output: 'Language: Python\nType: High-Level\nPurpose: Programming' }],
+                    hints: ['Use print("Language: Python")', 'Use print("Type: High-Level")', 'Use print("Purpose: Programming")'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 5 — First Program Challenge ⭐',
+                    description: 'Write your first Python program for StudySpirit. The program should print exactly the following:\n================================\n       STUDYSPIRIT\n================================\nWelcome to Programming\nLearn Python Step by Step\nStart Coding Today!\n================================',
+                    language: 'python',
+                    starterCode: '# TODO: Print the StudySpirit header and welcome banner\n',
+                    testCases: [{ input: '', output: '================================\n       STUDYSPIRIT\n================================\nWelcome to Programming\nLearn Python Step by Step\nStart Coding Today!\n================ glass' }],
+                    hints: ['Verify exact equal sign counts (32 equal signs)'],
+                    difficulty: 'medium'
+                },
+                {
+                    title: 'Coding Question 1 — Student Name',
+                    description: 'Create a variable named student_name, store a student\'s name in it, and print the name.',
+                    language: 'python',
+                    starterCode: '# TODO: Create student_name variable and print it\n',
+                    testCases: [{ input: '', output: 'Abhishek' }],
+                    hints: ['student_name = "Abhishek"', 'print(student_name)'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 2 — Student Information',
+                    description: 'Create variables for a student\'s name, age, and course and display them.',
+                    language: 'python',
+                    starterCode: '# TODO: Create name, age, course variables and display them\n',
+                    testCases: [{ input: '', output: 'Name: Abhishek\nAge: 21\nCourse: B.Tech CSE' }],
+                    hints: ['Assign variables and use print()'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 3 — Multiple Assignment',
+                    description: 'Use multiple assignment to store the following values:\nName = Rahul\nAge = 20\nMarks = 85\nThen print all three values.',
+                    language: 'python',
+                    starterCode: '# TODO: Use multiple assignment to store Name, Age, Marks and print them\n',
+                    testCases: [{ input: '', output: 'Name: Rahul\nAge: 20\nMarks: 85' }],
+                    hints: ['Use name, age, marks = "Rahul", 20, 85'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 4 — Same Value Assignment',
+                    description: 'Create three variables python, dsa, and dbms and assign the value 0 to all three variables using a single statement.',
+                    language: 'python',
+                    starterCode: '# TODO: Assign 0 to python, dsa, and dbms in a single statement and print them\n',
+                    testCases: [{ input: '', output: 'Python: 0\nDSA: 0\nDBMS: 0' }],
+                    hints: ['python = dsa = dbms = 0'],
+                    difficulty: 'easy'
+                },
+                {
+                    title: 'Coding Question 5 — Swapping Two Variables',
+                    description: 'Create two variables:\na = 10\nb = 20\nSwap their values using Python\'s multiple assignment technique.',
+                    language: 'python',
+                    starterCode: '# TODO: Swap variables a and b using multiple assignment\n',
+                    testCases: [{ input: '', output: 'Before Swapping:\na: 10\nb: 20\n\n\nAfter Swapping:\na: 20\nb: 10' }],
+                    hints: ['a, b = b, a'],
+                    difficulty: 'medium'
+                },
+                // ── Module 2 continued (Q6-Q10) ─────────────────────────────
+                {
+                    title: 'Coding Question 6 — Variable Reassignment',
+                    description: 'Create a variable language and first assign "C" to it. Then reassign "Python" to the same variable.\nPrint the value after each assignment.',
+                    language: 'python',
+                    starterCode: '# TODO: Assign "C" then "Python" to language and print after each assignment\n',
+                    testCases: [{ input: '', output: 'C\nPython' }],
+                    hints: ['language = "C"', 'print(language)', 'language = "Python"', 'print(language)'],
+                    difficulty: 'easy',
+                    module: 'm2'
+                },
+                {
+                    title: 'Coding Question 7 — Dynamic Typing',
+                    description: 'Demonstrate Python\'s dynamic typing by assigning an integer to a variable and then assigning a string to the same variable.',
+                    language: 'python',
+                    starterCode: '# TODO: Assign 100 then "Python" to a variable and print\n',
+                    testCases: [{ input: '', output: '100\nPython' }],
+                    hints: ['x = 100', 'print(x)', 'x = "Python"', 'print(x)'],
+                    difficulty: 'easy',
+                    module: 'm2'
+                },
+                {
+                    title: 'Coding Question 8 — Student Information System',
+                    description: 'Create variables for: Student name, Roll number, Age, Course, University, Marks.\nDisplay all the information in a formatted way.',
+                    language: 'python',
+                    starterCode: '# TODO: Display formatted student information system output\n',
+                    testCases: [{ input: '', output: '================================\n      STUDENT INFORMATION\n================================\nName: Abhishek\nRoll No: 101\nAge: 21\nCourse: B.Tech CSE\nUniversity: LPU\nMarks: 85\n================================' }],
+                    hints: ['Print 32 equal signs for separator', 'Use print("Name:", name)'],
+                    difficulty: 'medium',
+                    module: 'm2'
+                },
+                {
+                    title: 'Coding Question 9 — Three-Variable Swap ⭐',
+                    description: 'Create three variables:\na = 10\nb = 20\nc = 30\nUse multiple assignment to rotate their values so that:\na = 20\nb = 30\nc = 10',
+                    language: 'python',
+                    starterCode: '# TODO: Rotate values of a, b, c using multiple assignment\n',
+                    testCases: [{ input: '', output: 'Before:\na = 10\nb = 20\nc = 30\n\n\nAfter:\na = 20\nb = 30\nc = 10' }],
+                    hints: ['a, b, c = b, c, a'],
+                    difficulty: 'medium',
+                    module: 'm2'
+                },
+                {
+                    title: 'Coding Question 10 — Variable & Object Observation',
+                    description: 'Create a variable x with the value 50. Assign x to another variable y. Then change x to 100.\nPrint both variables.\nWhat you are testing is whether you understand that reassigning x does not automatically change what y refers to.',
+                    language: 'python',
+                    starterCode: '# TODO: Assign y = x, change x = 100, print x: 100 and y: 50\n',
+                    testCases: [{ input: '', output: 'x: 100\ny: 50' }],
+                    hints: ['x = 50', 'y = x', 'x = 100', 'print("x:", x)', 'print("y:", y)'],
+                    difficulty: 'medium',
+                    module: 'm2'
+                },
+                // ── Module 3 — Data Types (Q1-Q10) ──────────────────────────
+                {
+                    title: 'Coding Question 1 — Number Types',
+                    description: 'Create an integer and a floating-point number. Print both values and their data types.',
+                    language: 'python',
+                    starterCode: '# TODO: Create int 25 and float 25.5, print values and types\n',
+                    testCases: [{ input: '', output: "Integer: 25\nType: <class 'int'>\n\n\nFloat: 25.5\nType: <class 'float'>" }],
+                    hints: ['Use type() to get the data type', 'num = 25 → print("Integer:", num)', 'print("Type:", type(num))'],
+                    difficulty: 'easy',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 2 — Boolean Values',
+                    description: 'Create two Boolean variables representing whether a student is enrolled and whether the student has completed the course.',
+                    language: 'python',
+                    starterCode: '# TODO: Create boolean variables for Enrolled and Course Completed\n',
+                    testCases: [{ input: '', output: 'Enrolled: True\nCourse Completed: False' }],
+                    hints: ['enrolled = True', 'course_completed = False'],
+                    difficulty: 'easy',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 3 — None Value',
+                    description: 'Create a variable named result and assign None to it. Print the value and its type.',
+                    language: 'python',
+                    starterCode: '# TODO: Assign None to result and print value and type\n',
+                    testCases: [{ input: '', output: "Result: None\nType: <class 'NoneType'>" }],
+                    hints: ['result = None', 'print("Result:", result)', 'print("Type:", type(result))'],
+                    difficulty: 'easy',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 4 — String Operations',
+                    description: 'Create a variable containing the string "StudySpirit" and print:\nThe complete string\nThe first character\nThe last character\nThe length of the string',
+                    language: 'python',
+                    starterCode: '# TODO: Perform string operations on "StudySpirit"\n',
+                    testCases: [{ input: '', output: 'String: StudySpirit\nFirst Character: S\nLast Character: t\nLength: 11' }],
+                    hints: ['s = "StudySpirit"', 'print("First Character:", s[0])', 'print("Last Character:", s[-1])', 'print("Length:", len(s))'],
+                    difficulty: 'medium',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 5 — List Basics',
+                    description: 'Create a list containing three programming languages and print the list and its first element.',
+                    language: 'python',
+                    starterCode: "# TODO: Create languages list ['Python', 'Java', 'C++'] and print\n",
+                    testCases: [{ input: '', output: "Languages: ['Python', 'Java', 'C++']\nFirst Language: Python" }],
+                    hints: ["languages = ['Python', 'Java', 'C++']", 'print("Languages:", languages)', 'print("First Language:", languages[0])'],
+                    difficulty: 'easy',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 6 — Modify a List',
+                    description: 'Create a list containing three subjects. Replace the second subject with "Python" and print the updated list.',
+                    language: 'python',
+                    starterCode: '# TODO: Replace second subject with "Python" in list\n',
+                    testCases: [{ input: '', output: "Before: ['DBMS', 'Java', 'DSA']\nAfter: ['DBMS', 'Python', 'DSA']" }],
+                    hints: ["subjects = ['DBMS', 'Java', 'DSA']", 'subjects[1] = "Python"'],
+                    difficulty: 'easy',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 7 — Tuple',
+                    description: "Create a tuple containing a student's name, age, and course. Print each value using its index.",
+                    language: 'python',
+                    starterCode: "# TODO: Create tuple ('Abhishek', 21, 'B.Tech CSE') and print elements\n",
+                    testCases: [{ input: '', output: 'Name: Abhishek\nAge: 21\nCourse: B.Tech CSE' }],
+                    hints: ["student = ('Abhishek', 21, 'B.Tech CSE')", 'print("Name:", student[0])'],
+                    difficulty: 'easy',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 8 — Unique Values Using Set',
+                    description: 'Create a list containing duplicate numbers. Convert it into a set and display the unique values.',
+                    language: 'python',
+                    starterCode: '# TODO: Convert list [10, 20, 20, 30, 30, 40] to set\n',
+                    testCases: [{ input: '', output: 'Original: [10, 20, 20, 30, 30, 40]\nUnique: {10, 20, 30, 40}' }],
+                    hints: ['numbers = [10, 20, 20, 30, 30, 40]', 'unique = set(numbers)'],
+                    difficulty: 'medium',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 9 — Dictionary',
+                    description: "Create a dictionary containing a student's name, age, and course. Access and print the values using their keys.",
+                    language: 'python',
+                    starterCode: "# TODO: Create student dictionary and access values by keys\n",
+                    testCases: [{ input: '', output: 'Name: Abhishek\nAge: 21\nCourse: B.Tech CSE' }],
+                    hints: ["student = {'name': 'Abhishek', 'age': 21, 'course': 'B.Tech CSE'}", "print('Name:', student['name'])"],
+                    difficulty: 'medium',
+                    module: 'm3'
+                },
+                {
+                    title: 'Coding Question 10 — Type Conversion',
+                    description: 'Create the string "100". Convert it into an integer and a float. Print the values and their types.',
+                    language: 'python',
+                    starterCode: '# TODO: Convert string "100" to int and float and print types\n',
+                    testCases: [{ input: '', output: "Original: 100\nOriginal Type: <class 'str'>\n\n\nInteger: 100\nInteger Type: <class 'int'>\n\n\nFloat: 100.0\nFloat Type: <class 'float'>" }],
+                    hints: ['s = "100"', 'int_val = int(s)', 'float_val = float(s)', 'print("Integer Type:", type(int_val))'],
+                    difficulty: 'medium',
+                    module: 'm3'
+                }
+            ];
+
+            // Smart module selection: pick questions based on topic keyword
+            let selectedChallenges;
+            const topicLower = topic.toLowerCase();
+
+            if (topicLower.includes('module 1') || topicLower.includes('introduction') || topicLower.includes('welcome') || topicLower.includes('syntax') || topicLower.includes('output')) {
+                selectedChallenges = pythonCuratedBank.filter(q => !q.module || q.module === 'm1');
+            } else if (topicLower.includes('module 2') || topicLower.includes('variable') || topicLower.includes('assignment') || topicLower.includes('swap')) {
+                selectedChallenges = pythonCuratedBank.filter(q => q.module === 'm2');
+            } else if (topicLower.includes('module 3') || topicLower.includes('data type') || topicLower.includes('list') || topicLower.includes('dict') || topicLower.includes('tuple') || topicLower.includes('set') || topicLower.includes('boolean') || topicLower.includes('conversion')) {
+                selectedChallenges = pythonCuratedBank.filter(q => q.module === 'm3');
+            } else {
+                // Default: return first questionCount from entire bank
+                selectedChallenges = pythonCuratedBank.slice(0, questionCount);
+            }
+
+            selectedChallenges = selectedChallenges.slice(0, questionCount).map((ch, idx) => ({
+                ...ch,
+                id: `challenge_py_${Date.now()}_${idx}`,
+                status: 'pending',
+                solveTime: 0,
+                verificationResults: []
+            }));
+
+            const newSession = new CodeSession({
+                userId: req.user.id,
+                topic,
+                difficulty: diff,
+                language: 'python',
+                challenges: selectedChallenges,
+                completed: false
+            });
+
+            await newSession.save();
+
+            return res.json({
+                success: true,
+                sessionId: newSession._id,
+                challenges: selectedChallenges,
+                totalCount: selectedChallenges.length
+            });
+        }
+
+
         const apiKey = GROQ_API_KEY;
         if (!apiKey || apiKey === 'your_groq_api_key_here') {
             return res.status(500).json({ success: false, message: "AI service not configured. Add GROQ_API_KEY to .env" });
