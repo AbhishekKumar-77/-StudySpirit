@@ -513,30 +513,34 @@ exports.createQuiz = async (req, res) => {
 // Get My Quizzes/Drafts
 exports.getMyQuizzes = async (req, res) => {
     try {
-        if (!req.user) return res.status(401).json({ success: false, message: "Unauthorized. Please login." });
-        
-        const user = await User.findById(req.user.id);
-        const nameQuery = user ? user.name : (req.user.name || '');
+        let filter = {};
 
-        // Match quizzes by creatorId OR creatorName OR unassigned quizzes for teacher
-        const filter = {
-            $or: [
-                { creatorId: req.user.id },
-                ...(nameQuery ? [{ creatorName: nameQuery }] : []),
-                { creatorId: { $exists: false } },
-                { creatorId: null }
-            ]
-        };
+        if (req.user) {
+            const user = await User.findById(req.user.id);
+            const nameQuery = user ? user.name : (req.user.name || '');
+
+            filter = {
+                $or: [
+                    { creatorId: req.user.id },
+                    ...(nameQuery ? [{ creatorName: nameQuery }] : []),
+                    { creatorId: { $exists: false } },
+                    { creatorId: null }
+                ]
+            };
+        }
 
         const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
 
         // Auto-heal unassigned/missing creatorId quizzes so they belong to this teacher permanently
-        const unassigned = quizzes.filter(q => !q.creatorId);
-        if (unassigned.length > 0) {
-            await Quiz.updateMany(
-                { _id: { $in: unassigned.map(q => q._id) } },
-                { $set: { creatorId: req.user.id, creatorName: nameQuery || 'Teacher' } }
-            );
+        if (req.user) {
+            const unassigned = quizzes.filter(q => !q.creatorId);
+            if (unassigned.length > 0) {
+                const user = await User.findById(req.user.id);
+                await Quiz.updateMany(
+                    { _id: { $in: unassigned.map(q => q._id) } },
+                    { $set: { creatorId: req.user.id, creatorName: user?.name || 'Teacher' } }
+                );
+            }
         }
 
         res.json({ success: true, quizzes });

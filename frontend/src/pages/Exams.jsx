@@ -12,6 +12,8 @@ import {
 import { useApp } from "../context/AppContext";
 import Editor from "@monaco-editor/react";
 
+import { codeExecutionEngine } from "../services/codeExecutionEngine";
+
 const normalizeOutput = (str) => {
     return (str || '')
         .replace(/\r\n/g, '\n')
@@ -200,32 +202,14 @@ export default function Exams() {
         for (let i = 0; i < tcs.length; i++) {
             const tc = tcs[i];
             try {
-                const executeRes = await fetch(`${API_BASE}/codespirit/execute-exam`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ 
-                        language: codeLanguage, 
-                        code: code, 
-                        stdin: tc.input || "",
-                        quizCode: quizCodeInput.toUpperCase().trim()
-                    })
-                });
-                const result = await executeRes.json();
-                
-                if (!result.success) {
-                    results.push({
-                        pass: false,
-                        actual: "",
-                        expected: tc.expectedOutput || tc.output || "N/A",
-                        input: tc.input || "None",
-                        error: result.message || "Execution failed on server"
-                    });
-                    continue;
-                }
-
-                const out = (result.run?.stdout || "").trim();
-                const errOut = (result.run?.stderr || "").trim();
+                const execResult = await codeExecutionEngine.execute(
+                    codeLanguage,
+                    code,
+                    tc.input || ""
+                );
+                const run = execResult.run || {};
+                const out = (run.stdout || "").trim();
+                const errOut = (run.stderr || "").trim();
                 const expected = (tc.expectedOutput || tc.output || "").trim();
                 const passed = expected ? (normalizeOutput(out) === normalizeOutput(expected) && !errOut) : (out.length > 0 && !errOut);
                 results.push({
@@ -236,7 +220,7 @@ export default function Exams() {
                     error: errOut
                 });
             } catch (e) {
-                results.push({ pass: false, actual: "", expected: tc.expectedOutput || tc.output || "N/A", input: tc.input || "None", error: "Network error: " + e.message });
+                results.push({ pass: false, actual: "", expected: tc.expectedOutput || tc.output || "N/A", input: tc.input || "None", error: "Execution error: " + e.message });
             }
         }
         setCodeTestResults(prev => ({ ...prev, [qKey]: results }));
