@@ -178,8 +178,10 @@ async function executeViaPiston(language, code, stdin = '') {
             }
         };
 
-        // Cache the result
-        await cacheService.set(cacheKey, result, 300);
+        // Cache successful non-empty results only
+        if (exitCode === 0 && stdout && stdout.trim()) {
+            await cacheService.set(cacheKey, result, 300);
+        }
 
         return result;
     };

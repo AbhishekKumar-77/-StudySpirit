@@ -8,6 +8,7 @@ import {
     Trash2, Brain, Save, Settings, Edit, Play, Check, X, BookOpen, Crown, ChevronRight,
     Layers, Plus, Filter, CheckCircle2, Sparkles, Folder
 } from "lucide-react";
+import { codeExecutionEngine } from "../services/codeExecutionEngine";
 import {
     PYTHON_MODULE_1_QUESTIONS,
     PYTHON_MODULE_2_VARIABLES_QUESTIONS,
@@ -174,24 +175,23 @@ export default function CodeSpiritCreator() {
         for (let i = 0; i < verifyingQ.testCases.length; i++) {
             const tc = verifyingQ.testCases[i];
             try {
-                const executeRes = await fetch(`${API_BASE}/codespirit/execute`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ language: teacherLang, code: teacherCode, stdin: tc.input || "" })
-                });
-                const result = await executeRes.json();
-                const out = (result.run?.stdout || "").trim();
+                const execResult = await codeExecutionEngine.execute(
+                    teacherLang,
+                    teacherCode,
+                    tc.input || ""
+                );
+                const run = execResult.run || {};
+                const out = (run.stdout || "").trim();
                 const outNormalized = out.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n').map(l => l.trim()).join('\n');
                 const expNormalized = (tc.expectedOutput || tc.output || "").replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n').map(l => l.trim()).join('\n');
 
-                const passed = outNormalized === expNormalized && result.success && (result.run?.exitCode === 0 || result.run?.code === 0 || result.run?.code === null);
+                const passed = outNormalized === expNormalized && (run.exitCode === 0 || run.code === 0 || run.exitCode === undefined);
                 results.push({
                     pass: passed,
                     actual: out,
                     expected: tc.expectedOutput || tc.output || "",
                     input: tc.input || "(None)",
-                    error: result.run?.stderr || ""
+                    error: run.stderr || ""
                 });
             } catch (e) {
                 results.push({ pass: false, error: e.message });
