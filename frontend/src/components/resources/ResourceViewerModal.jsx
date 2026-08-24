@@ -6,6 +6,8 @@ import {
 import resourceApi from '../../services/resourceApi';
 import { PYTHON_MODULES } from '../../data/pythonModulesData';
 
+import RichNotesRenderer from './RichNotesRenderer';
+
 export default function ResourceViewerModal({ resource, onClose }) {
     const navigate = useNavigate();
 
@@ -184,33 +186,9 @@ export default function ResourceViewerModal({ resource, onClose }) {
                 {/* Main Fullscreen Stage */}
                 <div className="flex-1 bg-slate-950 p-4 md:p-6 overflow-y-auto min-h-0">
                     
-                    {/* VIEW 1: Full Course Notes (100% Width) */}
+                    {/* VIEW 1: Full Course Notes (Rich Modern Interactive Renderer) */}
                     {activeAiTool === 'notes' && (
-                        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 text-slate-200 text-xs md:text-sm font-sans leading-relaxed shadow-inner max-w-6xl mx-auto space-y-6">
-                            <div className="flex items-center justify-between pb-4 border-b border-slate-800 text-slate-400">
-                                <span className="font-extrabold text-white text-sm">📄 Full Course Curriculum Notes</span>
-                                <span className="text-xs text-orange-400 font-bold">{matchedModule.unit}</span>
-                            </div>
-
-                            <div className="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-200 leading-relaxed space-y-2">
-                                {matchedModule.fullNotes}
-                            </div>
-
-                            {/* Quiz Prompt Callout Banner */}
-                            <div className="bg-gradient-to-r from-orange-950/60 to-purple-950/60 border border-orange-800/60 rounded-2xl p-5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div>
-                                    <h4 className="font-extrabold text-orange-400 text-sm md:text-base">🎉 Completed {matchedModule.unit}?</h4>
-                                    <p className="text-xs text-slate-300">Test your mastery of {matchedModule.title} in the official Quiz feature!</p>
-                                </div>
-                                <button
-                                    onClick={handleOpenQuiz}
-                                    className="bg-[#ff5733] hover:bg-orange-600 text-white font-extrabold text-xs px-5 py-3 rounded-xl shadow-md transition shrink-0 flex items-center gap-2"
-                                >
-                                    <Zap className="w-4 h-4 fill-white" />
-                                    <span>Start Module Quiz →</span>
-                                </button>
-                            </div>
-                        </div>
+                        <RichNotesRenderer moduleData={matchedModule} onStartQuiz={handleOpenQuiz} />
                     )}
 
                     {/* VIEW 2: Summarize / Short Notes (100% Width) */}
