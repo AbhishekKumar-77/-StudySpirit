@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    X, Sparkles, Send, FileText, Video, HelpCircle, BookOpen, Layers,
-    Zap, CheckCircle2, Copy, Download, Loader2, ArrowLeft, Bot, MessageSquare, Flame
+    X, Sparkles, Send, BookOpen, Zap, Copy, Loader2, ArrowLeft, Bot, MessageSquare, Flame, CheckCircle2
 } from 'lucide-react';
 import resourceApi from '../../services/resourceApi';
 import { PYTHON_MODULES } from '../../data/pythonModulesData';
 
-export default function ResourceViewerModal({ resource, onClose, onSaveToggle, isSaved }) {
+export default function ResourceViewerModal({ resource, onClose }) {
     const navigate = useNavigate();
 
     // Find matching Python module from data
@@ -18,19 +17,16 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
         (resource?.name && m.title.toLowerCase().includes(resource.name.toLowerCase()))
     ) || PYTHON_MODULES[0];
 
-    // Mode: 'full' (Detailed Notes) or 'short' (Short Revision Notes)
-    const [viewMode, setViewMode] = useState('full');
+    // AI Tool View: 'notes' (Full Notes), 'summary' (Short Notes), 'ask-ai' (AI Chat), 'flashcards' (Flashcards)
+    const [activeAiTool, setActiveAiTool] = useState('notes');
 
-    // Right AI Tools Panel State
-    const [activeAiTool, setActiveAiTool] = useState('ask-ai'); // 'ask-ai', 'summary', 'notes', 'flashcards', 'explain'
+    // Ask AI Chat State
     const [aiQuestion, setAiQuestion] = useState('');
     const [chatHistory, setChatHistory] = useState([
-        { role: 'ai', content: `Hello! I am your AI Study Assistant for "${matchedModule.title}". Ask me anything or click a tool above to generate notes, flashcards, or explanations!` }
+        { role: 'ai', content: `Hello! I am your StudySpirit AI Tutor for "${matchedModule.title}". Ask me any question about these notes!` }
     ]);
     const [isAiLoading, setIsAiLoading] = useState(false);
-    const [aiResultText, setAiResultText] = useState('');
-
-    const isVideo = (resource?.type || resource?.resourceType || '').toUpperCase() === 'VIDEO';
+    const [flashcardsList, setFlashcardsList] = useState([]);
 
     // Open Module Quiz Action
     const handleOpenQuiz = () => {
@@ -44,7 +40,7 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
         if (onClose) onClose();
     };
 
-    // Handle Grounded Q&A Chat
+    // Handle Grounded Q&A Chat connected to backend Groq API (.env GROQ_API_KEY_RESOURCE)
     const handleAskAi = async () => {
         if (!aiQuestion.trim() || isAiLoading) return;
         const qText = aiQuestion.trim();
@@ -54,62 +50,48 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
 
         try {
             const data = await resourceApi.askAIAboutResource({
-                resourceId: matchedModule.id,
                 resourceTitle: matchedModule.title,
                 resourceContent: matchedModule.fullNotes,
                 question: qText
             });
 
-            if (data && data.answer) {
-                setChatHistory(prev => [...prev, { role: 'ai', content: data.answer }]);
+            if (data && (data.answer || data.result)) {
+                setChatHistory(prev => [...prev, { role: 'ai', content: data.answer || data.result }]);
+            } else {
+                setChatHistory(prev => [...prev, { role: 'ai', content: 'Could not generate an answer right now. Please try again.' }]);
             }
         } catch (err) {
             console.error('Ask AI error:', err);
-            setChatHistory(prev => [...prev, { role: 'ai', content: 'Connection error answering your question. Please try again.' }]);
+            setChatHistory(prev => [...prev, { role: 'ai', content: 'Connection error connecting to StudySpirit AI. Please verify network or API keys.' }]);
         } finally {
             setIsAiLoading(false);
         }
     };
 
-    // Handle AI Summarize / Notes / Explainer Tool Triggers
-    const handleTriggerAiTool = async (toolName) => {
-        setActiveAiTool(toolName);
+    // Handle AI Flashcards Trigger
+    const handleGenerateFlashcards = async () => {
+        setActiveAiTool('flashcards');
         setIsAiLoading(true);
-        setAiResultText('');
-
         try {
-            if (toolName === 'summary' || toolName === 'notes') {
-                const data = await resourceApi.generateNotes({
-                    topic: matchedModule.title,
-                    content: matchedModule.fullNotes
-                });
-                if (data && data.result) setAiResultText(data.result);
-            } else if (toolName === 'explain') {
-                const data = await resourceApi.explainConcept({
-                    topic: matchedModule.title
-                });
-                if (data && data.result) setAiResultText(data.result);
-            } else if (toolName === 'flashcards') {
-                const data = await resourceApi.generateFlashcards({
-                    topic: matchedModule.title,
-                    count: 8
-                });
-                if (data && data.flashcards) {
-                    setAiResultText(JSON.stringify(data.flashcards, null, 2));
-                }
+            const data = await resourceApi.generateFlashcards({
+                topic: matchedModule.title,
+                count: 6
+            });
+            if (data && data.flashcards) {
+                setFlashcardsList(data.flashcards);
             }
         } catch (err) {
-            console.error('Tool error:', err);
-            setAiResultText('Failed to generate AI response. Please try again.');
+            console.error('Flashcards error:', err);
         } finally {
             setIsAiLoading(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 md:p-6 overflow-hidden">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-7xl h-[92vh] flex flex-col shadow-2xl overflow-hidden">
-                {/* Modal Header */}
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-2 md:p-4 overflow-hidden">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-[96vw] h-[95vh] flex flex-col shadow-2xl overflow-hidden">
+                
+                {/* Fullscreen Header */}
                 <header className="px-6 py-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 transition">
@@ -125,40 +107,15 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                         </div>
                     </div>
 
-                    {/* Header Controls & Short Notes / Quiz Buttons */}
+                    {/* Header Controls & Action Buttons */}
                     <div className="flex items-center gap-3">
-                        {/* View Mode Toggle: Full Notes vs Short Notes */}
-                        <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
-                            <button
-                                onClick={() => setViewMode('full')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                                    viewMode === 'full'
-                                        ? 'bg-slate-800 text-white shadow-xs'
-                                        : 'text-slate-400 hover:text-slate-200'
-                                }`}
-                            >
-                                📖 Detailed Notes
-                            </button>
-                            <button
-                                onClick={() => setViewMode('short')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
-                                    viewMode === 'short'
-                                        ? 'bg-[#ff5733] text-white shadow-xs'
-                                        : 'text-orange-400 hover:text-orange-300'
-                                }`}
-                            >
-                                <Zap className="w-3.5 h-3.5 fill-current" />
-                                <span>⚡ Short Notes</span>
-                            </button>
-                        </div>
-
-                        {/* Direct Module Quiz Launcher */}
+                        {/* Direct Module Quiz Button */}
                         <button
                             onClick={handleOpenQuiz}
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition"
+                            className="bg-[#ff5733] hover:bg-orange-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-md transition"
                         >
-                            <HelpCircle className="w-4 h-4" />
-                            <span className="hidden sm:inline">Module Quiz</span>
+                            <Zap className="w-4 h-4 fill-white" />
+                            <span>Module Quiz</span>
                         </button>
 
                         <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition">
@@ -167,187 +124,228 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                     </div>
                 </header>
 
-                {/* Main Split Body: Left Viewer (60%) + Right AI Tools (40%) */}
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden min-h-0">
-                    {/* Left Stage (Document Notes Reader) */}
-                    <div className="lg:col-span-7 bg-slate-950 border-r border-slate-800 p-6 flex flex-col justify-between overflow-y-auto">
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full overflow-y-auto text-slate-200 text-xs font-sans leading-relaxed shadow-inner">
-                            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800 text-slate-400">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-white">
-                                        {viewMode === 'short' ? '⚡ Short Revision Notes' : '📄 Full Course Notes'}
-                                    </span>
-                                    {viewMode === 'short' && (
-                                        <span className="text-[10px] bg-orange-950 text-orange-400 border border-orange-800 px-2 py-0.5 rounded font-extrabold">
-                                            Quick Exam Revision
-                                        </span>
-                                    )}
-                                </div>
-                                <span>{matchedModule.unit} · {matchedModule.readTime}</span>
+                {/* Sub-Header AI Navigation Toolbar */}
+                <div className="px-6 py-3 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between gap-4 overflow-x-auto shrink-0">
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setActiveAiTool('notes')}
+                            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
+                                activeAiTool === 'notes'
+                                    ? 'bg-slate-800 text-white shadow-xs border border-slate-700'
+                                    : 'bg-slate-900 text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            <BookOpen className="w-4 h-4 text-cyan-400" />
+                            <span>Full Notes</span>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveAiTool('summary')}
+                            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
+                                activeAiTool === 'summary'
+                                    ? 'bg-[#ff5733] text-white shadow-xs'
+                                    : 'bg-slate-900 text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            <Zap className="w-4 h-4 fill-current text-amber-300" />
+                            <span>⚡ Summarize / Short Notes</span>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveAiTool('ask-ai')}
+                            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
+                                activeAiTool === 'ask-ai'
+                                    ? 'bg-purple-600 text-white shadow-xs'
+                                    : 'bg-slate-900 text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            <Bot className="w-4 h-4 text-purple-300" />
+                            <span>🤖 Ask AI</span>
+                        </button>
+
+                        <button
+                            onClick={handleGenerateFlashcards}
+                            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-1.5 ${
+                                activeAiTool === 'flashcards'
+                                    ? 'bg-amber-600 text-white shadow-xs'
+                                    : 'bg-slate-900 text-slate-400 hover:text-white'
+                            }`}
+                        >
+                            <Sparkles className="w-4 h-4 text-amber-300" />
+                            <span>🎴 Flashcards</span>
+                        </button>
+                    </div>
+
+                    <span className="text-xs text-slate-400 font-semibold hidden md:inline">
+                        {matchedModule.readTime} · 100% Fullscreen View
+                    </span>
+                </div>
+
+                {/* Main Fullscreen Stage */}
+                <div className="flex-1 bg-slate-950 p-4 md:p-6 overflow-y-auto min-h-0">
+                    
+                    {/* VIEW 1: Full Course Notes (100% Width) */}
+                    {activeAiTool === 'notes' && (
+                        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 text-slate-200 text-xs md:text-sm font-sans leading-relaxed shadow-inner max-w-6xl mx-auto space-y-6">
+                            <div className="flex items-center justify-between pb-4 border-b border-slate-800 text-slate-400">
+                                <span className="font-extrabold text-white text-sm">📄 Full Course Curriculum Notes</span>
+                                <span className="text-xs text-orange-400 font-bold">{matchedModule.unit}</span>
                             </div>
 
-                            {/* Rendered Notes Content */}
                             <div className="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-200 leading-relaxed space-y-2">
-                                {viewMode === 'short' ? matchedModule.shortNotes : matchedModule.fullNotes}
+                                {matchedModule.fullNotes}
                             </div>
 
                             {/* Quiz Prompt Callout Banner */}
-                            <div className="bg-gradient-to-r from-orange-950/60 to-purple-950/60 border border-orange-800/60 rounded-2xl p-4 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div className="bg-gradient-to-r from-orange-950/60 to-purple-950/60 border border-orange-800/60 rounded-2xl p-5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
                                 <div>
-                                    <h4 className="font-extrabold text-orange-400 text-sm">🎉 Completed {matchedModule.unit}?</h4>
-                                    <p className="text-xs text-slate-300">Test your mastery of {matchedModule.title} in the Quiz feature!</p>
+                                    <h4 className="font-extrabold text-orange-400 text-sm md:text-base">🎉 Completed {matchedModule.unit}?</h4>
+                                    <p className="text-xs text-slate-300">Test your mastery of {matchedModule.title} in the official Quiz feature!</p>
                                 </div>
                                 <button
                                     onClick={handleOpenQuiz}
-                                    className="bg-[#ff5733] hover:bg-orange-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-md transition shrink-0 flex items-center gap-1.5"
+                                    className="bg-[#ff5733] hover:bg-orange-600 text-white font-extrabold text-xs px-5 py-3 rounded-xl shadow-md transition shrink-0 flex items-center gap-2"
                                 >
                                     <Zap className="w-4 h-4 fill-white" />
                                     <span>Start Module Quiz →</span>
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Right Panel: ✨ Contextual AI Study Tools (40%) */}
-                    <div className="lg:col-span-5 bg-slate-900 flex flex-col justify-between overflow-hidden">
-                        {/* Contextual AI Tool Buttons */}
-                        <div className="p-4 border-b border-slate-800 bg-slate-950 flex items-center gap-2 overflow-x-auto shrink-0">
-                            <button
-                                onClick={() => setActiveAiTool('ask-ai')}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
-                                    activeAiTool === 'ask-ai' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-900 text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                <Bot className="w-3.5 h-3.5" />
-                                <span>Ask AI</span>
-                            </button>
-
-                            <button
-                                onClick={() => handleTriggerAiTool('summary')}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
-                                    activeAiTool === 'summary' ? 'bg-purple-600 text-white shadow-xs' : 'bg-slate-900 text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                <Sparkles className="w-3.5 h-3.5" />
-                                <span>Summarize</span>
-                            </button>
-
-                            <button
-                                onClick={() => handleTriggerAiTool('notes')}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
-                                    activeAiTool === 'notes' ? 'bg-blue-600 text-white shadow-xs' : 'bg-slate-900 text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                <FileText className="w-3.5 h-3.5" />
-                                <span>AI Notes</span>
-                            </button>
-
-                            <button
-                                onClick={() => handleTriggerAiTool('flashcards')}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
-                                    activeAiTool === 'flashcards' ? 'bg-amber-600 text-white shadow-xs' : 'bg-slate-900 text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                <Zap className="w-3.5 h-3.5" />
-                                <span>Flashcards</span>
-                            </button>
-
-                            <button
-                                onClick={() => handleTriggerAiTool('explain')}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
-                                    activeAiTool === 'explain' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-slate-900 text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                <BookOpen className="w-3.5 h-3.5" />
-                                <span>Explain</span>
-                            </button>
-                        </div>
-
-                        {/* Tool Display Workspace */}
-                        <div className="flex-1 p-4 overflow-y-auto">
-                            {/* Option A: Ask AI Chat Mode */}
-                            {activeAiTool === 'ask-ai' && (
-                                <div className="flex flex-col h-full justify-between space-y-4">
-                                    <div className="space-y-3 overflow-y-auto max-h-[50vh] pr-1">
-                                        {chatHistory.map((m, idx) => (
-                                            <div
-                                                key={idx}
-                                                className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
-                                                    m.role === 'user'
-                                                        ? 'bg-[#ff5733] text-white ml-8 font-medium'
-                                                        : 'bg-slate-950 text-slate-200 border border-slate-800 mr-4'
-                                                }`}
-                                            >
-                                                {m.role === 'ai' && (
-                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-orange-400 mb-1">
-                                                        <Sparkles className="w-3 h-3" /> StudySpirit AI Assistant
-                                                    </div>
-                                                )}
-                                                {m.content}
-                                            </div>
-                                        ))}
-                                        {isAiLoading && (
-                                            <div className="flex items-center gap-2 text-xs text-orange-400 font-medium p-2">
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                <span>Reading module notes & generating answer...</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Q&A Input Prompt */}
-                                    <div className="pt-3 border-t border-slate-800">
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={aiQuestion}
-                                                onChange={(e) => setAiQuestion(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && handleAskAi()}
-                                                placeholder="Ask anything about Python Module 1, 2, or 3..."
-                                                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#ff5733]"
-                                            />
-                                            <button
-                                                onClick={handleAskAi}
-                                                disabled={isAiLoading || !aiQuestion.trim()}
-                                                className="bg-[#ff5733] hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-xs p-2.5 rounded-xl transition"
-                                            >
-                                                <Send className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
+                    {/* VIEW 2: Summarize / Short Notes (100% Width) */}
+                    {activeAiTool === 'summary' && (
+                        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 text-slate-200 text-xs md:text-sm font-sans leading-relaxed shadow-inner max-w-5xl mx-auto space-y-6">
+                            <div className="flex items-center justify-between pb-4 border-b border-slate-800 text-slate-400">
+                                <div className="flex items-center gap-2">
+                                    <Zap className="w-5 h-5 text-orange-400 fill-orange-400" />
+                                    <span className="font-extrabold text-white text-base">⚡ Short Revision Notes & Module Summary</span>
                                 </div>
-                            )}
+                                <span className="text-xs bg-orange-950 text-orange-400 border border-orange-800 px-3 py-1 rounded-full font-bold">
+                                    Exam Cram Kit
+                                </span>
+                            </div>
 
-                            {/* Option B: AI Tool Generated Output */}
-                            {activeAiTool !== 'ask-ai' && (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-orange-400 uppercase tracking-wider">
-                                            {activeAiTool.toUpperCase()} GENERATOR
-                                        </span>
-                                        {aiResultText && (
-                                            <button
-                                                onClick={() => navigator.clipboard.writeText(aiResultText)}
-                                                className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1"
-                                            >
-                                                <Copy className="w-3.5 h-3.5" /> Copy
-                                            </button>
+                            <div className="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-200 leading-relaxed space-y-3 bg-slate-950/70 p-6 rounded-2xl border border-slate-800">
+                                {matchedModule.shortNotes}
+                            </div>
+
+                            <div className="pt-4 flex justify-end">
+                                <button
+                                    onClick={handleOpenQuiz}
+                                    className="bg-[#ff5733] hover:bg-orange-600 text-white font-extrabold text-xs px-6 py-3 rounded-xl shadow-md transition flex items-center gap-2"
+                                >
+                                    <Zap className="w-4 h-4 fill-white" />
+                                    <span>Take Module Quiz →</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* VIEW 3: Ask AI Tutor (100% Width connected to backend Groq API) */}
+                    {activeAiTool === 'ask-ai' && (
+                        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-4xl mx-auto flex flex-col h-[75vh] justify-between shadow-2xl">
+                            <div className="pb-3 border-b border-slate-800 flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-purple-400 font-bold text-sm">
+                                    <Bot className="w-5 h-5" />
+                                    <span>Ask StudySpirit AI Tutor</span>
+                                </div>
+                                <span className="text-[11px] text-slate-400">Connected to GROQ AI Engine</span>
+                            </div>
+
+                            {/* Chat Log */}
+                            <div className="flex-1 overflow-y-auto py-4 space-y-3 pr-2">
+                                {chatHistory.map((m, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`p-4 rounded-2xl text-xs md:text-sm leading-relaxed ${
+                                            m.role === 'user'
+                                                ? 'bg-[#ff5733] text-white ml-12 font-medium shadow-sm'
+                                                : 'bg-slate-950 text-slate-200 border border-slate-800 mr-12'
+                                        }`}
+                                    >
+                                        {m.role === 'ai' && (
+                                            <div className="flex items-center gap-1.5 text-xs font-extrabold text-orange-400 mb-1.5">
+                                                <Sparkles className="w-3.5 h-3.5" /> StudySpirit AI Tutor
+                                            </div>
                                         )}
+                                        <div className="whitespace-pre-wrap">{m.content}</div>
                                     </div>
+                                ))}
+                                {isAiLoading && (
+                                    <div className="flex items-center gap-2 text-xs text-orange-400 font-medium p-3 bg-slate-950/50 rounded-xl border border-slate-800">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Analyzing module notes & formulating AI answer...</span>
+                                    </div>
+                                )}
+                            </div>
 
-                                    {isAiLoading ? (
-                                        <div className="py-12 text-center space-y-2">
-                                            <Loader2 className="w-6 h-6 animate-spin text-orange-500 mx-auto" />
-                                            <p className="text-xs text-slate-400 font-medium">Generating {activeAiTool} from module notes...</p>
+                            {/* Q&A Input Box */}
+                            <div className="pt-3 border-t border-slate-800">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={aiQuestion}
+                                        onChange={(e) => setAiQuestion(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAskAi()}
+                                        placeholder={`Ask any doubt about ${matchedModule.title}...`}
+                                        className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs md:text-sm text-white focus:outline-none focus:border-[#ff5733]"
+                                    />
+                                    <button
+                                        onClick={handleAskAi}
+                                        disabled={isAiLoading || !aiQuestion.trim()}
+                                        className="bg-[#ff5733] hover:bg-orange-600 disabled:opacity-50 text-white font-extrabold text-xs px-5 py-3 rounded-xl transition flex items-center gap-1.5"
+                                    >
+                                        <span>Ask</span>
+                                        <Send className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* VIEW 4: Flashcards */}
+                    {activeAiTool === 'flashcards' && (
+                        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-4xl mx-auto space-y-6">
+                            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                                <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-amber-400" />
+                                    <span>AI Revision Flashcards ({matchedModule.unit})</span>
+                                </h3>
+                                <button
+                                    onClick={handleGenerateFlashcards}
+                                    className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 font-bold"
+                                >
+                                    Regenerate Cards
+                                </button>
+                            </div>
+
+                            {isAiLoading ? (
+                                <div className="py-16 text-center space-y-2">
+                                    <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto" />
+                                    <p className="text-xs text-slate-400">Generating flashcards from module notes...</p>
+                                </div>
+                            ) : flashcardsList.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {flashcardsList.map((card, i) => (
+                                        <div key={i} className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-xs">
+                                            <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-800 px-2 py-0.5 rounded">
+                                                Card {i + 1}
+                                            </span>
+                                            <h4 className="font-bold text-white text-xs leading-snug">{card.front || card.question}</h4>
+                                            <p className="text-xs text-slate-300 bg-slate-900 p-3 rounded-xl border border-slate-850">
+                                                {card.back || card.answer}
+                                            </p>
                                         </div>
-                                    ) : (
-                                        <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs font-mono text-slate-200 leading-relaxed max-h-[55vh] overflow-y-auto whitespace-pre-wrap">
-                                            {aiResultText || 'Click a tool above to generate AI notes, flashcards, or a summary.'}
-                                        </div>
-                                    )}
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-12 text-center text-slate-400 text-xs">
+                                    Click "Regenerate Cards" to generate AI flashcards.
                                 </div>
                             )}
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

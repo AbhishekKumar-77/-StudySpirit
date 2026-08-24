@@ -122,39 +122,78 @@ exports.deleteResource = async (req, res) => {
     }
 };
 
+// Helper for calling Groq API
+const callGroqAPI = async (messages, maxTokens = 1500) => {
+    const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
+    if (!GROQ_API_KEY) {
+        throw new Error("GROQ_API_KEY_RESOURCE is missing from .env file");
+    }
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages,
+            temperature: 0.5,
+            max_tokens: maxTokens
+        })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error?.message || `Groq API Error: ${response.statusText}`);
+    }
+    return data.choices?.[0]?.message?.content || "";
+};
+
+// Grounded AI Q&A for Study Resources
+exports.askAIAboutResource = async (req, res) => {
+    try {
+        const { question, resourceTitle, resourceContent } = req.body;
+        if (!question || !question.trim()) {
+            return res.status(400).json({ success: false, message: "Question is required." });
+        }
+
+        const messages = [
+            {
+                role: "system",
+                content: `You are an expert AI Academic Tutor for StudySpirit. Provide concise, clear, and encouraging answers to the student's question based on the provided study module notes.`
+            },
+            {
+                role: "user",
+                content: `Module Title: ${resourceTitle || 'Python Programming'}
+Module Notes:
+${(resourceContent || '').substring(0, 3500)}
+
+Student Question: ${question}`
+            }
+        ];
+
+        const answer = await callGroqAPI(messages, 1000);
+        res.json({ success: true, answer });
+    } catch (error) {
+        console.error("Ask AI Resource Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // Generate AI Notes
 exports.generateNotes = async (req, res) => {
     try {
         const { topic, content } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
-
-        if (!GROQ_API_KEY) {
-            return res.status(500).json({ success: false, message: "Groq API Key missing." });
-        }
 
         const prompt = `Create comprehensive study notes for the topic: "${topic}".
         Context/Content: "${content || 'General knowledge'}".
         Format the output in clear Markdown with headers, bullet points, and a summary.`;
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
-                messages: [
-                    { role: "system", content: "You are an expert academic tutor." },
-                    { role: "user", content: prompt }
-                ],
-                temperature: 0.5,
-                max_tokens: 2000
-            })
-        });
-
-        const data = await response.json();
-        const generatedText = data.choices?.[0]?.message?.content || "Failed to generate notes.";
+        const generatedText = await callGroqAPI([
+            { role: "system", content: "You are an expert academic tutor." },
+            { role: "user", content: prompt }
+        ], 2000);
 
         res.json({ success: true, result: generatedText });
 
@@ -168,26 +207,12 @@ exports.generateNotes = async (req, res) => {
 exports.explainConcept = async (req, res) => {
     try {
         const { topic } = req.body;
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_RESOURCE || process.env.GROQ_API_KEY;
 
-        if (!GROQ_API_KEY) return res.status(500).json({ success: false, message: "Groq API Key missing." });
+        const prompt = `Explain "${topic}" in simple terms as if I am a beginner. Use analogies. Format the answer with clear bullet points, numbered steps, or short paragraphs.`;
 
-        const prompt = `Explain "${topic}" in simple terms as if I am a 5-year-old or a beginner. Use analogies. Format the answer with clear bullet points, numbered steps, or short paragraphs on separate lines. Do not produce a single large block of text.`;
-
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
-                messages: [{ role: "user", content: prompt }]
-            })
-        });
-
-        const data = await response.json();
-        const generatedText = data.choices?.[0]?.message?.content || "Failed to explain.";
+        const generatedText = await callGroqAPI([
+            { role: "user", content: prompt }
+        ], 1500);
 
         res.json({ success: true, result: generatedText });
 
