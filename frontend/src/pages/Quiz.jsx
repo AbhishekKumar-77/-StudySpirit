@@ -51,6 +51,7 @@ import {
 export default function StudySprintQuiz() {
     const { user } = useApp();
     const navigate = useNavigate();
+    const location = useLocation();
     usePageTracker('Quizzes', '/quiz', '📝');
     const [searchParams] = useSearchParams();
     // Preview mode: teacher opened exam with ?preview=1 to see it as a student would
@@ -63,6 +64,25 @@ export default function StudySprintQuiz() {
     const isForcedTeacherMode = searchParams.get('mode') === 'teacher';
     const [activeTab, setActiveTab] = useState((user?.role === 'teacher' || isForcedTeacherMode) ? "teacher" : "dashboard");
     const [activeRunnerSession, setActiveRunnerSession] = useState(null); // active QuestionPlayer session
+
+    // Auto-launch Python Module Quiz when coming from Study Resources
+    useEffect(() => {
+        if (location.state?.module || location.state?.subject) {
+            const modName = (location.state.module || '').toLowerCase();
+            let qSet = PYTHON_MODULE_1_QUESTIONS;
+            if (modName.includes('2') || modName.includes('variable')) qSet = PYTHON_MODULE_2_VARIABLES_QUESTIONS;
+            if (modName.includes('3') || modName.includes('data')) qSet = PYTHON_MODULE_2_DATA_QUESTIONS;
+
+            setAiQuestions(qSet);
+            setPracticeStarted(true);
+            setPracticeFinished(false);
+            setPracticeIndex(0);
+            setPracticeScore(0);
+            setPracticeAnswered(false);
+            setStudentPracticeTopic(location.state.title || `${location.state.subject} - ${location.state.module}`);
+            setActiveTab("practice");
+        }
+    }, [location.state]);
 
     // Teacher Mode
     const [questions, setQuestions] = useState([]);

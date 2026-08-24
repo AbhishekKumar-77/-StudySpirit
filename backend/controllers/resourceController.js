@@ -523,149 +523,124 @@ exports.getHubOverview = async (req, res) => {
     try {
         const userId = req.user ? req.user._id : null;
 
-        // Sample / Database Courses
+        // Python Programming Courses & Modules
         const courses = [
             {
-                id: 'course-cse101',
-                code: 'CSE101',
-                name: 'Database Management Systems',
-                resourceCount: 24,
-                resourceBreakdown: '8 Notes · 6 Videos · 5 PDFs · 5 Others',
-                progress: 68,
-                color: 'from-purple-600 to-indigo-600'
-            },
-            {
-                id: 'course-cse202',
-                code: 'CSE202',
-                name: 'Operating Systems',
-                resourceCount: 18,
-                resourceBreakdown: '5 Notes · 7 Videos · 4 PDFs · 2 Papers',
-                progress: 42,
-                color: 'from-blue-600 to-cyan-600'
-            },
-            {
-                id: 'course-cse301',
-                code: 'CSE301',
-                name: 'Computer Networks',
-                resourceCount: 32,
-                resourceBreakdown: '10 Notes · 12 Videos · 6 PDFs · 4 Papers',
-                progress: 81,
-                color: 'from-emerald-600 to-teal-600'
+                id: 'course-cse105',
+                code: 'CSE105',
+                name: 'Python Programming',
+                resourceCount: 15,
+                resourceBreakdown: '3 Module Notes · 5 Practice Sets · 4 Code Walkthroughs · 3 Quizzes',
+                progress: 45,
+                color: 'from-orange-500 to-amber-600'
             },
             {
                 id: 'course-cse102',
                 code: 'CSE102',
                 name: 'Data Structures & Algorithms',
-                resourceCount: 29,
-                resourceBreakdown: '9 Notes · 10 Videos · 5 PDFs · 5 Question Banks',
-                progress: 75,
-                color: 'from-pink-600 to-rose-600'
+                resourceCount: 18,
+                resourceBreakdown: '6 Notes · 6 Videos · 4 Practice Sets · 2 Quizzes',
+                progress: 60,
+                color: 'from-blue-600 to-cyan-600'
             }
         ];
 
-        // Continue Learning (Recent Items with progress)
+        // Continue Learning (Python Modules)
         const continueLearning = [
             {
-                id: 'res-norm-notes',
-                title: 'Database Normalization Notes',
-                courseCode: 'CSE101',
-                unit: 'Unit 3',
-                type: 'PDF',
-                progressPercent: 68,
-                readTime: '8 min read',
-                pageCount: 24,
+                id: 'py-mod-1',
+                title: 'Module 1 — Introduction to Programming',
+                courseCode: 'CSE105',
+                unit: 'Module 1',
+                type: 'NOTE',
+                progressPercent: 100,
+                readTime: '12 min read',
+                pageCount: 18,
                 verified: true,
-                verificationBadge: 'Teacher Verified'
+                verificationBadge: 'Official Curriculum'
             },
             {
-                id: 'res-nosql-video',
-                title: 'Understanding 1NF, 2NF & 3NF',
-                courseCode: 'CSE101',
-                unit: 'Unit 3',
-                type: 'VIDEO',
-                progressPercent: 32,
-                duration: '18:42',
-                uploadedBy: 'Prof. Sharma',
+                id: 'py-mod-2',
+                title: 'Module 2 — Variables & Objects',
+                courseCode: 'CSE105',
+                unit: 'Module 2',
+                type: 'NOTE',
+                progressPercent: 40,
+                readTime: '10 min read',
+                pageCount: 16,
                 verified: true,
-                verificationBadge: 'Teacher Verified'
+                verificationBadge: 'Official Curriculum'
             },
             {
-                id: 'res-cap-bank',
-                title: 'CAP Theorem & NoSQL Practice Questions',
-                courseCode: 'CSE101',
-                unit: 'Unit 4',
-                type: 'QUESTION_BANK',
-                progressPercent: 60,
-                questionCount: 40,
+                id: 'py-mod-3',
+                title: 'Module 3 — Data Types & Collections',
+                courseCode: 'CSE105',
+                unit: 'Module 3',
+                type: 'NOTE',
+                progressPercent: 0,
+                readTime: '15 min read',
+                pageCount: 22,
                 verified: true,
-                verificationBadge: 'Institution Resource'
+                verificationBadge: 'Official Curriculum'
             }
         ];
 
         // Recommended Resources
         const recommended = [
             {
-                id: 'res-norm-simp',
-                title: 'Normalization Simplified Notes',
-                courseCode: 'CSE101',
-                unit: 'Unit 3',
-                type: 'PDF',
-                readTime: '6 min read',
-                pageCount: 14,
+                id: 'py-mod-1',
+                title: 'Module 1 — Introduction to Programming',
+                courseCode: 'CSE105',
+                unit: 'Module 1',
+                type: 'NOTE',
+                readTime: '12 min read',
+                pageCount: 18,
                 verified: true,
-                verificationBadge: 'Faculty Verified'
+                verificationBadge: 'Official Curriculum'
             },
             {
-                id: 'res-norm-lec',
-                title: '18-min Normalization Masterclass',
-                courseCode: 'CSE101',
-                unit: 'Unit 3',
-                type: 'VIDEO',
-                duration: '18:15',
-                uploadedBy: 'Prof. Singh',
+                id: 'py-mod-2',
+                title: 'Module 2 — Variables',
+                courseCode: 'CSE105',
+                unit: 'Module 2',
+                type: 'NOTE',
+                readTime: '10 min read',
+                pageCount: 16,
                 verified: true,
-                verificationBadge: 'Teacher Verified'
+                verificationBadge: 'Official Curriculum'
             },
             {
-                id: 'res-exam-paper-2025',
-                title: 'DBMS Previous Year Paper 2025',
-                courseCode: 'CSE101',
-                unit: 'Midterm',
-                type: 'PREVIOUS_PAPER',
-                pageCount: 8,
+                id: 'py-mod-3',
+                title: 'Module 3 — Data Types',
+                courseCode: 'CSE105',
+                unit: 'Module 3',
+                type: 'NOTE',
+                readTime: '15 min read',
+                pageCount: 22,
                 verified: true,
-                verificationBadge: 'Institution Resource'
+                verificationBadge: 'Official Curriculum'
             }
         ];
 
         // Recently Added Feed
         const recentlyAdded = [
             {
-                id: 'res-os-u4',
-                title: 'Operating Systems Unit 4 Notes',
-                courseCode: 'CSE202',
-                unit: 'Unit 4',
+                id: 'py-mod-3',
+                title: 'Module 3 — Data Types & Collections',
+                courseCode: 'CSE105',
+                unit: 'Module 3',
                 type: 'NOTE',
-                addedBy: 'Prof. Sharma',
-                createdAt: new Date(Date.now() - 3600000 * 5)
+                addedBy: 'Department of Computer Science',
+                createdAt: new Date(Date.now() - 3600000 * 2)
             },
             {
-                id: 'res-db-2025',
-                title: 'DBMS Previous Year Paper 2025',
-                courseCode: 'CSE101',
-                unit: 'Midterm',
-                type: 'PREVIOUS_PAPER',
-                addedBy: 'Department of CSE',
-                createdAt: new Date(Date.now() - 3600000 * 18)
-            },
-            {
-                id: 'res-mongo-lec7',
-                title: 'MongoDB Sharding & Replica Sets',
-                courseCode: 'CSE101',
-                unit: 'Unit 4',
-                type: 'VIDEO',
-                addedBy: 'Prof. Singh',
-                createdAt: new Date(Date.now() - 3600000 * 24)
+                id: 'py-mod-2',
+                title: 'Module 2 — Variables & Memory Model',
+                courseCode: 'CSE105',
+                unit: 'Module 2',
+                type: 'NOTE',
+                addedBy: 'Department of Computer Science',
+                createdAt: new Date(Date.now() - 3600000 * 12)
             }
         ];
 
@@ -688,43 +663,31 @@ exports.getCourseDetails = async (req, res) => {
         const { courseId } = req.params;
 
         const courseInfo = {
-            id: courseId || 'course-cse101',
-            code: 'CSE101',
-            name: 'Database Management Systems',
-            progress: 68,
-            resourceCount: 24,
+            id: courseId || 'course-cse105',
+            code: 'CSE105',
+            name: 'Python Programming',
+            progress: 55,
+            resourceCount: 15,
             topics: [
                 {
-                    title: '01 Introduction',
+                    title: 'Module 1 — Introduction to Programming',
                     resources: [
-                        { id: 'c1-r1', title: 'DBMS Introduction & Architecture Notes', type: 'PDF', pageCount: 16, readTime: '5 min', verified: true, verificationBadge: 'Teacher Verified' },
-                        { id: 'c1-r2', title: 'Introduction to DBMS Lecture', type: 'VIDEO', duration: '22:15', uploadedBy: 'Prof. Sharma', verified: true, verificationBadge: 'Teacher Verified' },
-                        { id: 'c1-r3', title: 'DBMS Fundamentals Practice Questions', type: 'QUESTION_BANK', questionCount: 25, verified: true, verificationBadge: 'Institution Resource' }
+                        { id: 'py-mod-1', title: 'Module 1 — Introduction to Programming', type: 'NOTE', pageCount: 18, readTime: '12 min', verified: true, verificationBadge: 'Official Curriculum' },
+                        { id: 'py-quiz-1', title: 'Module 1 Practice Quiz — Fundamentals', type: 'QUESTION_BANK', questionCount: 15, verified: true, verificationBadge: 'Self-Assessment' }
                     ]
                 },
                 {
-                    title: '02 ER Model',
+                    title: 'Module 2 — Variables',
                     resources: [
-                        { id: 'c2-r1', title: 'Entity-Relationship Model Complete Notes', type: 'PDF', pageCount: 20, readTime: '7 min', verified: true, verificationBadge: 'Teacher Verified' },
-                        { id: 'c2-r2', title: 'ER Diagram Design & Cardinality Lecture', type: 'VIDEO', duration: '28:40', uploadedBy: 'Prof. Sharma', verified: true, verificationBadge: 'Teacher Verified' },
-                        { id: 'c2-r3', title: 'ER Diagram Practice Question Bank', type: 'QUESTION_BANK', questionCount: 30, verified: true, verificationBadge: 'Institution Resource' }
+                        { id: 'py-mod-2', title: 'Module 2 — Variables & Memory Model', type: 'NOTE', pageCount: 16, readTime: '10 min', verified: true, verificationBadge: 'Official Curriculum' },
+                        { id: 'py-quiz-2', title: 'Module 2 Practice Quiz — Variables', type: 'QUESTION_BANK', questionCount: 15, verified: true, verificationBadge: 'Self-Assessment' }
                     ]
                 },
                 {
-                    title: '03 Normalization',
+                    title: 'Module 3 — Data Types',
                     resources: [
-                        { id: 'c3-r1', title: 'Database Normalization Notes (1NF to BCNF)', type: 'PDF', pageCount: 24, readTime: '8 min', verified: true, verificationBadge: 'Teacher Verified', fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
-                        { id: 'c3-r2', title: 'Understanding 1NF, 2NF & 3NF Lecture', type: 'VIDEO', duration: '18:42', uploadedBy: 'Prof. Sharma', verified: true, verificationBadge: 'Teacher Verified' },
-                        { id: 'c3-r3', title: 'Functional Dependency & Normalization Practice', type: 'QUESTION_BANK', questionCount: 40, verified: true, verificationBadge: 'Institution Resource' },
-                        { id: 'c3-r4', title: 'Normalization Previous Exam Questions (2020-2025)', type: 'PREVIOUS_PAPER', pageCount: 12, verified: true, verificationBadge: 'Faculty Verified' }
-                    ]
-                },
-                {
-                    title: '04 NoSQL & Transaction Management',
-                    resources: [
-                        { id: 'c4-r1', title: 'MongoDB & NoSQL Architecture Notes', type: 'PDF', pageCount: 18, readTime: '6 min', verified: true, verificationBadge: 'Teacher Verified' },
-                        { id: 'c4-r2', title: 'CAP Theorem & Distributed Databases', type: 'VIDEO', duration: '19:10', uploadedBy: 'Prof. Singh', verified: true, verificationBadge: 'Teacher Verified' },
-                        { id: 'c4-r3', title: 'ACID Properties & Concurrency Control Practice', type: 'QUESTION_BANK', questionCount: 35, verified: true, verificationBadge: 'Institution Resource' }
+                        { id: 'py-mod-3', title: 'Module 3 — Data Types & Collections', type: 'NOTE', pageCount: 22, readTime: '15 min', verified: true, verificationBadge: 'Official Curriculum' },
+                        { id: 'py-quiz-3', title: 'Module 3 Practice Quiz — Data Types', type: 'QUESTION_BANK', questionCount: 20, verified: true, verificationBadge: 'Self-Assessment' }
                     ]
                 }
             ]

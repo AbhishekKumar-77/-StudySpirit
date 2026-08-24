@@ -1,22 +1,50 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     X, Sparkles, Send, FileText, Video, HelpCircle, BookOpen, Layers,
-    Zap, CheckCircle2, Copy, Download, Loader2, ArrowLeft, Bot, MessageSquare
+    Zap, CheckCircle2, Copy, Download, Loader2, ArrowLeft, Bot, MessageSquare, Flame
 } from 'lucide-react';
 import resourceApi from '../../services/resourceApi';
+import { PYTHON_MODULES } from '../../data/pythonModulesData';
 
 export default function ResourceViewerModal({ resource, onClose, onSaveToggle, isSaved }) {
-    const [activeAiTool, setActiveAiTool] = useState('ask-ai'); // 'ask-ai', 'summary', 'notes', 'flashcards', 'explain', 'quiz'
+    const navigate = useNavigate();
+
+    // Find matching Python module from data
+    const matchedModule = PYTHON_MODULES.find(m =>
+        m.id === resource?.id ||
+        (resource?.unit && m.unit.toLowerCase().includes(resource.unit.toLowerCase())) ||
+        (resource?.title && m.title.toLowerCase().includes(resource.title.toLowerCase())) ||
+        (resource?.name && m.title.toLowerCase().includes(resource.name.toLowerCase()))
+    ) || PYTHON_MODULES[0];
+
+    // Mode: 'full' (Detailed Notes) or 'short' (Short Revision Notes)
+    const [viewMode, setViewMode] = useState('full');
+
+    // Right AI Tools Panel State
+    const [activeAiTool, setActiveAiTool] = useState('ask-ai'); // 'ask-ai', 'summary', 'notes', 'flashcards', 'explain'
     const [aiQuestion, setAiQuestion] = useState('');
     const [chatHistory, setChatHistory] = useState([
-        { role: 'ai', content: `Hello! I am your AI Study Assistant for "${resource?.title || resource?.name || 'this resource'}". Ask me anything or click a tool above to generate notes, flashcards, or a summary!` }
+        { role: 'ai', content: `Hello! I am your AI Study Assistant for "${matchedModule.title}". Ask me anything or click a tool above to generate notes, flashcards, or explanations!` }
     ]);
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [aiResultText, setAiResultText] = useState('');
 
     const isVideo = (resource?.type || resource?.resourceType || '').toUpperCase() === 'VIDEO';
 
-    // Handle Grounded Q&A Chat ("Ask AI About This Resource")
+    // Open Module Quiz Action
+    const handleOpenQuiz = () => {
+        navigate('/quiz', {
+            state: {
+                subject: 'Python Programming',
+                module: matchedModule.unit,
+                title: matchedModule.title
+            }
+        });
+        if (onClose) onClose();
+    };
+
+    // Handle Grounded Q&A Chat
     const handleAskAi = async () => {
         if (!aiQuestion.trim() || isAiLoading) return;
         const qText = aiQuestion.trim();
@@ -26,9 +54,9 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
 
         try {
             const data = await resourceApi.askAIAboutResource({
-                resourceId: resource?.id,
-                resourceTitle: resource?.title || resource?.name,
-                resourceContent: resource?.content || resource?.description,
+                resourceId: matchedModule.id,
+                resourceTitle: matchedModule.title,
+                resourceContent: matchedModule.fullNotes,
                 question: qText
             });
 
@@ -52,25 +80,23 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
         try {
             if (toolName === 'summary' || toolName === 'notes') {
                 const data = await resourceApi.generateNotes({
-                    topic: resource?.title || 'Resource Summary',
-                    content: resource?.content || resource?.description || 'Database Normalization 1NF 2NF 3NF BCNF'
+                    topic: matchedModule.title,
+                    content: matchedModule.fullNotes
                 });
                 if (data && data.result) setAiResultText(data.result);
             } else if (toolName === 'explain') {
                 const data = await resourceApi.explainConcept({
-                    topic: resource?.title || 'Normalization'
+                    topic: matchedModule.title
                 });
                 if (data && data.result) setAiResultText(data.result);
             } else if (toolName === 'flashcards') {
                 const data = await resourceApi.generateFlashcards({
-                    topic: resource?.title || 'Database Concepts',
+                    topic: matchedModule.title,
                     count: 8
                 });
                 if (data && data.flashcards) {
                     setAiResultText(JSON.stringify(data.flashcards, null, 2));
                 }
-            } else if (toolName === 'quiz') {
-                setAiResultText(`### Practice Quiz for ${resource?.title || 'Resource'}\n\n1. **What is the main goal of Normalization?**\n- A) Increase storage space\n- B) Eliminate data redundancy and update anomalies ✓\n- C) Speed up unindexed reads\n- D) Replace primary keys\n\n2. **Which normal form requires removing transitive functional dependencies?**\n- A) 1NF\n- B) 2NF\n- C) 3NF ✓\n- D) BCNF`);
             }
         } catch (err) {
             console.error('Tool error:', err);
@@ -90,22 +116,50 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div>
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-400">
-                                {resource?.courseCode || 'CSE101'} · {resource?.unit || 'Unit 3'}
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-400">
+                                {matchedModule.courseCode} · {matchedModule.unit}
                             </span>
                             <h2 className="text-base font-bold text-white leading-tight">
-                                {resource?.title || resource?.name || 'Resource Document'}
+                                {matchedModule.title}
                             </h2>
                         </div>
                     </div>
 
+                    {/* Header Controls & Short Notes / Quiz Buttons */}
                     <div className="flex items-center gap-3">
-                        {resource?.verificationBadge && (
-                            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-3 py-1 rounded-full">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                {resource.verificationBadge}
-                            </span>
-                        )}
+                        {/* View Mode Toggle: Full Notes vs Short Notes */}
+                        <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+                            <button
+                                onClick={() => setViewMode('full')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                                    viewMode === 'full'
+                                        ? 'bg-slate-800 text-white shadow-xs'
+                                        : 'text-slate-400 hover:text-slate-200'
+                                }`}
+                            >
+                                📖 Detailed Notes
+                            </button>
+                            <button
+                                onClick={() => setViewMode('short')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                                    viewMode === 'short'
+                                        ? 'bg-[#ff5733] text-white shadow-xs'
+                                        : 'text-orange-400 hover:text-orange-300'
+                                }`}
+                            >
+                                <Zap className="w-3.5 h-3.5 fill-current" />
+                                <span>⚡ Short Notes</span>
+                            </button>
+                        </div>
+
+                        {/* Direct Module Quiz Launcher */}
+                        <button
+                            onClick={handleOpenQuiz}
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition"
+                        >
+                            <HelpCircle className="w-4 h-4" />
+                            <span className="hidden sm:inline">Module Quiz</span>
+                        </button>
 
                         <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition">
                             <X className="w-5 h-5" />
@@ -115,54 +169,43 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
 
                 {/* Main Split Body: Left Viewer (60%) + Right AI Tools (40%) */}
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden min-h-0">
-                    {/* Left Stage (Document Preview / Video Player) */}
+                    {/* Left Stage (Document Notes Reader) */}
                     <div className="lg:col-span-7 bg-slate-950 border-r border-slate-800 p-6 flex flex-col justify-between overflow-y-auto">
-                        {isVideo ? (
-                            <div className="flex flex-col gap-4 h-full">
-                                {/* Video Player Frame */}
-                                <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-slate-800 relative flex items-center justify-center shadow-2xl">
-                                    <video
-                                        controls
-                                        className="w-full h-full object-cover"
-                                        poster={resource?.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=60'}
-                                    >
-                                        <source src={resource?.fileUrl || resource?.url} type="video/mp4" />
-                                        Your browser does not support the video tag.
-                                    </video>
+                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full overflow-y-auto text-slate-200 text-xs font-sans leading-relaxed shadow-inner">
+                            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800 text-slate-400">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-white">
+                                        {viewMode === 'short' ? '⚡ Short Revision Notes' : '📄 Full Course Notes'}
+                                    </span>
+                                    {viewMode === 'short' && (
+                                        <span className="text-[10px] bg-orange-950 text-orange-400 border border-orange-800 px-2 py-0.5 rounded font-extrabold">
+                                            Quick Exam Revision
+                                        </span>
+                                    )}
                                 </div>
-
-                                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-xs space-y-2">
-                                    <h3 className="font-bold text-white">Lecture Transcript & Highlights</h3>
-                                    <p className="text-slate-300 leading-relaxed">
-                                        "Welcome back to Database Systems. In today's lecture on Normalization, we explore 1NF, 2NF, 3NF and Boyce-Codd Normal Form (BCNF). Eliminating data redundancy ensures query efficiency..."
-                                    </p>
-                                </div>
+                                <span>{matchedModule.unit} · {matchedModule.readTime}</span>
                             </div>
-                        ) : (
-                            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full overflow-y-auto text-slate-200 text-xs font-mono leading-relaxed shadow-inner">
-                                <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800 text-slate-400">
-                                    <span className="font-bold text-white">📄 {resource?.title || 'Document Viewer'}</span>
-                                    <span>Page 1 of {resource?.pageCount || 24}</span>
-                                </div>
 
-                                <h2 className="text-base font-bold text-cyan-400 mb-3">Unit 3: Database Normalization (1NF to BCNF)</h2>
-                                <p className="mb-4">
-                                    Normalization is a systematic approach of decomposing tables to eliminate data redundancy and insertion, update, and deletion anomalies.
-                                </p>
-                                <h3 className="text-sm font-bold text-white mb-2">1. First Normal Form (1NF)</h3>
-                                <p className="mb-4">
-                                    A table is in 1NF if every column contains atomic (indivisible) values and each record is unique.
-                                </p>
-                                <h3 className="text-sm font-bold text-white mb-2">2. Second Normal Form (2NF)</h3>
-                                <p className="mb-4">
-                                    A table is in 2NF if it is in 1NF and all non-key attributes are fully functionally dependent on the primary key.
-                                </p>
-                                <h3 className="text-sm font-bold text-white mb-2">3. Third Normal Form (3NF)</h3>
-                                <p className="mb-4">
-                                    A table is in 3NF if it is in 2NF and no non-key attribute is transitively dependent on the primary key.
-                                </p>
+                            {/* Rendered Notes Content */}
+                            <div className="whitespace-pre-wrap font-sans text-xs md:text-sm text-slate-200 leading-relaxed space-y-2">
+                                {viewMode === 'short' ? matchedModule.shortNotes : matchedModule.fullNotes}
                             </div>
-                        )}
+
+                            {/* Quiz Prompt Callout Banner */}
+                            <div className="bg-gradient-to-r from-orange-950/60 to-purple-950/60 border border-orange-800/60 rounded-2xl p-4 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div>
+                                    <h4 className="font-extrabold text-orange-400 text-sm">🎉 Completed {matchedModule.unit}?</h4>
+                                    <p className="text-xs text-slate-300">Test your mastery of {matchedModule.title} in the Quiz feature!</p>
+                                </div>
+                                <button
+                                    onClick={handleOpenQuiz}
+                                    className="bg-[#ff5733] hover:bg-orange-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-md transition shrink-0 flex items-center gap-1.5"
+                                >
+                                    <Zap className="w-4 h-4 fill-white" />
+                                    <span>Start Module Quiz →</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right Panel: ✨ Contextual AI Study Tools (40%) */}
@@ -172,7 +215,7 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                             <button
                                 onClick={() => setActiveAiTool('ask-ai')}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
-                                    activeAiTool === 'ask-ai' ? 'bg-cyan-600 text-white shadow-xs' : 'bg-slate-900 text-slate-400 hover:text-white'
+                                    activeAiTool === 'ask-ai' ? 'bg-orange-600 text-white shadow-xs' : 'bg-slate-900 text-slate-400 hover:text-white'
                                 }`}
                             >
                                 <Bot className="w-3.5 h-3.5" />
@@ -231,12 +274,12 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                                                 key={idx}
                                                 className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
                                                     m.role === 'user'
-                                                        ? 'bg-cyan-600 text-white ml-8 font-medium'
+                                                        ? 'bg-[#ff5733] text-white ml-8 font-medium'
                                                         : 'bg-slate-950 text-slate-200 border border-slate-800 mr-4'
                                                 }`}
                                             >
                                                 {m.role === 'ai' && (
-                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-cyan-400 mb-1">
+                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-orange-400 mb-1">
                                                         <Sparkles className="w-3 h-3" /> StudySpirit AI Assistant
                                                     </div>
                                                 )}
@@ -244,9 +287,9 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                                             </div>
                                         ))}
                                         {isAiLoading && (
-                                            <div className="flex items-center gap-2 text-xs text-cyan-400 font-medium p-2">
+                                            <div className="flex items-center gap-2 text-xs text-orange-400 font-medium p-2">
                                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                                <span>Reading resource context & generating answer...</span>
+                                                <span>Reading module notes & generating answer...</span>
                                             </div>
                                         )}
                                     </div>
@@ -259,13 +302,13 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                                                 value={aiQuestion}
                                                 onChange={(e) => setAiQuestion(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && handleAskAi()}
-                                                placeholder="Ask anything about this resource..."
-                                                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500"
+                                                placeholder="Ask anything about Python Module 1, 2, or 3..."
+                                                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#ff5733]"
                                             />
                                             <button
                                                 onClick={handleAskAi}
                                                 disabled={isAiLoading || !aiQuestion.trim()}
-                                                className="bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white font-bold text-xs p-2.5 rounded-xl transition"
+                                                className="bg-[#ff5733] hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-xs p-2.5 rounded-xl transition"
                                             >
                                                 <Send className="w-4 h-4" />
                                             </button>
@@ -274,11 +317,11 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
                                 </div>
                             )}
 
-                            {/* Option B: AI Tool Generated Output (Summary / Notes / Flashcards / Explainer) */}
+                            {/* Option B: AI Tool Generated Output */}
                             {activeAiTool !== 'ask-ai' && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
+                                        <span className="text-xs font-bold text-orange-400 uppercase tracking-wider">
                                             {activeAiTool.toUpperCase()} GENERATOR
                                         </span>
                                         {aiResultText && (
@@ -293,8 +336,8 @@ export default function ResourceViewerModal({ resource, onClose, onSaveToggle, i
 
                                     {isAiLoading ? (
                                         <div className="py-12 text-center space-y-2">
-                                            <Loader2 className="w-6 h-6 animate-spin text-purple-500 mx-auto" />
-                                            <p className="text-xs text-slate-400 font-medium">Generating {activeAiTool} from resource content...</p>
+                                            <Loader2 className="w-6 h-6 animate-spin text-orange-500 mx-auto" />
+                                            <p className="text-xs text-slate-400 font-medium">Generating {activeAiTool} from module notes...</p>
                                         </div>
                                     ) : (
                                         <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs font-mono text-slate-200 leading-relaxed max-h-[55vh] overflow-y-auto whitespace-pre-wrap">

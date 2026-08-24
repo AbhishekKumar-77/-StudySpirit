@@ -89,24 +89,22 @@ export default function Resources() {
         return true;
     };
 
-    // Fallback data lists
+    // Python Curriculum Data Fallbacks
     const continueLearningList = hubData?.continueLearning || [
-        { id: 'res-norm-notes', title: 'Database Normalization Notes', courseCode: 'CSE101', unit: 'Unit 3', type: 'PDF', progressPercent: 68, readTime: '8 min read', pageCount: 24, verified: true, verificationBadge: 'Teacher Verified' },
-        { id: 'res-nosql-video', title: 'Understanding 1NF, 2NF & 3NF', courseCode: 'CSE101', unit: 'Unit 3', type: 'VIDEO', progressPercent: 32, duration: '18:42', uploadedBy: 'Prof. Sharma', verified: true, verificationBadge: 'Teacher Verified' },
-        { id: 'res-cap-bank', title: 'CAP Theorem & NoSQL Practice Questions', courseCode: 'CSE101', unit: 'Unit 4', type: 'QUESTION_BANK', progressPercent: 60, questionCount: 40, verified: true, verificationBadge: 'Institution Resource' }
+        { id: 'py-mod-1', title: 'Module 1 — Introduction to Programming', courseCode: 'CSE105', unit: 'Module 1', type: 'NOTE', progressPercent: 100, readTime: '12 min read', pageCount: 18, verified: true, verificationBadge: 'Official Curriculum' },
+        { id: 'py-mod-2', title: 'Module 2 — Variables & Objects', courseCode: 'CSE105', unit: 'Module 2', type: 'NOTE', progressPercent: 40, readTime: '10 min read', pageCount: 16, verified: true, verificationBadge: 'Official Curriculum' },
+        { id: 'py-mod-3', title: 'Module 3 — Data Types & Collections', courseCode: 'CSE105', unit: 'Module 3', type: 'NOTE', progressPercent: 0, readTime: '15 min read', pageCount: 22, verified: true, verificationBadge: 'Official Curriculum' }
     ];
 
     const coursesList = hubData?.courses || [
-        { id: 'course-cse101', code: 'CSE101', name: 'Database Management Systems', resourceCount: 24, resourceBreakdown: '8 Notes · 6 Videos · 5 PDFs · 5 Others', progress: 68 },
-        { id: 'course-cse202', code: 'CSE202', name: 'Operating Systems', resourceCount: 18, resourceBreakdown: '5 Notes · 7 Videos · 4 PDFs · 2 Papers', progress: 42 },
-        { id: 'course-cse301', code: 'CSE301', name: 'Computer Networks', resourceCount: 32, resourceBreakdown: '10 Notes · 12 Videos · 6 PDFs · 4 Papers', progress: 81 },
-        { id: 'course-cse102', code: 'CSE102', name: 'Data Structures & Algorithms', resourceCount: 29, resourceBreakdown: '9 Notes · 10 Videos · 5 PDFs · 5 Question Banks', progress: 75 }
+        { id: 'course-cse105', code: 'CSE105', name: 'Python Programming', resourceCount: 15, resourceBreakdown: '3 Core Modules · Detailed Notes · Short Revision Notes', progress: 55 },
+        { id: 'course-cse102', code: 'CSE102', name: 'Data Structures & Algorithms', resourceCount: 18, resourceBreakdown: '6 Notes · 6 Practice Sets · 2 Quizzes', progress: 60 }
     ];
 
     const recommendedList = hubData?.recommended || [
-        { id: 'res-norm-simp', title: 'Normalization Simplified Notes', courseCode: 'CSE101', unit: 'Unit 3', type: 'PDF', readTime: '6 min read', pageCount: 14, verified: true, verificationBadge: 'Faculty Verified' },
-        { id: 'res-norm-lec', title: '18-min Normalization Masterclass', courseCode: 'CSE101', unit: 'Unit 3', type: 'VIDEO', duration: '18:15', uploadedBy: 'Prof. Singh', verified: true, verificationBadge: 'Teacher Verified' },
-        { id: 'res-exam-paper-2025', title: 'DBMS Previous Year Paper 2025', courseCode: 'CSE101', unit: 'Midterm', type: 'PREVIOUS_PAPER', pageCount: 8, verified: true, verificationBadge: 'Institution Resource' }
+        { id: 'py-mod-1', title: 'Module 1 — Introduction to Programming', courseCode: 'CSE105', unit: 'Module 1', type: 'NOTE', readTime: '12 min read', pageCount: 18, verified: true, verificationBadge: 'Official Curriculum' },
+        { id: 'py-mod-2', title: 'Module 2 — Variables', courseCode: 'CSE105', unit: 'Module 2', type: 'NOTE', readTime: '10 min read', pageCount: 16, verified: true, verificationBadge: 'Official Curriculum' },
+        { id: 'py-mod-3', title: 'Module 3 — Data Types', courseCode: 'CSE105', unit: 'Module 3', type: 'NOTE', readTime: '15 min read', pageCount: 22, verified: true, verificationBadge: 'Official Curriculum' }
     ];
 
     return (
