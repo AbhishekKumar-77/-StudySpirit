@@ -1,25 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    BookOpen, GraduationCap, Star, History, Zap, Compass, Code, Brain, Settings, Sparkles, TrendingUp
+    LayoutDashboard, BookOpen, GraduationCap, Star, History, Zap, Sparkles, TrendingUp
 } from 'lucide-react';
 
 export default function ResourceSidebar({ activeTab, setActiveTab, semester = 5 }) {
     const navigate = useNavigate();
 
     const navItems = [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'library', label: 'Library', icon: BookOpen },
         { id: 'courses', label: 'My Courses', icon: GraduationCap },
         { id: 'saved', label: 'Saved', icon: Star },
         { id: 'recent', label: 'Recent', icon: History },
         { id: 'exam-prep', label: 'Exam Prep', icon: Zap }
-    ];
-
-    const studyHubItems = [
-        { label: 'Interview Prep', path: '/interview', icon: Compass },
-        { label: 'CodeSpirit', path: '/codespirit', icon: Code },
-        { label: 'Skill Analyzer', path: '/soft-skills', icon: Brain },
-        { label: 'Planner', path: '/planner', icon: Settings }
     ];
 
     return (
@@ -54,26 +48,6 @@ export default function ResourceSidebar({ activeTab, setActiveTab, semester = 5 
                                     }`}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                                    <span>{item.label}</span>
-                                </button>
-                            );
-                        })}
-                    </nav>
-                </div>
-
-                {/* Hub Shortcuts */}
-                <div>
-                    <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">StudySpirit Hub</p>
-                    <nav className="space-y-1">
-                        {studyHubItems.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                                <button
-                                    key={item.label}
-                                    onClick={() => navigate(item.path)}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-all"
-                                >
-                                    <Icon className="w-4 h-4 text-slate-400" />
                                     <span>{item.label}</span>
                                 </button>
                             );
