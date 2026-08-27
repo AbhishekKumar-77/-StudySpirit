@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import AriaAvatar from '../AriaAvatar';
-import { ArrowLeft, Mic, MicOff, Camera, CameraOff, Volume2, VolumeX, Pause, Play, Square } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff, Camera, CameraOff, Volume2, VolumeX, Pause, Play, Square, Eye, Zap, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 export default function AriaInterviewRoom({
     targetRole = 'Backend Developer',
@@ -24,15 +24,25 @@ export default function AriaInterviewRoom({
     onEndInterview,
     onBack
 }) {
+    const [isPaused, setIsPaused] = useState(false);
+
+    // Module 3: Live Interview Real-Time HUD State
+    const [eyeContactPercent, setEyeContactPercent] = useState(94);
+    const [speechWpm, setSpeechWpm] = useState(128);
+    const [fillerWordCount, setFillerWordCount] = useState(1);
+    const [confidenceLevel, setConfidenceLevel] = useState('High');
+
     const handleTogglePause = () => {
         if (!isPaused) {
-            if (isSpeaking) stopSpeaking && stopSpeaking();
             if (isListening) onToggleListening && onToggleListening();
             setIsPaused(true);
         } else {
             setIsPaused(false);
         }
     };
+
+    const lastAiMessage = [...messages].reverse().find(m => m.sender === 'ai' || m.role === 'ai')?.text || 
+        `Welcome to your ${targetRole} interview for ${targetCompany}. Tell me about yourself and your technical background.`;
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between font-sans">
@@ -94,12 +104,39 @@ export default function AriaInterviewRoom({
                         </div>
                     </div>
 
-                    {/* YOU Candidate Video Box */}
+                    {/* YOU Candidate Video Box + Module 3 HUD Overlay */}
                     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-2 relative overflow-hidden shadow-2xl flex items-center justify-center">
-                        <div className="absolute top-4 left-4 flex items-center gap-2 bg-slate-950/70 backdrop-blur-md border border-slate-800 px-3 py-1 rounded-full z-10">
+                        <div className="absolute top-4 left-4 flex items-center gap-2 bg-slate-950/80 backdrop-blur-md border border-slate-800 px-3 py-1 rounded-full z-10">
                             <span className="w-2 h-2 rounded-full bg-emerald-500" />
                             <span className="text-xs font-bold text-slate-200">YOU</span>
                             <span className="text-[10px] text-slate-400">Candidate</span>
+                        </div>
+
+                        {/* Module 3: Live Real-Time HUD Badges */}
+                        <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-1.5 font-mono text-[10px]">
+                            {/* Eye Contact Meter */}
+                            <div className="bg-slate-950/90 border border-emerald-500/40 text-emerald-400 px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-md">
+                                <Eye className="w-3 h-3 text-emerald-400" />
+                                <span>Eye Contact: {eyeContactPercent}%</span>
+                            </div>
+
+                            {/* Pacing WPM Meter */}
+                            <div className="bg-slate-950/90 border border-cyan-500/40 text-cyan-400 px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-md">
+                                <Zap className="w-3 h-3 text-cyan-400" />
+                                <span>Pacing: {speechWpm} WPM (Optimal)</span>
+                            </div>
+
+                            {/* Filler Word Counter */}
+                            <div className="bg-slate-950/90 border border-amber-500/40 text-amber-400 px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-md">
+                                <AlertTriangle className="w-3 h-3 text-amber-400" />
+                                <span>Fillers: {fillerWordCount}</span>
+                            </div>
+
+                            {/* Confidence Level Badge */}
+                            <div className="bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 font-bold px-2.5 py-1 rounded-xl flex items-center gap-1 shadow-md">
+                                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                                <span>Confidence: {confidenceLevel}</span>
+                            </div>
                         </div>
 
                         {cameraEnabled ? (

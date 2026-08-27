@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     CheckCircle, AlertCircle, Trophy, Brain, MessageSquare, Users, Zap, FileText,
-    Mic, User, ChevronRight, ArrowRight, ExternalLink, Sparkles, Target
+    Mic, User, ChevronRight, ArrowRight, ExternalLink, Sparkles, Target, Calendar
 } from 'lucide-react';
 
 export default function ReportView({
@@ -29,44 +29,55 @@ export default function ReportView({
         pacing: 81
     };
 
-    // STAR Evaluation defaults
-    const starEvaluation = sessionReport?.starEvaluation || {
-        situation: 85,
-        task: 80,
-        action: 82,
-        result: 55,
-        missingElements: ['Result component was incomplete in Q2', 'Action needs quantitative metrics']
-    };
+    // Candidate vs Ideal FAANG Answer Comparison (Module 5)
+    const answerComparison = sessionReport?.answerComparison || [
+        {
+            question: "How do you handle race conditions in distributed microservices?",
+            candidateAnswer: "I used database transactions and try-catch blocks in Node.js.",
+            idealAnswer: "Use distributed locking (Redis Redlock algorithm) or optimistic concurrency control with version column in DB to prevent concurrent updates across nodes.",
+            status: "Needs Optimization"
+        },
+        {
+            question: "Why did you choose MongoDB for the StudySpirit database?",
+            candidateAnswer: "Because it stores JSON documents easily and is fast for Node.js.",
+            idealAnswer: "MongoDB provides flexible schema evolution for dynamic course structures and horizontal sharding for high read throughput.",
+            status: "Good Concept"
+        }
+    ];
 
     // Actionable AI Improvement Plan items linking into StudySpirit modules
     const defaultImprovementPlan = [
         {
-            title: '1. System Design',
+            day: 'Day 1-2',
+            title: 'System Design & Redis Caching',
             priority: 'High Priority',
             category: 'Architecture',
             actionUrl: '/resources',
-            actionText: 'Practice'
+            actionText: 'Study Resources'
         },
         {
-            title: '2. STAR Responses',
+            day: 'Day 3-4',
+            title: 'STAR Methodology Practice',
             priority: 'Medium Priority',
             category: 'Behavioral',
             actionUrl: '/soft-skills',
-            actionText: 'Practice'
+            actionText: 'Soft Skills Drill'
         },
         {
-            title: '3. Filler Words',
-            priority: 'Medium Priority',
-            category: 'Communication',
-            actionUrl: '/soft-skills',
-            actionText: 'Speaking Drill'
-        },
-        {
-            title: '4. Graph Algorithms',
+            day: 'Day 5-6',
+            title: 'Graph & Dynamic Programming',
             priority: 'High Priority',
             category: 'Coding',
             actionUrl: '/codespirit',
-            actionText: 'Practice in CodeSpirit'
+            actionText: 'CodeSpirit IDE'
+        },
+        {
+            day: 'Day 7',
+            title: 'Full Mock Interview Retake',
+            priority: 'High Priority',
+            category: 'Simulation',
+            actionUrl: '/quiz',
+            actionText: 'Take Practice Quiz'
         }
     ];
 
@@ -79,8 +90,8 @@ export default function ReportView({
             {/* Header Banner */}
             <div className="text-center border-b border-slate-100 pb-6 mb-8">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-600 border border-purple-100 text-xs font-bold mb-2">
-                    <Sparkles className="w-4 h-4" />
-                    <span>AI Interview Performance Report</span>
+                    <Sparkles className="w-4 h-4 text-[#ff5733]" />
+                    <span>AI Interview Performance & Diagnostic Report</span>
                 </div>
                 <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">
                     {sessionReport?.targetCompany || 'Google'} — {sessionReport?.targetRole || 'Backend Developer'}
@@ -91,7 +102,7 @@ export default function ReportView({
             {/* Score Overview Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {/* Score Card */}
-                <div className="bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white p-6 rounded-3xl text-center flex flex-col items-center justify-center shadow-lg relative overflow-hidden">
+                <div className="bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 text-white p-6 rounded-3xl text-center flex flex-col items-center justify-center shadow-lg relative overflow-hidden">
                     <div className="w-24 h-24 rounded-full border-4 border-purple-400 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md mb-2 shadow-inner">
                         <span className="text-3xl font-black text-white">{overallScore}</span>
                         <span className="text-[10px] font-bold text-purple-200">/100</span>
@@ -125,6 +136,35 @@ export default function ReportView({
                             );
                         })}
                     </div>
+                </div>
+            </div>
+
+            {/* Module 5: Candidate vs Ideal FAANG Answer Comparison Diff */}
+            <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 mb-8 space-y-4">
+                <div className="flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-purple-600" />
+                    <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Candidate vs FAANG Benchmark Answer Diff</h3>
+                </div>
+
+                <div className="space-y-4">
+                    {answerComparison.map((item, idx) => (
+                        <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2 text-xs shadow-2xs">
+                            <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-slate-900">Q{idx + 1}: {item.question}</span>
+                                <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                                    {item.status}
+                                </span>
+                            </div>
+
+                            <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-950 font-sans">
+                                <strong>Your Answer:</strong> "{item.candidateAnswer}"
+                            </div>
+
+                            <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-950 font-sans">
+                                <strong>Ideal FAANG Answer:</strong> "{item.idealAnswer}"
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -173,12 +213,15 @@ export default function ReportView({
                 </div>
             </div>
 
-            {/* AI Improvement Plan */}
+            {/* Personalized 7-Day Improvement Plan */}
             <div className="bg-slate-900 text-slate-100 rounded-3xl p-6 mb-8 shadow-xl">
                 <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Learning Loop</span>
-                        <h3 className="text-lg font-extrabold text-white mt-0.5">Your AI Improvement Plan</h3>
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-orange-400" />
+                        <div>
+                            <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">7-Day Mastery Action Plan</span>
+                            <h3 className="text-lg font-extrabold text-white mt-0.5">Personalized Preparation Roadmap</h3>
+                        </div>
                     </div>
                     <span className="text-xs text-slate-400">Connected to StudySpirit modules</span>
                 </div>
@@ -186,20 +229,19 @@ export default function ReportView({
                 <div className="space-y-3">
                     {improvementPlan.map((plan, idx) => (
                         <div key={idx} className="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 flex items-center justify-between gap-4">
-                            <div>
-                                <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
+                                <span className="bg-orange-500/20 border border-orange-500/30 text-orange-300 font-black text-xs px-2.5 py-1 rounded-xl shrink-0 font-mono">
+                                    {plan.day || `Day ${idx + 1}`}
+                                </span>
+                                <div>
                                     <h4 className="text-sm font-bold text-white">{plan.title}</h4>
-                                    <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded ${
-                                        plan.priority?.includes('High') ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                    }`}>
-                                        {plan.priority || 'Medium Priority'}
-                                    </span>
+                                    <span className="text-[10px] text-slate-400">{plan.category}</span>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => navigate(plan.actionUrl || '/codespirit')}
-                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md transition"
+                                className="bg-[#ff5733] hover:bg-[#e04825] text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md transition shrink-0"
                             >
                                 <span>{plan.actionText || 'Practice'}</span>
                                 <ExternalLink className="w-3.5 h-3.5" />

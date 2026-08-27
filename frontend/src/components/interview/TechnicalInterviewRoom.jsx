@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
     ArrowLeft, Code, Play, CheckCircle2, AlertCircle, Clock, Zap,
-    Cpu, Database, Layers, ArrowRight, ExternalLink, Bot, Mic, MicOff
+    Cpu, Database, Layers, ArrowRight, ExternalLink, Bot, Mic, MicOff,
+    Check, Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,6 +13,7 @@ export default function TechnicalInterviewRoom({
     onBack
 }) {
     const navigate = useNavigate();
+
     const problemData = {
         dsa: {
             title: 'Two Sum - Index Search',
@@ -34,6 +36,7 @@ function twoSum(nums, target) {
     return [];
 }`,
             probeQuestion: "Why did you choose a Hash Map for this approach? What is the Time and Space Complexity?",
+            complexity: "Time: O(N) | Space: O(N)",
             testCases: [
                 { id: 1, name: 'Test Case 1: [2,7,11,15], target = 9', passed: true, output: '[0, 1]', expected: '[0, 1]' },
                 { id: 2, name: 'Test Case 2: [3,2,4], target = 6', passed: true, output: '[1, 2]', expected: '[1, 2]' },
@@ -63,6 +66,7 @@ async function isRateLimited(redis, userIp) {
     return { allowed: true, remaining: 100 - reqCount - 1 };
 }`,
             probeQuestion: "How would this sliding log algorithm handle 50,000 requests per second across multiple microservice replicas?",
+            complexity: "Time: O(log N) per req | Space: O(N)",
             testCases: [
                 { id: 1, name: 'Test Case 1: 50 requests under 1 min', passed: true, output: '{ allowed: true }', expected: '{ allowed: true }' },
                 { id: 2, name: 'Test Case 2: 101st request blocked', passed: true, output: '{ allowed: false }', expected: '{ allowed: false }' }
@@ -88,6 +92,7 @@ function encodeId(num) {
     return sb.reverse().join('');
 }`,
             probeQuestion: "How do you prevent Base62 collision when multiple database nodes generate IDs concurrently?",
+            complexity: "Time: O(log62 N) | Space: O(1)",
             testCases: [
                 { id: 1, name: 'Encode ID: 125', passed: true, output: '"cb"', expected: '"cb"' },
                 { id: 2, name: 'Encode ID: 10000000', passed: true, output: '"fEM2"', expected: '"fEM2"' }
@@ -111,11 +116,21 @@ function acquireLocks(lockA, lockB) {
     lockA.release();
 }`,
             probeQuestion: "Which deadlock prevention strategy would you apply to break the Circular Wait condition in a distributed transaction?",
+            complexity: "Time: O(1) | Space: O(1)",
             testCases: [
                 { id: 1, name: 'Concept Check: Coffman Conditions', passed: true, output: '4/4 Verified', expected: '4/4 Verified' }
             ]
         }
     };
+
+    // State Hooks
+    const [selectedTab, setSelectedTab] = useState('dsa');
+    const [code, setCode] = useState(problemData.dsa.initialCode);
+    const [isRunning, setIsRunning] = useState(false);
+    const [testResults, setTestResults] = useState(null);
+    const [language, setLanguage] = useState('javascript');
+    const [probeResponse, setProbeResponse] = useState('');
+    const [ariaProbeQuestion, setAriaProbeQuestion] = useState(problemData.dsa.probeQuestion);
 
     const currentProblem = problemData[selectedTab] || problemData.dsa;
 
@@ -124,7 +139,7 @@ function acquireLocks(lockA, lockB) {
         setTimeout(() => {
             setIsRunning(false);
             setTestResults(currentProblem.testCases);
-        }, 1000);
+        }, 800);
     };
 
     const handleAnswerProbe = () => {
@@ -143,9 +158,9 @@ function acquireLocks(lockA, lockB) {
                     </button>
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Technical Interview</span>
+                            <span className="text-xs font-extrabold uppercase tracking-wider text-blue-400">Technical Live Whiteboard Room</span>
                             <span className="text-slate-600">•</span>
-                            <span className="text-sm font-bold text-white">{targetRole} · {targetCompany}</span>
+                            <span className="text-sm font-bold text-white">{targetRole} · {targetCompany} Track</span>
                         </div>
                     </div>
                 </div>
@@ -213,16 +228,17 @@ function acquireLocks(lockA, lockB) {
 
             {/* Main Workspace */}
             <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left Panel: Problem Statement & Aria Probe Question */}
+                {/* Left Panel: Problem Statement & AI Follow-up Probe */}
                 <div className="flex flex-col gap-4">
-                    {/* Problem Description */}
                     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex-1 flex flex-col justify-between">
                         <div>
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-800">
                                     {currentProblem.difficulty} • {currentProblem.category}
                                 </span>
-                                <span className="text-xs text-slate-400">{currentProblem.category}</span>
+                                <span className="text-xs font-mono text-cyan-400 bg-cyan-950 px-3 py-1 rounded-full border border-cyan-800 font-bold">
+                                    {currentProblem.complexity}
+                                </span>
                             </div>
 
                             <h2 className="text-lg font-bold text-white mb-2">{currentProblem.title}</h2>
@@ -230,21 +246,21 @@ function acquireLocks(lockA, lockB) {
                                 {currentProblem.description}
                             </p>
 
-                            <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 text-xs font-mono space-y-1 mb-4">
+                            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 text-xs font-mono space-y-1.5 mb-4">
                                 <p className="text-slate-400"><strong className="text-slate-200">Input:</strong> {currentProblem.inputExample}</p>
                                 <p className="text-slate-400"><strong className="text-slate-200">Output:</strong> {currentProblem.outputExample}</p>
                                 <p className="text-slate-400"><strong className="text-slate-200">Explanation:</strong> {currentProblem.explanation}</p>
                             </div>
                         </div>
 
-                        {/* Aria AI Follow-up Probe Box */}
-                        <div className="bg-purple-950/40 border border-purple-800/50 rounded-2xl p-4 mt-4">
-                            <div className="flex items-center gap-2 mb-2">
+                        {/* AI Follow-up Probe Box */}
+                        <div className="bg-purple-950/40 border border-purple-800/50 rounded-2xl p-4 mt-4 space-y-3">
+                            <div className="flex items-center gap-2">
                                 <Bot className="w-4 h-4 text-purple-400" />
-                                <span className="text-xs font-bold text-purple-300">Aria Technical Follow-up</span>
+                                <span className="text-xs font-bold text-purple-300">Aria AI Technical Interrogator</span>
                             </div>
 
-                            <p className="text-xs text-slate-200 font-medium mb-3">
+                            <p className="text-xs text-slate-200 font-medium leading-relaxed">
                                 "{ariaProbeQuestion}"
                             </p>
 
@@ -274,7 +290,7 @@ function acquireLocks(lockA, lockB) {
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <Code className="w-4 h-4 text-blue-400" />
-                                <span className="text-xs font-bold text-slate-200">Code Editor</span>
+                                <span className="text-xs font-bold text-slate-200">Live Code Whiteboard</span>
                             </div>
                             <select
                                 value={language}
@@ -288,7 +304,7 @@ function acquireLocks(lockA, lockB) {
                             </select>
                         </div>
 
-                        {/* Textarea Code Editor */}
+                        {/* Code Editor */}
                         <div className="relative font-mono text-xs mb-4">
                             <textarea
                                 value={code}
@@ -301,14 +317,19 @@ function acquireLocks(lockA, lockB) {
                         {/* Test Execution Output */}
                         {testResults && (
                             <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs space-y-2 mb-4">
-                                <p className="font-extrabold text-slate-300 mb-2">Test Execution Results:</p>
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="font-extrabold text-slate-300">Test Execution Results:</p>
+                                    <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-950 border border-emerald-800 px-2 py-0.5 rounded">
+                                        All Tests Passed
+                                    </span>
+                                </div>
                                 {testResults.map((t) => (
-                                    <div key={t.id} className="flex items-center justify-between text-slate-300">
+                                    <div key={t.id} className="flex items-center justify-between text-slate-300 p-2 bg-slate-900 rounded-xl border border-slate-800">
                                         <span className="flex items-center gap-1.5">
                                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                                             {t.name}
                                         </span>
-                                        <span className="text-emerald-400 font-bold">Passed</span>
+                                        <span className="text-emerald-400 font-mono font-bold">Passed</span>
                                     </div>
                                 ))}
                             </div>
