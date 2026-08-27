@@ -210,6 +210,9 @@ export default function AIInterview() {
             <TechnicalInterviewRoom
                 targetRole={targetRole}
                 targetCompany={targetCompany}
+                cameraEnabled={cameraEnabled}
+                onToggleCamera={toggleCamera}
+                videoRef={videoRef}
                 onEndInterview={handleEndSession}
                 onBack={() => setRoomType(null)}
             />
@@ -221,6 +224,9 @@ export default function AIInterview() {
             <GDPanelRoom
                 targetRole={targetRole}
                 user={user}
+                cameraEnabled={cameraEnabled}
+                onToggleCamera={toggleCamera}
+                videoRef={videoRef}
                 onEndInterview={handleEndSession}
                 onBack={() => setRoomType(null)}
             />

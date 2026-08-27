@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Mic, MicOff, Send, Award, MessageSquare, Bot } from 'lucide-react';
+import { ArrowLeft, Users, Mic, MicOff, Send, Award, MessageSquare, Bot, Camera, CameraOff } from 'lucide-react';
 
 export default function GDPanelRoom({
     targetRole = 'Backend Developer',
     user,
+    cameraEnabled = true,
+    onToggleCamera,
+    videoRef,
     onEndInterview,
     onBack
 }) {
@@ -81,12 +84,36 @@ export default function GDPanelRoom({
                     </div>
                 </div>
 
-                <button
-                    onClick={onEndInterview}
-                    className="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 font-bold text-xs px-4 py-2 rounded-xl transition"
-                >
-                    END DISCUSSION
-                </button>
+                <div className="flex items-center gap-3">
+                    {/* Live Student Webcam Small Preview Tile */}
+                    <div className="relative w-28 h-14 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-md flex items-center justify-center">
+                        {cameraEnabled ? (
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <CameraOff className="w-4 h-4 text-slate-600" />
+                        )}
+                        <button
+                            onClick={onToggleCamera}
+                            className="absolute bottom-1 right-1 p-1 rounded-full bg-slate-950/80 text-slate-400 hover:text-white"
+                            title="Toggle Camera"
+                        >
+                            {cameraEnabled ? <Camera className="w-3 h-3 text-emerald-400" /> : <CameraOff className="w-3 h-3 text-rose-400" />}
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={onEndInterview}
+                        className="bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 font-bold text-xs px-4 py-2 rounded-xl transition"
+                    >
+                        END DISCUSSION
+                    </button>
+                </div>
             </header>
 
             {/* Virtual Round Table Display */}

@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import {
     ArrowLeft, Code, Play, CheckCircle2, AlertCircle, Clock, Zap,
     Cpu, Database, Layers, ArrowRight, ExternalLink, Bot, Mic, MicOff,
-    Check, Sparkles
+    Check, Sparkles, Camera, CameraOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function TechnicalInterviewRoom({
     targetRole = 'Backend Developer',
     targetCompany = 'Google',
+    cameraEnabled = true,
+    onToggleCamera,
+    videoRef,
     onEndInterview,
     onBack
 }) {
@@ -166,6 +169,28 @@ function acquireLocks(lockA, lockB) {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {/* Live Student Camera Stream Tile */}
+                    <div className="relative w-28 h-16 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-md flex items-center justify-center">
+                        {cameraEnabled ? (
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <CameraOff className="w-4 h-4 text-slate-600" />
+                        )}
+                        <button
+                            onClick={onToggleCamera}
+                            className="absolute bottom-1 right-1 p-1 rounded-full bg-slate-950/80 text-slate-400 hover:text-white"
+                            title="Toggle Camera"
+                        >
+                            {cameraEnabled ? <Camera className="w-3 h-3 text-emerald-400" /> : <CameraOff className="w-3 h-3 text-rose-400" />}
+                        </button>
+                    </div>
+
                     <button
                         onClick={() => navigate('/codespirit')}
                         className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition"
