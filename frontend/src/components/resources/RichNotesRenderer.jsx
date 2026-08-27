@@ -3,7 +3,7 @@ import {
     BookOpen, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, Lightbulb,
     Terminal, Play, Copy, Check, Shield, Layers, HelpCircle, Flame, Zap,
     Cpu, Code2, Globe, Database, FileCode, Clock, Award, Star, Info,
-    XCircle, CheckCircle, Smartphone, Server, Cpu as CpuIcon
+    XCircle, CheckCircle, Smartphone, Server
 } from 'lucide-react';
 import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
@@ -534,10 +534,11 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
             )}
 
             {/* ======================================================== */}
-            {/* MODULE 2: COMPLETE VARIABLES & OBJECTS */}
+            {/* MODULE 2: COMPLETE VARIABLES & OBJECTS (ALL 8 SECTIONS) */}
             {/* ======================================================== */}
             {isModule2 && (
                 <div className="space-y-8">
+                    
                     {/* SECTION 1: What Is a Variable? */}
                     <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
                         <div className="flex items-center gap-3">
@@ -552,57 +553,113 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                             </div>
                         </div>
 
+                        {/* Visual Memory Pointer Diagram */}
                         <div className="bg-slate-900 text-white p-6 rounded-2xl border border-slate-800 font-mono text-xs space-y-4">
-                            <div className="text-orange-400 font-bold text-xs uppercase tracking-wider">Memory Pointer Reference</div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-orange-400 font-bold text-xs uppercase tracking-wider">Memory Pointer Reference Diagram</span>
+                                <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-sans">Variable → Reference → Object</span>
+                            </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                                    <span className="text-slate-400">Variable Name</span>
-                                    <h4 className="text-white text-sm font-bold mt-1">name ───────→ "Abhishek"</h4>
-                                    <p className="text-[10px] text-cyan-400 mt-1">str object in memory</p>
+                                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+                                    <span className="text-slate-400 text-[11px] font-sans">Code Statement: <code className="text-amber-300 font-mono">name = "Abhishek"</code></span>
+                                    <div className="flex items-center gap-3 font-mono text-sm pt-1">
+                                        <span className="bg-purple-900 text-purple-200 px-3 py-1 rounded-lg border border-purple-700 font-bold">name</span>
+                                        <ArrowRight className="w-4 h-4 text-orange-400 shrink-0" />
+                                        <span className="bg-cyan-950 text-cyan-300 px-3 py-1 rounded-lg border border-cyan-800 font-bold">"Abhishek" (str)</span>
+                                    </div>
                                 </div>
-                                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-                                    <span className="text-slate-400">Variable Name</span>
-                                    <h4 className="text-white text-sm font-bold mt-1">age  ───────→ 21</h4>
-                                    <p className="text-[10px] text-purple-400 mt-1">int object in memory</p>
+                                <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+                                    <span className="text-slate-400 text-[11px] font-sans">Code Statement: <code className="text-amber-300 font-mono">age = 21</code></span>
+                                    <div className="flex items-center gap-3 font-mono text-sm pt-1">
+                                        <span className="bg-purple-900 text-purple-200 px-3 py-1 rounded-lg border border-purple-700 font-bold">age</span>
+                                        <ArrowRight className="w-4 h-4 text-orange-400 shrink-0" />
+                                        <span className="bg-emerald-950 text-emerald-300 px-3 py-1 rounded-lg border border-emerald-800 font-bold">21 (int)</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <p className="text-slate-400 text-[11px] font-sans">In Python: Variable → Reference → Object.</p>
-                        </div>
-                    </div>
-
-                    {/* SECTION 2 & 3: Dynamic Typing & Objects */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4">
-                            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                                📝 2. Dynamic Typing
-                            </h3>
-                            <p className="text-xs text-slate-600">Python determines the type automatically from the assigned object:</p>
-                            <div className="bg-slate-900 p-4 rounded-xl text-xs font-mono text-cyan-300 space-y-1">
-                                <p>name = "Abhishek"  <span className="text-slate-500"># str</span></p>
-                                <p>age = 21           <span className="text-slate-500"># int</span></p>
-                                <p>marks = 85.5       <span className="text-slate-500"># float</span></p>
-                                <p className="text-orange-400 mt-1">type(age)  <span className="text-slate-500"># &lt;class 'int'&gt;</span></p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-3xl p-6 border border-slate-200 space-y-4">
-                            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                                🧩 3. Objects & Memory Attributes
-                            </h3>
-                            <p className="text-xs text-slate-600">Every object in Python has 3 core attributes:</p>
-                            <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
-                                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">Value (100)</div>
-                                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">Type (int)</div>
-                                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">Identity id(x)</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* SECTION 4 & 5: Naming Rules & Keywords */}
+                    {/* SECTION 2: Creating a Variable & Dynamic Typing */}
                     <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
-                        <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-                            <span>🏷️</span> 4. Naming Rules & 5. Reserved Keywords
-                        </h3>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-cyan-100 text-cyan-700 flex items-center justify-center font-black text-lg">
+                                📝
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    2. Creating a Variable & Dynamic Typing
+                                </h2>
+                                <p className="text-xs text-slate-500">Python automatically infers the data type from the object assigned.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 font-mono text-xs space-y-2">
+                            <p className="text-slate-400 font-sans text-xs">Dynamic Type Assignment Examples:</p>
+                            <div className="p-4 bg-black rounded-xl space-y-1.5">
+                                <p><span className="text-cyan-300">name</span> = <span className="text-emerald-400">"Abhishek"</span> &nbsp;&nbsp;<span className="text-slate-500"># str</span></p>
+                                <p><span className="text-purple-300">age</span> = <span className="text-amber-400">21</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-slate-500"># int</span></p>
+                                <p><span className="text-orange-300">marks</span> = <span className="text-blue-400">85.5</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-slate-500"># float</span></p>
+                            </div>
+                            <div className="pt-2 text-slate-300 font-sans flex items-center gap-2 text-[11px]">
+                                <span className="bg-slate-800 px-2.5 py-1 rounded text-amber-300 font-mono">type(age)</span>
+                                <span>returns <code className="text-emerald-400 font-mono">&lt;class 'int'&gt;</code></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 3: Variables, Objects & Memory */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-black text-lg">
+                                🧩
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    3. Variables, Objects & Memory Attributes
+                                </h2>
+                                <p className="text-xs text-slate-500">An object is an instance of data with Value, Type, and Identity.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                                <span className="font-black text-purple-600 text-sm">1. Value</span>
+                                <p className="text-slate-600 text-[11px]">The data stored inside object (e.g., 100)</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                                <span className="font-black text-blue-600 text-sm">2. Type</span>
+                                <p className="text-slate-600 text-[11px]">The data classification (e.g., int, str)</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
+                                <span className="font-black text-emerald-600 text-sm">3. Identity</span>
+                                <p className="text-slate-600 text-[11px]">Memory address returned by <code>id(x)</code></p>
+                            </div>
+                        </div>
+
+                        {/* Reassigning Card */}
+                        <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 text-xs font-mono space-y-2">
+                            <span className="text-slate-400 font-sans text-xs">Reassigning a Variable:</span>
+                            <div className="p-3 bg-black rounded-xl space-y-1">
+                                <p className="text-slate-400">x = 10 &nbsp;&nbsp;<span className="text-slate-600"># x refers to object 10</span></p>
+                                <p className="text-amber-300 font-bold">x = 20 &nbsp;&nbsp;<span className="text-slate-500"># Name x now refers to object 20 in memory!</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 4: Variable Naming Rules */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-lg">
+                                🏷️
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    4. Variable Naming Rules & Case-Sensitivity
+                                </h2>
+                                <p className="text-xs text-slate-500">Follow Python identifiers conventions strictly.</p>
+                            </div>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                             <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl space-y-2">
@@ -610,7 +667,10 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                                     ✅ Valid Variable Names
                                 </h4>
                                 <ul className="space-y-1 font-mono text-emerald-800">
-                                    <li>• name, age, student_name, _marks</li>
+                                    <li>• name = "Abhishek"</li>
+                                    <li>• age = 21</li>
+                                    <li>• student_name = "Aman"</li>
+                                    <li>• _marks = 85.5</li>
                                 </ul>
                             </div>
 
@@ -619,51 +679,109 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                                     ❌ Invalid Variable Names
                                 </h4>
                                 <ul className="space-y-1 font-mono text-rose-800">
-                                    <li>• 2name (starts with number)</li>
-                                    <li>• student-name (hyphen)</li>
-                                    <li>• student name (space)</li>
-                                    <li>• class (reserved keyword)</li>
+                                    <li>• 2name <span className="text-slate-500 font-sans text-[10px]">(Starts with number)</span></li>
+                                    <li>• student-name <span className="text-slate-500 font-sans text-[10px]">(Contains hyphen)</span></li>
+                                    <li>• student name <span className="text-slate-500 font-sans text-[10px]">(Contains space)</span></li>
+                                    <li>• class <span className="text-slate-500 font-sans text-[10px]">(Reserved keyword)</span></li>
                                 </ul>
                             </div>
                         </div>
 
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-700 space-y-1">
-                            <strong className="text-slate-900">Python Reserved Keywords:</strong> if, else, for, while, def, class, return, import, True, False, None.
-                            <div className="p-2 bg-slate-900 text-cyan-300 font-mono rounded-lg text-[11px] mt-1">
+                        <div className="bg-purple-50 border border-purple-200 p-4 rounded-2xl text-xs text-purple-950 font-medium">
+                            <strong>⚠️ Python is Case-Sensitive:</strong> <code className="bg-purple-100 px-1.5 py-0.5 rounded font-mono text-purple-900 font-bold">name = "A"</code>, <code className="bg-purple-100 px-1.5 py-0.5 rounded font-mono text-purple-900 font-bold">Name = "B"</code>, and <code className="bg-purple-100 px-1.5 py-0.5 rounded font-mono text-purple-900 font-bold">NAME = "C"</code> are 3 completely separate variables!
+                        </div>
+                    </div>
+
+                    {/* SECTION 5: Keywords */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-lg">
+                                🔑
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    5. Python Reserved Keywords
+                                </h2>
+                                <p className="text-xs text-slate-500">Reserved words that cannot be used as variable names.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 text-xs font-mono font-bold">
+                            {['if', 'else', 'elif', 'for', 'while', 'def', 'class', 'return', 'import', 'from', 'as', 'True', 'False', 'None', 'try', 'except', 'pass', 'break', 'continue'].map((kw, i) => (
+                                <span key={i} className="bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl text-slate-800">
+                                    {kw}
+                                </span>
+                            ))}
+                        </div>
+
+                        <div className="bg-slate-900 text-white p-4 rounded-2xl font-mono text-xs flex items-center justify-between">
+                            <span className="text-slate-400">Check all keywords in Python code:</span>
+                            <span className="text-cyan-300 bg-black px-3 py-1 rounded-lg border border-slate-800 font-bold">
                                 import keyword &nbsp;|&nbsp; print(keyword.kwlist)
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* SECTION 6: Multiple Assignment & Swapping */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-[#ff5733]/10 text-[#ff5733] flex items-center justify-center font-black text-lg">
+                                🔄
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    6. Multiple Assignment & Variable Swapping
+                                </h2>
+                                <p className="text-xs text-slate-500">Python allows concise tuple unpacking assignment.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+                            <div className="p-4 bg-slate-900 text-white rounded-2xl border border-slate-800 space-y-1">
+                                <span className="text-orange-400 font-sans font-bold text-xs">Multiple Values</span>
+                                <p className="text-cyan-300 font-bold mt-1">name, age, marks = "Abhishek", 21, 85</p>
+                            </div>
+                            <div className="p-4 bg-slate-900 text-white rounded-2xl border border-slate-800 space-y-1">
+                                <span className="text-purple-400 font-sans font-bold text-xs">Same Value</span>
+                                <p className="text-purple-300 font-bold mt-1">a = b = c = 0</p>
+                            </div>
+                            <div className="p-4 bg-slate-900 text-white rounded-2xl border border-slate-800 space-y-1">
+                                <span className="text-emerald-400 font-sans font-bold text-xs">Swapping (No Temp Var!)</span>
+                                <p className="text-emerald-300 font-bold mt-1">a, b = b, a</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* SECTION 6 & 7: Swapping & Equality */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-slate-900 text-white rounded-3xl p-6 border border-slate-800 space-y-4">
-                            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Multiple Assignment</span>
-                            <h3 className="text-base font-extrabold text-white">🔄 6. Swapping Variables</h3>
-                            <div className="bg-black p-4 rounded-xl border border-slate-800 font-mono text-xs text-cyan-300 space-y-1">
-                                <p>name, age, marks = "Abhishek", 21, 85</p>
-                                <p>a = b = c = 0</p>
-                                <p className="text-orange-400 font-bold mt-2">a, b = b, a  # Swapped without temp var!</p>
+                    {/* SECTION 7: Identity vs Value (== vs is) */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-lg">
+                                🔍
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    7. Identity vs Value (<code>==</code> vs <code>is</code>)
+                                </h2>
+                                <p className="text-xs text-slate-500">Understanding value equality vs memory location equality.</p>
                             </div>
                         </div>
 
-                        <div className="bg-slate-900 text-white rounded-3xl p-6 border border-slate-800 space-y-4">
-                            <span className="text-xs font-bold text-orange-400 uppercase tracking-wider">Identity vs Value</span>
-                            <h3 className="text-base font-extrabold text-white">🔍 7. == vs is Comparison</h3>
-                            <div className="space-y-2 text-xs font-mono">
-                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-between">
-                                    <span>[1, 2] == [1, 2]</span>
-                                    <span className="text-emerald-400 font-bold">True (Value)</span>
-                                </div>
-                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-between">
-                                    <span>[1, 2] is [1, 2]</span>
-                                    <span className="text-rose-400 font-bold">False (Identity)</span>
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 space-y-2 font-mono">
+                                <h4 className="font-sans font-extrabold text-emerald-400 text-sm">Value Comparison (<code>==</code>)</h4>
+                                <p className="text-slate-300">[1, 2] == [1, 2]</p>
+                                <span className="text-emerald-400 font-bold block">→ True (Both lists contain the same values)</span>
+                            </div>
+
+                            <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 space-y-2 font-mono">
+                                <h4 className="font-sans font-extrabold text-rose-400 text-sm">Identity Comparison (<code>is</code>)</h4>
+                                <p className="text-slate-300">[1, 2] is [1, 2]</p>
+                                <span className="text-rose-400 font-bold block">→ False (Refers to 2 different memory objects)</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* MINI PROJECT 2 CARD */}
+                    {/* SECTION 8: MINI PROJECT 2 CARD */}
                     <div className="bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-800 text-white shadow-2xl space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -676,7 +794,7 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                                 </div>
                             </div>
                             <button
-                                onClick={() => handleCopy(`student_name = "Abhishek"\nroll_number = 101\nage = 21\ncourse = "B.Tech CSE"\n\nprint(f"Name: {student_name}, Roll: {roll_number}")`, 'm2')}
+                                onClick={() => handleCopy(`student_name = "Abhishek"\nroll_number = 101\nage = 21\ncourse = "B.Tech CSE"\nuniversity = "LPU"\nmarks = 85\n\nprint("================================")\nprint("      STUDENT INFORMATION")\nprint("================================")\nprint(f"Name       : {student_name}")\nprint(f"Roll No.   : {roll_number}")\nprint(f"Age        : {age}")\nprint(f"Course     : {course}")\nprint(f"University : {university}")\nprint(f"Marks      : {marks}")\nprint("================================")`, 'm2')}
                                 className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 font-bold flex items-center gap-1.5"
                             >
                                 {copiedSnippet === 'm2' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -685,6 +803,7 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                         </div>
 
                         <div className="bg-black p-5 rounded-2xl border border-slate-800 font-mono text-xs text-cyan-300 leading-relaxed shadow-inner">
+                            <p className="text-slate-500 mb-2"># student_info.py</p>
                             <p>student_name = "Abhishek"</p>
                             <p>roll_number = 101</p>
                             <p>age = 21</p>
@@ -692,36 +811,60 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                             <p>university = "LPU"</p>
                             <p>marks = 85</p>
                             <br />
-                            <p className="text-emerald-400">print(f"Name       : {student_name}")</p>
-                            <p className="text-emerald-400">print(f"Roll No.   : {roll_number}")</p>
+                            <p className="text-emerald-400">print("================================")</p>
+                            <p className="text-emerald-400">print("      STUDENT INFORMATION")</p>
+                            <p className="text-emerald-400">print("================================")</p>
+                            <p className="text-emerald-400">print(f"Name       : &#123;student_name&#125;")</p>
+                            <p className="text-emerald-400">print(f"Roll No.   : &#123;roll_number&#125;")</p>
+                            <p className="text-emerald-400">print(f"Age        : &#123;age&#125;")</p>
+                            <p className="text-emerald-400">print(f"Course     : &#123;course&#125;")</p>
+                            <p className="text-emerald-400">print(f"University : &#123;university&#125;")</p>
+                            <p className="text-emerald-400">print(f"Marks      : &#123;marks&#125;")</p>
+                            <p className="text-emerald-400">print("================================")</p>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* ======================================================== */}
-            {/* MODULE 3: COMPLETE DATA TYPES & COLLECTIONS */}
+            {/* MODULE 3: COMPLETE DATA TYPES & COLLECTIONS (ALL 6 SECTIONS) */}
             {/* ======================================================== */}
             {isModule3 && (
                 <div className="space-y-8">
-                    {/* SECTION 1 & 2: Numbers & Special Types */}
+                    
+                    {/* SECTION 1: What Is a Data Type? */}
                     <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-2xl bg-cyan-100 text-cyan-700 flex items-center justify-center font-black text-lg">
+                                🧠
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    1. What Is a Data Type?
+                                </h2>
+                                <p className="text-xs text-slate-500">A data type tells Python what kind of value an object represents and what operations can be performed on it.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SECTION 2: Numbers & Special Types */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center font-black text-lg">
                                 🔢
                             </div>
                             <div>
                                 <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
-                                    1. What Is a Data Type? & 2. Numbers & Special Types
+                                    2. Numbers & Special Types
                                 </h2>
-                                <p className="text-xs text-slate-500">Defines what operations can be performed on a value.</p>
+                                <p className="text-xs text-slate-500">Numeric, boolean, and special sentinel data types.</p>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
                                 <span className="font-black text-[#ff5733]">int</span>
-                                <p className="text-[11px] text-slate-600">Whole numbers (21, -5)</p>
+                                <p className="text-[11px] text-slate-600">Whole numbers (21, 0, -25)</p>
                             </div>
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
                                 <span className="font-black text-blue-600">float</span>
@@ -729,7 +872,7 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                             </div>
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
                                 <span className="font-black text-purple-600">complex</span>
-                                <p className="text-[11px] text-slate-600">Real + Imaginary (3 + 4j)</p>
+                                <p className="text-[11px] text-slate-600">Complex numbers (3 + 4j)</p>
                             </div>
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
                                 <span className="font-black text-emerald-600">bool</span>
@@ -737,42 +880,79 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                             </div>
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1 col-span-2 sm:col-span-1">
                                 <span className="font-black text-rose-600">None</span>
-                                <p className="text-[11px] text-slate-600">Absence of value</p>
+                                <p className="text-[11px] text-slate-600">Absence of value (NoneType)</p>
                             </div>
+                        </div>
+
+                        <div className="bg-slate-900 text-white p-4 rounded-2xl font-mono text-xs space-y-1">
+                            <span className="text-slate-400 font-sans text-xs">Complex Number Example:</span>
+                            <p className="text-cyan-300 font-bold">z = 3 + 4j &nbsp;→ &nbsp;z.real = 3.0 &nbsp;|&nbsp; z.imag = 4.0</p>
                         </div>
                     </div>
 
-                    {/* SECTION 3: Strings */}
-                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-4">
-                        <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                            🔤 3. Strings (str) — Indexing, Slicing & Immutability
-                        </h3>
-                        <div className="bg-slate-900 text-white p-4 rounded-2xl font-mono text-xs space-y-2">
-                            <p>word = "Python"</p>
-                            <p className="text-cyan-300">word[0] ──→ 'P' (positive index) &nbsp;|&nbsp; word[-1] ──→ 'n' (negative index)</p>
-                            <p className="text-orange-300">word[0:3] ──→ 'Pyt' (slicing)</p>
-                            <p className="text-rose-400 font-bold">Strings are IMMUTABLE (word[0] = 'J' raises TypeError).</p>
+                    {/* SECTION 3: Strings (str) */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black text-lg">
+                                🔤
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    3. Strings (str) — Indexing, Slicing & Immutability
+                                </h2>
+                                <p className="text-xs text-slate-500">Sequences of characters enclosed in quotes.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 font-mono text-xs space-y-3">
+                            <p className="text-slate-400 font-sans text-xs">String Indexing & Slicing (<code className="text-amber-300">word = "Python"</code>):</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                                    <span className="text-slate-400 block text-[10px] font-sans">Positive Index</span>
+                                    <span className="text-cyan-300 font-bold">word[0] ──→ 'P'</span>
+                                </div>
+                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                                    <span className="text-slate-400 block text-[10px] font-sans">Negative Index</span>
+                                    <span className="text-cyan-300 font-bold">word[-1] ──→ 'n'</span>
+                                </div>
+                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700">
+                                    <span className="text-slate-400 block text-[10px] font-sans">Slicing</span>
+                                    <span className="text-orange-300 font-bold">word[0:3] ──→ 'Pyt'</span>
+                                </div>
+                            </div>
+                            <div className="bg-rose-950/80 border border-rose-800/80 p-3 rounded-xl text-rose-300 font-sans text-xs font-semibold">
+                                <strong>⚠️ Strings are IMMUTABLE:</strong> Reassigning an individual index like <code className="font-mono text-white">word[0] = 'J'</code> raises a TypeError!
+                            </div>
                         </div>
                     </div>
 
                     {/* SECTION 4: Core Python Collections */}
                     <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
-                        <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-                            <span>📦</span> 4. Core Python Collections Comparison
-                        </h3>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-black text-lg">
+                                📦
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    4. Core Python Collections Comparison
+                                </h2>
+                                <p className="text-xs text-slate-500">List, Tuple, Set, and Dictionary data structures.</p>
+                            </div>
+                        </div>
 
-                        <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
-                            <span className="bg-cyan-50 text-cyan-700 border border-cyan-200 px-3 py-1.5 rounded-xl">LIST [ ] → Changeable</span>
-                            <span className="bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1.5 rounded-xl">TUPLE ( ) → Fixed</span>
-                            <span className="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-xl">SET &#123; &#125; → Unique Elements</span>
-                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl">DICT &#123;k:v&#125; → Labelled Pairs</span>
+                        {/* Quick Memory Trick Pills */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold">
+                            <div className="bg-cyan-50 text-cyan-800 border border-cyan-200 p-3 rounded-xl">LIST [ ] → Changeable</div>
+                            <div className="bg-purple-50 text-purple-800 border border-purple-200 p-3 rounded-xl">TUPLE ( ) → Fixed</div>
+                            <div className="bg-amber-50 text-amber-800 border border-amber-200 p-3 rounded-xl">SET &#123; &#125; → Unique Only</div>
+                            <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 p-3 rounded-xl">DICT &#123;k:v&#125; → Labelled Pairs</div>
                         </div>
 
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs border-collapse">
                                 <thead>
                                     <tr className="border-b border-slate-200 bg-slate-50 text-slate-700 font-extrabold">
-                                        <th className="p-3 rounded-l-xl">Type</th>
+                                        <th className="p-3 rounded-l-xl">Collection</th>
                                         <th className="p-3">Ordered</th>
                                         <th className="p-3">Mutable</th>
                                         <th className="p-3">Duplicates</th>
@@ -814,16 +994,42 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                     </div>
 
                     {/* SECTION 5: Type Conversion & User Input */}
-                    <div className="bg-amber-50 border border-amber-200 rounded-3xl p-6 space-y-3 text-xs text-amber-900">
-                        <h4 className="font-extrabold text-amber-800 text-sm flex items-center gap-2">
-                            ⚠️ 5. Type Conversion & User Input Rule: input() ALWAYS Returns a String!
-                        </h4>
-                        <p className="font-medium leading-relaxed">
-                            Even if the user types <span className="font-mono font-bold">21</span>, <span className="font-mono">input("Enter age: ")</span> returns string <span className="font-mono text-amber-950 font-bold">"21"</span>. Always convert using <span className="font-mono font-bold">int(input(...))</span>!
-                        </p>
+                    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-lg">
+                                🔄
+                            </div>
+                            <div>
+                                <h2 className="text-lg md:text-xl font-extrabold text-slate-900">
+                                    5. Type Conversion & User Input Rule
+                                </h2>
+                                <p className="text-xs text-slate-500">Converting between types and taking input safely.</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 font-mono text-xs space-y-2">
+                            <p className="text-slate-400 font-sans text-xs">Conversion Functions:</p>
+                            <div className="p-3 bg-black rounded-xl space-y-1">
+                                <p><span className="text-cyan-300">int("21")</span> &nbsp;→ &nbsp;21</p>
+                                <p><span className="text-purple-300">float(10)</span> &nbsp;→ &nbsp;10.0</p>
+                                <p><span className="text-emerald-300">str(21)</span> &nbsp;&nbsp;&nbsp;&nbsp;→ &nbsp;"21"</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-2 text-xs text-amber-900">
+                            <h4 className="font-extrabold text-amber-800 text-sm flex items-center gap-2">
+                                ⚠️ CRITICAL RULE: input() ALWAYS Returns a String!
+                            </h4>
+                            <p className="font-medium leading-relaxed">
+                                Even if the user types number <code className="font-mono font-bold">21</code>, <code className="font-mono">input("Enter age: ")</code> returns string <code className="font-mono text-amber-950 font-bold">"21"</code>. Always convert using <code className="font-mono font-bold">age = int(input("Enter age: "))</code>!
+                            </p>
+                            <div className="bg-slate-900 text-white p-3 rounded-xl font-mono text-[11px] mt-2">
+                                print(f"Name: &#123;name&#125;, Age: &#123;age&#125;, Marks: &#123;marks&#125;")
+                            </div>
+                        </div>
                     </div>
 
-                    {/* MINI PROJECT 3 CARD */}
+                    {/* SECTION 6: MINI PROJECT 3 CARD */}
                     <div className="bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-800 text-white shadow-2xl space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -836,7 +1042,7 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                                 </div>
                             </div>
                             <button
-                                onClick={() => handleCopy(`name = input("Name: ")\nage = int(input("Age: "))\nsubjects = ["Python", "DBMS", "DSA"]`, 'm3')}
+                                onClick={() => handleCopy(`name = input("Enter your name: ")\nage = int(input("Enter your age: "))\ncourse = input("Enter your course: ")\nsubjects = ["Python", "DBMS", "DSA"]\n\nstudent = {\n    "name": name,\n    "age": age,\n    "course": course,\n    "subjects": subjects\n}\n\nprint("================================")\nprint("      STUDENT REGISTRATION")\nprint("================================")\nprint(f"Name     : {student['name']}")\nprint(f"Age      : {student['age']}")\nprint(f"Course   : {student['course']}")\nprint(f"Subjects : {student['subjects']}")\nprint("================================")\nprint("Registration Successful!")`, 'm3')}
                                 className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700 font-bold flex items-center gap-1.5"
                             >
                                 {copiedSnippet === 'm3' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -845,12 +1051,25 @@ export default function RichNotesRenderer({ moduleData, onStartQuiz }) {
                         </div>
 
                         <div className="bg-black p-5 rounded-2xl border border-slate-800 font-mono text-xs text-cyan-300 leading-relaxed shadow-inner">
+                            <p className="text-slate-500 mb-2"># student_registration.py</p>
                             <p>name = input("Enter your name: ")</p>
                             <p>age = int(input("Enter your age: "))</p>
+                            <p>course = input("Enter your course: ")</p>
                             <p>subjects = ["Python", "DBMS", "DSA"]</p>
                             <br />
-                            <p className="text-slate-400">student = &#123; "name": name, "age": age, "subjects": subjects &#125;</p>
-                            <p className="text-emerald-400 mt-2">print(f"Name: &#123;student['name']&#125;, Age: &#123;student['age']&#125;")</p>
+                            <p className="text-slate-400">student = &#123;</p>
+                            <p className="text-slate-400 pl-4">"name": name, "age": age, "course": course, "subjects": subjects</p>
+                            <p className="text-slate-400">&#125;</p>
+                            <br />
+                            <p className="text-emerald-400">print("================================")</p>
+                            <p className="text-emerald-400">print("      STUDENT REGISTRATION")</p>
+                            <p className="text-emerald-400">print("================================")</p>
+                            <p className="text-emerald-400">print(f"Name     : &#123;student['name']&#125;")</p>
+                            <p className="text-emerald-400">print(f"Age      : &#123;student['age']&#125;")</p>
+                            <p className="text-emerald-400">print(f"Course   : &#123;student['course']&#125;")</p>
+                            <p className="text-emerald-400">print(f"Subjects : &#123;student['subjects']&#125;")</p>
+                            <p className="text-emerald-400">print("================================")</p>
+                            <p className="text-emerald-400">print("Registration Successful!")</p>
                         </div>
                     </div>
                 </div>
