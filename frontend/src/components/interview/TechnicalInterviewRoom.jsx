@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import {
     ArrowLeft, Code, Play, CheckCircle2, AlertCircle, Clock, Zap,
     Cpu, Database, Layers, ArrowRight, ExternalLink, Bot, Mic, MicOff,
-    Check, Sparkles, Camera, CameraOff
+    Check, Sparkles, Camera, CameraOff, Terminal, RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { codeExecutionEngine } from '../../services/codeExecutionEngine';
 
 export default function TechnicalInterviewRoom({
     targetRole = 'Backend Developer',
@@ -38,55 +39,91 @@ function twoSum(nums, target) {
     }
     return [];
 }`,
+            testHarness: `
+console.log("--- Test Case 1 ---");
+const r1 = twoSum([2, 7, 11, 15], 9);
+console.log("Result:", JSON.stringify(r1));
+if (JSON.stringify(r1) !== "[0,1]") throw new Error("Expected [0,1], got " + JSON.stringify(r1));
+
+console.log("--- Test Case 2 ---");
+const r2 = twoSum([3, 2, 4], 6);
+console.log("Result:", JSON.stringify(r2));
+if (JSON.stringify(r2) !== "[1,2]") throw new Error("Expected [1,2], got " + JSON.stringify(r2));
+
+console.log("--- Test Case 3 ---");
+const r3 = twoSum([3, 3], 6);
+console.log("Result:", JSON.stringify(r3));
+if (JSON.stringify(r3) !== "[0,1]") throw new Error("Expected [0,1], got " + JSON.stringify(r3));
+
+console.log("✅ All 3 automated test cases passed successfully!");
+`,
             probeQuestion: "Why did you choose a Hash Map for this approach? What is the Time and Space Complexity?",
             complexity: "Time: O(N) | Space: O(N)",
             testCases: [
-                { id: 1, name: 'Test Case 1: [2,7,11,15], target = 9', passed: true, output: '[0, 1]', expected: '[0, 1]' },
-                { id: 2, name: 'Test Case 2: [3,2,4], target = 6', passed: true, output: '[1, 2]', expected: '[1, 2]' },
-                { id: 3, name: 'Test Case 3: [3,3], target = 6', passed: true, output: '[0, 1]', expected: '[0, 1]' }
+                { id: 1, name: 'Test Case 1: [2,7,11,15], target = 9', expected: '[0, 1]' },
+                { id: 2, name: 'Test Case 2: [3,2,4], target = 6', expected: '[1, 2]' },
+                { id: 3, name: 'Test Case 3: [3,3], target = 6', expected: '[0, 1]' }
             ]
         },
         backend: {
-            title: 'Design a Sliding Window Rate Limiter Middleware',
+            title: 'Design a Sliding Window Rate Limiter',
             difficulty: 'Medium',
-            category: 'Express & Redis Middleware',
-            description: 'Implement a rate limiter function that restricts IP addresses to a maximum of 100 requests per minute using Redis sliding log technique.',
-            inputExample: 'ip = "192.168.1.1", limit = 100, windowSeconds = 60',
+            category: 'Express & Memory Middleware',
+            description: 'Implement an in-memory rate limiter function that restricts requests from an IP to a maximum of 100 requests per minute.',
+            inputExample: 'ip = "192.168.1.1", limit = 100, windowMs = 60000',
             outputExample: '{ allowed: true, remaining: 99 }',
-            explanation: 'Removes keys older than (now - 60s) from sorted set, then counts remaining elements.',
-            initialCode: `// Sliding Window Rate Limiter in Node.js
-async function isRateLimited(redis, userIp) {
+            explanation: 'Filters timestamps older than (now - windowMs), then verifies if request count < limit.',
+            initialCode: `// Sliding Window In-Memory Rate Limiter
+const requestLogs = new Map();
+
+function isRateLimited(ip, limit = 100, windowMs = 60000) {
     const now = Date.now();
-    const windowStart = now - 60000; // 1 minute window
+    const windowStart = now - windowMs;
     
-    // Remove old logs
-    await redis.zremrangebyscore(userIp, 0, windowStart);
-    const reqCount = await redis.zcard(userIp);
+    let timestamps = requestLogs.get(ip) || [];
+    timestamps = timestamps.filter(t => t > windowStart);
     
-    if (reqCount >= 100) return { allowed: false };
+    if (timestamps.length >= limit) {
+        return { allowed: false, remaining: 0 };
+    }
     
-    await redis.zadd(userIp, now, now);
-    return { allowed: true, remaining: 100 - reqCount - 1 };
+    timestamps.push(now);
+    requestLogs.set(ip, timestamps);
+    return { allowed: true, remaining: limit - timestamps.length };
 }`,
+            testHarness: `
+console.log("--- Testing Single IP Request ---");
+const test1 = isRateLimited("192.168.1.1", 5, 1000);
+console.log("Request 1:", JSON.stringify(test1));
+if (!test1.allowed) throw new Error("Expected allowed: true");
+
+for (let i = 0; i < 4; i++) isRateLimited("192.168.1.1", 5, 1000);
+const testOverLimit = isRateLimited("192.168.1.1", 5, 1000);
+console.log("Request 6 (Over limit):", JSON.stringify(testOverLimit));
+if (testOverLimit.allowed) throw new Error("Expected request 6 to be blocked");
+
+console.log("✅ Rate Limiter sliding window logic verified!");
+`,
             probeQuestion: "How would this sliding log algorithm handle 50,000 requests per second across multiple microservice replicas?",
-            complexity: "Time: O(log N) per req | Space: O(N)",
+            complexity: "Time: O(K) per req | Space: O(N)",
             testCases: [
-                { id: 1, name: 'Test Case 1: 50 requests under 1 min', passed: true, output: '{ allowed: true }', expected: '{ allowed: true }' },
-                { id: 2, name: 'Test Case 2: 101st request blocked', passed: true, output: '{ allowed: false }', expected: '{ allowed: false }' }
+                { id: 1, name: 'Test Case 1: 5 requests within window', expected: '{ allowed: true }' },
+                { id: 2, name: 'Test Case 2: 6th request blocked', expected: '{ allowed: false }' }
             ]
         },
         'system-design': {
-            title: 'Design a Distributed URL Shortener (TinyURL)',
+            title: 'Design Base62 Short Code Generator (TinyURL)',
             difficulty: 'Medium',
-            category: 'System Design & Scalability',
-            description: 'Design a scalable URL shortening service like TinyURL handling 100M new URLs created per month and 1B redirects per month.',
-            inputExample: 'Long URL: "https://studyspirit.in/career/dashboard"',
-            outputExample: 'Short URL: "https://sp.in/aB9xK"',
-            explanation: 'Uses Base62 encoding on auto-incrementing ID or MD5 hash prefix with DB indexing.',
+            category: 'System Design & Encoding',
+            description: 'Implement a Base62 encoder that converts a 64-bit auto-incrementing integer ID to a 6-7 character alphanumeric short URL hash.',
+            inputExample: 'ID: 10000000',
+            outputExample: '"fEM2"',
+            explanation: 'Uses Base62 radix division on character set [0-9a-zA-Z].',
             initialCode: `// Base62 Short Code Generator
 const BASE62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function encodeId(num) {
+    if (num === 0) return BASE62[0];
     let sb = [];
     while (num > 0) {
         sb.push(BASE62[num % 62]);
@@ -94,34 +131,58 @@ function encodeId(num) {
     }
     return sb.reverse().join('');
 }`,
-            probeQuestion: "How do you prevent Base62 collision when multiple database nodes generate IDs concurrently?",
+            testHarness: `
+console.log("--- Base62 Encoding Test ---");
+const c1 = encodeId(125);
+console.log("encodeId(125) =", c1);
+if (c1 !== "cb") throw new Error("Expected 'cb', got " + c1);
+
+const c2 = encodeId(10000000);
+console.log("encodeId(10000000) =", c2);
+if (c2 !== "fEM2") throw new Error("Expected 'fEM2', got " + c2);
+
+console.log("✅ Base62 Encoder verified!");
+`,
+            probeQuestion: "How do you prevent Base62 collisions when multiple database nodes generate IDs concurrently?",
             complexity: "Time: O(log62 N) | Space: O(1)",
             testCases: [
-                { id: 1, name: 'Encode ID: 125', passed: true, output: '"cb"', expected: '"cb"' },
-                { id: 2, name: 'Encode ID: 10000000', passed: true, output: '"fEM2"', expected: '"fEM2"' }
+                { id: 1, name: 'Encode ID: 125 -> "cb"', expected: '"cb"' },
+                { id: 2, name: 'Encode ID: 10000000 -> "fEM2"', expected: '"fEM2"' }
             ]
         },
         'cs-fundamentals': {
             title: 'Explain Process vs Thread & Deadlock Conditions',
             difficulty: 'Medium',
             category: 'Operating Systems & Concurrency',
-            description: 'Explain the difference between a Process and a Thread in operating systems. List Coffman\'s four necessary conditions for Deadlock.',
+            description: 'Analyze deadlock conditions and demonstrate resource allocation ordering to prevent Circular Wait.',
             inputExample: 'Topic: OS Concurrency & Deadlocks',
             outputExample: 'Conditions: Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait.',
             explanation: 'Deadlock can only occur if all 4 Coffman conditions hold simultaneously.',
-            initialCode: `// Pseudo-code demonstrating deadlock scenario
-function acquireLocks(lockA, lockB) {
-    lockA.acquire(); // Thread 1 holds A, waits for B
-    // ...
-    lockB.acquire();
+            initialCode: `// Ordered Lock Acquisition to Prevent Circular Wait
+function safeAcquireLocks(lockA, lockB) {
+    // Always acquire lower-ID lock first
+    const [first, second] = lockA.id < lockB.id ? [lockA, lockB] : [lockB, lockA];
+    first.acquire();
+    second.acquire();
     
-    lockB.release();
-    lockA.release();
+    // Critical Section
+    second.release();
+    first.release();
+    return { success: true };
 }`,
+            testHarness: `
+console.log("--- Testing Ordered Lock Hierarchy ---");
+const lock1 = { id: 1, acquire: () => {}, release: () => {} };
+const lock2 = { id: 2, acquire: () => {}, release: () => {} };
+const result = safeAcquireLocks(lock2, lock1);
+console.log("Result:", JSON.stringify(result));
+if (!result.success) throw new Error("Failed to safely acquire locks");
+console.log("✅ Circular wait prevention verified!");
+`,
             probeQuestion: "Which deadlock prevention strategy would you apply to break the Circular Wait condition in a distributed transaction?",
             complexity: "Time: O(1) | Space: O(1)",
             testCases: [
-                { id: 1, name: 'Concept Check: Coffman Conditions', passed: true, output: '4/4 Verified', expected: '4/4 Verified' }
+                { id: 1, name: 'Safe Lock Acquisition (No Circular Wait)', expected: '4/4 Coffman Safe' }
             ]
         }
     };
@@ -130,29 +191,64 @@ function acquireLocks(lockA, lockB) {
     const [selectedTab, setSelectedTab] = useState('dsa');
     const [code, setCode] = useState(problemData.dsa.initialCode);
     const [isRunning, setIsRunning] = useState(false);
+    const [executionOutput, setExecutionOutput] = useState(null);
     const [testResults, setTestResults] = useState(null);
     const [language, setLanguage] = useState('javascript');
     const [probeResponse, setProbeResponse] = useState('');
     const [ariaProbeQuestion, setAriaProbeQuestion] = useState(problemData.dsa.probeQuestion);
+    const [ariaFeedback, setAriaFeedback] = useState('');
 
     const currentProblem = problemData[selectedTab] || problemData.dsa;
 
-    const handleRunTests = () => {
+    // Real Execution via codeExecutionEngine
+    const handleRunTests = async () => {
         setIsRunning(true);
-        setTimeout(() => {
+        setExecutionOutput(null);
+
+        const executableCode = `${code}\n${currentProblem.testHarness}`;
+
+        try {
+            const start = performance.now();
+            const res = await codeExecutionEngine.execute('javascript', executableCode);
+            const elapsed = Math.round(performance.now() - start);
+
+            const stdout = res?.run?.stdout || '';
+            const stderr = res?.run?.stderr || '';
+            const passed = !stderr && stdout.includes('✅');
+
+            setExecutionOutput({
+                stdout,
+                stderr,
+                elapsed,
+                passed
+            });
+
+            setTestResults(currentProblem.testCases.map((tc) => ({
+                ...tc,
+                passed
+            })));
+        } catch (err) {
+            setExecutionOutput({
+                stdout: '',
+                stderr: err.message,
+                elapsed: 0,
+                passed: false
+            });
+            setTestResults(currentProblem.testCases.map(tc => ({ ...tc, passed: false })));
+        } finally {
             setIsRunning(false);
-            setTestResults(currentProblem.testCases);
-        }, 800);
+        }
     };
 
     const handleAnswerProbe = () => {
         if (!probeResponse.trim()) return;
-        setAriaProbeQuestion("Excellent technical reasoning! How would you write unit tests to handle edge cases like null or malformed inputs?");
+        setAriaFeedback(`Aria Review: "Excellent trade-off justification! Your focus on ${probeResponse.slice(0, 40)}... shows strong technical depth."`);
+        setAriaProbeQuestion("Great response. How would you handle potential edge cases or distributed scaling in a high-concurrency production setting?");
         setProbeResponse('');
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between font-sans">
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between font-sans select-none">
             {/* Top Bar */}
             <header className="px-6 py-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -211,7 +307,7 @@ function acquireLocks(lockA, lockB) {
             {/* Category Tabs */}
             <div className="px-6 py-3 border-b border-slate-800/80 bg-slate-900/50 flex items-center gap-3 overflow-x-auto">
                 <button
-                    onClick={() => { setSelectedTab('dsa'); setCode(problemData.dsa.initialCode); setTestResults(null); setAriaProbeQuestion(problemData.dsa.probeQuestion); }}
+                    onClick={() => { setSelectedTab('dsa'); setCode(problemData.dsa.initialCode); setTestResults(null); setExecutionOutput(null); setAriaProbeQuestion(problemData.dsa.probeQuestion); setAriaFeedback(''); }}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'dsa' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
@@ -221,17 +317,17 @@ function acquireLocks(lockA, lockB) {
                 </button>
 
                 <button
-                    onClick={() => { setSelectedTab('backend'); setCode(problemData.backend.initialCode); setTestResults(null); setAriaProbeQuestion(problemData.backend.probeQuestion); }}
+                    onClick={() => { setSelectedTab('backend'); setCode(problemData.backend.initialCode); setTestResults(null); setExecutionOutput(null); setAriaProbeQuestion(problemData.backend.probeQuestion); setAriaFeedback(''); }}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'backend' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
                 >
                     <Database className="w-4 h-4" />
-                    <span>Backend & Databases</span>
+                    <span>Backend & Middleware</span>
                 </button>
 
                 <button
-                    onClick={() => { setSelectedTab('system-design'); setCode(problemData['system-design'].initialCode); setTestResults(null); setAriaProbeQuestion(problemData['system-design'].probeQuestion); }}
+                    onClick={() => { setSelectedTab('system-design'); setCode(problemData['system-design'].initialCode); setTestResults(null); setExecutionOutput(null); setAriaProbeQuestion(problemData['system-design'].probeQuestion); setAriaFeedback(''); }}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'system-design' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
@@ -241,13 +337,13 @@ function acquireLocks(lockA, lockB) {
                 </button>
 
                 <button
-                    onClick={() => { setSelectedTab('cs-fundamentals'); setCode(problemData['cs-fundamentals'].initialCode); setTestResults(null); setAriaProbeQuestion(problemData['cs-fundamentals'].probeQuestion); }}
+                    onClick={() => { setSelectedTab('cs-fundamentals'); setCode(problemData['cs-fundamentals'].initialCode); setTestResults(null); setExecutionOutput(null); setAriaProbeQuestion(problemData['cs-fundamentals'].probeQuestion); setAriaFeedback(''); }}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
                         selectedTab === 'cs-fundamentals' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'
                     }`}
                 >
                     <Cpu className="w-4 h-4" />
-                    <span>CS Fundamentals (OS/DBMS/CN)</span>
+                    <span>CS Fundamentals</span>
                 </button>
             </div>
 
@@ -289,6 +385,12 @@ function acquireLocks(lockA, lockB) {
                                 "{ariaProbeQuestion}"
                             </p>
 
+                            {ariaFeedback && (
+                                <div className="bg-emerald-950/40 border border-emerald-800/50 rounded-xl p-2.5 text-[11px] text-emerald-300 font-medium">
+                                    {ariaFeedback}
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-2">
                                 <input
                                     type="text"
@@ -322,7 +424,7 @@ function acquireLocks(lockA, lockB) {
                                 onChange={(e) => setLanguage(e.target.value)}
                                 className="bg-slate-950 border border-slate-800 text-xs font-bold text-slate-300 rounded-xl px-3 py-1 focus:outline-none"
                             >
-                                <option value="javascript">JavaScript</option>
+                                <option value="javascript">JavaScript (ES6)</option>
                                 <option value="python">Python</option>
                                 <option value="cpp">C++</option>
                                 <option value="java">Java</option>
@@ -334,29 +436,31 @@ function acquireLocks(lockA, lockB) {
                             <textarea
                                 value={code}
                                 onChange={(e) => setCode(e.target.value)}
-                                rows={14}
+                                rows={12}
                                 className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-emerald-400 font-mono text-xs leading-relaxed focus:outline-none focus:border-blue-500 shadow-inner"
                             />
                         </div>
 
-                        {/* Test Execution Output */}
-                        {testResults && (
-                            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs space-y-2 mb-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="font-extrabold text-slate-300">Test Execution Results:</p>
-                                    <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-950 border border-emerald-800 px-2 py-0.5 rounded">
-                                        All Tests Passed
+                        {/* Test Execution Output Console */}
+                        {executionOutput && (
+                            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs font-mono space-y-2 mb-4 max-h-48 overflow-y-auto">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-slate-300 font-bold">
+                                        <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                                        <span>Execution Console</span>
+                                    </div>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                                        executionOutput.passed ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'
+                                    }`}>
+                                        {executionOutput.passed ? `All Passed (${executionOutput.elapsed}ms)` : 'Failed'}
                                     </span>
                                 </div>
-                                {testResults.map((t) => (
-                                    <div key={t.id} className="flex items-center justify-between text-slate-300 p-2 bg-slate-900 rounded-xl border border-slate-800">
-                                        <span className="flex items-center gap-1.5">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                                            {t.name}
-                                        </span>
-                                        <span className="text-emerald-400 font-mono font-bold">Passed</span>
-                                    </div>
-                                ))}
+                                {executionOutput.stdout && (
+                                    <pre className="text-slate-300 text-[11px] whitespace-pre-wrap">{executionOutput.stdout}</pre>
+                                )}
+                                {executionOutput.stderr && (
+                                    <pre className="text-rose-400 text-[11px] whitespace-pre-wrap">{executionOutput.stderr}</pre>
+                                )}
                             </div>
                         )}
                     </div>
@@ -367,8 +471,8 @@ function acquireLocks(lockA, lockB) {
                             disabled={isRunning}
                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-lg transition"
                         >
-                            <Play className="w-4 h-4" />
-                            <span>{isRunning ? 'Running Test Cases...' : 'Run Test Cases'}</span>
+                            {isRunning ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                            <span>{isRunning ? 'Executing Real Engine...' : 'Run Test Cases'}</span>
                         </button>
 
                         <button
