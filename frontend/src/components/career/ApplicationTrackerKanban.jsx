@@ -173,7 +173,7 @@ export default function ApplicationTrackerKanban({ applications = [], onMoveStag
                             <button
                                 onClick={() => {
                                     setSelectedAppModal(null);
-                                    navigate('/interview-prep');
+                                    navigate('/interview');
                                 }}
                                 className="bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs py-3 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-md shadow-purple-600/20"
                             >
@@ -184,7 +184,7 @@ export default function ApplicationTrackerKanban({ applications = [], onMoveStag
                             <button
                                 onClick={() => {
                                     setSelectedAppModal(null);
-                                    navigate('/interview-prep');
+                                    navigate('/interview');
                                 }}
                                 className="bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold text-xs py-3 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/20"
                             >

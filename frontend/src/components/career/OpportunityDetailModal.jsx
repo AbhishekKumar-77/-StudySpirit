@@ -139,7 +139,7 @@ export default function OpportunityDetailModal({ opportunity, onClose, onApply }
                                 <span className="text-[10px] text-slate-500 font-normal">20 min mock with Aria</span>
                             </div>
                             <button
-                                onClick={() => navigate('/interview-prep')}
+                                onClick={() => navigate('/interview')}
                                 className="bg-cyan-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg hover:bg-cyan-700"
                             >
                                 Practice Interview

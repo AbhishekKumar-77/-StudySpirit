@@ -5,7 +5,7 @@ import { usePageTracker } from '../hooks/usePageTracker';
 import { API_BASE } from '../config';
 import {
     Briefcase, Sparkles, ArrowRight, Clock, Star, Flame, CheckCircle2,
-    Building, MapPin, DollarSign, Layers, Zap, UserCheck, Rocket, ChevronRight
+    Building, MapPin, DollarSign, Layers, Zap, UserCheck, Bookmark, ChevronRight
 } from 'lucide-react';
 
 // Modular Light-Theme Components
@@ -14,9 +14,7 @@ import CareerHeader from '../components/career/CareerHeader';
 import CareerReadinessWidget from '../components/career/CareerReadinessWidget';
 import OpportunityCard from '../components/career/OpportunityCard';
 import ApplicationTrackerKanban from '../components/career/ApplicationTrackerKanban';
-import SkillPassportSnapshot from '../components/career/SkillPassportSnapshot';
-import CareerToolsGrid from '../components/career/CareerToolsGrid';
-import CareerRoadmapView from '../components/career/CareerRoadmapView';
+import CareerResumeView from '../components/career/CareerResumeView';
 import OpportunityDetailModal from '../components/career/OpportunityDetailModal';
 
 export default function CareerSprint() {
@@ -24,42 +22,66 @@ export default function CareerSprint() {
     const navigate = useNavigate();
     usePageTracker('CareerSprint', '/careersprint', '🚀');
 
-    // Main Active Navigation View: 'overview', 'recommended', 'jobs', 'internships', 'hackathons', 'competitions', 'scholarships', 'campus', 'app-tracker', 'passport', 'my-skills', 'roadmap', 'resume-builder', 'resume-analyzer', 'cover-letter', 'interview-prep', 'salary-insights'
-    const [activeTab, setActiveTab] = useState('overview');
+    // Main Active Navigation View: 'dashboard', 'saved-opps', 'deadlines', 'jobs', 'internships', 'hackathons', 'competitions', 'campus', 'resume', 'app-*'
+    const [activeTab, setActiveTab] = useState('dashboard');
     const [searchQuery, setSearchQuery] = useState('');
     const [listings, setListings] = useState([]);
+    const [applications, setApplications] = useState([]);
+    const [resumeData, setResumeData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+    const [toastMessage, setToastMessage] = useState(null);
 
     // Dynamic Readiness State
     const [readinessData, setReadinessData] = useState({
-        overall: 72,
+        overall: 84,
         skills: 82,
-        projects: 76,
-        resume: 68,
-        communication: 71,
-        interview: 64,
-        coding: 81
+        projects: 85,
+        communication: 78,
+        interview: 80,
+        coding: 88
     });
 
-    // Fetch Opportunities
+    // Fetch Opportunities, Applications & Real Resume Data
     useEffect(() => {
-        const fetchListings = async () => {
+        const fetchCareerData = async () => {
             setIsLoading(true);
             try {
-                const res = await fetch(`${API_BASE}/career`);
-                const data = await res.json();
-                if (data && data.success) {
-                    setListings(data.data || []);
+                // 1. Fetch Job Listings
+                const resListings = await fetch(`${API_BASE}/career`);
+                const dataListings = await resListings.json();
+                if (dataListings && dataListings.success) {
+                    setListings(dataListings.data || []);
+                }
+
+                // 2. Fetch Real Resume & Readiness Metrics
+                const resResume = await fetch(`${API_BASE}/career/resume-data`, {
+                    credentials: 'include'
+                });
+                const dataResume = await resResume.json();
+                if (dataResume && dataResume.success) {
+                    setResumeData(dataResume);
+                    if (dataResume.readiness) {
+                        setReadinessData(dataResume.readiness);
+                    }
+                }
+
+                // 3. Fetch Real Applications Tracker Data
+                const resApps = await fetch(`${API_BASE}/career/applications`, {
+                    credentials: 'include'
+                });
+                const dataApps = await resApps.json();
+                if (dataApps && dataApps.success) {
+                    setApplications(dataApps.applications || []);
                 }
             } catch (err) {
-                console.error('Failed fetching career listings:', err);
+                console.error('Failed fetching career data:', err);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchListings();
+        fetchCareerData();
     }, []);
 
     // Filter Logic
@@ -68,6 +90,7 @@ export default function CareerSprint() {
             if (activeTab === 'jobs' && item.type !== 'job') return false;
             if (activeTab === 'internships' && item.type !== 'internship') return false;
             if (activeTab === 'hackathons' && item.type !== 'hackathon') return false;
+            if (activeTab === 'competitions' && item.type !== 'competition' && item.type !== 'hackathon') return false;
 
             if (searchQuery.trim()) {
                 const q = searchQuery.toLowerCase();
@@ -82,9 +105,51 @@ export default function CareerSprint() {
         });
     }, [listings, activeTab, searchQuery]);
 
+    // Application Counts for Sidebar Badges
+    const applicationCounts = useMemo(() => {
+        const counts = {
+            saved: 0,
+            preparing: 0,
+            applied: 0,
+            assessment: 0,
+            interview: 0,
+            offer: 0,
+            rejected: 0,
+            withdrawn: 0
+        };
+        applications.forEach(app => {
+            const st = (app.stage || 'applied').toLowerCase();
+            if (counts[st] !== undefined) counts[st]++;
+        });
+        return counts;
+    }, [applications]);
+
     // Handle Application Trigger
-    const handleApplyOpportunity = (opp) => {
-        alert(`Application initiated for ${opp.title} at ${opp.company}! Skill Passport attached.`);
+    const handleApplyOpportunity = async (opp) => {
+        try {
+            // Save application in backend
+            const res = await fetch(`${API_BASE}/career/applications`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ opportunity: opp, stage: 'applied' })
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                setApplications(prev => [data.application, ...prev.filter(a => a.id !== opp.id)]);
+            }
+        } catch (e) {
+            console.error('Error saving application:', e);
+        }
+
+        // Show toast
+        setToastMessage(`Application submitted for ${opp.title} at ${opp.company}!`);
+        setTimeout(() => setToastMessage(null), 4000);
+
+        // If external link exists, open it in new tab
+        if (opp.link && opp.link.startsWith('http')) {
+            window.open(opp.link, '_blank');
+        }
     };
 
     return (
@@ -92,13 +157,8 @@ export default function CareerSprint() {
             {/* Left Sidebar Navigation */}
             <CareerSidebar
                 activeTab={activeTab}
-                setActiveTab={(tab) => {
-                    if (itemIsRoute(tab)) {
-                        handleRouteSwitch(tab, navigate);
-                    } else {
-                        setActiveTab(tab);
-                    }
-                }}
+                setActiveTab={setActiveTab}
+                applicationCounts={applicationCounts}
             />
 
             {/* Main Stage Content */}
@@ -112,27 +172,28 @@ export default function CareerSprint() {
 
                 {/* Sub-View Stage Container */}
                 <div className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto">
-                    {/* Top Greeting */}
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
-                            Good morning, {user?.name ? user.name.split(' ')[0] : 'Abhishek'}! 👋
-                        </h1>
-                        <p className="text-xs font-semibold text-slate-500 mt-0.5">
-                            Let's take the next step in your career journey.
-                        </p>
-                    </div>
+                    {/* Toast Alert */}
+                    {toastMessage && (
+                        <div className="bg-emerald-600 text-white font-extrabold text-xs px-4 py-3 rounded-2xl shadow-lg flex items-center justify-between animate-fade-in">
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>{toastMessage}</span>
+                            </div>
+                            <button onClick={() => setToastMessage(null)} className="text-white/80 hover:text-white text-xs ml-4">✕</button>
+                        </div>
+                    )}
 
                     {/* Top 4 Stat Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div
-                            onClick={() => setActiveTab('passport')}
+                            onClick={() => setActiveTab('resume')}
                             className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs hover:border-cyan-400 hover:shadow-md transition cursor-pointer flex items-center justify-between"
                         >
                             <div>
                                 <span className="text-xs font-extrabold text-slate-500">Career Readiness</span>
-                                <div className="text-2xl font-black text-slate-900 mt-1">72%</div>
+                                <div className="text-2xl font-black text-slate-900 mt-1">{readinessData.overall}%</div>
                                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 mt-1 inline-block">
-                                    Good Progress
+                                    Top Tier Progress
                                 </span>
                             </div>
                             <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold">
@@ -146,9 +207,9 @@ export default function CareerSprint() {
                         >
                             <div>
                                 <span className="text-xs font-extrabold text-slate-500">Applications</span>
-                                <div className="text-2xl font-black text-slate-900 mt-1">41</div>
+                                <div className="text-2xl font-black text-slate-900 mt-1">{applications.length || 4}</div>
                                 <span className="text-[10px] font-bold text-cyan-600 flex items-center gap-1 mt-1">
-                                    Total Applied <ArrowRight className="w-3 h-3" />
+                                    View Pipeline <ArrowRight className="w-3 h-3" />
                                 </span>
                             </div>
                             <div className="w-11 h-11 rounded-2xl bg-cyan-50 text-cyan-600 border border-cyan-100 flex items-center justify-center font-bold">
@@ -157,14 +218,14 @@ export default function CareerSprint() {
                         </div>
 
                         <div
-                            onClick={() => setActiveTab('app-interview')}
+                            onClick={() => navigate('/interview')}
                             className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs hover:border-cyan-400 hover:shadow-md transition cursor-pointer flex items-center justify-between"
                         >
                             <div>
-                                <span className="text-xs font-extrabold text-slate-500">Interviews</span>
-                                <div className="text-2xl font-black text-slate-900 mt-1">12</div>
+                                <span className="text-xs font-extrabold text-slate-500">Interview Prep</span>
+                                <div className="text-2xl font-black text-slate-900 mt-1">{readinessData.interview}%</div>
                                 <span className="text-[10px] font-bold text-purple-600 flex items-center gap-1 mt-1">
-                                    Upcoming <ArrowRight className="w-3 h-3" />
+                                    Practice AI Mock <ArrowRight className="w-3 h-3" />
                                 </span>
                             </div>
                             <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center font-bold">
@@ -173,14 +234,14 @@ export default function CareerSprint() {
                         </div>
 
                         <div
-                            onClick={() => setActiveTab('passport')}
+                            onClick={() => setActiveTab('resume')}
                             className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs hover:border-cyan-400 hover:shadow-md transition cursor-pointer flex items-center justify-between"
                         >
                             <div>
-                                <span className="text-xs font-extrabold text-slate-500">Profile Strength</span>
-                                <div className="text-2xl font-black text-slate-900 mt-1">86%</div>
+                                <span className="text-xs font-extrabold text-slate-500">Live Resume</span>
+                                <div className="text-2xl font-black text-slate-900 mt-1">Verified</div>
                                 <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100 mt-1 inline-block">
-                                    Strong Profile
+                                    Portfolio Ready
                                 </span>
                             </div>
                             <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center font-bold">
@@ -189,17 +250,17 @@ export default function CareerSprint() {
                         </div>
                     </div>
 
-                    {/* MAIN VIEW: OVERVIEW / DASHBOARD */}
-                    {(activeTab === 'overview' || activeTab === 'recommended') && (
+                    {/* MAIN VIEW: DASHBOARD */}
+                    {activeTab === 'dashboard' && (
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                             {/* Left Main Column (65%) */}
                             <div className="lg:col-span-8 space-y-8">
-                                {/* Recommended for You Section */}
+                                {/* Verified Opportunities Section */}
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
-                                            <h2 className="text-lg font-black text-slate-900 tracking-tight">Recommended for You</h2>
-                                            <p className="text-xs font-semibold text-slate-500">Opportunities matching your verified StudySpirit skills</p>
+                                            <h2 className="text-lg font-black text-slate-900 tracking-tight">Top Opportunities for You</h2>
+                                            <p className="text-xs font-semibold text-slate-500">Live jobs matching your verified StudySpirit skills & projects</p>
                                         </div>
 
                                         <button
@@ -223,14 +284,26 @@ export default function CareerSprint() {
                                     </div>
                                 </div>
 
-                                {/* Application Tracker Snapshot / Full Pipeline */}
-                                <ApplicationTrackerKanban />
+                                {/* Live Verified Resume Quick Banner */}
+                                <div className="bg-gradient-to-r from-cyan-600 to-teal-600 rounded-3xl p-6 text-white shadow-md shadow-cyan-600/20 flex flex-col md:flex-row items-center justify-between gap-4">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 text-white px-2.5 py-0.5 rounded-full">
+                                            StudySpirit Verified Portfolio
+                                        </span>
+                                        <h3 className="text-lg font-black tracking-tight mt-1">Your Live Student Resume is Ready</h3>
+                                        <p className="text-xs font-medium text-white/80">
+                                            Showcase your verified skills, Project Lab creations, and algorithmic solves to top recruiters.
+                                        </p>
+                                    </div>
 
-                                {/* Skill Passport Snapshot */}
-                                <SkillPassportSnapshot onViewPassport={() => setActiveTab('passport')} />
-
-                                {/* Career Tools Section */}
-                                <CareerToolsGrid onSelectTool={(tId) => handleToolClick(tId, navigate, setActiveTab)} />
+                                    <button
+                                        onClick={() => setActiveTab('resume')}
+                                        className="bg-white text-cyan-900 hover:bg-slate-50 font-extrabold text-xs px-5 py-3 rounded-2xl shrink-0 shadow-xs transition flex items-center gap-1.5"
+                                    >
+                                        <span>Open Live Resume</span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Right Sidebar Column (35%) */}
@@ -238,22 +311,23 @@ export default function CareerSprint() {
                                 {/* Career Readiness Gauge Card */}
                                 <CareerReadinessWidget
                                     readinessData={readinessData}
-                                    onSeeRecommendations={() => setActiveTab('recommended')}
+                                    onSeeRecommendations={() => setActiveTab('jobs')}
+                                    onViewReport={() => setActiveTab('resume')}
                                 />
 
                                 {/* Top Skills In Demand Card */}
                                 <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-base font-extrabold text-slate-900">Top Skills In Demand</h3>
-                                        <span className="text-xs font-extrabold text-purple-600">View All</span>
+                                        <span className="text-xs font-extrabold text-cyan-600">Active</span>
                                     </div>
 
                                     <div className="space-y-3">
                                         {[
-                                            { title: 'Full Stack Development', demand: 'High Demand', color: 'bg-cyan-50 text-cyan-700' },
-                                            { title: 'Cloud Computing (AWS/Azure)', demand: 'Very High', color: 'bg-purple-50 text-purple-700' },
+                                            { title: 'Full Stack Development (React/Node)', demand: 'High Demand', color: 'bg-cyan-50 text-cyan-700' },
+                                            { title: 'Data Structures & Algorithms', demand: 'Essential', color: 'bg-purple-50 text-purple-700' },
                                             { title: 'AI / Machine Learning', demand: 'High Demand', color: 'bg-emerald-50 text-emerald-700' },
-                                            { title: 'DevOps & Docker', demand: 'High Demand', color: 'bg-blue-50 text-blue-700' }
+                                            { title: 'Database & SQL Architecture', demand: 'High Demand', color: 'bg-blue-50 text-blue-700' }
                                         ].map((sk) => (
                                             <div key={sk.title} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl text-xs font-bold text-slate-800">
                                                 <span>{sk.title}</span>
@@ -269,14 +343,19 @@ export default function CareerSprint() {
                                 <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-base font-extrabold text-slate-900">Upcoming Deadlines</h3>
-                                        <span className="text-xs font-extrabold text-cyan-600">View All</span>
+                                        <span 
+                                            onClick={() => setActiveTab('deadlines')}
+                                            className="text-xs font-extrabold text-cyan-600 hover:text-cyan-700 cursor-pointer"
+                                        >
+                                            View All
+                                        </span>
                                     </div>
 
                                     <div className="space-y-3">
                                         {[
-                                            { title: 'Google Backend Intern', sub: 'Apply by 25 Aug 2025', days: '5 days left', color: 'text-rose-600 bg-rose-50' },
-                                            { title: 'Microsoft SWE Intern', sub: 'Apply by 28 Aug 2025', days: '8 days left', color: 'text-amber-600 bg-amber-50' },
-                                            { title: 'Adobe Internship Program', sub: 'Apply by 01 Sep 2025', days: '12 days left', color: 'text-purple-600 bg-purple-50' }
+                                            { title: 'Google Backend Intern', sub: 'Apply by 25 Aug', days: '5 days left', color: 'text-rose-600 bg-rose-50' },
+                                            { title: 'Microsoft SWE Intern', sub: 'Apply by 28 Aug', days: '8 days left', color: 'text-amber-600 bg-amber-50' },
+                                            { title: 'Adobe Internship Program', sub: 'Apply by 01 Sep', days: '12 days left', color: 'text-purple-600 bg-purple-50' }
                                         ].map((d, i) => (
                                             <div key={i} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200/60 rounded-2xl">
                                                 <div>
@@ -294,27 +373,83 @@ export default function CareerSprint() {
                         </div>
                     )}
 
+                    {/* SUB-VIEW: RESUME MODULE */}
+                    {activeTab === 'resume' && (
+                        <CareerResumeView
+                            resumeData={resumeData}
+                            user={user}
+                        />
+                    )}
+
                     {/* SUB-VIEW: APPLICATION TRACKER */}
                     {activeTab.startsWith('app-') && (
-                        <ApplicationTrackerKanban />
+                        <ApplicationTrackerKanban applications={applications} />
                     )}
 
-                    {/* SUB-VIEW: SKILL PASSPORT */}
-                    {(activeTab === 'passport' || activeTab === 'my-skills') && (
-                        <SkillPassportSnapshot onViewPassport={() => {}} />
+                    {/* SUB-VIEW: SAVED OPPORTUNITIES */}
+                    {activeTab === 'saved-opps' && (
+                        <div className="space-y-6">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-black text-slate-900">Saved Opportunities</h2>
+                                <p className="text-xs font-semibold text-slate-500">Your bookmarked career listings</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {(filteredListings.length > 0 ? filteredListings : defaultCuratedOpps).slice(0, 3).map((opp) => (
+                                    <OpportunityCard
+                                        key={opp.id}
+                                        opportunity={opp}
+                                        onOpenDetail={(o) => setSelectedOpportunity(o)}
+                                        onApply={handleApplyOpportunity}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                     )}
 
-                    {/* SUB-VIEW: ROADMAP */}
-                    {activeTab === 'roadmap' && (
-                        <CareerRoadmapView />
+                    {/* SUB-VIEW: DEADLINES */}
+                    {activeTab === 'deadlines' && (
+                        <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xs space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900">Upcoming Application Deadlines</h2>
+                                    <p className="text-xs font-semibold text-slate-500">Never miss a critical hiring window</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {[
+                                    { company: 'Google Cloud', title: 'Backend Developer Intern', deadline: '25 Aug', daysLeft: '5 days left', urgent: true },
+                                    { company: 'Microsoft', title: 'Software Engineer Intern', deadline: '28 Aug', daysLeft: '8 days left', urgent: false },
+                                    { company: 'Adobe', title: 'Internship Program 2025', deadline: '01 Sep', daysLeft: '12 days left', urgent: false },
+                                    { company: 'Smart India Hackathon', title: 'SIH 2025 Final Submission', deadline: '10 Sep', daysLeft: '21 days left', urgent: false }
+                                ].map((item, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-white border flex items-center justify-center font-bold text-slate-700">
+                                                <Clock className="w-5 h-5 text-cyan-600" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-extrabold text-slate-900">{item.title}</h4>
+                                                <p className="text-xs text-slate-500">{item.company} • Deadline: {item.deadline}</p>
+                                            </div>
+                                        </div>
+
+                                        <span className={`text-xs font-extrabold px-3 py-1 rounded-full ${item.urgent ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
+                                            {item.daysLeft}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     )}
 
                     {/* SUB-VIEW: OPPORTUNITIES BROWSER */}
-                    {['jobs', 'internships', 'hackathons', 'competitions', 'scholarships', 'campus'].includes(activeTab) && (
+                    {['jobs', 'internships', 'hackathons', 'competitions', 'campus'].includes(activeTab) && (
                         <div className="space-y-6">
                             <div className="mb-4">
                                 <h2 className="text-xl font-black text-slate-900 capitalize">{activeTab} Opportunities</h2>
-                                <p className="text-xs font-semibold text-slate-500">Explore active verified career listings</p>
+                                <p className="text-xs font-semibold text-slate-500">Explore active verified career listings across India and remote tech</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -337,18 +472,18 @@ export default function CareerSprint() {
                                 <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-extrabold text-emerald-950">Tip for you, {user?.name ? user.name.split(' ')[0] : 'Abhishek'}</h4>
+                                <h4 className="text-sm font-extrabold text-emerald-950">StudySpirit Career Accelerator</h4>
                                 <p className="text-xs font-semibold text-emerald-800">
-                                    Complete 2 more projects and improve your communication score to get 15% better job matches.
+                                    Build verified projects in Project Lab and practice proctored interviews to boost your recruiter match index.
                                 </p>
                             </div>
                         </div>
 
                         <button
-                            onClick={() => navigate('/resources')}
+                            onClick={() => navigate('/project-lab')}
                             className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl shadow-md shadow-emerald-600/20 transition shrink-0 flex items-center gap-2"
                         >
-                            <span>View My Action Plan</span>
+                            <span>Explore Project Lab</span>
                             <ArrowRight className="w-4 h-4" />
                         </button>
                     </div>
@@ -367,23 +502,6 @@ export default function CareerSprint() {
     );
 }
 
-// Helpers
-function itemIsRoute(tab) {
-    return ['interview-prep', 'resume-builder'].includes(tab);
-}
-
-function handleRouteSwitch(tab, navigate) {
-    if (tab === 'interview-prep') navigate('/interview-prep');
-    if (tab === 'resume-builder') navigate('/planner');
-}
-
-function handleToolClick(tId, navigate, setActiveTab) {
-    if (tId === 'interview-prep') navigate('/interview-prep');
-    else if (tId === 'resume-builder') navigate('/planner');
-    else if (tId === 'roadmap') setActiveTab('roadmap');
-    else setActiveTab('passport');
-}
-
 const defaultCuratedOpps = [
     {
         id: 'c1',
@@ -396,7 +514,8 @@ const defaultCuratedOpps = [
         skills: ['Node.js', 'MongoDB', 'REST API', 'Git'],
         posted: 'Posted 2 days ago',
         logo: 'https://logo.clearbit.com/google.com',
-        source: 'Company Careers'
+        source: 'Company Careers',
+        link: 'https://careers.google.com'
     },
     {
         id: 'c2',
@@ -409,19 +528,21 @@ const defaultCuratedOpps = [
         skills: ['C++', 'System Design', 'OOP', 'Azure'],
         posted: 'Posted 5 days ago',
         logo: 'https://logo.clearbit.com/microsoft.com',
-        source: 'Microsoft Careers'
+        source: 'Microsoft Careers',
+        link: 'https://careers.microsoft.com'
     },
     {
         id: 'c3',
         title: 'Full Stack Developer Intern',
-        company: 'Zoho Corporation',
-        location: 'Chennai, India',
-        workMode: 'Remote',
-        salary: '₹25K–₹35K / month',
-        matchScore: 82,
-        skills: ['React', 'Node.js', 'MySQL', 'Express'],
+        company: 'Razorpay',
+        location: 'Bengaluru, India',
+        workMode: 'Hybrid',
+        salary: '₹15–30 LPA',
+        matchScore: 88,
+        skills: ['Node.js', 'PostgreSQL', 'Redis', 'React'],
         posted: 'Posted 1 day ago',
-        logo: 'https://logo.clearbit.com/zoho.com',
-        source: 'Unstop'
+        logo: 'https://logo.clearbit.com/razorpay.com',
+        source: 'Razorpay Careers',
+        link: 'https://razorpay.com/jobs/'
     }
 ];

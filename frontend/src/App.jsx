@@ -139,6 +139,7 @@ function App() {
               <Route path="/codespirit" element={<CodeSpirit />} />
               <Route path="/interview" element={<AIInterview />} />
               <Route path="/career" element={<CareerSprint />} />
+              <Route path="/careersprint" element={<CareerSprint />} />
               <Route path="/project-lab" element={<ProjectLab />} />
               <Route path="/project-lab/:projectId" element={<ProjectDetail />} />
               <Route path="/events" element={<EventsHub />} />
