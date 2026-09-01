@@ -229,37 +229,59 @@ class AIProviderService {
             messages.push({ role: 'user', content: "Hi Aria! Let's start." });
         }
 
-        const fetchResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.primaryApiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
-                messages: messages,
-                temperature: 0.7,
-                max_tokens: 2000,
-                response_format: { type: "json_object" }
-            })
-        });
+        const candidateModels = [
+            'llama-3.3-70b-versatile',
+            'llama-3.1-8b-instant',
+            'openai/gpt-oss-20b'
+        ];
 
-        if (!fetchResponse.ok) {
-            throw new Error(`HTTP ${fetchResponse.status} from Groq API`);
+        let lastError = null;
+
+        for (const modelName of candidateModels) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+                const fetchResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.primaryApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 2000,
+                        response_format: { type: "json_object" }
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!fetchResponse.ok) {
+                    throw new Error(`HTTP ${fetchResponse.status} from Groq API (${modelName})`);
+                }
+
+                const data = await fetchResponse.json();
+                if (data.choices && data.choices[0]?.message?.content) {
+                    const rawContent = data.choices[0].message.content.trim();
+                    const cleanedContent = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const parsed = JSON.parse(cleanedContent);
+                    return {
+                        response: parsed.spokenText || parsed.question,
+                        parsedResponse: parsed,
+                        source: `groq-${modelName}`
+                    };
+                }
+            } catch (err) {
+                console.warn(`[AIProviderService] Attempt with model ${modelName} failed:`, err.message);
+                lastError = err;
+            }
         }
 
-        const data = await fetchResponse.json();
-        if (data.choices && data.choices[0]?.message?.content) {
-            const rawContent = data.choices[0].message.content.trim();
-            const parsed = JSON.parse(rawContent.replace(/```json/g, '').replace(/```/g, '').trim());
-            return {
-                response: parsed.spokenText || parsed.question,
-                parsedResponse: parsed,
-                source: 'groq'
-            };
-        } else {
-            throw new Error("Invalid response format from Groq");
-        }
+        throw lastError || new Error("All Groq candidate models failed");
     }
 
     async _callGroqReport(session, exchanges, avgScore) {
@@ -342,37 +364,59 @@ class AIProviderService {
             ]
         }`;
 
-        const fetchResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.primaryApiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
-                messages: [
-                    { role: 'system', content: 'You are an interview performance evaluator. Return ONLY valid JSON.' },
-                    { role: 'user', content: reportPrompt }
-                ],
-                response_format: { type: "json_object" }
-            })
-        });
+        const candidateModels = [
+            'llama-3.3-70b-versatile',
+            'llama-3.1-8b-instant',
+            'openai/gpt-oss-20b'
+        ];
 
-        if (!fetchResponse.ok) {
-            throw new Error(`HTTP ${fetchResponse.status} from Groq API for report`);
+        let lastError = null;
+
+        for (const modelName of candidateModels) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                const fetchResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.primaryApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [
+                            { role: 'system', content: 'You are an interview performance evaluator. Return ONLY valid JSON.' },
+                            { role: 'user', content: reportPrompt }
+                        ],
+                        response_format: { type: "json_object" }
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!fetchResponse.ok) {
+                    throw new Error(`HTTP ${fetchResponse.status} from Groq API for report (${modelName})`);
+                }
+
+                const data = await fetchResponse.json();
+                if (data.choices && data.choices[0]?.message?.content) {
+                    const rawContent = data.choices[0].message.content.trim();
+                    const cleanedContent = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const parsed = JSON.parse(cleanedContent);
+                    return {
+                        ...parsed,
+                        source: `groq-${modelName}`
+                    };
+                }
+            } catch (err) {
+                console.warn(`[AIProviderService] Report generation attempt with model ${modelName} failed:`, err.message);
+                lastError = err;
+            }
         }
 
-        const data = await fetchResponse.json();
-        if (data.choices && data.choices[0]?.message?.content) {
-            const rawContent = data.choices[0].message.content.trim();
-            const parsed = JSON.parse(rawContent.replace(/```json/g, '').replace(/```/g, '').trim());
-            return {
-                ...parsed,
-                source: 'groq'
-            };
-        } else {
-            throw new Error("Invalid report response format from Groq");
-        }
+        throw lastError || new Error("All Groq candidate models failed for report generation");
     }
 
 }
