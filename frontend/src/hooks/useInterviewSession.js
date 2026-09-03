@@ -62,35 +62,18 @@ export default function useInterviewSession(user, onSpeechOutput) {
         }
     }, []);
 
-    // Session auto-recovery on mount
+    // Session auto-cleanup on mount (prevent background camera/AI auto-trigger)
     useEffect(() => {
         const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                // Only recover active in-progress sessions less than 2 hours old
-                if (parsed.status === 'in-progress' && Date.now() - parsed.timestamp < 2 * 60 * 60 * 1000) {
-                    const confirmRecovery = window.confirm("You have an active interview session from earlier. Would you like to resume it?");
-                    if (confirmRecovery) {
-                        setView(parsed.view);
-                        setMessages(parsed.messages);
-                        setMode(parsed.mode);
-                        setTotalQuestionsConfig(parsed.totalQuestionsConfig);
-                        setCurrentQuestionNum(parsed.currentQuestionNum);
-                        setTargetRole(parsed.targetRole);
-                        setTargetCompany(parsed.targetCompany);
-                        setSessionId(parsed.sessionId);
-                        setSubmissionId(parsed.submissionId);
-                        setExamCode(parsed.examCode);
-                        setIsJourneyMode(parsed.isJourneyMode);
-                        setJourneyStep(parsed.journeyStep);
-                        setJourneyReports(parsed.journeyReports);
-                    } else {
-                        localStorage.removeItem(LOCAL_STORAGE_KEY);
-                    }
+                // Clean up stale sessions older than 1 hour or non in-progress
+                if (parsed.status !== 'in-progress' || Date.now() - parsed.timestamp > 60 * 60 * 1000) {
+                    localStorage.removeItem(LOCAL_STORAGE_KEY);
                 }
             } catch (e) {
-                console.error("Failed to parse auto-saved session", e);
+                localStorage.removeItem(LOCAL_STORAGE_KEY);
             }
         }
     }, [LOCAL_STORAGE_KEY]);

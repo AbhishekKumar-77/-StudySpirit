@@ -60,12 +60,12 @@ export default function AIInterview() {
         setInput(prev => prev + (prev ? ' ' : '') + transcript);
     });
 
-    // 3. Camera lifecycle
+    // 3. Camera lifecycle — OFF by default until candidate enters interview room and enables it
     const { 
         cameraEnabled, 
         toggleCamera, 
         stopCamera 
-    } = useCamera(true, videoRef);
+    } = useCamera(false, videoRef);
 
     // 4. Voice Analytics
     const { 
@@ -102,8 +102,29 @@ export default function AIInterview() {
         resumeFile, setResumeFile,
         resetSessionState
     } = useInterviewSession(user, (text, speakers) => {
-        speak(text, speakers);
+        // Only speak out loud if candidate is ACTIVELY inside an interview room
+        if (roomType === 'aria' || roomType === 'gd') {
+            speak(text, speakers);
+        }
     });
+
+    // When candidate is not in an active interview room, guarantee camera, mic, and AI audio are completely off
+    useEffect(() => {
+        if (!roomType) {
+            stopCamera();
+            stopListening();
+            stopSpeaking();
+        }
+    }, [roomType]);
+
+    // Full cleanup on unmount
+    useEffect(() => {
+        return () => {
+            stopCamera();
+            stopListening();
+            stopSpeaking();
+        };
+    }, []);
 
     // Fetch Dashboard Data from Backend
     useEffect(() => {

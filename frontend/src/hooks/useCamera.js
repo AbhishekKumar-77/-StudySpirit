@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
  * useCamera - Custom hook for managing camera permission, starting/stopping webcam stream.
  * Automatically starts stream and continuously binds stream to videoRef.current across all session rooms.
  */
-export default function useCamera(enabled = true, videoRef) {
+export default function useCamera(enabled = false, videoRef) {
     const [cameraEnabled, setCameraEnabled] = useState(enabled);
     const streamRef = useRef(null);
 

@@ -7,6 +7,7 @@
  */
 
 const questionBankService = require('./questionBankService');
+const fetch = typeof globalThis.fetch === 'function' ? globalThis.fetch : require('node-fetch');
 
 // Circuit Breaker state
 let groqFailuresCount = 0;
@@ -230,9 +231,11 @@ class AIProviderService {
         }
 
         const candidateModels = [
+            'openai/gpt-oss-120b',
+            'openai/gpt-oss-20b',
+            'qwen/qwen3.8-27b',
             'llama-3.3-70b-versatile',
-            'llama-3.1-8b-instant',
-            'openai/gpt-oss-20b'
+            'llama-3.1-8b-instant'
         ];
 
         let lastError = null;
@@ -365,9 +368,11 @@ class AIProviderService {
         }`;
 
         const candidateModels = [
+            'openai/gpt-oss-120b',
+            'openai/gpt-oss-20b',
+            'qwen/qwen3.8-27b',
             'llama-3.3-70b-versatile',
-            'llama-3.1-8b-instant',
-            'openai/gpt-oss-20b'
+            'llama-3.1-8b-instant'
         ];
 
         let lastError = null;

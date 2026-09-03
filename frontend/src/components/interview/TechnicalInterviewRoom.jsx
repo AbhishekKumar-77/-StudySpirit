@@ -6,11 +6,12 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { codeExecutionEngine } from '../../services/codeExecutionEngine';
+import soloApi from '../../services/soloApi';
 
 export default function TechnicalInterviewRoom({
     targetRole = 'Backend Developer',
     targetCompany = 'Google',
-    cameraEnabled = true,
+    cameraEnabled = false,
     onToggleCamera,
     videoRef,
     onEndInterview,
@@ -240,11 +241,40 @@ console.log("✅ Circular wait prevention verified!");
         }
     };
 
-    const handleAnswerProbe = () => {
-        if (!probeResponse.trim()) return;
-        setAriaFeedback(`Aria Review: "Excellent trade-off justification! Your focus on ${probeResponse.slice(0, 40)}... shows strong technical depth."`);
-        setAriaProbeQuestion("Great response. How would you handle potential edge cases or distributed scaling in a high-concurrency production setting?");
+    const [isAriaThinking, setIsAriaThinking] = useState(false);
+
+    const handleAnswerProbe = async () => {
+        if (!probeResponse.trim() || isAriaThinking) return;
+        const answer = probeResponse.trim();
         setProbeResponse('');
+        setIsAriaThinking(true);
+
+        try {
+            const prompt = `You are Aria, an expert AI Technical Interviewer at ${targetCompany} evaluating a candidate for the "${targetRole}" position.
+The candidate is solving the problem: "${currentProblem.title}".
+Your previous question: "${ariaProbeQuestion}".
+The candidate answered: "${answer}".
+Candidate's code:
+\`\`\`javascript
+${code}
+\`\`\`
+Provide a concise technical assessment (2 sentences maximum) of their response and code, and follow up with exactly ONE deeper question on performance, memory, edge cases, or scale.`;
+
+            const res = await soloApi.sendAIMessage(prompt);
+            const aiText = res.response || '';
+            setAriaFeedback(`Aria Review: "${aiText}"`);
+            const questionMatch = aiText.match(/[^.!?]+[?]/g);
+            if (questionMatch && questionMatch.length > 0) {
+                setAriaProbeQuestion(questionMatch[questionMatch.length - 1].trim());
+            } else {
+                setAriaProbeQuestion("How would your algorithm scale if inputs grow by 100x?");
+            }
+        } catch (e) {
+            setAriaFeedback(`Aria Review: "Good trade-off justification on ${answer.slice(0, 45)}..."`);
+            setAriaProbeQuestion("What are the edge cases where this approach might encounter higher latency or memory overhead?");
+        } finally {
+            setIsAriaThinking(false);
+        }
     };
 
     return (
@@ -402,9 +432,11 @@ console.log("✅ Circular wait prevention verified!");
                                 />
                                 <button
                                     onClick={handleAnswerProbe}
-                                    className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition"
+                                    disabled={isAriaThinking || !probeResponse.trim()}
+                                    className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5"
                                 >
-                                    Respond
+                                    {isAriaThinking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}
+                                    <span>{isAriaThinking ? 'Analyzing...' : 'Respond'}</span>
                                 </button>
                             </div>
                         </div>
