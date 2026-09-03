@@ -13,6 +13,7 @@ import VocabularyBuilderView from '../components/englishlab/VocabularyBuilderVie
 import RealSituationsView from '../components/englishlab/RealSituationsView';
 import ExtemporeSpeakingView from '../components/englishlab/ExtemporeSpeakingView';
 import WritingLabView from '../components/englishlab/WritingLabView';
+import PresentationCoachView from '../components/englishlab/PresentationCoachView';
 import ProgressReportsView from '../components/englishlab/ProgressReportsView';
 import LevelTestModal from '../components/englishlab/LevelTestModal';
 
@@ -118,6 +119,10 @@ export default function SoftSkills() {
 
                             {activeTab === 'writing' && (
                                 <WritingLabView />
+                            )}
+
+                            {activeTab === 'presentation' && (
+                                <PresentationCoachView />
                             )}
 
                             {activeTab === 'progress' && (

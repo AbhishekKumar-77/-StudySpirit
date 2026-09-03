@@ -36,18 +36,18 @@ export const saveWordToBank = async (wordData) => fetchWithAuth('/english/vocabu
 export const getVocabBank = async () => fetchWithAuth('/english/vocabulary/bank');
 
 // Existing SoftSkills solo APIs wrapped cleanly
-export const softSkillsAIChat = async (message, previousMessages = []) => {
+export const softSkillsAIChat = async (message, previousMessages = [], options = {}) => {
     return fetchWithAuth('/solo/ai/softskills', {
         method: 'POST',
-        body: JSON.stringify({ message, previousMessages })
+        body: JSON.stringify({ message, previousMessages, persona: options.persona, scenario: options.scenario })
     });
 };
 
 export const fetchVocabulary = async () => fetchWithAuth('/solo/vocabulary');
 export const fetchWritingTopic = async () => fetchWithAuth('/solo/writing/topic');
-export const evaluateWriting = async (topic, essay) => fetchWithAuth('/solo/writing/evaluate', { method: 'POST', body: JSON.stringify({ topic, essay }) });
+export const evaluateWriting = async (topic, essay, tone = 'Professional') => fetchWithAuth('/solo/writing/evaluate', { method: 'POST', body: JSON.stringify({ topic, essay, tone }) });
 export const fetchSpeakingTopic = async () => fetchWithAuth('/solo/speaking/topic');
-export const evaluateSpeech = async (topic, transcript) => fetchWithAuth('/solo/speaking/evaluate', { method: 'POST', body: JSON.stringify({ topic, transcript }) });
+export const evaluateSpeech = async (topic, transcript, durationSeconds = 120) => fetchWithAuth('/solo/speaking/evaluate', { method: 'POST', body: JSON.stringify({ topic, transcript, durationSeconds }) });
 
 export default {
     getProfile,

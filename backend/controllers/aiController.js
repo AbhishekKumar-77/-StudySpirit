@@ -259,47 +259,68 @@ exports.logHeartbeat = async (req, res) => {
     } catch (error) { res.status(500).json({ message: "Error" }); }
 };
 
-// Soft Skills AI Conversation
+// Soft Skills AI Conversation & Roleplay
 exports.softSkillsAI = async (req, res) => {
     try {
-        const { message, previousMessages = [] } = req.body;
+        const { message, previousMessages = [], persona = 'aria', scenario = null } = req.body;
         const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
-        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured. Add GROQ_API_KEY to environment variables.' });
+        if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured. Add GROQ_API_KEY_SOFTSKILLS to environment variables.' });
 
-        const context = previousMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }));
+        const context = previousMessages.map(m => ({
+            role: (m.role === 'ai' || m.role === 'assistant' || m.sender === 'ai') ? 'assistant' : 'user',
+            content: m.text || m.content || ''
+        })).filter(m => m.content);
 
-        const systemPrompt = `You are "Aria", a warm and encouraging English communication coach.
+        let systemPrompt = `You are "Aria", an encouraging and friendly English communication and soft skills coach for engineering students.
 Your goals:
-1. Have a natural, friendly conversation in English to build the student's confidence.
-2. If the student makes a grammar or vocabulary mistake, GENTLY correct it at the end of your reply — never interrupt the flow.
-3. Keep your replies concise — 2-3 sentences max.
-4. Ask a follow-up question to keep the conversation going.
-5. Topics: daily life, career goals, college experiences, opinions on technology, current events.
+1. Have an engaging, natural conversation in English to build the student's fluency and confidence.
+2. If the student makes a grammar or vocabulary mistake, gently provide a correction in the "correction" field.
+3. Keep your replies concise (2-3 sentences max) with good conversational rhythm.
+4. Always ask one natural follow-up question.`;
+
+        if (persona === 'professor') {
+            systemPrompt = `You are Professor Vance, an academic advisor and senior engineering professor.
+You speak formally, professionally, and provide thoughtful academic guidance.
+Scenario: ${scenario?.title || 'Academic Guidance'}. ${scenario?.desc || ''}
+If the student makes language mistakes, note it gently in "correction". Keep replies to 2-3 sentences.`;
+        } else if (persona === 'tech_lead') {
+            systemPrompt = `You are Marcus, a Staff Software Engineer and Tech Lead at a top tech company.
+You speak clearly, pragmatically, and like a supportive mentor in agile standups and architecture discussions.
+Scenario: ${scenario?.title || 'Technical Standup & Collaboration'}. ${scenario?.desc || ''}
+If the student makes language mistakes, note it gently in "correction". Keep replies to 2-3 sentences.`;
+        } else if (persona === 'recruiter') {
+            systemPrompt = `You are Rachel, a Senior Tech Recruiter and Talent Acquisition Lead.
+You speak warmly, professionally, and assess communication, confidence, and career readiness.
+Scenario: ${scenario?.title || 'Recruiter Networking'}. ${scenario?.desc || ''}
+If the student makes language mistakes, note it in "correction". Keep replies to 2-3 sentences.`;
+        }
+
+        systemPrompt += `
 
 ALWAYS return valid JSON in this exact format:
 {
-  "correction": "<grammar/vocab correction if any, or null if speech was perfect>",
-  "reply": "<your conversational response + one follow-up question>"
+  "correction": "<polite grammar/vocab correction if any mistake occurred, otherwise null>",
+  "reply": "<your in-character conversational response + one follow-up question>"
 }`;
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
+                model: 'llama-3.3-70b-versatile',
                 messages: [
                     { role: 'system', content: systemPrompt },
                     ...context,
                     { role: 'user', content: message }
                 ],
-                temperature: 0.75,
+                temperature: 0.7,
                 max_tokens: 400,
                 response_format: { type: "json_object" }
             })
         });
         const data = await response.json();
         if (!data.choices?.[0]?.message?.content) {
-            return res.status(500).json({ message: 'AI response error', reply: 'Sorry, I had trouble responding. Please try again.' });
+            return res.status(500).json({ message: 'AI response error', reply: 'That is a great point! Could you elaborate a bit more?' });
         }
         res.json(cleanAndParseJSON(data.choices[0].message.content));
     } catch (error) {
@@ -318,15 +339,14 @@ exports.generateVocabulary = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
+                model: 'llama-3.3-70b-versatile',
                 messages: [{
                     role: 'system',
-                    content: `Generate a list of exactly 50 advanced English vocabulary words useful for professional and academic communication.
+                    content: `Generate a list of 25 high-impact English vocabulary words and idioms useful for professional, technical, and academic communication.
 Return ONLY valid JSON in this exact format:
 {
   "words": [
-    { "word": "Articulate", "meaning": "Able to express ideas clearly and effectively", "usage": "She articulated her concerns with great precision during the meeting.", "context": "Professional" },
-    ... (50 total)
+    { "word": "Articulate", "meaning": "Able to express ideas clearly and effectively", "usage": "She articulated her concerns with great precision during the meeting.", "context": "Professional" }
   ]
 }`
                 }],
@@ -353,12 +373,11 @@ exports.generateWritingTopic = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
+                model: 'llama-3.3-70b-versatile',
                 messages: [{
                     role: 'system',
-                    content: `Generate 1 professional writing topic suitable for a 5-minute essay by an engineering/tech student.
-The topic should be thought-provoking and relevant to technology, career, or society.
-Return ONLY the topic as a single clean sentence — no numbering, no quotes, no explanation.`
+                    content: `Generate 1 professional writing topic suitable for a tech/engineering student (e.g. email, technical proposal, or opinion piece).
+Return ONLY the topic as a single clean sentence without quotes or extra numbering.`
                 }],
                 temperature: 0.8,
                 max_tokens: 80
@@ -376,7 +395,7 @@ Return ONLY the topic as a single clean sentence — no numbering, no quotes, no
 // Evaluate Writing
 exports.evaluateWriting = async (req, res) => {
     try {
-        const { topic, essay } = req.body;
+        const { topic, essay, tone = 'Professional' } = req.body;
         if (!essay || essay.length < 10) return res.status(400).json({ message: 'Essay is too short to evaluate.' });
         const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
         if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured.' });
@@ -385,20 +404,23 @@ exports.evaluateWriting = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
+                model: 'llama-3.3-70b-versatile',
                 messages: [{
                     role: 'system',
-                    content: `You are an expert English writing evaluator. Evaluate the following student essay.
+                    content: `You are an expert English writing evaluator. Evaluate the student's writing for grammar, structure, vocabulary, and target tone (${tone}).
 
 WRITING TOPIC: ${topic}
-
-STUDENT ESSAY:
+STUDENT SUBMISSION:
 ${essay}
 
 Return ONLY valid JSON:
 {
   "score": <number 0-100>,
-  "feedback": "<2-3 sentence overall assessment of the essay quality, coherence, and relevance to topic>",
+  "grammarScore": <number 0-100>,
+  "clarityScore": <number 0-100>,
+  "toneScore": <number 0-100>,
+  "feedback": "<2-3 sentence overall assessment of the essay quality, coherence, and tone>",
+  "improvedRewrite": "<A polished, professionally written version of the student's submission>",
   "improvements": ["<specific improvement 1>", "<specific improvement 2>", "<specific improvement 3>"]
 }`
                 }],
@@ -432,12 +454,12 @@ exports.generateSpeakingTopic = async (req, res) => {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
+                model: 'llama-3.3-70b-versatile',
                 messages: [{
                     role: 'system',
-                    content: `Generate 1 extempore speaking topic for an engineering or tech student (2 minute talk).
-The topic should be engaging, relevant to technology or society, and suitable for a confident impromptu speech.
-Return ONLY the topic as a single clean sentence — no numbering, no quotes, no extra text.`
+                    content: `Generate 1 extempore impromptu speaking topic for an engineering student (2-minute speech).
+The topic should be thought-provoking, engaging, and relevant to technology, innovation, teamwork, or leadership.
+Return ONLY the topic as a single clean sentence.`
                 }],
                 temperature: 0.9,
                 max_tokens: 80
@@ -455,30 +477,40 @@ Return ONLY the topic as a single clean sentence — no numbering, no quotes, no
 // Evaluate Speaking
 exports.evaluateSpeech = async (req, res) => {
     try {
-        const { topic, transcript } = req.body;
-        if (!transcript || transcript.trim().length < 20) return res.status(400).json({ message: 'Transcript is too short to evaluate. Please speak more.' });
+        const { topic, transcript, durationSeconds = 120 } = req.body;
+        if (!transcript || transcript.trim().length < 15) return res.status(400).json({ message: 'Transcript is too short to evaluate. Please speak more.' });
         const GROQ_API_KEY = GROQ_KEY_SOFTSKILLS;
         if (!GROQ_API_KEY) return res.status(503).json({ message: 'AI service not configured.' });
+
+        const wordCount = transcript.trim().split(/\s+/).length;
+        const calculatedWPM = Math.round((wordCount / (durationSeconds || 60)) * 60);
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'openai/gpt-oss-20b',
+                model: 'llama-3.3-70b-versatile',
                 messages: [{
                     role: 'system',
-                    content: `You are an expert public speaking coach. Evaluate the following student's extempore speech.
+                    content: `You are an expert public speaking and communication coach. Evaluate the student's extempore speech transcript.
 
-SPEAKING TOPIC: ${topic}
-
-STUDENT'S SPEECH TRANSCRIPT:
+TOPIC: ${topic}
+TRANSCRIPT:
 ${transcript}
 
 Return ONLY valid JSON:
 {
   "score": <number 0-100>,
-  "feedback": "<2-3 sentence assessment covering relevance, fluency, content depth, and structure>",
-  "improvements": ["<specific improvement 1>", "<specific improvement 2>", "<specific improvement 3>"]
+  "fluency": <number 0-100>,
+  "content": <number 0-100>,
+  "grammar": <number 0-100>,
+  "vocabulary": <number 0-100>,
+  "confidence": <number 0-100>,
+  "pronunciation": <number 0-100>,
+  "wpm": ${calculatedWPM},
+  "fillerCount": <estimated filler count>,
+  "feedback": "<2-3 sentence constructive critique focusing on structure, clarity, and pacing>",
+  "improvements": ["<specific actionable tip 1>", "<specific actionable tip 2>", "<specific actionable tip 3>"]
 }`
                 }],
                 temperature: 0.4,
