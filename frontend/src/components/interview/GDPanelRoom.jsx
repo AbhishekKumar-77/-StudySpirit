@@ -5,7 +5,7 @@ import { API_BASE } from '../../config';
 export default function GDPanelRoom({
     targetRole = 'Software Engineer',
     user,
-    cameraEnabled = true,
+    cameraEnabled = false,
     onToggleCamera,
     videoRef,
     onEndInterview,

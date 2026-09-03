@@ -180,6 +180,10 @@ export default function AIInterview() {
             setRoomType('aria');
         }
 
+        // Auto-enable camera & mic when entering interview room
+        if (!cameraEnabled) toggleCamera();
+        setAutoSpeak(true);
+
         startInterview(selectedRound, params.resumeFile || resumeFile, 10);
     };
 
@@ -188,6 +192,8 @@ export default function AIInterview() {
         stopSpeaking();
         stopListening();
         stopTimer();
+        stopCamera();
+        setAutoSpeak(false);
         setRoomType(null);
         if (sessionId && messages.length > 1) {
             finishInterview();
@@ -222,6 +228,7 @@ export default function AIInterview() {
                 totalQuestionsConfig={totalQuestionsConfig}
                 onEndInterview={handleEndSession}
                 onBack={() => setRoomType(null)}
+                mode={mode}
             />
         );
     }

@@ -104,10 +104,15 @@ export default function useInterviewSession(user, onSpeechOutput) {
         }
     }, [view, messages, mode, totalQuestionsConfig, currentQuestionNum, targetRole, targetCompany, sessionId, submissionId, examCode, isJourneyMode, journeyStep, journeyReports, LOCAL_STORAGE_KEY]);
 
-    const startInterview = async (providedMode = null, providedFile = null, overrideConfig = null, examCtx = null) => {
+    const startInterview = async (providedMode = null, providedFile = null, overrideConfig = null, examCtx = null, overrideRole = null, overrideCompany = null) => {
         const activeMode = providedMode || mode;
         const activeFile = providedFile || resumeFile;
         const activeTotalQuestions = overrideConfig || totalQuestionsConfig;
+        const activeRole = overrideRole || targetRole || 'Backend Developer';
+        const activeCompany = overrideCompany || targetCompany || 'Google';
+
+        if (overrideRole) setTargetRole(overrideRole);
+        if (overrideCompany) setTargetCompany(overrideCompany);
 
         if (!resumeText.trim() && !activeFile && activeMode === 'resume') {
             alert("Please paste your resume content OR upload a PDF first.");
@@ -124,8 +129,8 @@ export default function useInterviewSession(user, onSpeechOutput) {
             let response;
             const payload = {
                 mode: activeMode,
-                role: targetRole,
-                company: targetCompany,
+                role: activeRole,
+                company: activeCompany,
                 totalQuestions: activeTotalQuestions,
                 questionNumber: 1
             };
@@ -134,8 +139,8 @@ export default function useInterviewSession(user, onSpeechOutput) {
                 const formData = new FormData();
                 formData.append('resume', activeFile);
                 formData.append('mode', activeMode);
-                formData.append('role', targetRole);
-                formData.append('company', targetCompany);
+                formData.append('role', activeRole);
+                formData.append('company', activeCompany);
                 formData.append('totalQuestions', activeTotalQuestions);
                 formData.append('questionNumber', 1);
                 if (examCtx?.examCode || examCode) formData.append('examCode', examCtx?.examCode || examCode);
@@ -156,8 +161,11 @@ export default function useInterviewSession(user, onSpeechOutput) {
                 }
                 setSessionId(response.sessionId);
                 const aiMsg = { 
+                    id: Date.now(),
                     role: 'ai', 
+                    sender: 'ai',
                     content: response.response, 
+                    text: response.response,
                     score: 0,
                     speakers: response.parsedResponse?.speakers 
                 };
@@ -168,7 +176,13 @@ export default function useInterviewSession(user, onSpeechOutput) {
             }
         } catch (error) {
             console.error('Failed to start interview:', error);
-            setMessages([{ role: 'ai', content: "Error connecting to AI Interviewer. Please try again." }]);
+            setMessages([{ 
+                id: Date.now(),
+                role: 'ai', 
+                sender: 'ai',
+                content: "Error connecting to AI Interviewer. Please try again.",
+                text: "Error connecting to AI Interviewer. Please try again."
+            }]);
         } finally {
             setIsLoading(false);
         }
@@ -177,14 +191,20 @@ export default function useInterviewSession(user, onSpeechOutput) {
     const sendMessage = async (inputVal) => {
         if (!inputVal.trim() || isLoading) return;
 
-        const userMsg = { role: 'user', content: inputVal.trim() };
+        const userMsg = { 
+            id: Date.now(),
+            role: 'user', 
+            sender: 'user',
+            content: inputVal.trim(), 
+            text: inputVal.trim() 
+        };
         setMessages(prev => [...prev, userMsg]);
         setIsLoading(true);
 
         try {
             const context = messages.slice(-10).map(m => ({
-                role: m.role === 'ai' ? 'assistant' : 'user',
-                content: m.content
+                role: m.role === 'ai' || m.sender === 'ai' ? 'assistant' : 'user',
+                content: m.content || m.text || ''
             }));
 
             const nextQNum = currentQuestionNum + 1;
@@ -208,8 +228,11 @@ export default function useInterviewSession(user, onSpeechOutput) {
                 const feedback = response.parsedResponse?.feedback || "";
 
                 const aiMsg = {
+                    id: Date.now() + 1,
                     role: 'ai',
+                    sender: 'ai',
                     content: response.response,
+                    text: response.response,
                     score: score,
                     feedback: feedback,
                     speakers: response.parsedResponse?.speakers
@@ -221,7 +244,13 @@ export default function useInterviewSession(user, onSpeechOutput) {
             }
         } catch (error) {
             console.error('Failed to send message:', error);
-            setMessages(prev => [...prev, { role: 'ai', content: "Connection error. Please try again." }]);
+            setMessages(prev => [...prev, { 
+                id: Date.now() + 1,
+                role: 'ai', 
+                sender: 'ai',
+                content: "Connection error. Please try again.",
+                text: "Connection error. Please try again."
+            }]);
         } finally {
             setIsLoading(false);
         }
