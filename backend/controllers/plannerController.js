@@ -219,64 +219,50 @@ const seedDefaultData = async (userId) => {
         });
     }
 
-    // Courses for all 8 semesters
-    const existingCourses = await AcademicCourse.find({ user: userId });
-    if (existingCourses.length === 0) {
-        const allCourses = [];
-        for (const [semNum, data] of Object.entries(SEMESTER_BLUEPRINT)) {
-            for (const c of data.courses) {
-                allCourses.push({
-                    user: userId,
-                    semesterNumber: Number(semNum),
-                    name: c.name,
-                    code: c.code,
-                    mastery: c.mastery,
-                    color: c.color
-                });
-            }
+    // Courses for all 8 semesters (check per semester)
+    for (const [semNum, data] of Object.entries(SEMESTER_BLUEPRINT)) {
+        const num = Number(semNum);
+        const semCourses = await AcademicCourse.find({ user: userId, semesterNumber: num });
+        if (semCourses.length === 0) {
+            const coursesToInsert = data.courses.map(c => ({
+                user: userId,
+                semesterNumber: num,
+                name: c.name,
+                code: c.code,
+                mastery: c.mastery,
+                color: c.color
+            }));
+            await AcademicCourse.insertMany(coursesToInsert);
         }
-        await AcademicCourse.insertMany(allCourses);
-    }
 
-    // Skills for all 8 semesters
-    const existingSkills = await StudentSkill.find({ user: userId });
-    if (existingSkills.length === 0) {
-        const allSkills = [];
-        for (const [semNum, data] of Object.entries(SEMESTER_BLUEPRINT)) {
-            for (const sk of data.skills) {
-                allSkills.push({
-                    user: userId,
-                    semesterNumber: Number(semNum),
-                    name: sk.name,
-                    category: sk.category,
-                    mastery: sk.mastery,
-                    status: sk.status,
-                    color: sk.color
-                });
-            }
+        const semSkills = await StudentSkill.find({ user: userId, semesterNumber: num });
+        if (semSkills.length === 0) {
+            const skillsToInsert = data.skills.map(sk => ({
+                user: userId,
+                semesterNumber: num,
+                name: sk.name,
+                category: sk.category,
+                mastery: sk.mastery,
+                status: sk.status,
+                color: sk.color
+            }));
+            await StudentSkill.insertMany(skillsToInsert);
         }
-        await StudentSkill.insertMany(allSkills);
-    }
 
-    // Projects for all 8 semesters
-    const existingProjects = await StudentProject.find({ user: userId });
-    if (existingProjects.length === 0) {
-        const allProjects = [];
-        for (const [semNum, data] of Object.entries(SEMESTER_BLUEPRINT)) {
-            for (const p of data.projects) {
-                allProjects.push({
-                    user: userId,
-                    semesterNumber: Number(semNum),
-                    name: p.name,
-                    description: p.description,
-                    status: p.status,
-                    progress: p.progress,
-                    dueDate: p.dueDate,
-                    relatedSkills: p.relatedSkills
-                });
-            }
+        const semProjects = await StudentProject.find({ user: userId, semesterNumber: num });
+        if (semProjects.length === 0) {
+            const projectsToInsert = data.projects.map(p => ({
+                user: userId,
+                semesterNumber: num,
+                name: p.name,
+                description: p.description,
+                status: p.status,
+                progress: p.progress,
+                dueDate: p.dueDate,
+                relatedSkills: p.relatedSkills
+            }));
+            await StudentProject.insertMany(projectsToInsert);
         }
-        await StudentProject.insertMany(allProjects);
     }
 
     // Weekly Tasks
@@ -392,13 +378,17 @@ exports.getFullPlannerState = async (req, res) => {
         const deadlines = await StudentDeadline.find({ user: userId }).sort({ createdAt: 1 });
         const recommendations = await AIRecommendation.find({ user: userId });
 
-        // Organize into 8 semesters map
+        // Organize into 8 semesters map (ensuring complete fallback to blueprint for any semester)
         const semesterData = {};
         for (let sem = 1; sem <= 8; sem++) {
+            const semCourses = allCourses.filter(c => c.semesterNumber === sem);
+            const semSkills = allSkills.filter(sk => sk.semesterNumber === sem);
+            const semProjects = allProjects.filter(p => p.semesterNumber === sem);
+
             semesterData[sem] = {
-                courses: allCourses.filter(c => c.semesterNumber === sem),
-                skills: allSkills.filter(sk => sk.semesterNumber === sem),
-                projects: allProjects.filter(p => p.semesterNumber === sem)
+                courses: semCourses.length > 0 ? semCourses : (SEMESTER_BLUEPRINT[sem]?.courses || []),
+                skills: semSkills.length > 0 ? semSkills : (SEMESTER_BLUEPRINT[sem]?.skills || []),
+                projects: semProjects.length > 0 ? semProjects : (SEMESTER_BLUEPRINT[sem]?.projects || [])
             };
         }
 
