@@ -131,13 +131,41 @@ export default function GroupMode() {
             if (!isHost && (targetUserId === currentUserId || targetUserId === 'all')) {
                 console.log('🔒 Permissions updated for student:', permissions);
                 setStudentPermissions(prev => ({ ...prev, ...permissions }));
-                if (permissions.camera === false) {
+                if (permissions.camera === true) {
+                    setIsCameraOn(true);
+                    webrtcService.toggleCamera(true).then(() => {
+                        const s = getSocket();
+                        if (s && currentRoomId) {
+                            s.emit('room:mediaToggle', {
+                                roomId: currentRoomId,
+                                userId: currentUserId,
+                                isCameraOn: true
+                            });
+                        }
+                    });
+                } else if (permissions.camera === false) {
                     setIsCameraOn(false);
                     webrtcService.toggleCamera(false);
+                    const s = getSocket();
+                    if (s && currentRoomId) {
+                        s.emit('room:mediaToggle', {
+                            roomId: currentRoomId,
+                            userId: currentUserId,
+                            isCameraOn: false
+                        });
+                    }
                 }
                 if (permissions.mic === false) {
                     setIsMicOn(false);
                     webrtcService.toggleMicrophone(false);
+                    const s = getSocket();
+                    if (s && currentRoomId) {
+                        s.emit('room:mediaToggle', {
+                            roomId: currentRoomId,
+                            userId: currentUserId,
+                            isMuted: true
+                        });
+                    }
                 }
             }
 
@@ -146,7 +174,23 @@ export default function GroupMode() {
                 if (p.id === targetUserId || targetUserId === 'all') {
                     return {
                         ...p,
-                        permissions: { ...(p.permissions || {}), ...permissions }
+                        permissions: { ...(p.permissions || {}), ...permissions },
+                        ...(permissions.camera !== undefined ? { isCameraOn: permissions.camera } : {}),
+                        ...(permissions.mic !== undefined ? { isMuted: !permissions.mic } : {})
+                    };
+                }
+                return p;
+            }));
+        };
+
+        const handleParticipantUpdate = (data) => {
+            const { userId, isCameraOn, isMuted } = data || {};
+            setLiveParticipants(prev => prev.map(p => {
+                if (p.id === userId) {
+                    return {
+                        ...p,
+                        ...(isCameraOn !== undefined ? { isCameraOn } : {}),
+                        ...(isMuted !== undefined ? { isMuted } : {})
                     };
                 }
                 return p;
@@ -193,6 +237,7 @@ export default function GroupMode() {
         };
 
         socket.on('room:permissionUpdate', handlePermissionUpdate);
+        socket.on('room:participantUpdate', handleParticipantUpdate);
         socket.on('room:handRaised', handleHandRaised);
         socket.on('room:newMessage', handleNewMessage);
         socket.on('room:participants', handleRoomParticipants);
@@ -200,12 +245,13 @@ export default function GroupMode() {
 
         return () => {
             socket.off('room:permissionUpdate', handlePermissionUpdate);
+            socket.off('room:participantUpdate', handleParticipantUpdate);
             socket.off('room:handRaised', handleHandRaised);
             socket.off('room:newMessage', handleNewMessage);
             socket.off('room:participants', handleRoomParticipants);
             socket.off('room:pollCreated', handlePollCreated);
         };
-    }, [currentUserId]);
+    }, [currentUserId, isHost, currentRoomId]);
 
     // Real API Data States
     const [classrooms, setClassrooms] = useState([]);
@@ -474,16 +520,34 @@ export default function GroupMode() {
         const nextState = !isMicOn;
         setIsMicOn(nextState);
         webrtcService.toggleMicrophone(nextState);
+
+        const s = getSocket();
+        if (s && currentRoomId) {
+            s.emit('room:mediaToggle', {
+                roomId: currentRoomId,
+                userId: currentUserId,
+                isMuted: !nextState
+            });
+        }
     };
 
-    const toggleCam = () => {
+    const toggleCam = async () => {
         if (!isHost && !studentPermissions.camera) {
             alert("🔒 Camera permission is locked by the Instructor. Click '✋ Raise Hand' to request camera access!");
             return;
         }
         const nextState = !isCameraOn;
         setIsCameraOn(nextState);
-        webrtcService.toggleCamera(nextState);
+        await webrtcService.toggleCamera(nextState);
+
+        const s = getSocket();
+        if (s && currentRoomId) {
+            s.emit('room:mediaToggle', {
+                roomId: currentRoomId,
+                userId: currentUserId,
+                isCameraOn: nextState
+            });
+        }
     };
 
     const toggleScreenShare = async () => {
@@ -1049,6 +1113,8 @@ export default function GroupMode() {
                                 currentUserId={currentUserId}
                                 currentUserName={user?.name || 'You'}
                                 currentUserAvatar={user?.avatar || '👤'}
+                                localIsCameraOn={isCameraOn}
+                                localIsMicMuted={!isMicOn}
                             />
                         </div>
 

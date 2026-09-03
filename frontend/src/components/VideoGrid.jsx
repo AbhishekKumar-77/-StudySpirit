@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Users, Mic, MicOff, VideoOff, Maximize2, Minimize2, Pin, PinOff } from 'lucide-react';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 
 // Single video component
 const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn, isLocal, isSpotlight, onSpotlightClick, onPinClick, isPinned }) => {
@@ -7,17 +8,24 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
     const containerRef = useRef(null);
     const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
 
-    // For both local and remote users: respect the isCameraOn toggle and track validity
-    const hasActiveVideoTrack = stream && stream.getVideoTracks().length > 0 && stream.getVideoTracks()[0].readyState !== 'ended';
-    const showVideo = Boolean(isCameraOn && hasActiveVideoTrack);
+    // Track active video track on stream
+    const hasActiveVideoTrack = Boolean(
+        stream &&
+        stream.getVideoTracks().length > 0 &&
+        stream.getVideoTracks()[0].readyState !== 'ended'
+    );
+
+    // For local user: obey isCameraOn toggle. For remote: show video whenever an active track is arriving and isCameraOn !== false
+    const showVideo = isLocal
+        ? Boolean(isCameraOn && hasActiveVideoTrack)
+        : Boolean(hasActiveVideoTrack && isCameraOn !== false);
 
     useEffect(() => {
         if (videoRef.current && stream) {
             videoRef.current.srcObject = stream;
-            // Explicitly call play() to ensure video starts rendering (fixes occasional black screens)
-            videoRef.current.play().catch(e => console.error("Video auto-play failed:", e));
+            videoRef.current.play().catch(e => console.warn("Video auto-play deferred:", e));
         }
-    }, [stream, stream?.getVideoTracks()[0]?.id, stream?.getVideoTracks()[0]?.readyState]);
+    }, [stream, showVideo, stream?.getVideoTracks()[0]?.id, stream?.getVideoTracks()[0]?.readyState]);
 
     // Listen for fullscreen change to update icon
     useEffect(() => {
@@ -39,7 +47,6 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
             const el = containerRef.current;
             if (!el) return;
             if (document.fullscreenElement) {
-                // Already fullscreen — exit
                 await document.exitFullscreen();
             } else {
                 if (el.requestFullscreen) {
@@ -54,6 +61,12 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
             console.error('Fullscreen error:', err);
         }
     }, []);
+
+    const isImageAvatar = Boolean(
+        userAvatar &&
+        typeof userAvatar === 'string' &&
+        (userAvatar.startsWith('/') || userAvatar.startsWith('http') || userAvatar.includes('.'))
+    );
 
     return (
         <div
@@ -70,15 +83,33 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                 autoPlay
                 playsInline
                 muted={isLocal}
+                onLoadedMetadata={() => {
+                    videoRef.current?.play().catch(e => console.warn("Video onLoadedMetadata play:", e));
+                }}
                 className={`w-full h-full object-cover ${showVideo ? 'block' : 'hidden'}`}
             />
 
-            {/* Avatar overlay — shown only when no active video */}
+            {/* Avatar overlay — shown when no active video or camera is off */}
             {!showVideo && (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 absolute inset-0">
-                    <div className="text-center">
-                        <div className={`mb-2 ${isBrowserFullscreen ? 'text-[12rem]' : isSpotlight ? 'text-9xl' : 'text-6xl'}`}>{userAvatar || '👤'}</div>
-                        <div className={`text-[var(--text-primary)] font-semibold ${isBrowserFullscreen ? 'text-4xl' : isSpotlight ? 'text-2xl' : 'text-base'}`}>{userName || 'User'}</div>
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 absolute inset-0">
+                    <div className="text-center px-4">
+                        {isImageAvatar ? (
+                            <img
+                                src={getAvatarUrl(userAvatar)}
+                                alt={userName || 'User'}
+                                className={`mx-auto mb-3 rounded-full object-cover border-2 border-violet-500/40 shadow-2xl ${
+                                    isBrowserFullscreen ? 'w-48 h-48' : isSpotlight ? 'w-36 h-36' : 'w-24 h-24'
+                                }`}
+                                onError={handleAvatarError}
+                            />
+                        ) : (
+                            <div className={`mb-2 select-none ${isBrowserFullscreen ? 'text-[10rem]' : isSpotlight ? 'text-8xl' : 'text-6xl'}`}>
+                                {userAvatar || '👤'}
+                            </div>
+                        )}
+                        <div className={`text-[var(--text-primary)] font-semibold tracking-wide ${isBrowserFullscreen ? 'text-4xl' : isSpotlight ? 'text-2xl' : 'text-base'}`}>
+                            {userName || 'User'} {isLocal && '(You)'}
+                        </div>
                     </div>
                 </div>
             )}
@@ -91,7 +122,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                             {userName || 'User'} {isLocal && '(You)'}
                         </span>
                         {isSpotlight && !isBrowserFullscreen && (
-                            <span className="bg-cyan- text-[var(--text-primary)] text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
+                            <span className="bg-cyan-500 text-[var(--text-primary)] text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
                                 PRESENTING
                             </span>
                         )}
@@ -118,10 +149,10 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
 
             {/* Controls — show on hover */}
             <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                {/* TRUE FULLSCREEN button — opens full PC screen */}
+                {/* TRUE FULLSCREEN button */}
                 <button
                     onClick={enterFullscreen}
-                    className="p-2 bg-[var(--bg-secondary)]lack/70 rounded-lg text-[var(--text-primary)] hover:bg-cyan- transition-all"
+                    className="p-2 bg-black/70 rounded-lg text-[var(--text-primary)] hover:bg-cyan-500 transition-all"
                     title={isBrowserFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen (Full PC Screen)'}
                 >
                     {isBrowserFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
@@ -135,7 +166,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                     }}
                     className={`p-2 rounded-lg transition-all ${isPinned
                         ? 'bg-amber-500 text-[var(--text-primary)]'
-                        : 'bg-[var(--bg-secondary)]lack/70 text-[var(--text-primary)] hover:bg-amber-500/80'
+                        : 'bg-black/70 text-[var(--text-primary)] hover:bg-amber-500/80'
                         }`}
                     title={isPinned ? 'Unpin' : 'Pin'}
                 >
@@ -150,7 +181,7 @@ const VideoPlayer = ({ stream, userId, userName, userAvatar, isMuted, isCameraOn
                 </div>
             )}
 
-            {/* Fullscreen hint overlay — shown when in fullscreen */}
+            {/* Fullscreen hint overlay */}
             {isBrowserFullscreen && (
                 <div className="absolute top-4 right-4 text-[var(--text-primary)]/50 text-sm">
                     Press <kbd className="bg-white/20 px-2 py-0.5 rounded text-xs font-mono">Esc</kbd> to exit fullscreen
@@ -200,7 +231,7 @@ const VideoGrid = ({
             userName: currentUserName || 'You',
             userAvatar: currentUserAvatar || '👤',
             isMuted: localIsMicMuted !== undefined ? localIsMicMuted : !localStream.getAudioTracks()[0]?.enabled,
-            isCameraOn: localIsCameraOn !== undefined ? localIsCameraOn : localStream.getVideoTracks()[0]?.enabled !== false,
+            isCameraOn: localIsCameraOn !== undefined ? localIsCameraOn : (localStream.getVideoTracks()[0]?.enabled !== false),
             isLocal: true
         });
         addedUserIds.add(currentUserId);
@@ -211,30 +242,38 @@ const VideoGrid = ({
         if (participant.id === currentUserId) return;
 
         let streams = remoteStreams.get(participant.id);
-        if (!streams) return;
+        if (streams) {
+            // Convert to array if it's a single stream
+            if (!Array.isArray(streams)) {
+                streams = [streams];
+            }
 
-        // Convert to array if it's a single stream
-        if (!Array.isArray(streams)) {
-            streams = [streams];
-        }
+            streams.forEach((stream, index) => {
+                const isScreen = index > 0 || (stream && stream.getVideoTracks()[0]?.label?.toLowerCase().includes('screen'));
+                const camVisible = isScreen ? true : (participant.isCameraOn !== false);
 
-        streams.forEach((stream, index) => {
-            // Usually the second stream or one without active camera track is the screen share
-            const isScreen = index > 0 || (stream && stream.getVideoTracks()[0]?.label.toLowerCase().includes('screen'));
-            const isStudent = participant.role === 'student' || participant.role !== 'teacher';
-            const hasCamPerm = participant.permissions?.camera === true;
-            const camVisible = isScreen ? true : (isStudent ? hasCamPerm : (participant.isCameraOn ?? true));
-
+                allVideos.push({
+                    userId: `${participant.id}_${index}`,
+                    stream,
+                    userName: participant.name + (isScreen ? ' (Screen)' : ''),
+                    userAvatar: participant.avatar || '👤',
+                    isMuted: isScreen ? true : (participant.isMuted ?? false),
+                    isCameraOn: camVisible,
+                    isLocal: false
+                });
+            });
+        } else {
+            // Participant connected without active stream yet
             allVideos.push({
-                userId: `${participant.id}_${index}`,
-                stream,
-                userName: participant.name + (isScreen ? ' (Screen)' : ''),
+                userId: participant.id,
+                stream: null,
+                userName: participant.name,
                 userAvatar: participant.avatar || '👤',
-                isMuted: isScreen ? true : (participant.isMuted ?? false),
-                isCameraOn: camVisible,
+                isMuted: participant.isMuted ?? false,
+                isCameraOn: participant.isCameraOn ?? false,
                 isLocal: false
             });
-        });
+        }
 
         addedUserIds.add(participant.id);
     });
@@ -255,7 +294,7 @@ const VideoGrid = ({
                         userName: `Participant${isScreen ? ' (Screen)' : ''}`,
                         userAvatar: '👤',
                         isMuted: isScreen ? true : false,
-                        isCameraOn: isScreen ? true : false, // Default remote student stream to camera OFF
+                        isCameraOn: true,
                         isLocal: false
                     });
                 });
@@ -264,13 +303,8 @@ const VideoGrid = ({
         });
     }
 
-    // Filter out student participants whose camera is OFF
-    const visibleVideos = allVideos.filter(v => {
-        if (v.userName.includes('(Screen)')) return true;
-        if (v.isLocal) return true; // Always keep local Teacher/user tile
-        if (v.isCameraOn) return true; // Keep remote users only if camera is explicitly ON
-        return false;
-    });
+    // All active participants are kept visible in the grid (with video or avatar)
+    const visibleVideos = allVideos;
 
     // Check if there is an active Screen Share video
     const screenShareVideo = visibleVideos.find(v => v.userName.includes('(Screen)'));

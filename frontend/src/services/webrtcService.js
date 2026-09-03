@@ -12,8 +12,22 @@ class WebRTCService {
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
             { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' }
+            { urls: 'stun:openrelay.metered.ca:80' },
+            {
+                urls: 'turn:openrelay.metered.ca:80',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turn:openrelay.metered.ca:443',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turns:openrelay.metered.ca:443?transport=tcp',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            }
         ];
     }
 
@@ -64,12 +78,49 @@ class WebRTCService {
         }
     }
 
-    // Toggle camera
-    toggleCamera(enabled) {
-        if (this.localStream) {
-            this.localStream.getVideoTracks().forEach(track => {
-                track.enabled = enabled;
-            });
+    // Toggle camera with dynamic track acquisition if track missing
+    async toggleCamera(enabled) {
+        if (!this.localStream) {
+            if (enabled) {
+                const s = await this.initializeLocalMedia({ video: true, audio: true });
+                return s;
+            }
+            return;
+        }
+
+        let videoTrack = this.localStream.getVideoTracks()[0];
+
+        // If user wants camera ON, but had no video track or it ended, request camera from browser
+        if (enabled && (!videoTrack || videoTrack.readyState === 'ended')) {
+            try {
+                const newMedia = await navigator.mediaDevices.getUserMedia({ video: true });
+                const newTrack = newMedia.getVideoTracks()[0];
+                if (newTrack) {
+                    if (videoTrack) {
+                        this.localStream.removeTrack(videoTrack);
+                    }
+                    this.localStream.addTrack(newTrack);
+                    videoTrack = newTrack;
+
+                    // Update track in all active RTCPeerConnections
+                    this.peerConnections.forEach((pc, peerId) => {
+                        const senders = pc.getSenders();
+                        const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+                        if (videoSender) {
+                            videoSender.replaceTrack(newTrack);
+                        } else {
+                            pc.addTrack(newTrack, this.localStream);
+                            this.initiateOffer(peerId).catch(e => console.warn("Renegotiation failed:", e));
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Error acquiring new video track on camera toggle:', err);
+            }
+        }
+
+        if (videoTrack) {
+            videoTrack.enabled = enabled;
         }
     }
 
@@ -144,17 +195,33 @@ class WebRTCService {
 
         // Handle incoming remote tracks
         pc.ontrack = (event) => {
-            console.log(`📹 WebRTC Mesh: Received remote stream track from ${targetUserId}`);
+            console.log(`📹 WebRTC Mesh: Received remote stream track from ${targetUserId}, kind: ${event.track.kind}`);
             const remoteStream = event.streams[0] || new MediaStream([event.track]);
+
+            if (!remoteStream.getTracks().some(t => t.id === event.track.id)) {
+                remoteStream.addTrack(event.track);
+            }
+
+            const dispatchStream = () => {
+                window.dispatchEvent(new CustomEvent('webrtc:remoteStream', {
+                    detail: { userId: targetUserId, stream: remoteStream }
+                }));
+            };
+
+            event.track.onmute = () => {
+                console.log(`Track muted from ${targetUserId}: ${event.track.kind}`);
+                dispatchStream();
+            };
+            event.track.onunmute = () => {
+                console.log(`Track unmuted from ${targetUserId}: ${event.track.kind}`);
+                dispatchStream();
+            };
 
             if (this.callbacks.onRemoteStream) {
                 this.callbacks.onRemoteStream(targetUserId, remoteStream);
             }
 
-            // Dispatch global CustomEvent for GroupMode.jsx and VideoGrid UI
-            window.dispatchEvent(new CustomEvent('webrtc:remoteStream', {
-                detail: { userId: targetUserId, stream: remoteStream }
-            }));
+            dispatchStream();
         };
 
         // Handle local ICE candidates

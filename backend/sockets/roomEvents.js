@@ -305,6 +305,26 @@ module.exports = function registerRoomEvents(socket, io, roomParticipants) {
         io.to(`room:${roomId}`).emit('room:handRaised', { userId, userName, raised, timestamp: Date.now() });
     });
 
+    // Media toggle (Cam / Mic toggles from client)
+    socket.on('room:mediaToggle', (data) => {
+        const { roomId, userId, isCameraOn, isMuted } = data || {};
+        if (roomId && roomParticipants.has(roomId)) {
+            const roomMap = roomParticipants.get(roomId);
+            if (roomMap.has(userId)) {
+                const p = roomMap.get(userId);
+                if (isCameraOn !== undefined) p.isCameraOn = Boolean(isCameraOn);
+                if (isMuted !== undefined) p.isMuted = Boolean(isMuted);
+
+                io.to(`room:${roomId}`).emit('room:participantUpdate', {
+                    userId,
+                    isCameraOn: p.isCameraOn,
+                    isMuted: p.isMuted
+                });
+                io.to(`room:${roomId}`).emit('room:participants', Array.from(roomMap.entries()));
+            }
+        }
+    });
+
     socket.on('room:fileShare', (data) => {
         const { roomId, sender, senderAvatar, fileName, fileUrl, fileType, fileSize } = data;
         const messageData = {
