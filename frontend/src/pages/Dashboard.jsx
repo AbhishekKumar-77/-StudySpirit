@@ -11,10 +11,13 @@ import {
     Mic, Library, Briefcase, Folder, Brain, Edit3,
     Search, Flame, Zap, Star, Trophy, CheckCircle2, Clock, Play, Pause,
     RotateCcw, ChevronRight, ArrowRight, Shield, Award, Sparkles, Bot,
-    FileCheck, Plus, Sparkle, ExternalLink, TrendingUp, Menu, X, Sun, Moon, Send
+    FileCheck, Plus, Sparkle, ExternalLink, TrendingUp, Menu, X, Sun, Moon, Send,
+    Maximize2, Minimize2, Sliders, Settings
 } from 'lucide-react';
 import './Dashboard.css';
 import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
+import AIMentorModal from '../components/dashboard/AIMentorModal';
+import FocusZenModal from '../components/dashboard/FocusZenModal';
 
 export default function Dashboard() {
     const { user, stats, setUser, setStats } = useApp();
@@ -52,7 +55,16 @@ export default function Dashboard() {
 
     // Pomodoro Focus Timer State (25 mins default = 1500 sec)
     const [timerSeconds, setTimerSeconds] = useState(1500);
+    const [initialTimerDuration, setInitialTimerDuration] = useState(1500);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
+    const [isZenModalOpen, setIsZenModalOpen] = useState(false);
+
+    const handleSelectTimerPreset = (mins) => {
+        const secs = mins * 60;
+        setIsTimerRunning(false);
+        setInitialTimerDuration(secs);
+        setTimerSeconds(secs);
+    };
 
     // Plan Checklist State (loaded dynamically from real MongoDB backend)
     const [planTasks, setPlanTasks] = useState([]);
@@ -786,20 +798,62 @@ export default function Dashboard() {
                                     <div className="widget-card focus-time-card">
                                         <div className="widget-header">
                                             <h3><Clock size={18} color="#f97316" /> Focus Time</h3>
+                                            <div className="focus-card-header-actions">
+                                                <button
+                                                    className="focus-icon-action-btn"
+                                                    onClick={() => setIsZenModalOpen(true)}
+                                                    title="Open Fullscreen Zen Focus Mode"
+                                                >
+                                                    <Maximize2 size={15} />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <div className="focus-timer-display">
-                                            <div className="timer-numbers">
+                                            <div
+                                                className="timer-numbers"
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => setIsZenModalOpen(true)}
+                                                title="Click for Fullscreen Zen Mode"
+                                            >
                                                 {formatTimer(timerSeconds)}
                                             </div>
                                             <div className="timer-subtext">Pomodoro Session</div>
 
-                                            <div className="timer-controls">
+                                            {/* Quick Duration Presets */}
+                                            <div className="focus-quick-preset-pills">
+                                                {[15, 25, 45, 60].map(mins => (
+                                                    <button
+                                                        key={mins}
+                                                        className={`focus-preset-pill ${initialTimerDuration === mins * 60 ? 'active' : ''}`}
+                                                        onClick={() => handleSelectTimerPreset(mins)}
+                                                        title={`Set to ${mins} minutes`}
+                                                    >
+                                                        {mins}m
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    className="focus-preset-pill"
+                                                    onClick={() => setIsZenModalOpen(true)}
+                                                    title="Custom Minutes in Fullscreen"
+                                                >
+                                                    Custom...
+                                                </button>
+                                            </div>
+
+                                            <div className="timer-controls" style={{ marginTop: '10px' }}>
                                                 <button className="play-btn" onClick={toggleTimer} title={isTimerRunning ? "Pause" : "Start"}>
                                                     {isTimerRunning ? <Pause size={18} /> : <Play size={18} className="play-icon-offset" />}
                                                 </button>
                                                 <button className="reset-btn" onClick={resetTimer} title="Reset">
                                                     <RotateCcw size={14} />
+                                                </button>
+                                                <button
+                                                    className="reset-btn"
+                                                    onClick={() => setIsZenModalOpen(true)}
+                                                    title="Fullscreen Zen Mode"
+                                                >
+                                                    <Maximize2 size={13} />
                                                 </button>
                                             </div>
                                         </div>
@@ -887,51 +941,30 @@ export default function Dashboard() {
                 </div>
             </main>
 
-            {/* Enhancement 3: Instant AI Mentor Quick Chat Modal Overlay */}
-            {isAiModalOpen && (
-                <div className="ai-modal-overlay">
-                    <div className="ai-modal-container">
-                        <div className="ai-modal-header">
-                            <div className="ai-modal-title">
-                                <Bot size={22} className="ai-modal-icon" />
-                                <div>
-                                    <h3>AI Study Assistant</h3>
-                                    <span>Powered by StudySpirit AI</span>
-                                </div>
-                            </div>
-                            <button className="ai-modal-close" onClick={() => setIsAiModalOpen(false)}>
-                                <X size={20} />
-                            </button>
-                        </div>
+            {/* ENHANCED AI MENTOR QUICK CHAT & FULLSCREEN MODAL */}
+            <AIMentorModal
+                isOpen={isAiModalOpen}
+                onClose={() => setIsAiModalOpen(false)}
+                user={user}
+                aiMessages={aiMessages}
+                setAiMessages={setAiMessages}
+                aiInput={aiInput}
+                setAiInput={setAiInput}
+                isAiTyping={isAiTyping}
+                handleSendAiMessage={handleSendAiMessage}
+            />
 
-                        <div className="ai-chat-messages">
-                            {aiMessages.map(msg => (
-                                <div key={msg.id} className={`chat-bubble ${msg.sender}`}>
-                                    {msg.text}
-                                </div>
-                            ))}
-                            {isAiTyping && (
-                                <div className="chat-bubble bot typing">
-                                    AI is typing...
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="ai-modal-input-row">
-                            <input
-                                type="text"
-                                placeholder="Ask a study question..."
-                                value={aiInput}
-                                onChange={e => setAiInput(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleSendAiMessage()}
-                            />
-                            <button className="send-ai-btn" onClick={handleSendAiMessage}>
-                                <Send size={16} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* FULLSCREEN ZEN FOCUS TIME POMODORO MODAL */}
+            <FocusZenModal
+                isOpen={isZenModalOpen}
+                onClose={() => setIsZenModalOpen(false)}
+                timerSeconds={timerSeconds}
+                setTimerSeconds={setTimerSeconds}
+                isTimerRunning={isTimerRunning}
+                setIsTimerRunning={setIsTimerRunning}
+                initialDuration={initialTimerDuration}
+                setInitialDuration={setInitialTimerDuration}
+            />
         </div>
     );
 }
