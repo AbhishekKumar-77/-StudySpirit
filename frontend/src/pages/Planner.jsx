@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    LayoutDashboard, Map, Calendar as CalendarIcon, Award, Target,
+    LayoutDashboard, Map, Calendar as CalendarIcon, Target,
     BarChart3, Clock, Sparkles, Search, Bell, ChevronRight, Check,
-    Plus, Play, CheckCircle2, Circle, AlertCircle, BookOpen,
-    Code, ArrowUpRight, Zap, RefreshCw, X, User, Flame, Filter,
-    Layers, Compass, ArrowRight, ShieldCheck, Dumbbell, FolderGit2
+    Plus, BookOpen, Zap, Compass, ShieldCheck, Flame, RefreshCw
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 import './Planner.css';
 import { API_BASE } from '../config';
 
+// Modular Planner Subcomponents
+import PlannerOverview from '../components/planner/PlannerOverview';
+import AcademicRoadmap from '../components/planner/AcademicRoadmap';
+import WeeklySchedule from '../components/planner/WeeklySchedule';
+import SkillGraph from '../components/planner/SkillGraph';
+import GoalsMilestones from '../components/planner/GoalsMilestones';
+import ProgressAnalytics from '../components/planner/ProgressAnalytics';
+import DeadlinesManager from '../components/planner/DeadlinesManager';
+import AIPlanBuilderModal from '../components/planner/AIPlanBuilderModal';
+import AddTaskModal from '../components/planner/AddTaskModal';
+import SetGoalModal from '../components/planner/SetGoalModal';
+import AddDeadlineModal from '../components/planner/AddDeadlineModal';
+
 export default function Planner() {
     const { user } = useApp();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
+    const [aiLoading, setAiLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedSemesterNum, setSelectedSemesterNum] = useState(2);
 
@@ -24,193 +36,41 @@ export default function Planner() {
     const [showAIPlanModal, setShowAIPlanModal] = useState(false);
     const [showAddTaskModal, setShowAddTaskModal] = useState(false);
     const [showAddGoalModal, setShowAddGoalModal] = useState(false);
+    const [showAddDeadlineModal, setShowAddDeadlineModal] = useState(false);
 
-    // AI Builder Form State
+    // Forms State
     const [aiForm, setAiForm] = useState({
-        targetRole: 'Backend Developer',
+        targetRole: 'Software Engineer',
         hoursPerDay: 4,
         preferredFocus: 'Data Structures & Algorithms'
     });
 
-    // Add Task Form State
     const [newTaskForm, setNewTaskForm] = useState({
         title: '',
-        dayLabel: 'Thu 15',
+        dayLabel: 'Mon',
         taskType: 'LEARN',
         durationMinutes: 60,
         courseName: 'Data Structures'
     });
 
-    // Add Goal Form State
     const [newGoalForm, setNewGoalForm] = useState({
         role: 'Software Engineer',
         targetDate: 'June 2027'
     });
 
-    // Full 8-Semester Academic Roadmap Data
-    const semesterData = {
-        1: {
-            courses: [
-                { name: 'Python Programming', mastery: 85, color: '#10b981' },
-                { name: 'HTML & CSS', mastery: 90, color: '#8b5cf6' },
-                { name: 'JavaScript', mastery: 78, color: '#f59e0b' },
-                { name: 'Computer Fundamentals', mastery: 92, color: '#06b6d4' },
-                { name: 'Mathematics-I', mastery: 75, color: '#ef4444' }
-            ],
-            skills: [
-                { name: 'Python Programming', mastery: 85, status: 'Completed', color: '#10b981', category: 'Programming' },
-                { name: 'Web Development', mastery: 80, status: 'Completed', color: '#8b5cf6', category: 'Development' },
-                { name: 'Problem Solving', mastery: 70, status: 'Completed', color: '#f59e0b', category: 'Core' },
-                { name: 'Computer Fundamentals', mastery: 92, status: 'Completed', color: '#06b6d4', category: 'Core' }
-            ],
-            projects: [
-                { _id: 'p1_1', name: 'Personal Portfolio Website', status: 'Completed', progress: 100, dueDate: 'Dec 15, 2025', relatedSkills: ['HTML', 'CSS', 'JavaScript'] },
-                { _id: 'p1_2', name: 'Python Mini Project', status: 'Completed', progress: 100, dueDate: 'Dec 20, 2025', relatedSkills: ['Python', 'Problem Solving'] }
-            ]
-        },
-        2: {
-            courses: [
-                { name: 'Data Structures', mastery: 72, color: '#10b981' },
-                { name: 'Object Oriented Programming', mastery: 65, color: '#8b5cf6' },
-                { name: 'Database Management Systems', mastery: 40, color: '#f59e0b' },
-                { name: 'Discrete Mathematics', mastery: 65, color: '#06b6d4' },
-                { name: 'Computer Organization', mastery: 30, color: '#ef4444' }
-            ],
-            skills: [
-                { name: 'Programming Fundamentals', mastery: 100, status: 'Completed', color: '#10b981', category: 'Core' },
-                { name: 'Data Structures', mastery: 68, status: 'In Progress', color: '#10b981', category: 'DSA' },
-                { name: 'Algorithms', mastery: 30, status: 'Recommended Next', color: '#f59e0b', category: 'DSA' },
-                { name: 'C++ Programming', mastery: 70, status: 'In Progress', color: '#8b5cf6', category: 'Programming' }
-            ],
-            projects: [
-                { _id: 'p2_1', name: 'Library Management System', status: 'In Progress', progress: 45, dueDate: 'May 30, 2026', relatedSkills: ['C++', 'OOP', 'Database', 'Git'] },
-                { _id: 'p2_2', name: 'Student Database Project', status: 'Not Started', progress: 0, dueDate: 'Jun 15, 2026', relatedSkills: ['DBMS', 'SQL', 'C++'] }
-            ]
-        },
-        3: {
-            courses: [
-                { name: 'C++ Programming', mastery: 0, color: '#94a3b8' },
-                { name: 'Computer Networks', mastery: 0, color: '#94a3b8' },
-                { name: 'Object Oriented Programming', mastery: 0, color: '#94a3b8' },
-                { name: 'Computer Organization & Architecture', mastery: 0, color: '#94a3b8' },
-                { name: 'Theory of Computation', mastery: 0, color: '#94a3b8' }
-            ],
-            skills: [
-                { name: 'Advanced C++', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Programming' },
-                { name: 'Computer Networking', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Systems' },
-                { name: 'OOP Concepts', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Core' },
-                { name: 'Problem Solving', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Core' }
-            ],
-            projects: [
-                { _id: 'p3_1', name: 'Network Simulation Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2026', relatedSkills: ['Networking', 'C++'] },
-                { _id: 'p3_2', name: 'C++ Application Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2026', relatedSkills: ['C++', 'OOP'] }
-            ]
-        },
-        4: {
-            courses: [
-                { name: 'Java Programming', mastery: 0, color: '#94a3b8' },
-                { name: 'Operating Systems', mastery: 0, color: '#94a3b8' },
-                { name: 'Design & Analysis of Algorithms', mastery: 0, color: '#94a3b8' },
-                { name: 'Software Engineering', mastery: 0, color: '#94a3b8' },
-                { name: 'Probability & Statistics', mastery: 0, color: '#94a3b8' }
-            ],
-            skills: [
-                { name: 'Java Programming', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Programming' },
-                { name: 'Operating Systems', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Systems' },
-                { name: 'Advanced Algorithms', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'DSA' },
-                { name: 'Software Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' }
-            ],
-            projects: [
-                { _id: 'p4_1', name: 'Java Application', status: 'Not Started', progress: 0, dueDate: 'Jun 2027', relatedSkills: ['Java', 'OOP'] },
-                { _id: 'p4_2', name: 'Operating System Simulation', status: 'Not Started', progress: 0, dueDate: 'Jun 2027', relatedSkills: ['OS', 'C'] }
-            ]
-        },
-        5: {
-            courses: [
-                { name: 'Artificial Intelligence', mastery: 0, color: '#94a3b8' },
-                { name: 'Machine Learning', mastery: 0, color: '#94a3b8' },
-                { name: 'Web Technologies', mastery: 0, color: '#94a3b8' },
-                { name: 'Computer Graphics', mastery: 0, color: '#94a3b8' },
-                { name: 'Professional Elective-I', mastery: 0, color: '#94a3b8' }
-            ],
-            skills: [
-                { name: 'AI Fundamentals', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'AI/ML' },
-                { name: 'Machine Learning', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'AI/ML' },
-                { name: 'Advanced Web Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' },
-                { name: 'Data Analysis', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Data' }
-            ],
-            projects: [
-                { _id: 'p5_1', name: 'AI-Based Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2027', relatedSkills: ['AI', 'Python', 'ML'] },
-                { _id: 'p5_2', name: 'Full-Stack Web Application', status: 'Not Started', progress: 0, dueDate: 'Dec 2027', relatedSkills: ['React', 'Node.js', 'MongoDB'] }
-            ]
-        },
-        6: {
-            courses: [
-                { name: 'Cloud Computing', mastery: 0, color: '#94a3b8' },
-                { name: 'Cyber Security', mastery: 0, color: '#94a3b8' },
-                { name: 'Data Science', mastery: 0, color: '#94a3b8' },
-                { name: 'Mobile Application Development', mastery: 0, color: '#94a3b8' },
-                { name: 'Professional Elective-II', mastery: 0, color: '#94a3b8' }
-            ],
-            skills: [
-                { name: 'Cloud Computing', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Cloud' },
-                { name: 'Cyber Security', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Security' },
-                { name: 'Data Science', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Data' },
-                { name: 'Mobile Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' }
-            ],
-            projects: [
-                { _id: 'p6_1', name: 'Cloud-Based Application', status: 'Not Started', progress: 0, dueDate: 'Jun 2028', relatedSkills: ['AWS', 'Docker', 'Node.js'] },
-                { _id: 'p6_2', name: 'Mobile Application', status: 'Not Started', progress: 0, dueDate: 'Jun 2028', relatedSkills: ['React Native', 'Firebase'] }
-            ]
-        },
-        7: {
-            courses: [
-                { name: 'Big Data Analytics', mastery: 0, color: '#94a3b8' },
-                { name: 'DevOps', mastery: 0, color: '#94a3b8' },
-                { name: 'Distributed Systems', mastery: 0, color: '#94a3b8' },
-                { name: 'Professional Elective-III', mastery: 0, color: '#94a3b8' },
-                { name: 'Project-I', mastery: 0, color: '#94a3b8' }
-            ],
-            skills: [
-                { name: 'Big Data', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Data' },
-                { name: 'DevOps', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Operations' },
-                { name: 'Docker & Kubernetes', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Operations' },
-                { name: 'System Design', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Architecture' }
-            ],
-            projects: [
-                { _id: 'p7_1', name: 'Major Project-I', status: 'Not Started', progress: 0, dueDate: 'Dec 2028', relatedSkills: ['Full-Stack', 'DevOps'] },
-                { _id: 'p7_2', name: 'DevOps Deployment Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2028', relatedSkills: ['Docker', 'Kubernetes', 'CI/CD'] }
-            ]
-        },
-        8: {
-            courses: [
-                { name: 'Major Project-II', mastery: 0, color: '#94a3b8' },
-                { name: 'Professional Elective-IV', mastery: 0, color: '#94a3b8' },
-                { name: 'Professional Elective-V', mastery: 0, color: '#94a3b8' },
-                { name: 'Industry Internship', mastery: 0, color: '#94a3b8' }
-            ],
-            skills: [
-                { name: 'Advanced Software Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' },
-                { name: 'System Design', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Architecture' },
-                { name: 'Project Management', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Management' },
-                { name: 'Industry Skills', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Professional' }
-            ],
-            projects: [
-                { _id: 'p8_1', name: 'Final Year Major Project', status: 'Not Started', progress: 0, dueDate: 'Jun 2029', relatedSkills: ['Full-Stack', 'AI/ML', 'Cloud'] },
-                { _id: 'p8_2', name: 'Industry Internship', status: 'Not Started', progress: 0, dueDate: 'Jun 2029', relatedSkills: ['Industry', 'Professional Skills'] }
-            ]
-        }
-    };
+    const [deadlineForm, setDeadlineForm] = useState({
+        title: '',
+        category: 'Academic',
+        urgency: 'Due this week',
+        date: 'May 30, 2026'
+    });
 
-    // Current semester's data drives courses/skills/projects
-    const currentSemData = semesterData[selectedSemesterNum] || semesterData[2];
-
-    // Planner Full State from Backend
+    // Central Planner State connected to MongoDB
     const [state, setState] = useState({
         profile: {
-            displayName: 'sasa',
-            level: 3,
-            xp: 4630,
+            displayName: user?.name || user?.username || 'Student',
+            level: user?.level || 3,
+            xp: user?.xp || 4630,
             xpToNextLevel: 6000,
             currentSemester: 2,
             batch: 'CSE — 2026 Batch',
@@ -218,13 +78,7 @@ export default function Planner() {
             targetRole: 'Software Engineer',
             targetDate: 'June 2027',
             currentFocus: { course: 'Data Structures', topic: 'Linked List', masteryPercent: 66 },
-            careerSteps: [
-                { step: 1, title: 'Master Core Programming (Python, C++)', completed: true },
-                { step: 2, title: 'Build DSA & Problem Solving Skills', completed: false },
-                { step: 3, title: 'Learn Web Development & Databases', completed: false },
-                { step: 4, title: 'Build Real-World Projects & Portfolio', completed: false },
-                { step: 5, title: 'Prepare for Placements & Internships', completed: false }
-            ]
+            careerSteps: []
         },
         semesters: [
             { number: 1, label: 'Semester 1', status: 'completed' },
@@ -236,99 +90,68 @@ export default function Planner() {
             { number: 7, label: 'Semester 7', status: 'upcoming' },
             { number: 8, label: 'Semester 8', status: 'upcoming' }
         ],
-        tasks: [
-            { _id: 't1', title: 'Arrays & Linked List — Concepts', dayLabel: 'Mon 12', durationMinutes: 60, taskType: 'LEARN', status: 'COMPLETED', completed: true },
-            { _id: 't2', title: 'Linked List — Practice Problems', dayLabel: 'Tue 13', durationMinutes: 90, taskType: 'PRACTICE', status: 'COMPLETED', completed: true },
-            { _id: 't3', title: 'Linked List — Quiz', dayLabel: 'Wed 14', durationMinutes: 30, taskType: 'QUIZ', status: 'COMPLETED', completed: true },
-            { _id: 't4', title: 'Stack — Concepts', dayLabel: 'Thu 15', durationMinutes: 60, taskType: 'LEARN', status: 'NOT_STARTED', completed: false },
-            { _id: 't5', title: 'Stack — Practice Problems', dayLabel: 'Fri 16', durationMinutes: 90, taskType: 'PRACTICE', status: 'NOT_STARTED', completed: false },
-            { _id: 't6', title: 'Mini Assessment', dayLabel: 'Sat 17', durationMinutes: 45, taskType: 'ASSESSMENT', status: 'NOT_STARTED', completed: false },
-            { _id: 't7', title: 'Project Work — Library Management', dayLabel: 'Sun 18', durationMinutes: 120, taskType: 'PROJECT', status: 'NOT_STARTED', completed: false }
-        ],
-        milestones: [
-            { _id: 'm1', title: 'First Steps', description: 'Complete your first course.', current: 1, target: 1, completed: true, locked: false, icon: '🎓' },
-            { _id: 'm2', title: 'Problem Solver', description: 'Solve 100 problems.', current: 72, target: 100, completed: false, locked: false, icon: '📜' },
-            { _id: 'm3', title: 'Project Builder', description: 'Build 3 projects.', current: 1, target: 3, completed: false, locked: false, icon: '💻' },
-            { _id: 'm4', title: 'DSA Master', description: 'Solve 200 DSA problems.', current: 72, target: 200, completed: false, locked: false, icon: '🧠' },
-            { _id: 'm5', title: 'Placement Ready', description: 'Complete all required requirements.', current: 0, target: 100, completed: false, locked: true, icon: '🔒' }
-        ],
-        deadlines: [
-            { _id: 'd1', title: 'DBMS Midterm Exam', date: 'May 20, 2026', category: 'Academic', urgency: 'Due this week' },
-            { _id: 'd2', title: 'DSA Assignment 3', date: 'May 25, 2026', category: 'Academic', urgency: 'Due next week' },
-            { _id: 'd3', title: 'Library Management Project', date: 'May 30, 2026', category: 'Projects', urgency: 'Due this month' },
-            { _id: 'd4', title: 'Summer Internship Application', date: 'Jun 10, 2026', category: 'Career', urgency: 'Upcoming' }
-        ],
-        recommendations: [
-            {
-                recType: 'focus',
-                badgeLabel: 'Focus recommendation',
-                title: 'Focus on Data Structures',
-                description: 'Your DSA accuracy is improving but needs more practice.',
-                actionText: 'Practice Now →'
-            },
-            {
-                recType: 'weak_area',
-                badgeLabel: 'Weak-area recommendation',
-                title: 'Weak Area: Recursion',
-                description: 'We recommend: 3 lessons and 5 practice problems.',
-                actionText: 'Start Learning →'
-            },
-            {
-                recType: 'project',
-                badgeLabel: 'Project recommendation',
-                title: 'Project Suggestion',
-                description: 'Build a To-Do App using C++ and File Handling.',
-                actionText: 'Explore →'
-            }
-        ],
+        semesterData: {},
+        tasks: [],
+        milestones: [],
+        deadlines: [],
+        recommendations: [],
         stats: {
             overallProgressPercent: 68,
             percentileRank: 65,
-            weeklyHoursSpent: '6h 20m',
-            weeklyHoursTarget: '7h 15m',
+            weeklyHoursSpent: '0h 0m',
+            weeklyHoursTarget: '7h 0m',
             weeklyHoursDiff: '+1h 30m vs last week',
-            completionRate: 55,
-            upcomingDeadlinesCount: 3,
-            aiStatusMessage: "Keep going! You're 72% towards completing this week's plan."
+            completionRate: 0,
+            upcomingDeadlinesCount: 0,
+            aiStatusMessage: "AI is planning your study roadmap."
         }
     });
 
-    // Fetch Full Planner State from API
+    // ── API DATA FETCHING ─────────────────────────────────────────────
     useEffect(() => {
         window.scrollTo(0, 0);
         fetchPlannerState();
-    }, []);
+    }, [user]);
 
     const fetchPlannerState = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/planner/full-state`, {
-                headers: { 'Content-Type': 'application/json' }
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) {
+                headers['x-user-id'] = user._id;
+            }
+
+            const res = await fetch(`${API_BASE}/planner/full-state`, {
+                headers,
+                credentials: 'include'
             });
             const data = await res.json();
             if (data.success && data.data) {
                 setState(data.data);
+                if (data.data.profile?.currentSemester) {
+                    setSelectedSemesterNum(data.data.profile.currentSemester);
+                }
             }
         } catch (err) {
-            console.error('Failed to load planner state from API:', err);
+            console.error('Failed to load real planner state from API:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    // Toggle Task Completion Lifecycle Status
+    // ── TASK STATUS TOGGLE (PATCH API) ───────────────────────────────
     const handleToggleTask = async (taskId, currentStatus) => {
         const nextStatus = (currentStatus === 'COMPLETED' || currentStatus === 'MASTERED') ? 'NOT_STARTED' : 'COMPLETED';
         const nextCompleted = nextStatus === 'COMPLETED';
 
         // Optimistic UI update
         setState(prev => {
-            const updatedTasks = prev.tasks.map(t =>
+            const updatedTasks = (prev.tasks || []).map(t =>
                 t._id === taskId ? { ...t, status: nextStatus, completed: nextCompleted } : t
             );
             const totalMins = updatedTasks.reduce((s, t) => s + (t.durationMinutes || 60), 0);
             const compMins = updatedTasks.filter(t => t.completed).reduce((s, t) => s + (t.durationMinutes || 60), 0);
-            const pct = Math.round((compMins / totalMins) * 100);
+            const pct = totalMins > 0 ? Math.round((compMins / totalMins) * 100) : 0;
 
             return {
                 ...prev,
@@ -342,57 +165,123 @@ export default function Planner() {
         });
 
         try {
-            await fetch(`${API_BASE}/api/planner/tasks/${taskId}/status`, {
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) headers['x-user-id'] = user._id;
+
+            await fetch(`${API_BASE}/planner/tasks/${taskId}/status`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
+                credentials: 'include',
                 body: JSON.stringify({ status: nextStatus })
             });
         } catch (err) {
-            console.error('Failed to toggle task lifecycle:', err);
+            console.error('Failed to update task status in API:', err);
         }
     };
 
-    // Create New Task
+    // ── CREATE NEW TASK (POST API) ───────────────────────────────────
     const handleCreateTask = async (e) => {
         e.preventDefault();
         if (!newTaskForm.title.trim()) return;
 
         const newObj = {
-            _id: `t_${Date.now()}`,
             title: newTaskForm.title,
-            dayLabel: newTaskForm.dayLabel,
-            taskType: newTaskForm.taskType,
-            durationMinutes: Number(newTaskForm.durationMinutes),
+            dayLabel: newTaskForm.dayLabel || 'Mon',
+            dayOfWeek: newTaskForm.dayLabel || 'Mon',
+            taskType: newTaskForm.taskType || 'LEARN',
+            durationMinutes: Number(newTaskForm.durationMinutes) || 60,
+            courseName: newTaskForm.courseName || 'Data Structures',
             status: 'NOT_STARTED',
             completed: false
         };
 
-        setState(prev => ({
-            ...prev,
-            tasks: [...prev.tasks, newObj]
-        }));
-        setShowAddTaskModal(false);
-        setNewTaskForm({ title: '', dayLabel: 'Thu 15', taskType: 'LEARN', durationMinutes: 60, courseName: 'Data Structures' });
-
         try {
-            await fetch(`${API_BASE}/api/planner/tasks`, {
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) headers['x-user-id'] = user._id;
+
+            const res = await fetch(`${API_BASE}/planner/tasks`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
+                credentials: 'include',
                 body: JSON.stringify(newObj)
             });
+            const data = await res.json();
+            if (data.success && data.task) {
+                setState(prev => ({
+                    ...prev,
+                    tasks: [...(prev.tasks || []), data.task]
+                }));
+            }
+            setShowAddTaskModal(false);
+            setNewTaskForm({ title: '', dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: 60, courseName: 'Data Structures' });
         } catch (err) {
-            console.error('Failed to post task:', err);
+            console.error('Failed to post task to API:', err);
         }
     };
 
-    // AI Plan Builder Submit
+    // ── DELETE TASK (DELETE API) ─────────────────────────────────────
+    const handleDeleteTask = async (taskId) => {
+        setState(prev => ({
+            ...prev,
+            tasks: (prev.tasks || []).filter(t => t._id !== taskId)
+        }));
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) headers['x-user-id'] = user._id;
+
+            await fetch(`${API_BASE}/planner/tasks/${taskId}`, {
+                method: 'DELETE',
+                headers,
+                credentials: 'include'
+            });
+        } catch (err) {
+            console.error('Failed to delete task from API:', err);
+        }
+    };
+
+    // ── AI PLAN BUILDER (POST API) ───────────────────────────────────
     const handleGenerateAIPlan = async (e) => {
         e.preventDefault();
+        setAiLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/planner/ai-plan-builder`, {
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) headers['x-user-id'] = user._id;
+
+            const res = await fetch(`${API_BASE}/planner/ai-plan-builder`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
+                credentials: 'include',
                 body: JSON.stringify(aiForm)
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Refresh complete state to load newly generated tasks and roadmap
+                await fetchPlannerState();
+                setShowAIPlanModal(false);
+            }
+        } catch (err) {
+            console.error('AI Plan generation error:', err);
+        } finally {
+            setAiLoading(false);
+        }
+    };
+
+    // ── SET CAREER GOAL (POST API) ───────────────────────────────────
+    const handleSetGoal = async (e) => {
+        e.preventDefault();
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) headers['x-user-id'] = user._id;
+
+            const res = await fetch(`${API_BASE}/planner/goals`, {
+                method: 'POST',
+                headers,
+                credentials: 'include',
+                body: JSON.stringify({
+                    role: newGoalForm.role,
+                    targetDate: newGoalForm.targetDate
+                })
             });
             const data = await res.json();
             if (data.success) {
@@ -400,26 +289,70 @@ export default function Planner() {
                     ...prev,
                     profile: {
                         ...prev.profile,
-                        targetRole: data.targetRole
+                        targetRole: newGoalForm.role,
+                        targetDate: newGoalForm.targetDate
                     }
                 }));
-                setShowAIPlanModal(false);
+                setShowAddGoalModal(false);
             }
         } catch (err) {
-            console.error('AI Plan generation error:', err);
+            console.error('Failed to set goal in API:', err);
         }
     };
 
-    // Filter items based on global search query
-    const filteredCourses = currentSemData.courses.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    const filteredSkills = currentSemData.skills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    const filteredTasks = state.tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    // ── ADD DEADLINE (POST API) ──────────────────────────────────────
+    const handleAddDeadline = async (e) => {
+        e.preventDefault();
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) headers['x-user-id'] = user._id;
+
+            const res = await fetch(`${API_BASE}/planner/deadlines`, {
+                method: 'POST',
+                headers,
+                credentials: 'include',
+                body: JSON.stringify(deadlineForm)
+            });
+            const data = await res.json();
+            if (data.success && data.deadline) {
+                setState(prev => ({
+                    ...prev,
+                    deadlines: [...(prev.deadlines || []), data.deadline]
+                }));
+                setShowAddDeadlineModal(false);
+                setDeadlineForm({ title: '', category: 'Academic', urgency: 'Due this week', date: 'May 30, 2026' });
+            }
+        } catch (err) {
+            console.error('Failed to save deadline to API:', err);
+        }
+    };
+
+    // ── DELETE DEADLINE (DELETE API) ─────────────────────────────────
+    const handleDeleteDeadline = async (deadlineId) => {
+        setState(prev => ({
+            ...prev,
+            deadlines: (prev.deadlines || []).filter(d => d._id !== deadlineId)
+        }));
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            if (user?._id) headers['x-user-id'] = user._id;
+
+            await fetch(`${API_BASE}/planner/deadlines/${deadlineId}`, {
+                method: 'DELETE',
+                headers,
+                credentials: 'include'
+            });
+        } catch (err) {
+            console.error('Failed to delete deadline from API:', err);
+        }
+    };
 
     return (
         <div className="sp-planner-layout">
-            {/* Sidebar (Fixed position) */}
+            {/* ── LEFT FIXED SIDEBAR ── */}
             <aside className="sp-sidebar">
-                <div className="sp-sidebar-brand">
+                <div className="sp-sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
                     <img
                         src="/logo-icon.png"
                         alt="StudySpirit Logo"
@@ -431,12 +364,12 @@ export default function Planner() {
                 </div>
                 <div className="sp-sidebar-tag">AI Study Planner</div>
 
-                {/* Navigation Items */}
-                <div style={{ flex: 1 }}>
+                {/* Primary Navigation Tabs */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {[
                         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-                        { id: 'roadmap', label: 'Roadmap', icon: Map },
-                        { id: 'week', label: 'This Week', icon: CalendarIcon },
+                        { id: 'roadmap', label: 'Curriculum Roadmap', icon: Map },
+                        { id: 'week', label: 'This Week Schedule', icon: CalendarIcon },
                         { id: 'skills', label: 'Skills & Learning Path', icon: Compass },
                         { id: 'goals', label: 'Goals & Milestones', icon: Target },
                         { id: 'progress', label: 'Progress & Insights', icon: BarChart3 },
@@ -477,9 +410,9 @@ export default function Planner() {
                         <Flame size={14} color="#10b981" />
                         <span>Your Current Focus</span>
                     </div>
-                    <div className="sp-focus-title">{state.profile.currentFocus?.course || 'Data Structures'}</div>
-                    <div className="sp-focus-subtitle">{state.profile.currentFocus?.topic || 'Linked List'}</div>
-                    <div className="sp-focus-badge">{state.profile.currentFocus?.masteryPercent || 66}% Mastered</div>
+                    <div className="sp-focus-title">{state.profile?.currentFocus?.course || 'Data Structures'}</div>
+                    <div className="sp-focus-subtitle">{state.profile?.currentFocus?.topic || 'Linked List'}</div>
+                    <div className="sp-focus-badge">{state.profile?.currentFocus?.masteryPercent || 66}% Mastered</div>
                     <button className="sp-btn-continue" onClick={() => setActiveTab('week')}>
                         Continue Learning
                     </button>
@@ -495,36 +428,35 @@ export default function Planner() {
                     />
                     <div>
                         <div className="sp-profile-name">
-                            {user?.name || state.profile.displayName} <ShieldCheck size={14} color="#10b981" />
+                            {user?.name || state.profile?.displayName || 'Student'} <ShieldCheck size={14} color="#10b981" />
                         </div>
-                        <div className="sp-profile-meta">Level {user?.level || state.profile.level} • {user?.xp || state.profile.xp} XP</div>
+                        <div className="sp-profile-meta">Level {user?.level || state.profile?.level || 3} • {user?.xp || state.profile?.xp || 4630} XP</div>
                     </div>
                 </div>
             </aside>
 
-            {/* Main Content Area */}
+            {/* ── MAIN CONTENT CONTAINER ── */}
             <main className="sp-main-container">
-                {/* Top Header */}
+                {/* Top Search & Header */}
                 <header className="sp-top-header">
                     <div className="sp-search-bar">
                         <Search size={16} color="#64748b" />
                         <input
                             type="text"
                             className="sp-search-input"
-                            placeholder="Search for topics, skills, courses..."
+                            placeholder="Search courses, skills, tasks, topics..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                     <div className="sp-top-header-right">
-                        <button className="sp-icon-btn" title="Notifications">
-                            <Bell size={18} />
-                            <span className="sp-icon-dot" />
+                        <button className="sp-icon-btn" title="Refresh Planner" onClick={fetchPlannerState}>
+                            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                         </button>
-                        <button className="sp-icon-btn" title="Calendar" onClick={() => setActiveTab('week')}>
+                        <button className="sp-icon-btn" title="Weekly Calendar" onClick={() => setActiveTab('week')}>
                             <CalendarIcon size={18} />
                         </button>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/profile')}>
                             <img
                                 src={getAvatarUrl(user?.avatar)}
                                 alt="Profile"
@@ -535,706 +467,101 @@ export default function Planner() {
                     </div>
                 </header>
 
-                {/* Content Body */}
+                {/* Content Body Rendering Organized Submodules */}
                 <div className="sp-content-body">
-                    {/* Main Header & AI Status Card */}
-                    <div className="sp-page-header-row">
-                        <div>
-                            <h1 className="sp-page-title">Your Study Planner ✨</h1>
-                            <p className="sp-page-subtitle">Your personalized roadmap to learn, practice and achieve.</p>
-                        </div>
-
-                        {/* Dynamic AI Status Card */}
-                        <div className="sp-ai-status-card" onClick={() => setShowAIPlanModal(true)}>
-                            <div className="sp-ai-icon-box">🤖</div>
-                            <div>
-                                <div className="sp-ai-status-title">AI is planning your success</div>
-                                <div className="sp-ai-status-desc">{state.stats.aiStatusMessage}</div>
-                            </div>
-                            <ChevronRight size={18} color="#7e22ce" style={{ marginLeft: 'auto' }} />
-                        </div>
-                    </div>
-
-                    {/* Top 4 Summary Cards */}
-                    <div className="sp-summary-grid">
-                        {/* Card 1: Current Semester */}
-                        <div className="sp-summary-card">
-                            <div className="sp-summary-card-header">
-                                <span className="sp-summary-title">Current Semester</span>
-                                <div className="sp-summary-icon" style={{ backgroundColor: '#ecfdf5', color: '#10b981' }}>🎓</div>
-                            </div>
-                            <div className="sp-summary-value">Semester {state.profile.currentSemester}</div>
-                            <div className="sp-summary-subtext">{state.profile.batch}</div>
-                            <a href="#roadmap" className="sp-summary-link" onClick={() => setActiveTab('roadmap')}>View Roadmap →</a>
-                        </div>
-
-                        {/* Card 2: Overall Progress */}
-                        <div className="sp-summary-card">
-                            <div className="sp-summary-card-header">
-                                <span className="sp-summary-title">Overall Progress</span>
-                                <div className="sp-summary-icon" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>📊</div>
-                            </div>
-                            <div className="sp-summary-value">{state.stats.overallProgressPercent}%</div>
-                            <div className="sp-summary-subtext">You're ahead of {state.stats.percentileRank}% of learners</div>
-                            <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600, marginTop: '4px' }}>Keep it up! 🚀</div>
-                        </div>
-
-                        {/* Card 3: Weekly Progress */}
-                        <div className="sp-summary-card">
-                            <div className="sp-summary-card-header">
-                                <span className="sp-summary-title">Weekly Progress</span>
-                                <div className="sp-summary-icon" style={{ backgroundColor: '#f0f9ff', color: '#0284c7' }}>📈</div>
-                            </div>
-                            <div className="sp-summary-value">{state.stats.weeklyHoursSpent}</div>
-                            <div className="sp-summary-subtext">{state.stats.weeklyHoursDiff}</div>
-                        </div>
-
-                        {/* Card 4: Upcoming Deadlines */}
-                        <div className="sp-summary-card">
-                            <div className="sp-summary-card-header">
-                                <span className="sp-summary-title">Upcoming Deadlines</span>
-                                <div className="sp-summary-icon" style={{ backgroundColor: '#fef3c7', color: '#d97706' }}>📅</div>
-                            </div>
-                            <div className="sp-summary-value">{state.stats.upcomingDeadlinesCount}</div>
-                            <div className="sp-summary-subtext">Due this week</div>
-                            <a href="#deadlines" className="sp-summary-link" onClick={() => setActiveTab('deadlines')}>View All →</a>
-                        </div>
-                    </div>
-
-                    {/* OVERVIEW TAB CONTENT (Full Wireframe Layout) */}
                     {activeTab === 'overview' && (
-                        <>
-                            {/* Academic Roadmap Timeline */}
-                            <div className="sp-section-card">
-                                <div className="sp-section-title-row">
-                                    <div className="sp-section-title">Academic Roadmap</div>
-                                </div>
-                                <div className="sp-roadmap-track">
-                                    <div className="sp-roadmap-line" />
-                                    {state.semesters.map(sem => (
-                                        <div
-                                            key={sem.number}
-                                            className={`sp-roadmap-node ${sem.status}`}
-                                            onClick={() => {
-                                                setSelectedSemesterNum(sem.number);
-                                                setActiveTab('roadmap');
-                                            }}
-                                        >
-                                            <div className="sp-node-circle">
-                                                {sem.status === 'completed' ? <Check size={14} /> : sem.number}
-                                            </div>
-                                            <div className="sp-node-label">Sem {sem.number}</div>
-                                            <div className="sp-node-status">
-                                                {sem.status === 'completed' ? 'Completed' : sem.status === 'current' ? 'Current' : 'Upcoming'}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Main Grid: Semester Details + AI Recommendations */}
-                            <div className="sp-main-grid">
-                                {/* Left: Semester Details (3 Columns) */}
-                                <div className="sp-section-card">
-                                    <div className="sp-semester-header">
-                                        Semester {state.profile.currentSemester} — Current &nbsp;
-                                        <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 500 }}>
-                                            ({state.profile.startDate} → {state.profile.endDate})
-                                        </span>
-                                    </div>
-
-                                    <div className="sp-3col-grid">
-                                        {/* Col 1: Academic Courses */}
-                                        <div>
-                                            <div className="sp-col-title">Academic Courses</div>
-                                            {currentSemData.courses.map((c, i) => (
-                                                <div key={i} className="sp-list-item">
-                                                    <span className="sp-item-name">{c.name}</span>
-                                                    <span className="sp-item-pct" style={{ color: c.color }}>{c.mastery}%</span>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Col 2: Skills to Build */}
-                                        <div>
-                                            <div className="sp-col-title">Skills to Build</div>
-                                            {currentSemData.skills.slice(0, 4).map((sk, i) => (
-                                                <div key={i} className="sp-list-item">
-                                                    <span className="sp-item-name">{sk.name}</span>
-                                                    <span className="sp-item-pct" style={{ color: sk.color }}>{sk.mastery}%</span>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Col 3: Projects */}
-                                        <div>
-                                            <div className="sp-col-title">Projects</div>
-                                            {currentSemData.projects.map((p, i) => (
-                                                <div key={i} style={{ marginBottom: '14px' }}>
-                                                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{p.name}</div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', margin: '4px 0', color: '#64748b' }}>
-                                                        <span style={{ color: '#0284c7', fontWeight: 600 }}>{p.status}</span>
-                                                        <span style={{ fontWeight: 700 }}>{p.progress}%</span>
-                                                    </div>
-                                                    <div className="sp-progress-bg">
-                                                        <div className="sp-progress-fill" style={{ width: `${p.progress}%` }} />
-                                                    </div>
-                                                    <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>Due: {p.dueDate}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Right: AI Recommendations Side Panel */}
-                                <div className="sp-ai-panel">
-                                    <div className="sp-section-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        AI Recommendations ✨
-                                    </div>
-                                    {state.recommendations.map((rec, i) => (
-                                        <div key={i} className={`sp-recommend-card ${rec.recType}`}>
-                                            <div className="sp-rec-badge">{rec.badgeLabel || 'Recommendation'}</div>
-                                            <div className="sp-rec-title">{rec.title}</div>
-                                            <div className="sp-rec-desc">{rec.description}</div>
-                                            <button className="sp-rec-action" onClick={() => setActiveTab('week')}>
-                                                {rec.actionText || 'Explore →'}
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Split Grid: This Week's Plan vs Skills & Learning Path */}
-                            <div className="sp-weekly-split-grid">
-                                {/* Left: This Week's Plan */}
-                                <div className="sp-section-card">
-                                    <div className="sp-section-title-row">
-                                        <div className="sp-section-title">This Week's Plan</div>
-                                        <button className="sp-rec-action" onClick={() => setActiveTab('week')}>View Full Schedule →</button>
-                                    </div>
-
-                                    {filteredTasks.slice(0, 7).map((t, idx) => (
-                                        <div key={t._id || idx} className="sp-task-row">
-                                            <div className="sp-task-left">
-                                                <div className="sp-task-date">{t.dayLabel}</div>
-                                                <div className="sp-task-title">{t.title}</div>
-                                            </div>
-                                            <div className="sp-task-right">
-                                                <div className="sp-task-duration">{t.durationMinutes} min</div>
-                                                <span className={`sp-type-badge ${t.taskType}`}>{t.taskType}</span>
-                                                <div
-                                                    className={`sp-checkbox ${t.completed ? 'checked' : ''}`}
-                                                    onClick={() => handleToggleTask(t._id, t.status)}
-                                                >
-                                                    {t.completed && <Check size={12} />}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {/* Task Summary Bar */}
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#f8fafc', borderRadius: '12px', marginTop: '16px' }}>
-                                        <div>
-                                            <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Planned Time</div>
-                                            <div style={{ fontSize: '0.95rem', fontWeight: 800 }}>{state.stats.weeklyHoursTarget}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Completed</div>
-                                            <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#10b981' }}>{state.stats.weeklyHoursSpent}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Completion Rate</div>
-                                            <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0284c7' }}>{state.stats.completionRate}%</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Right: Skills & Learning Path */}
-                                <div className="sp-section-card">
-                                    <div className="sp-section-title-row">
-                                        <div className="sp-section-title">Skills & Learning Path</div>
-                                        <button className="sp-rec-action" onClick={() => setActiveTab('skills')}>View Path →</button>
-                                    </div>
-
-                                    {currentSemData.skills.slice(0, 6).map((sk, idx) => (
-                                        <div key={idx} style={{ marginBottom: '14px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-                                                <span style={{ fontWeight: 600, color: '#0f172a' }}>{sk.name}</span>
-                                                <span style={{ fontWeight: 700, color: sk.color }}>{sk.mastery}%</span>
-                                            </div>
-                                            <div className="sp-progress-bg">
-                                                <div className="sp-progress-fill" style={{ width: `${sk.mastery}%`, backgroundColor: sk.color }} />
-                                            </div>
-                                            {sk.status === 'Recommended Next' && (
-                                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#d97706', background: '#fef3c7', padding: '2px 6px', borderRadius: '4px', marginTop: '4px', display: 'inline-block' }}>
-                                                    Recommended Next
-                                                </span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Milestones Section */}
-                            <div className="sp-section-card">
-                                <div className="sp-section-title-row">
-                                    <div className="sp-section-title">Milestones</div>
-                                </div>
-                                <div className="sp-milestones-grid">
-                                    {state.milestones.map((m, idx) => (
-                                        <div key={idx} className="sp-milestone-card">
-                                            <div style={{ fontSize: '1.4rem', marginBottom: '6px' }}>{m.icon}</div>
-                                            <div className="sp-milestone-title">{m.title}</div>
-                                            <div className="sp-milestone-desc">{m.description}</div>
-                                            {m.completed ? (
-                                                <div className="sp-milestone-status">✓ Completed</div>
-                                            ) : m.locked ? (
-                                                <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>🔒 Locked</div>
-                                            ) : (
-                                                <div>
-                                                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b' }}>{m.current} / {m.target}</div>
-                                                    <div className="sp-progress-bg">
-                                                        <div className="sp-progress-fill" style={{ width: `${(m.current / m.target) * 100}%` }} />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </>
+                        <PlannerOverview
+                            state={state}
+                            selectedSemesterNum={selectedSemesterNum}
+                            setSelectedSemesterNum={setSelectedSemesterNum}
+                            setActiveTab={setActiveTab}
+                            setShowAIPlanModal={setShowAIPlanModal}
+                            handleToggleTask={handleToggleTask}
+                            searchQuery={searchQuery}
+                        />
                     )}
 
-                    {/* ROADMAP TAB */}
                     {activeTab === 'roadmap' && (
-                        <div className="sp-section-card">
-                            <div className="sp-section-title">Semester Curriculum Roadmap</div>
-                            <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '20px' }}>
-                                Interactive view of your 8-Semester Computer Science curriculum and required milestones.
-                            </p>
-
-                            {/* Semester Selector Tabs */}
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
-                                {state.semesters.map(sem => (
-                                    <button
-                                        key={sem.number}
-                                        onClick={() => setSelectedSemesterNum(sem.number)}
-                                        style={{
-                                            padding: '8px 16px',
-                                            borderRadius: '10px',
-                                            border: selectedSemesterNum === sem.number ? '2px solid #7e22ce' : '1px solid #e2e8f0',
-                                            background: selectedSemesterNum === sem.number ? 'linear-gradient(135deg, #7e22ce, #a855f7)' : sem.status === 'completed' ? '#f0fdf4' : '#f8fafc',
-                                            color: selectedSemesterNum === sem.number ? '#fff' : sem.status === 'completed' ? '#166534' : '#64748b',
-                                            fontWeight: 700,
-                                            fontSize: '0.82rem',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                    >
-                                        Sem {sem.number}
-                                        {sem.status === 'completed' && ' ✓'}
-                                        {sem.status === 'current' && ' ●'}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Semester Status Badge */}
-                            <div style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '8px 16px',
-                                borderRadius: '10px',
-                                marginBottom: '20px',
-                                background: state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '#f0fdf4'
-                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '#eff6ff' : '#f8fafc',
-                                border: `1px solid ${state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '#bbf7d0'
-                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '#bfdbfe' : '#e2e8f0'}`,
-                                fontSize: '0.88rem',
-                                fontWeight: 700,
-                                color: state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '#166534'
-                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '#1e40af' : '#64748b'
-                            }}>
-                                Semester {selectedSemesterNum} — {state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '✅ Completed'
-                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '📖 Current' : '🔒 Upcoming'}
-                            </div>
-
-                            {/* 3-Column Grid: Courses, Skills, Projects */}
-                            <div className="sp-3col-grid">
-                                {/* Academic Courses */}
-                                <div>
-                                    <div className="sp-col-title">Academic Courses</div>
-                                    {(semesterData[selectedSemesterNum]?.courses || []).map((c, i) => (
-                                        <div key={i} style={{ padding: '12px 14px', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '10px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{c.name}</span>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: c.color }}>{c.mastery}%</span>
-                                            </div>
-                                            <div className="sp-progress-bg">
-                                                <div className="sp-progress-fill" style={{ width: `${c.mastery}%`, backgroundColor: c.color }} />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Skills to Build */}
-                                <div>
-                                    <div className="sp-col-title">Skills to Build</div>
-                                    {(semesterData[selectedSemesterNum]?.skills || []).map((sk, i) => (
-                                        <div key={i} style={{ padding: '12px 14px', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '10px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{sk.name}</span>
-                                                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: sk.color }}>{sk.mastery}%</span>
-                                            </div>
-                                            <div className="sp-progress-bg">
-                                                <div className="sp-progress-fill" style={{ width: `${sk.mastery}%`, backgroundColor: sk.color }} />
-                                            </div>
-                                            {sk.status && sk.status !== 'Completed' && (
-                                                <span style={{
-                                                    fontSize: '0.7rem', fontWeight: 700,
-                                                    color: sk.status === 'In Progress' ? '#0284c7' : sk.status === 'Recommended Next' ? '#d97706' : '#94a3b8',
-                                                    background: sk.status === 'In Progress' ? '#e0f2fe' : sk.status === 'Recommended Next' ? '#fef3c7' : '#f1f5f9',
-                                                    padding: '2px 6px', borderRadius: '4px', marginTop: '6px', display: 'inline-block'
-                                                }}>
-                                                    {sk.status}
-                                                </span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Projects */}
-                                <div>
-                                    <div className="sp-col-title">Projects</div>
-                                    {(semesterData[selectedSemesterNum]?.projects || []).map((p, i) => (
-                                        <div key={i} style={{ padding: '14px', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '10px' }}>
-                                            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>{p.name}</div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
-                                                <span style={{
-                                                    fontWeight: 700,
-                                                    color: p.status === 'Completed' ? '#10b981' : p.status === 'In Progress' ? '#0284c7' : '#94a3b8'
-                                                }}>{p.status}</span>
-                                                <span style={{ fontWeight: 800, color: '#0f172a' }}>{p.progress}%</span>
-                                            </div>
-                                            <div className="sp-progress-bg">
-                                                <div className="sp-progress-fill" style={{
-                                                    width: `${p.progress}%`,
-                                                    backgroundColor: p.status === 'Completed' ? '#10b981' : '#7e22ce'
-                                                }} />
-                                            </div>
-                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '6px' }}>Due: {p.dueDate}</div>
-                                            {p.relatedSkills && (
-                                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
-                                                    {p.relatedSkills.map((s, si) => (
-                                                        <span key={si} style={{ fontSize: '0.68rem', padding: '2px 6px', borderRadius: '4px', background: '#f1f5f9', color: '#64748b', fontWeight: 600 }}>{s}</span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        <AcademicRoadmap
+                            state={state}
+                            selectedSemesterNum={selectedSemesterNum}
+                            setSelectedSemesterNum={setSelectedSemesterNum}
+                        />
                     )}
 
-                    {/* THIS WEEK TAB */}
                     {activeTab === 'week' && (
-                        <div className="sp-section-card">
-                            <div className="sp-section-title-row">
-                                <div className="sp-section-title">This Week's Detailed Schedule</div>
-                                <button className="sp-btn-continue" style={{ width: 'auto' }} onClick={() => setShowAddTaskModal(true)}>
-                                    + Add New Task
-                                </button>
-                            </div>
-                            {state.tasks.map((t, idx) => (
-                                <div key={t._id || idx} className="sp-task-row" style={{ padding: '16px' }}>
-                                    <div className="sp-task-left">
-                                        <div className="sp-task-date" style={{ width: '70px', fontSize: '0.88rem' }}>{t.dayLabel}</div>
-                                        <div>
-                                            <div className="sp-task-title" style={{ fontSize: '0.95rem' }}>{t.title}</div>
-                                            <div style={{ fontSize: '0.78rem', color: '#64748b' }}>Status: {t.status}</div>
-                                        </div>
-                                    </div>
-                                    <div className="sp-task-right">
-                                        <div className="sp-task-duration">{t.durationMinutes} min</div>
-                                        <span className={`sp-type-badge ${t.taskType}`}>{t.taskType}</span>
-                                        <div
-                                            className={`sp-checkbox ${t.completed ? 'checked' : ''}`}
-                                            onClick={() => handleToggleTask(t._id, t.status)}
-                                        >
-                                            {t.completed && <Check size={14} />}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <WeeklySchedule
+                            state={state}
+                            handleToggleTask={handleToggleTask}
+                            handleDeleteTask={handleDeleteTask}
+                            setShowAddTaskModal={setShowAddTaskModal}
+                            searchQuery={searchQuery}
+                        />
                     )}
 
-                    {/* SKILLS & LEARNING PATH TAB */}
                     {activeTab === 'skills' && (
-                        <div className="sp-section-card">
-                            <div className="sp-section-title">Dependency-Aware Skill Graph</div>
-                            <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '20px' }}>
-                                Prerequisites and skill dependencies mapped for your career target.
-                            </p>
-
-                            {/* Semester Tabs for Skills */}
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                                {state.semesters.map(sem => (
-                                    <button
-                                        key={sem.number}
-                                        onClick={() => setSelectedSemesterNum(sem.number)}
-                                        style={{
-                                            padding: '6px 14px',
-                                            borderRadius: '8px',
-                                            border: selectedSemesterNum === sem.number ? '2px solid #7e22ce' : '1px solid #e2e8f0',
-                                            background: selectedSemesterNum === sem.number ? 'linear-gradient(135deg, #7e22ce, #a855f7)' : '#f8fafc',
-                                            color: selectedSemesterNum === sem.number ? '#fff' : '#64748b',
-                                            fontWeight: 700,
-                                            fontSize: '0.78rem',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                    >
-                                        Sem {sem.number}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
-                                {(semesterData[selectedSemesterNum]?.skills || []).map((sk, idx) => (
-                                    <div key={idx} style={{ padding: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginBottom: '6px' }}>
-                                            <span>{sk.name}</span>
-                                            <span style={{ color: sk.color }}>{sk.mastery}%</span>
-                                        </div>
-                                        <div className="sp-progress-bg">
-                                            <div className="sp-progress-fill" style={{ width: `${sk.mastery}%`, backgroundColor: sk.color }} />
-                                        </div>
-                                        <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '8px' }}>Category: {sk.category}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <SkillGraph
+                            state={state}
+                            selectedSemesterNum={selectedSemesterNum}
+                            setSelectedSemesterNum={setSelectedSemesterNum}
+                        />
                     )}
 
-                    {/* GOALS & MILESTONES TAB */}
                     {activeTab === 'goals' && (
-                        <div className="sp-section-card">
-                            <div className="sp-section-title-row">
-                                <div className="sp-section-title">Career Goal Breakdown & Roadmap</div>
-                                <button className="sp-btn-continue" style={{ width: 'auto' }} onClick={() => setShowAddGoalModal(true)}>
-                                    + Set Career Goal
-                                </button>
-                            </div>
-                            <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '14px', marginBottom: '24px' }}>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>
-                                    Target Career: {state.profile.targetRole}
-                                </div>
-                                <div style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 16px' }}>
-                                    Target Date: {state.profile.targetDate}
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    {state.profile.careerSteps?.map(step => (
-                                        <div key={step.step} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: step.completed ? '#10b981' : '#e2e8f0', color: step.completed ? 'white' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.78rem', fontWeight: 700 }}>
-                                                {step.completed ? '✓' : step.step}
-                                            </div>
-                                            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: step.completed ? '#0f172a' : '#64748b' }}>{step.title}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        <GoalsMilestones
+                            state={state}
+                            setShowAddGoalModal={setShowAddGoalModal}
+                            setShowAIPlanModal={setShowAIPlanModal}
+                        />
                     )}
 
-                    {/* PROGRESS & INSIGHTS TAB */}
                     {activeTab === 'progress' && (
-                        <div className="sp-section-card">
-                            <div className="sp-section-title">Progress & Insights Analytics</div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginTop: '16px' }}>
-                                <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '12px' }}>
-                                    <div style={{ fontWeight: 700, marginBottom: '10px' }}>Assessment Performance</div>
-                                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>Quiz Average: <strong>78%</strong></div>
-                                    <div style={{ fontSize: '0.9rem', color: '#64748b', marginTop: '6px' }}>Coding Accuracy: <strong>64%</strong></div>
-                                </div>
-                                <div style={{ padding: '20px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
-                                    <div style={{ fontWeight: 700, color: '#166534', marginBottom: '8px' }}>🤖 AI Diagnostic Insight</div>
-                                    <p style={{ fontSize: '0.85rem', color: '#15803d', lineHeight: 1.5 }}>
-                                        Your DSA practice is consistent, but your assessment accuracy dropped slightly this week. Review recursion & stack before moving to tree data structures.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                        <ProgressAnalytics state={state} />
                     )}
 
-                    {/* DEADLINES TAB */}
                     {activeTab === 'deadlines' && (
-                        <div className="sp-section-card">
-                            <div className="sp-section-title">Categorized Deadlines</div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-                                {state.deadlines.map(d => (
-                                    <div key={d._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-                                        <div>
-                                            <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{d.title}</div>
-                                            <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Category: {d.category}</div>
-                                        </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            <div style={{ fontWeight: 700, color: '#d97706', fontSize: '0.88rem' }}>{d.urgency}</div>
-                                            <div style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Due: {d.date}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <DeadlinesManager
+                            state={state}
+                            setShowAddDeadlineModal={setShowAddDeadlineModal}
+                            handleDeleteDeadline={handleDeleteDeadline}
+                        />
                     )}
                 </div>
             </main>
 
-            {/* AI PLAN BUILDER MODAL */}
-            {showAIPlanModal && (
-                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                    <div style={{ background: '#ffffff', borderRadius: '20px', width: '500px', padding: '28px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#0f172a' }}>✨ AI Study Plan Builder</div>
-                            <X size={20} cursor="pointer" onClick={() => setShowAIPlanModal(false)} />
-                        </div>
-                        <form onSubmit={handleGenerateAIPlan}>
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Target Career Role</label>
-                                <input
-                                    type="text"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                    value={aiForm.targetRole}
-                                    onChange={(e) => setAiForm({ ...aiForm, targetRole: e.target.value })}
-                                    placeholder="e.g. Backend Developer, Fullstack, AI Engineer"
-                                />
-                            </div>
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Available Daily Hours</label>
-                                <input
-                                    type="number"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                    value={aiForm.hoursPerDay}
-                                    onChange={(e) => setAiForm({ ...aiForm, hoursPerDay: e.target.value })}
-                                />
-                            </div>
-                            <button type="submit" className="sp-btn-continue" style={{ padding: '12px' }}>
-                                Generate Personalized Roadmap & Weekly Tasks
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* ── MODALS (AI Plan Builder, Add Task, Set Goal, Add Deadline) ── */}
+            <AIPlanBuilderModal
+                isOpen={showAIPlanModal}
+                onClose={() => setShowAIPlanModal(false)}
+                onGenerate={handleGenerateAIPlan}
+                aiForm={aiForm}
+                setAiForm={setAiForm}
+                loading={aiLoading}
+            />
 
-            {/* ADD TASK MODAL */}
-            {showAddTaskModal && (
-                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                    <div style={{ background: '#ffffff', borderRadius: '20px', width: '450px', padding: '28px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#0f172a' }}>+ Add Learning Task</div>
-                            <X size={20} cursor="pointer" onClick={() => setShowAddTaskModal(false)} />
-                        </div>
-                        <form onSubmit={handleCreateTask}>
-                            <div style={{ marginBottom: '14px' }}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Task Title</label>
-                                <input
-                                    type="text"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                    placeholder="e.g. Binary Search Trees — Practice"
-                                    value={newTaskForm.title}
-                                    onChange={(e) => setNewTaskForm({ ...newTaskForm, title: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Day Label</label>
-                                    <input
-                                        type="text"
-                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                        value={newTaskForm.dayLabel}
-                                        onChange={(e) => setNewTaskForm({ ...newTaskForm, dayLabel: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Type</label>
-                                    <select
-                                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                        value={newTaskForm.taskType}
-                                        onChange={(e) => setNewTaskForm({ ...newTaskForm, taskType: e.target.value })}
-                                    >
-                                        <option value="LEARN">LEARN</option>
-                                        <option value="PRACTICE">PRACTICE</option>
-                                        <option value="QUIZ">QUIZ</option>
-                                        <option value="ASSESSMENT">ASSESSMENT</option>
-                                        <option value="PROJECT">PROJECT</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Duration (minutes)</label>
-                                <input
-                                    type="number"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                    value={newTaskForm.durationMinutes}
-                                    onChange={(e) => setNewTaskForm({ ...newTaskForm, durationMinutes: e.target.value })}
-                                />
-                            </div>
-                            <button type="submit" className="sp-btn-continue" style={{ padding: '12px' }}>
-                                Add Task to Schedule
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <AddTaskModal
+                isOpen={showAddTaskModal}
+                onClose={() => setShowAddTaskModal(false)}
+                onSubmit={handleCreateTask}
+                newTaskForm={newTaskForm}
+                setNewTaskForm={setNewTaskForm}
+            />
 
-            {/* SET GOAL MODAL */}
-            {showAddGoalModal && (
-                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                    <div style={{ background: '#ffffff', borderRadius: '20px', width: '450px', padding: '28px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#0f172a' }}>🎯 Set Career Goal</div>
-                            <X size={20} cursor="pointer" onClick={() => setShowAddGoalModal(false)} />
-                        </div>
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            setState(prev => ({
-                                ...prev,
-                                profile: {
-                                    ...prev.profile,
-                                    targetRole: newGoalForm.role,
-                                    targetDate: newGoalForm.targetDate
-                                }
-                            }));
-                            setShowAddGoalModal(false);
-                        }}>
-                            <div style={{ marginBottom: '14px' }}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Target Career Role</label>
-                                <input
-                                    type="text"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                    value={newGoalForm.role}
-                                    onChange={(e) => setNewGoalForm({ ...newGoalForm, role: e.target.value })}
-                                />
-                            </div>
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>Target Date</label>
-                                <input
-                                    type="text"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-                                    value={newGoalForm.targetDate}
-                                    onChange={(e) => setNewGoalForm({ ...newGoalForm, targetDate: e.target.value })}
-                                />
-                            </div>
-                            <button type="submit" className="sp-btn-continue" style={{ padding: '12px' }}>
-                                Save Career Goal
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <SetGoalModal
+                isOpen={showAddGoalModal}
+                onClose={() => setShowAddGoalModal(false)}
+                onSubmit={handleSetGoal}
+                newGoalForm={newGoalForm}
+                setNewGoalForm={setNewGoalForm}
+            />
+
+            <AddDeadlineModal
+                isOpen={showAddDeadlineModal}
+                onClose={() => setShowAddDeadlineModal(false)}
+                onSubmit={handleAddDeadline}
+                deadlineForm={deadlineForm}
+                setDeadlineForm={setDeadlineForm}
+            />
         </div>
     );
 }

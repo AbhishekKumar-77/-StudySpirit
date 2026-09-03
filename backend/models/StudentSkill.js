@@ -7,6 +7,7 @@ const StudentSkillSchema = new mongoose.Schema({
         required: true
     },
     name: { type: String, required: true },
+    semesterNumber: { type: Number, default: 2 },
     category: { type: String, default: 'Core CS' },
     mastery: { type: Number, default: 0 },
     status: { type: String, default: 'In Progress' }, // Completed, In Progress, Recommended Next, Locked

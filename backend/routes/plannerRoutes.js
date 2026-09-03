@@ -33,4 +33,11 @@ router.route('/goals/:id')
     .put(optionalAuth, plannerController.updateGoal)
     .delete(optionalAuth, plannerController.deleteGoal);
 
+// Deadlines Routes
+router.route('/deadlines')
+    .post(optionalAuth, plannerController.createDeadline);
+
+router.route('/deadlines/:id')
+    .delete(optionalAuth, plannerController.deleteDeadline);
+
 module.exports = router;

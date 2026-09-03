@@ -7,6 +7,7 @@ const StudentProjectSchema = new mongoose.Schema({
         required: true
     },
     name: { type: String, required: true },
+    semesterNumber: { type: Number, default: 2 },
     description: { type: String },
     status: { type: String, default: 'In Progress' },
     progress: { type: Number, default: 0 },
