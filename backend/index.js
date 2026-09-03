@@ -5,7 +5,8 @@ const mongoose = require('mongoose');
 const http = require('http');
 const { Server } = require('socket.io');
 const session = require('express-session');
-const { MongoStore } = require('connect-mongo');
+const connectMongo = require('connect-mongo');
+const MongoStore = connectMongo.MongoStore || connectMongo.default || connectMongo;
 const morgan = require('morgan');
 const dns = require('dns');
 

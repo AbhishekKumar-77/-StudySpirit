@@ -9,6 +9,7 @@ const AIRecommendation = require('../models/AIRecommendation');
 const Task = require('../models/Task');
 const Goal = require('../models/Goal');
 const User = require('../models/User');
+const fetch = typeof globalThis.fetch === 'function' ? globalThis.fetch : require('node-fetch');
 
 // Helper to reliably retrieve the user ID
 const getUserId = async (req) => {
@@ -484,6 +485,20 @@ exports.updateTaskLifecycle = async (req, res) => {
     } catch (error) {
         console.error('Update task status error:', error);
         res.status(500).json({ success: false, message: 'Failed to update task status', error: error.message });
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// GET TASKS
+// ═══════════════════════════════════════════════════════════════════
+exports.getTasks = async (req, res) => {
+    try {
+        const userId = await getUserId(req);
+        const tasks = await LearningTask.find({ user: userId }).sort({ createdAt: 1 });
+        res.status(200).json({ success: true, count: tasks.length, tasks });
+    } catch (error) {
+        console.error('Get tasks error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch tasks', error: error.message });
     }
 };
 
