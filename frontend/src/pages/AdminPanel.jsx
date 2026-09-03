@@ -9,6 +9,7 @@ import {
     Clock, TrendingUp, Globe, AlertTriangle, X, Settings,
     ShieldCheck, ShieldOff, GraduationCap, Briefcase, BookOpen
 } from 'lucide-react';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 
 export default function AdminPanel() {
     const navigate = useNavigate();
@@ -399,18 +400,12 @@ export default function AdminPanel() {
                                             >
                                                 <td style={{ padding: '12px 16px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                                        {u.avatar && u.avatar.startsWith('http') ? (
-                                                            <img
-                                                                src={u.avatar}
-                                                                alt={u.name}
-                                                                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }}
-                                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.name) + '&background=random'; }}
-                                                            />
-                                                        ) : (
-                                                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: '2px solid rgba(255,255,255,0.1)' }}>
-                                                                {u.name?.charAt(0).toUpperCase() || '👤'}
-                                                            </div>
-                                                        )}
+                                                        <img
+                                                            src={getAvatarUrl(u.avatar)}
+                                                            alt={u.name}
+                                                            style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }}
+                                                            onError={handleAvatarError}
+                                                        />
                                                         <div>
                                                             <div style={{ fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, color: 'white' }}>
                                                                 {u.name}
@@ -534,7 +529,12 @@ export default function AdminPanel() {
                         {/* Header */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                <span style={{ fontSize: 40 }}>{selectedUser.avatar || '👤'}</span>
+                                <img
+                                    src={getAvatarUrl(selectedUser.avatar)}
+                                    alt={selectedUser.name}
+                                    style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(139,92,246,0.5)' }}
+                                    onError={handleAvatarError}
+                                />
                                 <div>
                                     <h3 style={{ fontSize: 20, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
                                         {selectedUser.name}

@@ -3,6 +3,7 @@ import { Search, Users, Briefcase, Calendar, TrendingUp, Star, Filter, MapPin, G
 import { useApp } from '../context/AppContext';
 import { API_BASE } from '../config';
 import api from '../services/api';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 import './RecruiterDashboard.css';
 
 const RecruiterDashboard = () => {
@@ -155,7 +156,12 @@ const RecruiterDashboard = () => {
           ))}
         </div>
         <div className="rec-sidebar-user">
-          <div className="rec-user-avatar">{user?.avatar || '💼'}</div>
+          <img
+            src={getAvatarUrl(user?.avatar)}
+            alt={user?.name || 'Recruiter'}
+            className="rec-user-avatar-img"
+            onError={handleAvatarError}
+          />
           <div>
             <div className="rec-user-name">{user?.name}</div>
             <div className="rec-user-role">{user?.recruiterProfile?.companyName || 'Recruiter'}</div>

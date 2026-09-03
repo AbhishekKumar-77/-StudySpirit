@@ -14,6 +14,7 @@ import {
     FileCheck, Plus, Sparkle, ExternalLink, TrendingUp, Menu, X, Sun, Moon, Send
 } from 'lucide-react';
 import './Dashboard.css';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 
 export default function Dashboard() {
     const { user, stats, setUser, setStats } = useApp();
@@ -434,9 +435,10 @@ export default function Dashboard() {
                                     />
                                 </svg>
                                 <img
-                                    src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"}
-                                    alt="User Avatar"
+                                    src={getAvatarUrl(user?.avatar)}
+                                    alt={user?.name || "User Avatar"}
                                     className="user-avatar"
+                                    onError={handleAvatarError}
                                 />
                             </div>
                         </div>

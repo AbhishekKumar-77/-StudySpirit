@@ -6,6 +6,7 @@ import {
     Megaphone, GraduationCap, BookOpen, BarChart2, Sparkles, Users, Bell,
     Code2, Video, LogOut, ChevronRight
 } from 'lucide-react';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 
 export default function TeacherToolkit() {
     const { user, logoutUser } = useApp();
@@ -120,9 +121,12 @@ export default function TeacherToolkit() {
 
                     {/* User profile badge */}
                     <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-                        <div className="w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center font-black text-sm shadow-sm">
-                            {initial}
-                        </div>
+                        <img
+                            src={getAvatarUrl(user?.avatar)}
+                            alt={user?.name || 'Teacher'}
+                            className="w-8 h-8 rounded-full object-cover border border-violet-200 shadow-sm"
+                            onError={handleAvatarError}
+                        />
                         <div className="hidden sm:block">
                             <div className="font-bold text-slate-900 text-xs leading-none">{user?.name || 'Teacher'}</div>
                             <div className="text-[10px] font-semibold text-violet-600">Instructor</div>

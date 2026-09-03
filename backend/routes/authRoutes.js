@@ -134,9 +134,48 @@ router.get('/notifications', (req, res, next) => {
     authController.getNotifications(req, res);
 });
 
-router.post('/notifications/read', (req, res, next) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Not authenticated' });
-    authController.markNotificationsRead(req, res);
+// Update User Profile / Avatar
+router.put('/profile', async (req, res) => {
+    if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+    try {
+        const User = require('../models/User');
+        const { name, avatar, bio, university, course } = req.body;
+        const updates = {};
+        if (name) updates.name = name;
+        if (avatar) updates.avatar = avatar;
+        if (bio !== undefined) updates.bio = bio;
+        if (university !== undefined) updates.university = university;
+        if (course !== undefined) updates.course = course;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            { $set: updates },
+            { new: true }
+        );
+
+        res.json({
+            success: true,
+            message: 'Profile updated successfully',
+            user: {
+                id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                avatar: updatedUser.avatar,
+                stats: updatedUser.stats,
+                university: updatedUser.university,
+                course: updatedUser.course,
+                isVerified: updatedUser.isVerified,
+                isAdmin: updatedUser.isAdmin || false,
+                onboardingCompleted: updatedUser.onboardingCompleted || false
+            }
+        });
+    } catch (err) {
+        console.error('Error updating profile:', err);
+        res.status(500).json({ success: false, message: 'Server error updating profile' });
+    }
 });
 
 module.exports = router;

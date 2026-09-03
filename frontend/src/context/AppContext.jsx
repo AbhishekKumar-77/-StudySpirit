@@ -14,12 +14,17 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         const normalizeUser = (userData) => {
             if (!userData) return null;
+            let normalized = { ...userData };
             // Admins have isAdmin:true but role may be 'student'/'teacher' in DB
             // Normalize to role:'admin' so RoleGuard works correctly
-            if (userData.isAdmin === true) {
-                return { ...userData, role: 'admin' };
+            if (normalized.isAdmin === true) {
+                normalized.role = 'admin';
             }
-            return userData;
+            // Ensure avatar is a clean image path
+            if (!normalized.avatar || normalized.avatar === '👨‍🎓' || (typeof normalized.avatar === 'string' && normalized.avatar.length <= 4 && !normalized.avatar.startsWith('/'))) {
+                normalized.avatar = '/AbhishekImage.jpg';
+            }
+            return normalized;
         };
 
         const fetchUser = async () => {

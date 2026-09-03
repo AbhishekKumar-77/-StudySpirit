@@ -7,10 +7,13 @@ import {
     Code, ArrowUpRight, Zap, RefreshCw, X, User, Flame, Filter,
     Layers, Compass, ArrowRight, ShieldCheck, Dumbbell, FolderGit2
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 import './Planner.css';
 import { API_BASE } from '../config';
 
 export default function Planner() {
+    const { user } = useApp();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(true);
@@ -348,15 +351,16 @@ export default function Planner() {
                 {/* Profile Pill */}
                 <div className="sp-sidebar-profile">
                     <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                        src={getAvatarUrl(user?.avatar)}
                         alt="Avatar"
                         className="sp-avatar"
+                        onError={handleAvatarError}
                     />
                     <div>
                         <div className="sp-profile-name">
-                            {state.profile.displayName} <ShieldCheck size={14} color="#10b981" />
+                            {user?.name || state.profile.displayName} <ShieldCheck size={14} color="#10b981" />
                         </div>
-                        <div className="sp-profile-meta">Level {state.profile.level} • {state.profile.xp} XP</div>
+                        <div className="sp-profile-meta">Level {user?.level || state.profile.level} • {user?.xp || state.profile.xp} XP</div>
                     </div>
                 </div>
             </aside>
@@ -385,9 +389,10 @@ export default function Planner() {
                         </button>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                             <img
-                                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                                src={getAvatarUrl(user?.avatar)}
                                 alt="Profile"
                                 className="sp-avatar"
+                                onError={handleAvatarError}
                             />
                         </div>
                     </div>

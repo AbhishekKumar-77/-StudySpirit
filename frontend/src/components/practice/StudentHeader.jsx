@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Flame, Bell, ChevronDown, User, Sparkles, BookOpen } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { getAvatarUrl, handleAvatarError } from '../../utils/avatarHelper';
 
 export default function StudentHeader({ userProfile, onSearch }) {
     const { user } = useApp();
@@ -16,7 +17,7 @@ export default function StudentHeader({ userProfile, onSearch }) {
     };
 
     const studentName = user?.name || userProfile?.name || "Abhishek Kumar";
-    const avatar = user?.avatar || userProfile?.avatar || "👨‍🎓";
+    const avatar = getAvatarUrl(user?.avatar || userProfile?.avatar);
     const streak = userProfile?.summaryCards?.currentStreak?.value || user?.stats?.streak || 8;
 
     return (
@@ -77,9 +78,12 @@ export default function StudentHeader({ userProfile, onSearch }) {
                         onClick={() => setShowProfileMenu(!showProfileMenu)}
                         className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-100 transition-colors border border-slate-200/80"
                     >
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-lg shadow-inner">
-                            {avatar}
-                        </div>
+                        <img
+                            src={avatar}
+                            alt={studentName}
+                            className="w-8 h-8 rounded-full object-cover shadow-inner ring-2 ring-indigo-100"
+                            onError={handleAvatarError}
+                        />
                         <div className="text-left hidden md:block pr-1">
                             <p className="text-xs font-bold text-slate-800 leading-none">{studentName}</p>
                             <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5">Student</p>

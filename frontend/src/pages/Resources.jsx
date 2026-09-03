@@ -15,6 +15,7 @@ import ResourceCard from '../components/resources/ResourceCard';
 import CourseDetailView from '../components/resources/CourseDetailView';
 import ResourceViewerModal from '../components/resources/ResourceViewerModal';
 import ExamPrepModal from '../components/resources/ExamPrepModal';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 
 export default function Resources() {
     const { user } = useApp();
@@ -146,10 +147,13 @@ export default function Resources() {
                             </button>
 
                             {/* Student Profile Pill */}
-                            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-3 py-1.5 shadow-xs">
-                                <div className="w-6 h-6 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center">
-                                    {user?.name ? user.name.charAt(0) : 'A'}
-                                </div>
+                            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-2.5 py-1 shadow-xs">
+                                <img
+                                    src={getAvatarUrl(user?.avatar)}
+                                    alt={user?.name || 'User'}
+                                    className="w-6 h-6 rounded-full object-cover"
+                                    onError={handleAvatarError}
+                                />
                                 <span className="text-xs font-bold text-slate-800 hidden sm:inline">
                                     {user?.name || 'sasa'}
                                 </span>

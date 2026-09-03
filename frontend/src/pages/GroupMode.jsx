@@ -23,6 +23,7 @@ import BreakoutRoomsModal from '../components/BreakoutRoomsModal';
 import LivePollModal from '../components/LivePollModal';
 import ClassroomAISummarizer from '../components/ClassroomAISummarizer';
 import AttendanceReportModal from '../components/AttendanceReportModal';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 
 export default function GroupMode() {
     const { user } = useApp();
@@ -682,9 +683,12 @@ export default function GroupMode() {
                         <button className="gh-action-pill" style={{ padding: '8px 12px' }} title="Notifications">
                             <Bell size={18} />
                         </button>
-                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#e0e7ff', color: '#4338ca', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.95rem' }}>
-                            {user?.name ? user.name.charAt(0).toUpperCase() : (isHost ? 'T' : 'S')}
-                        </div>
+                        <img
+                            src={getAvatarUrl(user?.avatar)}
+                            alt={user?.name || 'User'}
+                            style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e0e7ff' }}
+                            onError={handleAvatarError}
+                        />
                     </div>
                 </header>
 

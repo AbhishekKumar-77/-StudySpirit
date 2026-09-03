@@ -1,11 +1,13 @@
 import React from 'react';
 import { Search, Bell, Flame, Star } from 'lucide-react';
+import { getAvatarUrl, handleAvatarError } from '../../utils/avatarHelper';
 
 export default function CareerHeader({ user, searchQuery, setSearchQuery }) {
     const studentName = user?.name || 'Abhishek Kumar';
     const streak = user?.stats?.streak || 7;
     const xp = user?.stats?.xp || 320;
     const course = user?.course || 'B.Tech CSE';
+    const avatarUrl = getAvatarUrl(user?.avatar);
 
     return (
         <header className="bg-white border-b border-slate-200/80 px-6 py-4 sticky top-0 z-30 flex items-center justify-between gap-4">
@@ -37,9 +39,12 @@ export default function CareerHeader({ user, searchQuery, setSearchQuery }) {
 
                 {/* Student Profile Pill */}
                 <div className="flex items-center gap-2.5 pl-2">
-                    <div className="w-9 h-9 rounded-2xl bg-slate-900 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
-                        {user?.avatar && user.avatar.length <= 2 ? user.avatar : studentName.charAt(0)}
-                    </div>
+                    <img
+                        src={avatarUrl}
+                        alt={studentName}
+                        className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-slate-200"
+                        onError={handleAvatarError}
+                    />
                     <div className="hidden md:block text-left">
                         <h4 className="text-xs font-extrabold text-slate-900 leading-tight">{studentName}</h4>
                         <p className="text-[10px] font-bold text-slate-400">{course}</p>

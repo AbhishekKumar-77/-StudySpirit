@@ -6,6 +6,7 @@ import {
   Share2, Download, CheckCircle2, MessageCircle
 } from 'lucide-react';
 import { API_URL } from '../config';
+import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 import './PublicProfile.css';
 
 const PublicProfile = () => {
@@ -44,7 +45,13 @@ const PublicProfile = () => {
         {/* Left Column: Personal Info */}
         <aside className="profile-sidebar">
           <div className="profile-card main-info">
-            <div className="profile-avatar-large">{user.avatar || '👨‍🎓'}</div>
+            <div className="profile-avatar-large">
+              <img
+                src={getAvatarUrl(user?.avatar)}
+                alt={user?.name || 'User'}
+                onError={handleAvatarError}
+              />
+            </div>
             <h1 className="profile-name">{user.name}</h1>
             <p className="profile-role">{user.course}</p>
             <p className="profile-uni"><GraduationCap size={16} /> {user.university}</p>
