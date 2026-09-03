@@ -23,9 +23,28 @@ module.exports = function registerWebRTCEvents(socket, io, webrtcRooms) {
         return false;
     };
 
+    const MAX_MESH_PARTICIPANTS = 8;
+
     // User joins WebRTC room
     socket.on('webrtc:join', (data) => {
-        const { roomId, userId } = data;
+        const { roomId, userId } = data || {};
+        if (!roomId || !userId) return;
+
+        if (!webrtcRooms.has(roomId)) {
+            webrtcRooms.set(roomId, new Set());
+        }
+
+        const roomUsers = webrtcRooms.get(roomId);
+
+        // Safeguard: Full-mesh WebRTC cannot exceed 8 peers without freezing client CPUs
+        if (roomUsers.size >= MAX_MESH_PARTICIPANTS && !roomUsers.has(userId)) {
+            console.warn(`⚠️ WebRTC mesh limit reached (${MAX_MESH_PARTICIPANTS} peers) for room ${roomId}`);
+            socket.emit('webrtc:error', {
+                message: `Video limit reached (${MAX_MESH_PARTICIPANTS} active video streams in P2P mesh). For large audiences, please use LiveKit broadcast mode.`
+            });
+            return;
+        }
+
         console.log(`🎥 WebRTC: ${userId} joining room ${roomId} (socket: ${socket.id})`);
 
         // Register userId -> socketId mapping
@@ -33,16 +52,12 @@ module.exports = function registerWebRTCEvents(socket, io, webrtcRooms) {
 
         socket.join(`webrtc:${roomId}`);
 
-        if (!webrtcRooms.has(roomId)) {
-            webrtcRooms.set(roomId, new Set());
-        }
-
         // Send existing users to the new user
-        const existingUsers = Array.from(webrtcRooms.get(roomId));
+        const existingUsers = Array.from(roomUsers);
         socket.emit('webrtc:existingUsers', existingUsers);
 
         // Add user to room
-        webrtcRooms.get(roomId).add(userId);
+        roomUsers.add(userId);
 
         // Notify others in the room
         socket.to(`webrtc:${roomId}`).emit('webrtc:userJoined', { userId });

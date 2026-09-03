@@ -16,7 +16,7 @@ if (dns.setDefaultResultOrder) {
 
 // Middleware imports
 const applySecurityMiddleware = require('./middleware/security');
-const { generalLimiter, authLimiter, aiLimiter } = require('./middleware/rateLimiter');
+const { generalLimiter, authLimiter, aiLimiter, examLimiter, codeRunnerLimiter } = require('./middleware/rateLimiter');
 const { notFoundHandler, globalErrorHandler } = require('./middleware/errorHandler');
 
 // Socket handler
@@ -180,18 +180,22 @@ const recruiterRoutes = require('./routes/recruiterRoutes');
 const webrtcRoutes = require('./routes/webrtcRoutes');
 const practiceRoutes = require('./routes/practiceRoutes');
 
-// Auth routes get stricter rate limiting
+// Auth routes get account-targeted rate limiting
 app.use('/api/auth', authLimiter, authRoutes);
 
 // AI-powered routes get AI rate limiting
 app.use('/api/solo', soloRoutes);
 app.use('/api/english', englishLabRoutes);
 app.use('/api/planner', plannerRoutes);
-app.use('/api/codespirit', aiLimiter, codeSpiritRoutes);
+app.use('/api/codespirit', codeRunnerLimiter, codeSpiritRoutes);
+
+// High-throughput Exam & Assessment routes (Campus-ready, per-student keying)
+app.use('/api/quiz', examLimiter, quizRoutes);
+app.use('/api/interview-exam', examLimiter, interviewExamRoutes);
+app.use('/api/proctor', examLimiter, proctorRoutes);
 
 // Standard routes
 app.use('/api/group', groupRoutes);
-app.use('/api/quiz', quizRoutes);
 app.use('/api/practice', practiceRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/career', careerRoutes);
@@ -209,12 +213,6 @@ app.use('/api/teacher', teacherRoutes);
 
 // Recruiter portal API
 app.use('/api/recruiter', recruiterRoutes);
-
-// Interview Exam routes (Teacher AI Interview system)
-app.use('/api/interview-exam', interviewExamRoutes);
-
-// Proctoring API for StudySpirit Secure Browser
-app.use('/api/proctor', proctorRoutes);
 
 // WebRTC LiveKit API
 app.use('/api/webrtc', webrtcRoutes);

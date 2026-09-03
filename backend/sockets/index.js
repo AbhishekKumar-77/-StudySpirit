@@ -1,6 +1,12 @@
 /**
  * Socket.io Main Setup
  * Registers all socket event handlers and manages shared state
+ * 
+ * High-Concurrency Optimizations:
+ * 1. Batched Database Status Updates: Aggregates connect/disconnect status changes
+ *    into 5-second bulk operations instead of thousands of single Mongo writes.
+ * 2. Throttled Presence Broadcasts: Removes quadratic O(N^2) global broadcasts.
+ * 3. Fast In-Memory Lookups: Constant time O(1) user and socket mappings.
  */
 const registerGroupEvents = require('./groupEvents');
 const registerRoomEvents = require('./roomEvents');
@@ -10,44 +16,77 @@ const User = require('../models/User');
 
 // Shared state — tracked per-process
 const onlineUsers = new Map();      // userId -> Set(socketId)
-const socketUserMap = new Map();    // socketId -> userId  (for disconnect lookup)
+const socketUserMap = new Map();    // socketId -> userId (for disconnect lookup)
 const roomParticipants = new Map();
 const webrtcRooms = new Map();
 
+// Queues for batch DB status updates
+const pendingOnlineUsers = new Set();
+const pendingOfflineUsers = new Set();
+
+// Batch flush online/offline status to MongoDB every 5 seconds
+setInterval(async () => {
+    if (pendingOnlineUsers.size > 0) {
+        const userIds = Array.from(pendingOnlineUsers);
+        pendingOnlineUsers.clear();
+        try {
+            await User.updateMany({ _id: { $in: userIds } }, { $set: { status: 'online' } });
+        } catch (e) {
+            console.error('[Socket] Batch online status error:', e.message);
+        }
+    }
+
+    if (pendingOfflineUsers.size > 0) {
+        const userIds = Array.from(pendingOfflineUsers);
+        pendingOfflineUsers.clear();
+        try {
+            await User.updateMany({ _id: { $in: userIds } }, { $set: { status: 'offline' } });
+        } catch (e) {
+            console.error('[Socket] Batch offline status error:', e.message);
+        }
+    }
+}, 5000).unref();
+
 module.exports = function setupSocketHandlers(io) {
+    // Throttled presence notifier (fires at most once per 15 seconds)
+    let presenceBroadcastTimer = null;
+    const schedulePresenceBroadcast = () => {
+        if (!presenceBroadcastTimer) {
+            presenceBroadcastTimer = setTimeout(() => {
+                presenceBroadcastTimer = null;
+                // Emit lightweight online count to all connected clients
+                io.emit('users:count', onlineUsers.size);
+            }, 15000);
+        }
+    };
+
     io.on('connection', (socket) => {
-        console.log('🔌 Socket connected:', socket.id);
+        // User comes online — update queue + register socket
+        socket.on('user:online', (userId) => {
+            if (!userId) return;
+            const strUserId = String(userId);
 
-        // User comes online — update DB status + broadcast
-        socket.on('user:online', async (userId) => {
-            if (!onlineUsers.has(userId)) {
-                onlineUsers.set(userId, new Set());
+            if (!onlineUsers.has(strUserId)) {
+                onlineUsers.set(strUserId, new Set());
             }
-            onlineUsers.get(userId).add(socket.id);
-            socketUserMap.set(socket.id, userId);
+            onlineUsers.get(strUserId).add(socket.id);
+            socketUserMap.set(socket.id, strUserId);
 
-            // Update status in MongoDB
-            try {
-                await User.findByIdAndUpdate(userId, { status: 'online' });
-            } catch (e) {
-                console.error('Failed to set user online:', e.message);
-            }
+            // Queue for batch DB update (removes immediate DB round-trip)
+            pendingOfflineUsers.delete(strUserId);
+            pendingOnlineUsers.add(strUserId);
 
-            // Broadcast updated online list
-            io.emit('users:online', Array.from(onlineUsers.keys()));
-            console.log(`✅ User ${userId} is now online`);
+            // Schedule throttled count broadcast
+            schedulePresenceBroadcast();
         });
 
         // ──── Real-time DM messaging ────
-        // When user sends a DM, forward it to the recipient instantly
         socket.on('dm:send', (data) => {
-            // data = { recipientId, message: { _id, content, timestamp, createdAt, senderId, senderName, senderAvatar } }
-            const { recipientId, message } = data;
+            const { recipientId, message } = data || {};
             if (!recipientId || !message) return;
 
             const recipientSocketIds = onlineUsers.get(String(recipientId));
             if (recipientSocketIds && recipientSocketIds.size > 0) {
-                // emit to all the sockets for the recipient
                 for (const recipientSocketId of recipientSocketIds) {
                     io.to(recipientSocketId).emit('dm:receive', {
                         senderId: message.senderId,
@@ -56,19 +95,18 @@ module.exports = function setupSocketHandlers(io) {
                         message: {
                             _id: message._id,
                             content: message.content,
-                            isMine: false,  // For the recipient, it's NOT their message
+                            isMine: false,
                             timestamp: message.timestamp,
                             createdAt: message.createdAt
                         }
                     });
                 }
-                console.log(`💬 DM forwarded from ${message.senderId} to ${recipientId}`);
             }
         });
 
         // Typing indicator
         socket.on('dm:typing', (data) => {
-            const { recipientId, isTyping, senderId, senderName } = data;
+            const { recipientId, isTyping, senderId, senderName } = data || {};
             if (!recipientId) return;
             const recipientSocketIds = onlineUsers.get(String(recipientId));
             if (recipientSocketIds && recipientSocketIds.size > 0) {
@@ -85,7 +123,7 @@ module.exports = function setupSocketHandlers(io) {
         registerQuizEvents(socket, io);
 
         // Disconnect handler
-        socket.on('disconnect', async () => {
+        socket.on('disconnect', () => {
             const userId = socketUserMap.get(socket.id);
 
             if (userId) {
@@ -95,14 +133,9 @@ module.exports = function setupSocketHandlers(io) {
                     if (userSockets.size === 0) {
                         onlineUsers.delete(userId);
 
-                        // Update status in MongoDB
-                        try {
-                            await User.findByIdAndUpdate(userId, { status: 'offline' });
-                        } catch (e) {
-                            console.error('Failed to set user offline:', e.message);
-                        }
-
-                        console.log(`❌ User ${userId} went offline completely`);
+                        // Queue for batch offline DB update
+                        pendingOnlineUsers.delete(userId);
+                        pendingOfflineUsers.add(userId);
                     }
                 }
                 socketUserMap.delete(socket.id);
@@ -127,8 +160,8 @@ module.exports = function setupSocketHandlers(io) {
                 if (users.size === 0) webrtcRooms.delete(roomId);
             }
 
-            io.emit('users:online', Array.from(onlineUsers.keys()));
-            console.log('🔌 Socket disconnected:', socket.id);
+            // Schedule throttled presence broadcast
+            schedulePresenceBroadcast();
         });
     });
 
