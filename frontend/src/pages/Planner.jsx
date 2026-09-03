@@ -47,6 +47,164 @@ export default function Planner() {
         targetDate: 'June 2027'
     });
 
+    // Full 8-Semester Academic Roadmap Data
+    const semesterData = {
+        1: {
+            courses: [
+                { name: 'Python Programming', mastery: 85, color: '#10b981' },
+                { name: 'HTML & CSS', mastery: 90, color: '#8b5cf6' },
+                { name: 'JavaScript', mastery: 78, color: '#f59e0b' },
+                { name: 'Computer Fundamentals', mastery: 92, color: '#06b6d4' },
+                { name: 'Mathematics-I', mastery: 75, color: '#ef4444' }
+            ],
+            skills: [
+                { name: 'Python Programming', mastery: 85, status: 'Completed', color: '#10b981', category: 'Programming' },
+                { name: 'Web Development', mastery: 80, status: 'Completed', color: '#8b5cf6', category: 'Development' },
+                { name: 'Problem Solving', mastery: 70, status: 'Completed', color: '#f59e0b', category: 'Core' },
+                { name: 'Computer Fundamentals', mastery: 92, status: 'Completed', color: '#06b6d4', category: 'Core' }
+            ],
+            projects: [
+                { _id: 'p1_1', name: 'Personal Portfolio Website', status: 'Completed', progress: 100, dueDate: 'Dec 15, 2025', relatedSkills: ['HTML', 'CSS', 'JavaScript'] },
+                { _id: 'p1_2', name: 'Python Mini Project', status: 'Completed', progress: 100, dueDate: 'Dec 20, 2025', relatedSkills: ['Python', 'Problem Solving'] }
+            ]
+        },
+        2: {
+            courses: [
+                { name: 'Data Structures', mastery: 72, color: '#10b981' },
+                { name: 'Object Oriented Programming', mastery: 65, color: '#8b5cf6' },
+                { name: 'Database Management Systems', mastery: 40, color: '#f59e0b' },
+                { name: 'Discrete Mathematics', mastery: 65, color: '#06b6d4' },
+                { name: 'Computer Organization', mastery: 30, color: '#ef4444' }
+            ],
+            skills: [
+                { name: 'Programming Fundamentals', mastery: 100, status: 'Completed', color: '#10b981', category: 'Core' },
+                { name: 'Data Structures', mastery: 68, status: 'In Progress', color: '#10b981', category: 'DSA' },
+                { name: 'Algorithms', mastery: 30, status: 'Recommended Next', color: '#f59e0b', category: 'DSA' },
+                { name: 'C++ Programming', mastery: 70, status: 'In Progress', color: '#8b5cf6', category: 'Programming' }
+            ],
+            projects: [
+                { _id: 'p2_1', name: 'Library Management System', status: 'In Progress', progress: 45, dueDate: 'May 30, 2026', relatedSkills: ['C++', 'OOP', 'Database', 'Git'] },
+                { _id: 'p2_2', name: 'Student Database Project', status: 'Not Started', progress: 0, dueDate: 'Jun 15, 2026', relatedSkills: ['DBMS', 'SQL', 'C++'] }
+            ]
+        },
+        3: {
+            courses: [
+                { name: 'C++ Programming', mastery: 0, color: '#94a3b8' },
+                { name: 'Computer Networks', mastery: 0, color: '#94a3b8' },
+                { name: 'Object Oriented Programming', mastery: 0, color: '#94a3b8' },
+                { name: 'Computer Organization & Architecture', mastery: 0, color: '#94a3b8' },
+                { name: 'Theory of Computation', mastery: 0, color: '#94a3b8' }
+            ],
+            skills: [
+                { name: 'Advanced C++', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Programming' },
+                { name: 'Computer Networking', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Systems' },
+                { name: 'OOP Concepts', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Core' },
+                { name: 'Problem Solving', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Core' }
+            ],
+            projects: [
+                { _id: 'p3_1', name: 'Network Simulation Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2026', relatedSkills: ['Networking', 'C++'] },
+                { _id: 'p3_2', name: 'C++ Application Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2026', relatedSkills: ['C++', 'OOP'] }
+            ]
+        },
+        4: {
+            courses: [
+                { name: 'Java Programming', mastery: 0, color: '#94a3b8' },
+                { name: 'Operating Systems', mastery: 0, color: '#94a3b8' },
+                { name: 'Design & Analysis of Algorithms', mastery: 0, color: '#94a3b8' },
+                { name: 'Software Engineering', mastery: 0, color: '#94a3b8' },
+                { name: 'Probability & Statistics', mastery: 0, color: '#94a3b8' }
+            ],
+            skills: [
+                { name: 'Java Programming', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Programming' },
+                { name: 'Operating Systems', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Systems' },
+                { name: 'Advanced Algorithms', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'DSA' },
+                { name: 'Software Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' }
+            ],
+            projects: [
+                { _id: 'p4_1', name: 'Java Application', status: 'Not Started', progress: 0, dueDate: 'Jun 2027', relatedSkills: ['Java', 'OOP'] },
+                { _id: 'p4_2', name: 'Operating System Simulation', status: 'Not Started', progress: 0, dueDate: 'Jun 2027', relatedSkills: ['OS', 'C'] }
+            ]
+        },
+        5: {
+            courses: [
+                { name: 'Artificial Intelligence', mastery: 0, color: '#94a3b8' },
+                { name: 'Machine Learning', mastery: 0, color: '#94a3b8' },
+                { name: 'Web Technologies', mastery: 0, color: '#94a3b8' },
+                { name: 'Computer Graphics', mastery: 0, color: '#94a3b8' },
+                { name: 'Professional Elective-I', mastery: 0, color: '#94a3b8' }
+            ],
+            skills: [
+                { name: 'AI Fundamentals', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'AI/ML' },
+                { name: 'Machine Learning', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'AI/ML' },
+                { name: 'Advanced Web Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' },
+                { name: 'Data Analysis', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Data' }
+            ],
+            projects: [
+                { _id: 'p5_1', name: 'AI-Based Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2027', relatedSkills: ['AI', 'Python', 'ML'] },
+                { _id: 'p5_2', name: 'Full-Stack Web Application', status: 'Not Started', progress: 0, dueDate: 'Dec 2027', relatedSkills: ['React', 'Node.js', 'MongoDB'] }
+            ]
+        },
+        6: {
+            courses: [
+                { name: 'Cloud Computing', mastery: 0, color: '#94a3b8' },
+                { name: 'Cyber Security', mastery: 0, color: '#94a3b8' },
+                { name: 'Data Science', mastery: 0, color: '#94a3b8' },
+                { name: 'Mobile Application Development', mastery: 0, color: '#94a3b8' },
+                { name: 'Professional Elective-II', mastery: 0, color: '#94a3b8' }
+            ],
+            skills: [
+                { name: 'Cloud Computing', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Cloud' },
+                { name: 'Cyber Security', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Security' },
+                { name: 'Data Science', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Data' },
+                { name: 'Mobile Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' }
+            ],
+            projects: [
+                { _id: 'p6_1', name: 'Cloud-Based Application', status: 'Not Started', progress: 0, dueDate: 'Jun 2028', relatedSkills: ['AWS', 'Docker', 'Node.js'] },
+                { _id: 'p6_2', name: 'Mobile Application', status: 'Not Started', progress: 0, dueDate: 'Jun 2028', relatedSkills: ['React Native', 'Firebase'] }
+            ]
+        },
+        7: {
+            courses: [
+                { name: 'Big Data Analytics', mastery: 0, color: '#94a3b8' },
+                { name: 'DevOps', mastery: 0, color: '#94a3b8' },
+                { name: 'Distributed Systems', mastery: 0, color: '#94a3b8' },
+                { name: 'Professional Elective-III', mastery: 0, color: '#94a3b8' },
+                { name: 'Project-I', mastery: 0, color: '#94a3b8' }
+            ],
+            skills: [
+                { name: 'Big Data', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Data' },
+                { name: 'DevOps', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Operations' },
+                { name: 'Docker & Kubernetes', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Operations' },
+                { name: 'System Design', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Architecture' }
+            ],
+            projects: [
+                { _id: 'p7_1', name: 'Major Project-I', status: 'Not Started', progress: 0, dueDate: 'Dec 2028', relatedSkills: ['Full-Stack', 'DevOps'] },
+                { _id: 'p7_2', name: 'DevOps Deployment Project', status: 'Not Started', progress: 0, dueDate: 'Dec 2028', relatedSkills: ['Docker', 'Kubernetes', 'CI/CD'] }
+            ]
+        },
+        8: {
+            courses: [
+                { name: 'Major Project-II', mastery: 0, color: '#94a3b8' },
+                { name: 'Professional Elective-IV', mastery: 0, color: '#94a3b8' },
+                { name: 'Professional Elective-V', mastery: 0, color: '#94a3b8' },
+                { name: 'Industry Internship', mastery: 0, color: '#94a3b8' }
+            ],
+            skills: [
+                { name: 'Advanced Software Development', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Development' },
+                { name: 'System Design', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Architecture' },
+                { name: 'Project Management', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Management' },
+                { name: 'Industry Skills', mastery: 0, status: 'Locked', color: '#94a3b8', category: 'Professional' }
+            ],
+            projects: [
+                { _id: 'p8_1', name: 'Final Year Major Project', status: 'Not Started', progress: 0, dueDate: 'Jun 2029', relatedSkills: ['Full-Stack', 'AI/ML', 'Cloud'] },
+                { _id: 'p8_2', name: 'Industry Internship', status: 'Not Started', progress: 0, dueDate: 'Jun 2029', relatedSkills: ['Industry', 'Professional Skills'] }
+            ]
+        }
+    };
+
+    // Current semester's data drives courses/skills/projects
+    const currentSemData = semesterData[selectedSemesterNum] || semesterData[2];
+
     // Planner Full State from Backend
     const [state, setState] = useState({
         profile: {
@@ -59,7 +217,14 @@ export default function Planner() {
             department: 'Computer Science & Engineering',
             targetRole: 'Software Engineer',
             targetDate: 'June 2027',
-            currentFocus: { course: 'Data Structures', topic: 'Linked List', masteryPercent: 66 }
+            currentFocus: { course: 'Data Structures', topic: 'Linked List', masteryPercent: 66 },
+            careerSteps: [
+                { step: 1, title: 'Master Core Programming (Python, C++)', completed: true },
+                { step: 2, title: 'Build DSA & Problem Solving Skills', completed: false },
+                { step: 3, title: 'Learn Web Development & Databases', completed: false },
+                { step: 4, title: 'Build Real-World Projects & Portfolio', completed: false },
+                { step: 5, title: 'Prepare for Placements & Internships', completed: false }
+            ]
         },
         semesters: [
             { number: 1, label: 'Semester 1', status: 'completed' },
@@ -70,34 +235,6 @@ export default function Planner() {
             { number: 6, label: 'Semester 6', status: 'upcoming' },
             { number: 7, label: 'Semester 7', status: 'upcoming' },
             { number: 8, label: 'Semester 8', status: 'upcoming' }
-        ],
-        courses: [
-            { name: 'Data Structures', mastery: 72, color: '#10b981' },
-            { name: 'Object Oriented Programming', mastery: 65, color: '#8b5cf6' },
-            { name: 'Database Management Systems', mastery: 40, color: '#f59e0b' },
-            { name: 'Discrete Mathematics', mastery: 65, color: '#06b6d4' },
-            { name: 'Computer Organization', mastery: 30, color: '#ef4444' }
-        ],
-        skills: [
-            { name: 'Programming Fundamentals', mastery: 100, status: 'Completed', color: '#10b981' },
-            { name: 'Data Structures', mastery: 68, status: 'In Progress', color: '#10b981' },
-            { name: 'Algorithms', mastery: 30, status: 'Recommended Next', color: '#f59e0b' },
-            { name: 'C++ Programming', mastery: 70, status: 'In Progress', color: '#10b981' },
-            { name: 'Git & GitHub', mastery: 80, status: 'In Progress', color: '#8b5cf6' },
-            { name: 'Problem Solving', mastery: 60, status: 'In Progress', color: '#f59e0b' },
-            { name: 'Web Fundamentals', mastery: 25, status: 'In Progress', color: '#06b6d4' },
-            { name: 'Database Systems', mastery: 20, status: 'In Progress', color: '#ef4444' },
-            { name: 'Software Engineering', mastery: 0, status: 'Locked', color: '#94a3b8' }
-        ],
-        projects: [
-            {
-                _id: 'p1',
-                name: 'Library Management System',
-                status: 'In Progress',
-                progress: 45,
-                dueDate: 'May 30, 2026',
-                relatedSkills: ['C++', 'OOP', 'Database', 'Git', 'Problem Solving']
-            }
         ],
         tasks: [
             { _id: 't1', title: 'Arrays & Linked List — Concepts', dayLabel: 'Mon 12', durationMinutes: 60, taskType: 'LEARN', status: 'COMPLETED', completed: true },
@@ -274,8 +411,8 @@ export default function Planner() {
     };
 
     // Filter items based on global search query
-    const filteredCourses = state.courses.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    const filteredSkills = state.skills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredCourses = currentSemData.courses.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filteredSkills = currentSemData.skills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
     const filteredTasks = state.tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
@@ -510,7 +647,7 @@ export default function Planner() {
                                         {/* Col 1: Academic Courses */}
                                         <div>
                                             <div className="sp-col-title">Academic Courses</div>
-                                            {filteredCourses.map((c, i) => (
+                                            {currentSemData.courses.map((c, i) => (
                                                 <div key={i} className="sp-list-item">
                                                     <span className="sp-item-name">{c.name}</span>
                                                     <span className="sp-item-pct" style={{ color: c.color }}>{c.mastery}%</span>
@@ -521,7 +658,7 @@ export default function Planner() {
                                         {/* Col 2: Skills to Build */}
                                         <div>
                                             <div className="sp-col-title">Skills to Build</div>
-                                            {filteredSkills.slice(0, 4).map((sk, i) => (
+                                            {currentSemData.skills.slice(0, 4).map((sk, i) => (
                                                 <div key={i} className="sp-list-item">
                                                     <span className="sp-item-name">{sk.name}</span>
                                                     <span className="sp-item-pct" style={{ color: sk.color }}>{sk.mastery}%</span>
@@ -532,7 +669,7 @@ export default function Planner() {
                                         {/* Col 3: Projects */}
                                         <div>
                                             <div className="sp-col-title">Projects</div>
-                                            {state.projects.map((p, i) => (
+                                            {currentSemData.projects.map((p, i) => (
                                                 <div key={i} style={{ marginBottom: '14px' }}>
                                                     <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{p.name}</div>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', margin: '4px 0', color: '#64748b' }}>
@@ -619,7 +756,7 @@ export default function Planner() {
                                         <button className="sp-rec-action" onClick={() => setActiveTab('skills')}>View Path →</button>
                                     </div>
 
-                                    {state.skills.slice(0, 6).map((sk, idx) => (
+                                    {currentSemData.skills.slice(0, 6).map((sk, idx) => (
                                         <div key={idx} style={{ marginBottom: '14px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
                                                 <span style={{ fontWeight: 600, color: '#0f172a' }}>{sk.name}</span>
@@ -675,16 +812,127 @@ export default function Planner() {
                             <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '20px' }}>
                                 Interactive view of your 8-Semester Computer Science curriculum and required milestones.
                             </p>
-                            <div className="sp-3col-grid">
-                                {state.courses.map((c, i) => (
-                                    <div key={i} style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                                        <div style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '6px' }}>{c.name}</div>
-                                        <div style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '10px' }}>Course Mastery: {c.mastery}%</div>
-                                        <div className="sp-progress-bg">
-                                            <div className="sp-progress-fill" style={{ width: `${c.mastery}%` }} />
-                                        </div>
-                                    </div>
+
+                            {/* Semester Selector Tabs */}
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+                                {state.semesters.map(sem => (
+                                    <button
+                                        key={sem.number}
+                                        onClick={() => setSelectedSemesterNum(sem.number)}
+                                        style={{
+                                            padding: '8px 16px',
+                                            borderRadius: '10px',
+                                            border: selectedSemesterNum === sem.number ? '2px solid #7e22ce' : '1px solid #e2e8f0',
+                                            background: selectedSemesterNum === sem.number ? 'linear-gradient(135deg, #7e22ce, #a855f7)' : sem.status === 'completed' ? '#f0fdf4' : '#f8fafc',
+                                            color: selectedSemesterNum === sem.number ? '#fff' : sem.status === 'completed' ? '#166534' : '#64748b',
+                                            fontWeight: 700,
+                                            fontSize: '0.82rem',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        Sem {sem.number}
+                                        {sem.status === 'completed' && ' ✓'}
+                                        {sem.status === 'current' && ' ●'}
+                                    </button>
                                 ))}
+                            </div>
+
+                            {/* Semester Status Badge */}
+                            <div style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 16px',
+                                borderRadius: '10px',
+                                marginBottom: '20px',
+                                background: state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '#f0fdf4'
+                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '#eff6ff' : '#f8fafc',
+                                border: `1px solid ${state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '#bbf7d0'
+                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '#bfdbfe' : '#e2e8f0'}`,
+                                fontSize: '0.88rem',
+                                fontWeight: 700,
+                                color: state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '#166534'
+                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '#1e40af' : '#64748b'
+                            }}>
+                                Semester {selectedSemesterNum} — {state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'completed' ? '✅ Completed'
+                                    : state.semesters.find(s => s.number === selectedSemesterNum)?.status === 'current' ? '📖 Current' : '🔒 Upcoming'}
+                            </div>
+
+                            {/* 3-Column Grid: Courses, Skills, Projects */}
+                            <div className="sp-3col-grid">
+                                {/* Academic Courses */}
+                                <div>
+                                    <div className="sp-col-title">Academic Courses</div>
+                                    {(semesterData[selectedSemesterNum]?.courses || []).map((c, i) => (
+                                        <div key={i} style={{ padding: '12px 14px', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '10px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{c.name}</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: c.color }}>{c.mastery}%</span>
+                                            </div>
+                                            <div className="sp-progress-bg">
+                                                <div className="sp-progress-fill" style={{ width: `${c.mastery}%`, backgroundColor: c.color }} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Skills to Build */}
+                                <div>
+                                    <div className="sp-col-title">Skills to Build</div>
+                                    {(semesterData[selectedSemesterNum]?.skills || []).map((sk, i) => (
+                                        <div key={i} style={{ padding: '12px 14px', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '10px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>{sk.name}</span>
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: sk.color }}>{sk.mastery}%</span>
+                                            </div>
+                                            <div className="sp-progress-bg">
+                                                <div className="sp-progress-fill" style={{ width: `${sk.mastery}%`, backgroundColor: sk.color }} />
+                                            </div>
+                                            {sk.status && sk.status !== 'Completed' && (
+                                                <span style={{
+                                                    fontSize: '0.7rem', fontWeight: 700,
+                                                    color: sk.status === 'In Progress' ? '#0284c7' : sk.status === 'Recommended Next' ? '#d97706' : '#94a3b8',
+                                                    background: sk.status === 'In Progress' ? '#e0f2fe' : sk.status === 'Recommended Next' ? '#fef3c7' : '#f1f5f9',
+                                                    padding: '2px 6px', borderRadius: '4px', marginTop: '6px', display: 'inline-block'
+                                                }}>
+                                                    {sk.status}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Projects */}
+                                <div>
+                                    <div className="sp-col-title">Projects</div>
+                                    {(semesterData[selectedSemesterNum]?.projects || []).map((p, i) => (
+                                        <div key={i} style={{ padding: '14px', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '10px' }}>
+                                            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>{p.name}</div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
+                                                <span style={{
+                                                    fontWeight: 700,
+                                                    color: p.status === 'Completed' ? '#10b981' : p.status === 'In Progress' ? '#0284c7' : '#94a3b8'
+                                                }}>{p.status}</span>
+                                                <span style={{ fontWeight: 800, color: '#0f172a' }}>{p.progress}%</span>
+                                            </div>
+                                            <div className="sp-progress-bg">
+                                                <div className="sp-progress-fill" style={{
+                                                    width: `${p.progress}%`,
+                                                    backgroundColor: p.status === 'Completed' ? '#10b981' : '#7e22ce'
+                                                }} />
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '6px' }}>Due: {p.dueDate}</div>
+                                            {p.relatedSkills && (
+                                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                                    {p.relatedSkills.map((s, si) => (
+                                                        <span key={si} style={{ fontSize: '0.68rem', padding: '2px 6px', borderRadius: '4px', background: '#f1f5f9', color: '#64748b', fontWeight: 600 }}>{s}</span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -729,8 +977,32 @@ export default function Planner() {
                             <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '20px' }}>
                                 Prerequisites and skill dependencies mapped for your career target.
                             </p>
+
+                            {/* Semester Tabs for Skills */}
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                                {state.semesters.map(sem => (
+                                    <button
+                                        key={sem.number}
+                                        onClick={() => setSelectedSemesterNum(sem.number)}
+                                        style={{
+                                            padding: '6px 14px',
+                                            borderRadius: '8px',
+                                            border: selectedSemesterNum === sem.number ? '2px solid #7e22ce' : '1px solid #e2e8f0',
+                                            background: selectedSemesterNum === sem.number ? 'linear-gradient(135deg, #7e22ce, #a855f7)' : '#f8fafc',
+                                            color: selectedSemesterNum === sem.number ? '#fff' : '#64748b',
+                                            fontWeight: 700,
+                                            fontSize: '0.78rem',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        Sem {sem.number}
+                                    </button>
+                                ))}
+                            </div>
+
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
-                                {state.skills.map((sk, idx) => (
+                                {(semesterData[selectedSemesterNum]?.skills || []).map((sk, idx) => (
                                     <div key={idx} style={{ padding: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, marginBottom: '6px' }}>
                                             <span>{sk.name}</span>
