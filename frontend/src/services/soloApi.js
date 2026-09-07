@@ -12,6 +12,17 @@ const fetchWithAuth = async (endpoint, options = {}) => {
             headers['Content-Type'] = 'application/json';
         }
 
+        // Attach user ID if logged in
+        try {
+            const stored = localStorage.getItem('studySpiritUser');
+            if (stored && stored !== 'undefined') {
+                const parsed = JSON.parse(stored);
+                if (parsed?._id || parsed?.id) {
+                    headers['x-user-id'] = parsed._id || parsed.id;
+                }
+            }
+        } catch (_) {}
+
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             ...options,
             credentials: 'include', // Important for session cookies

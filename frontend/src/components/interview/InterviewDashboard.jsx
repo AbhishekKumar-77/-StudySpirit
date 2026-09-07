@@ -14,10 +14,22 @@ export default function InterviewDashboard({
     onOpenATS,
     onOpenQuestionBank,
     onOpenHistory,
-    onOpenReport
+    onOpenReport,
+    onJoinExam
 }) {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
+    const [dashboardExamCode, setDashboardExamCode] = useState('');
+    const [dashboardRegNumber, setDashboardRegNumber] = useState('');
+
+    const handleDashboardJoin = (e) => {
+        e.preventDefault();
+        if (!dashboardExamCode.trim()) return alert('Please enter an exam code (e.g. IV-XXXX)');
+        if (!dashboardRegNumber.trim()) return alert('Please enter your registration number');
+        if (onJoinExam) {
+            onJoinExam(dashboardExamCode.trim(), dashboardRegNumber.trim());
+        }
+    };
 
     const profile = dashboardData?.profile || {
         targetRole: 'Software Engineer',
@@ -354,9 +366,9 @@ export default function InterviewDashboard({
 
             {/* Grid Row 3: Tools & Resources */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* AI Insights Banner */}
+                {/* AI Insights & Teacher Exam Join Banner */}
                 <div className="lg:col-span-2 bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-6 text-white border border-purple-800/50 shadow-lg relative overflow-hidden flex flex-col justify-between">
-                    <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <Sparkles className="w-4 h-4 text-purple-400" />
@@ -366,10 +378,38 @@ export default function InterviewDashboard({
                                 Welcome, {user?.name ? user.name.split(' ')[0] : 'Candidate'}! 👋
                             </h3>
                             <p className="text-xs text-purple-200/90 mt-1 max-w-md">
-                                Launch dynamic mock interviews tailored to your exact target role and company.
+                                Launch dynamic mock interviews or enter an exam code assigned by your instructor.
                             </p>
                         </div>
                     </div>
+
+                    {/* Quick Join Teacher Assessment Form */}
+                    <form onSubmit={handleDashboardJoin} className="relative z-10 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/15 flex flex-col sm:flex-row items-center gap-2.5 mt-2">
+                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 shrink-0 px-1">
+                            <Award className="w-4 h-4 text-emerald-400" />
+                            <span>Teacher Assessment:</span>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Exam Code (e.g. IV-XXXX)"
+                            value={dashboardExamCode}
+                            onChange={(e) => setDashboardExamCode(e.target.value.toUpperCase())}
+                            className="w-full sm:w-36 bg-slate-950/60 border border-white/20 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400 font-mono"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Roll / Reg No"
+                            value={dashboardRegNumber}
+                            onChange={(e) => setDashboardRegNumber(e.target.value)}
+                            className="w-full sm:w-32 bg-slate-950/60 border border-white/20 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400"
+                        />
+                        <button
+                            type="submit"
+                            className="w-full sm:w-auto px-4 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition shrink-0"
+                        >
+                            Join Exam
+                        </button>
+                    </form>
                 </div>
 
                 {/* Tools & Resources */}

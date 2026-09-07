@@ -187,6 +187,27 @@ export default function AIInterview() {
         startInterview(selectedRound, params.resumeFile || resumeFile, 10);
     };
 
+    // Join Teacher Interview Exam Flow
+    const handleJoinExamFlow = async (code, reg) => {
+        setExamCode(code);
+        setRegistrationNumber(reg);
+        const res = await handleJoinExam(code, reg);
+        if (res && res.success && res.exam) {
+            const primaryMode = res.mode || (res.exam.modes && res.exam.modes[0]) || 'technical';
+            if (primaryMode === 'gd') {
+                setRoomType('gd');
+            } else if (primaryMode === 'technical') {
+                setRoomType('technical');
+            } else {
+                setRoomType('aria');
+            }
+
+            if (!cameraEnabled) toggleCamera();
+            setAutoSpeak(true);
+        }
+        return res;
+    };
+
     // End Active Session
     const handleEndSession = () => {
         stopSpeaking();
@@ -280,11 +301,7 @@ export default function AIInterview() {
                     <GuidedInterviewWizard
                         onCancel={() => setRoomType(null)}
                         onLaunchInterview={handleLaunchInterview}
-                        onJoinExam={(code, reg) => {
-                            setExamCode(code);
-                            setRegistrationNumber(reg);
-                            handleJoinExam();
-                        }}
+                        onJoinExam={handleJoinExamFlow}
                     />
                 )}
 
@@ -307,6 +324,7 @@ export default function AIInterview() {
                         onOpenQuestionBank={() => setActiveTab('question-bank')}
                         onOpenHistory={() => setActiveTab('interviews')}
                         onOpenReport={() => setActiveTab('reports')}
+                        onJoinExam={handleJoinExamFlow}
                     />
                 )}
 
@@ -314,7 +332,7 @@ export default function AIInterview() {
                 {!roomType && activeTab === 'question-bank' && (
                     <QuestionBankView
                         onStartPractice={(category, title) => {
-                            handleLaunchInterview('technical');
+                            handleLaunchInterview('technical', { targetRole: title || category, targetCompany: 'Top Tech' });
                         }}
                     />
                 )}
@@ -365,11 +383,7 @@ export default function AIInterview() {
                     <GuidedInterviewWizard
                         onCancel={() => setActiveTab('dashboard')}
                         onLaunchInterview={handleLaunchInterview}
-                        onJoinExam={(code, reg) => {
-                            setExamCode(code);
-                            setRegistrationNumber(reg);
-                            handleJoinExam();
-                        }}
+                        onJoinExam={handleJoinExamFlow}
                     />
                 )}
             </div>

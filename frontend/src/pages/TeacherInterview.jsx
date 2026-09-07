@@ -55,38 +55,58 @@ export default function TeacherInterview() {
         return () => obs.disconnect();
     }, []);
 
-    // Redirect non-teachers
+    // Redirect non-teachers/non-admins
     useEffect(() => {
-        if (user && user.role !== 'teacher') navigate('/dashboard');
+        if (user && user.role !== 'teacher' && user.role !== 'admin' && !user.isAdmin) {
+            navigate('/dashboard');
+        }
     }, [user]);
 
+    const getAuthHeaders = () => {
+        const userId = user?.id || user?._id || '';
+        return {
+            'Content-Type': 'application/json',
+            ...(userId ? { 'x-user-id': userId } : {})
+        };
+    };
+
     // Fetch exams
-    useEffect(() => { fetchExams(); }, []);
+    useEffect(() => { 
+        if (user) fetchExams(); 
+    }, [user]);
 
     const fetchExams = async () => {
         try {
-            const res = await fetch(`${API_BASE}/interview-exam/my`, { credentials: 'include' });
+            const res = await fetch(`${API_BASE}/interview-exam/my`, { 
+                headers: getAuthHeaders(),
+                credentials: 'include' 
+            });
             const data = await res.json();
-            if (data.success) setMyExams(data.exams);
-        } catch (e) { console.error('Failed to fetch exams', e); }
-        finally { setLoading(false); }
+            if (data.success) setMyExams(data.exams || []);
+        } catch (e) { 
+            console.error('Failed to fetch exams', e); 
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     const handleCreateExam = async () => {
-        if (!newExam.title.trim()) { alert('Please enter a title'); return; }
+        if (!newExam.title.trim()) { alert('Please enter an exam title'); return; }
         setCreating(true);
         try {
             const res = await fetch(`${API_BASE}/interview-exam/create`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({
-                    title: newExam.title,
-                    modes: newExam.modes,
+                    title: newExam.title.trim(),
+                    modes: newExam.modes && newExam.modes.length > 0 ? newExam.modes : ['technical'],
                     customQuestions: newExam.customQuestions,
                     totalQuestions: newExam.totalQuestions,
                     targetRole: newExam.targetRole,
                     targetCompany: newExam.targetCompany,
+                    creatorId: user?.id || user?._id,
+                    creatorName: user?.name || 'Teacher',
                     settings: {
                         scheduledStart: newExam.scheduledStart || null,
                         scheduledEnd: newExam.scheduledEnd || null,
@@ -96,36 +116,66 @@ export default function TeacherInterview() {
             });
             const data = await res.json();
             if (data.success) {
-                alert(`✅ Interview Exam Created!\nCode: ${data.examCode}`);
+                alert(`✅ Interview Exam Created!\n\nExam Code: ${data.examCode}\nShare this code with your students.`);
                 setShowCreateModal(false);
-                setNewExam({ title: '', modes: ['technical'], totalQuestions: 5, targetRole: 'Software Engineer', targetCompany: 'General Tech', scheduledStart: '', scheduledEnd: '', allowReAttempt: false, customQuestions: { technical: [] } });
+                setNewExam({ 
+                    title: '', 
+                    modes: ['technical'], 
+                    totalQuestions: 5, 
+                    targetRole: 'Software Engineer', 
+                    targetCompany: 'General Tech', 
+                    scheduledStart: '', 
+                    scheduledEnd: '', 
+                    allowReAttempt: false, 
+                    customQuestions: { technical: [] } 
+                });
                 setTempQuestionInputs({});
                 fetchExams();
             } else {
-                alert(data.message || 'Failed to create exam');
+                alert(data.message || 'Failed to create exam. Please check your connection.');
             }
-        } catch (e) { alert('Error creating exam'); }
-        finally { setCreating(false); }
+        } catch (e) { 
+            console.error('Error creating exam:', e);
+            alert('Error creating exam: ' + (e.message || 'Network error')); 
+        } finally { 
+            setCreating(false); 
+        }
     };
 
     const handleDeleteExam = async (code) => {
-        if (!window.confirm('Are you sure you want to delete this interview exam and all submissions?')) return;
+        if (!window.confirm(`Are you sure you want to delete interview exam "${code}" and all associated candidate submissions?`)) return;
         try {
-            const res = await fetch(`${API_BASE}/interview-exam/${code}`, { method: 'DELETE', credentials: 'include' });
+            const res = await fetch(`${API_BASE}/interview-exam/${code}`, { 
+                method: 'DELETE', 
+                headers: getAuthHeaders(),
+                credentials: 'include' 
+            });
             const data = await res.json();
-            if (data.success) setMyExams(prev => prev.filter(e => e.code !== code));
-            else alert(data.message || 'Failed to delete');
-        } catch (e) { alert('Error deleting exam'); }
+            if (data.success) {
+                setMyExams(prev => prev.filter(e => e.code !== code));
+                if (selectedExamCode === code) setSelectedExamCode('');
+            } else {
+                alert(data.message || 'Failed to delete exam');
+            }
+        } catch (e) { 
+            alert('Error deleting exam'); 
+        }
     };
 
     const fetchLeaderboard = async (code) => {
         setLeaderboardLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/interview-exam/${code}/leaderboard`, { credentials: 'include' });
+            const res = await fetch(`${API_BASE}/interview-exam/${code}/leaderboard`, { 
+                headers: getAuthHeaders(),
+                credentials: 'include' 
+            });
             const data = await res.json();
-            if (data.success) setLeaderboard(data.leaderboard);
-        } catch (e) { console.error(e); }
-        finally { setLeaderboardLoading(false); }
+            if (data.success) setLeaderboard(data.leaderboard || []);
+        } catch (e) { 
+            console.error(e); 
+        } finally { 
+            setLeaderboardLoading(false); 
+        }
     };
 
     useEffect(() => {
@@ -135,10 +185,18 @@ export default function TeacherInterview() {
 
     const fetchSubmissionDetail = async (submissionId) => {
         try {
-            const res = await fetch(`${API_BASE}/interview-exam/submission/${submissionId}`, { credentials: 'include' });
+            const res = await fetch(`${API_BASE}/interview-exam/submission/${submissionId}`, { 
+                headers: getAuthHeaders(),
+                credentials: 'include' 
+            });
             const data = await res.json();
-            if (data.success) { setSubmissionDetail(data); setViewingSubmission(submissionId); }
-        } catch (e) { alert('Failed to load details'); }
+            if (data.success) { 
+                setSubmissionDetail(data); 
+                setViewingSubmission(submissionId); 
+            }
+        } catch (e) { 
+            alert('Failed to load candidate details'); 
+        }
     };
 
     const downloadCSV = () => {

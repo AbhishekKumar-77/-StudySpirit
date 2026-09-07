@@ -8,7 +8,7 @@ import {
     PlusCircle, Clock, CheckCircle, Copy, Eye, Target,
     ChevronRight, Sun, Moon, Radio, AlertCircle, Key, X, Trash2, Download,
     ChevronDown, ChevronUp, Wifi, WifiOff, ArrowLeft, BarChart, TrendingDown, TrendingUp, Megaphone, School,
-    Calendar, Video
+    Calendar, Video, Mic
 } from 'lucide-react';
 import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
 
@@ -255,6 +255,7 @@ export default function TeacherDashboard() {
         { id: 'quizzes', label: 'My Quizzes', icon: FileQuestion },
         { id: 'live', label: 'Live Monitor', icon: Radio, badge: monitoringCode ? liveStudents.filter(s => s.status === 'active').length : null },
         { id: 'analytics', label: 'Q-Analytics', icon: BarChart },
+        { id: 'interview-exams', label: 'AI Interview Exams', icon: Mic, external: true, path: '/teacher-interview' },
         { id: 'create', label: 'Create Quiz', icon: PlusCircle, external: true, path: '/quiz?mode=teacher' },
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     ];

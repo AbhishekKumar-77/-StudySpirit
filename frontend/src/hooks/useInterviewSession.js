@@ -359,49 +359,65 @@ export default function useInterviewSession(user, onSpeechOutput) {
         setView('ats-checker');
     };
 
-    const handleJoinExam = async () => {
-        if (!examCode.trim()) return alert("Please enter an exam code!");
-        if (!registrationNumber.trim()) return alert("Please enter your Registration/Roll Number!");
-        
+    const handleJoinExam = async (overrideCode = null, overrideReg = null) => {
+        const codeToUse = (overrideCode || examCode || '').trim();
+        const regToUse = (overrideReg || registrationNumber || '').trim();
+
+        if (!codeToUse) return alert("Please enter an exam code!");
+        if (!regToUse) return alert("Please enter your Registration / Roll Number!");
+
+        setExamCode(codeToUse);
+        setRegistrationNumber(regToUse);
         setIsJoiningExam(true);
+
         try {
             const res = await fetch(`${API_BASE}/interview-exam/join`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ examCode, registrationNumber }),
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(user?.id || user?._id ? { 'x-user-id': user.id || user._id } : {})
+                },
+                body: JSON.stringify({ 
+                    examCode: codeToUse, 
+                    registrationNumber: regToUse,
+                    studentName: user?.name || 'Student'
+                }),
                 credentials: 'include'
             });
             const data = await res.json();
             
-            if (data.success) {
+            if (data.success && data.exam) {
                 setExamData(data.exam);
                 setSubmissionId(data.submissionId);
                 const joinedModes = data.exam.modes && data.exam.modes.length > 0 ? data.exam.modes : [data.exam.mode || 'technical'];
-                setMode(joinedModes[0]);
-                setTotalQuestionsConfig(data.exam.totalQuestions);
-                setTargetRole(data.exam.targetRole);
-                setTargetCompany(data.exam.targetCompany);
+                const primaryMode = joinedModes[0] || 'technical';
+                setMode(primaryMode);
+                setTotalQuestionsConfig(data.exam.totalQuestions || 5);
+                setTargetRole(data.exam.targetRole || 'Software Engineer');
+                setTargetCompany(data.exam.targetCompany || 'General Tech');
                 
+                const examCtx = {
+                    examCode: data.exam.code || codeToUse,
+                    submissionId: data.submissionId
+                };
+
                 if (joinedModes.length > 1) {
                     setIsJourneyMode(true);
                     setJourneyStep(1);
                     setJourneyReports([]);
-                    startInterview(joinedModes[0], null, data.exam.totalQuestions, {
-                        examCode: data.exam.code,
-                        submissionId: data.submissionId
-                    });
+                    startInterview(primaryMode, null, data.exam.totalQuestions, examCtx, data.exam.targetRole, data.exam.targetCompany);
                 } else {
-                    startInterview(joinedModes[0], null, data.exam.totalQuestions, {
-                        examCode: data.exam.code,
-                        submissionId: data.submissionId
-                    });
+                    startInterview(primaryMode, null, data.exam.totalQuestions, examCtx, data.exam.targetRole, data.exam.targetCompany);
                 }
+                return { success: true, exam: data.exam, mode: primaryMode, submissionId: data.submissionId };
             } else {
                 alert(data.message || "Failed to join exam");
+                return { success: false, message: data.message };
             }
         } catch (err) {
-            console.error(err);
+            console.error('Error joining exam:', err);
             alert("Error joining exam. Check your connection.");
+            return { success: false, error: err };
         } finally {
             setIsJoiningExam(false);
         }
