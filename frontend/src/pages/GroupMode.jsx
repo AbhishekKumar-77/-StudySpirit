@@ -747,12 +747,7 @@ export default function GroupMode() {
                         <button className="gh-action-pill" style={{ padding: '8px 12px' }} title="Notifications">
                             <Bell size={18} />
                         </button>
-                        <img
-                            src={getAvatarUrl(user?.avatar)}
-                            alt={user?.name || 'User'}
-                            style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #e0e7ff' }}
-                            onError={handleAvatarError}
-                        />
+
                     </div>
                 </header>
 

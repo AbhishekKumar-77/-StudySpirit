@@ -119,19 +119,6 @@ export default function TeacherToolkit() {
                         </button>
                     )}
 
-                    {/* User profile badge */}
-                    <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-                        <img
-                            src={getAvatarUrl(user?.avatar)}
-                            alt={user?.name || 'Teacher'}
-                            className="w-8 h-8 rounded-full object-cover border border-violet-200 shadow-sm"
-                            onError={handleAvatarError}
-                        />
-                        <div className="hidden sm:block">
-                            <div className="font-bold text-slate-900 text-xs leading-none">{user?.name || 'Teacher'}</div>
-                            <div className="text-[10px] font-semibold text-violet-600">Instructor</div>
-                        </div>
-                    </div>
 
                     <button
                         onClick={async () => { await logoutUser?.(); navigate('/'); }}

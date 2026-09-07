@@ -293,12 +293,6 @@ export default function TeacherDashboard() {
 
                 <div className="p-4 mx-3 mt-4 rounded-2xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 border border-violet-500/20">
                     <div className="flex items-center gap-3">
-                        <img
-                            src={getAvatarUrl(user?.avatar)}
-                            alt={user?.name || 'Teacher'}
-                            className="w-10 h-10 rounded-full object-cover border-2 border-violet-500/40 shadow-sm"
-                            onError={handleAvatarError}
-                        />
                         <div className="flex-1 min-w-0">
                             <div className="font-bold text-[var(--text-primary)] text-sm truncate">{user?.name || 'Teacher'}</div>
                             <div className="text-xs text-violet-500 font-semibold">🎓 Instructor</div>

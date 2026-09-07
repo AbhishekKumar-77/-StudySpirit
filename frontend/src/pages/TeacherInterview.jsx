@@ -246,12 +246,6 @@ export default function TeacherInterview() {
 
                 <div className="p-4 mx-3 mt-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-pink-500/10 border border-rose-500/20">
                     <div className="flex items-center gap-3">
-                        <img
-                            src={getAvatarUrl(user?.avatar)}
-                            alt={user?.name || 'Teacher'}
-                            className="w-10 h-10 rounded-full object-cover border-2 border-rose-500/40 shadow-sm"
-                            onError={handleAvatarError}
-                        />
                         <div className="flex-1 min-w-0">
                             <div className="font-bold text-[var(--text-primary)] text-sm truncate">{user?.name || 'Teacher'}</div>
                             <div className="text-xs text-rose-500 font-semibold">🎓 Instructor</div>

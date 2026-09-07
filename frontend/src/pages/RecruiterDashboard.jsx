@@ -156,12 +156,6 @@ const RecruiterDashboard = () => {
           ))}
         </div>
         <div className="rec-sidebar-user">
-          <img
-            src={getAvatarUrl(user?.avatar)}
-            alt={user?.name || 'Recruiter'}
-            className="rec-user-avatar-img"
-            onError={handleAvatarError}
-          />
           <div>
             <div className="rec-user-name">{user?.name}</div>
             <div className="rec-user-role">{user?.recruiterProfile?.companyName || 'Recruiter'}</div>

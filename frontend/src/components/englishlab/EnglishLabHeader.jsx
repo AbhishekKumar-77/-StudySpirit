@@ -42,20 +42,6 @@ export default function EnglishLabHeader({ user, streak = 7, xp = 320 }) {
                     <Star className="w-3.5 h-3.5 fill-purple-500 text-purple-500" />
                     <span>{xp} XP</span>
                 </div>
-
-                {/* User Profile */}
-                <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-                    <img
-                        src={userAvatar}
-                        alt={userName}
-                        className="w-8 h-8 rounded-full object-cover shadow-2xs ring-1 ring-slate-200"
-                        onError={handleAvatarError}
-                    />
-                    <div className="hidden sm:block">
-                        <h4 className="font-bold text-slate-900 text-xs leading-none">{userName}</h4>
-                        <span className="text-[10px] font-medium text-slate-400">{userRole}</span>
-                    </div>
-                </div>
             </div>
         </header>
     );

@@ -145,19 +145,6 @@ export default function Resources() {
                                 <Zap className="w-4 h-4 fill-white" />
                                 <span>Create Exam Pack</span>
                             </button>
-
-                            {/* Student Profile Pill */}
-                            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-2.5 py-1 shadow-xs">
-                                <img
-                                    src={getAvatarUrl(user?.avatar)}
-                                    alt={user?.name || 'User'}
-                                    className="w-6 h-6 rounded-full object-cover"
-                                    onError={handleAvatarError}
-                                />
-                                <span className="text-xs font-bold text-slate-800 hidden sm:inline">
-                                    {user?.name || 'sasa'}
-                                </span>
-                            </div>
                         </div>
 
                         {/* Global Search Bar & Filters */}

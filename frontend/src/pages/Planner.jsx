@@ -418,14 +418,8 @@ export default function Planner() {
                     </button>
                 </div>
 
-                {/* Profile Pill */}
+                {/* Profile Info */}
                 <div className="sp-sidebar-profile">
-                    <img
-                        src={getAvatarUrl(user?.avatar)}
-                        alt="Avatar"
-                        className="sp-avatar"
-                        onError={handleAvatarError}
-                    />
                     <div>
                         <div className="sp-profile-name">
                             {user?.name || state.profile?.displayName || 'Student'} <ShieldCheck size={14} color="#10b981" />
@@ -456,14 +450,7 @@ export default function Planner() {
                         <button className="sp-icon-btn" title="Weekly Calendar" onClick={() => setActiveTab('week')}>
                             <CalendarIcon size={18} />
                         </button>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => navigate('/profile')}>
-                            <img
-                                src={getAvatarUrl(user?.avatar)}
-                                alt="Profile"
-                                className="sp-avatar"
-                                onError={handleAvatarError}
-                            />
-                        </div>
+
                     </div>
                 </header>
 

@@ -36,20 +36,6 @@ export default function CareerHeader({ user, searchQuery, setSearchQuery }) {
                     <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
                     <span>{xp} XP</span>
                 </div>
-
-                {/* Student Profile Pill */}
-                <div className="flex items-center gap-2.5 pl-2">
-                    <img
-                        src={avatarUrl}
-                        alt={studentName}
-                        className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-slate-200"
-                        onError={handleAvatarError}
-                    />
-                    <div className="hidden md:block text-left">
-                        <h4 className="text-xs font-extrabold text-slate-900 leading-tight">{studentName}</h4>
-                        <p className="text-[10px] font-bold text-slate-400">{course}</p>
-                    </div>
-                </div>
             </div>
         </header>
     );

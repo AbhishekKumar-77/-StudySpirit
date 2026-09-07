@@ -71,41 +71,6 @@ export default function StudentHeader({ userProfile, onSearch }) {
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-600 rounded-full ring-2 ring-white"></span>
                 </button>
-
-                {/* Student Profile Dropdown */}
-                <div className="relative">
-                    <button 
-                        onClick={() => setShowProfileMenu(!showProfileMenu)}
-                        className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-100 transition-colors border border-slate-200/80"
-                    >
-                        <img
-                            src={avatar}
-                            alt={studentName}
-                            className="w-8 h-8 rounded-full object-cover shadow-inner ring-2 ring-indigo-100"
-                            onError={handleAvatarError}
-                        />
-                        <div className="text-left hidden md:block pr-1">
-                            <p className="text-xs font-bold text-slate-800 leading-none">{studentName}</p>
-                            <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5">Student</p>
-                        </div>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 mr-1" />
-                    </button>
-
-                    {showProfileMenu && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                            <div className="px-4 py-2 border-b border-slate-100">
-                                <p className="text-xs font-bold text-slate-800">{studentName}</p>
-                                <p className="text-[11px] text-slate-500">Student Account</p>
-                            </div>
-                            <button className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2">
-                                <User className="w-3.5 h-3.5" /> Profile & Stats
-                            </button>
-                            <button className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2">
-                                <BookOpen className="w-3.5 h-3.5" /> Saved Quizzes
-                            </button>
-                        </div>
-                    )}
-                </div>
             </div>
         </header>
     );

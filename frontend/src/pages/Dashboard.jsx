@@ -550,38 +550,6 @@ export default function Dashboard() {
 
                     <div className="header-actions">
                         <NotificationBell />
-                        
-                        <div className="user-profile-widget" onClick={() => navigate(`/profile/${user?._id || ''}`)}>
-                            <div className="user-streak-badge">
-                                <Flame size={16} className="flame-icon" />
-                                <span>{user?.streak || 3}</span>
-                            </div>
-                            <div className="user-level-badge">
-                                <span className="user-name">{user?.name || 'sasa'}</span>
-                                <span className="user-lvl">Level {user?.level || 3}</span>
-                            </div>
-
-                            {/* Enhancement 5: Circular Avatar XP Progress Ring */}
-                            <div className="avatar-xp-ring-box" title={`XP Progress: ${xpProgressPercent}% to next level`}>
-                                <svg width="40" height="40" className="avatar-ring-svg">
-                                    <circle cx="20" cy="20" r="17" className="ring-bg" />
-                                    <circle
-                                        cx="20" cy="20" r="17"
-                                        className="ring-progress"
-                                        style={{
-                                            strokeDasharray: 106,
-                                            strokeDashoffset: 106 - (106 * xpProgressPercent) / 100
-                                        }}
-                                    />
-                                </svg>
-                                <img
-                                    src={getAvatarUrl(user?.avatar)}
-                                    alt={user?.name || "User Avatar"}
-                                    className="user-avatar"
-                                    onError={handleAvatarError}
-                                />
-                            </div>
-                        </div>
                     </div>
                 </header>
 
