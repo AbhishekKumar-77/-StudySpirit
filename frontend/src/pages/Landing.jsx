@@ -1301,7 +1301,7 @@ export default function Landing() {
                         color: '#94A3B8'
                     }}>
                         <div>
-                            © 2024 StudySpirit. All rights reserved. | Built for Learners. Powered by AI.
+                            © 2026 StudySpirit. All rights reserved. | Built for Learners. Powered by AI.
                         </div>
                         <div style={{ display: 'flex', gap: '20px' }}>
                             <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
