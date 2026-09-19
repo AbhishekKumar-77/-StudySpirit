@@ -16,6 +16,7 @@ import CourseDetailView from '../components/resources/CourseDetailView';
 import ResourceViewerModal from '../components/resources/ResourceViewerModal';
 import ExamPrepModal from '../components/resources/ExamPrepModal';
 import { getAvatarUrl, handleAvatarError } from '../utils/avatarHelper';
+import { NOSQL_COURSE_INFO } from '../data/nosqlMongoModulesData';
 
 export default function Resources() {
     const { user } = useApp();
@@ -90,22 +91,34 @@ export default function Resources() {
         return true;
     };
 
-    // Python Curriculum Data Fallbacks
+    // Curriculum Data Fallbacks
     const continueLearningList = hubData?.continueLearning || [
+        { id: 'mongo-mod-1', title: 'Module 1 — Introduction to NoSQL and MongoDB Fundamentals', courseCode: 'INT252', unit: 'Unit I', type: 'NOTE', progressPercent: 100, readTime: '45 min read', pageCount: 22, verified: true, verificationBadge: 'Official Curriculum' },
         { id: 'py-mod-1', title: 'Module 1 — Introduction to Programming', courseCode: 'CSE105', unit: 'Module 1', type: 'NOTE', progressPercent: 100, readTime: '12 min read', pageCount: 18, verified: true, verificationBadge: 'Official Curriculum' },
-        { id: 'py-mod-2', title: 'Module 2 — Variables & Objects', courseCode: 'CSE105', unit: 'Module 2', type: 'NOTE', progressPercent: 40, readTime: '10 min read', pageCount: 16, verified: true, verificationBadge: 'Official Curriculum' },
-        { id: 'py-mod-3', title: 'Module 3 — Data Types & Collections', courseCode: 'CSE105', unit: 'Module 3', type: 'NOTE', progressPercent: 0, readTime: '15 min read', pageCount: 22, verified: true, verificationBadge: 'Official Curriculum' }
+        { id: 'py-mod-2', title: 'Module 2 — Variables & Objects', courseCode: 'CSE105', unit: 'Module 2', type: 'NOTE', progressPercent: 40, readTime: '10 min read', pageCount: 16, verified: true, verificationBadge: 'Official Curriculum' }
     ];
 
     const coursesList = hubData?.courses || [
+        {
+            id: 'course-int-nosql',
+            code: 'INT252',
+            name: 'Intelligent NoSQL Databases with MongoDB',
+            topicTag: 'INTELLIGENT NOSQL DATABASES',
+            duration: '16 Hours',
+            level: 'Beginner to Intermediate',
+            resourceCount: 32,
+            resourceBreakdown: '13 Modules · 9 Practicals · Mini Project · Assessment · Certificate',
+            progress: 85,
+            color: 'from-emerald-500 via-teal-600 to-cyan-700'
+        },
         { id: 'course-cse105', code: 'CSE105', name: 'Python Programming', resourceCount: 15, resourceBreakdown: '3 Core Modules · Detailed Notes · Short Revision Notes', progress: 55 },
         { id: 'course-cse102', code: 'CSE102', name: 'Data Structures & Algorithms', resourceCount: 18, resourceBreakdown: '6 Notes · 6 Practice Sets · 2 Quizzes', progress: 60 }
     ];
 
     const recommendedList = hubData?.recommended || [
-        { id: 'py-mod-1', title: 'Module 1 — Introduction to Programming', courseCode: 'CSE105', unit: 'Module 1', type: 'NOTE', readTime: '12 min read', pageCount: 18, verified: true, verificationBadge: 'Official Curriculum' },
-        { id: 'py-mod-2', title: 'Module 2 — Variables', courseCode: 'CSE105', unit: 'Module 2', type: 'NOTE', readTime: '10 min read', pageCount: 16, verified: true, verificationBadge: 'Official Curriculum' },
-        { id: 'py-mod-3', title: 'Module 3 — Data Types', courseCode: 'CSE105', unit: 'Module 3', type: 'NOTE', readTime: '15 min read', pageCount: 22, verified: true, verificationBadge: 'Official Curriculum' }
+        { id: 'mongo-mod-1', title: 'Module 1 — Introduction to NoSQL and MongoDB Fundamentals', courseCode: 'INT252', unit: 'Unit I', type: 'NOTE', readTime: '45 min read', pageCount: 22, verified: true, verificationBadge: 'Official Curriculum' },
+        { id: 'mongo-mod-8', title: 'Module 8 — Indexing Strategies, Covered Queries & explain()', courseCode: 'INT252', unit: 'Unit IV', type: 'NOTE', readTime: '50 min read', pageCount: 24, verified: true, verificationBadge: 'Official Curriculum' },
+        { id: 'py-mod-1', title: 'Module 1 — Introduction to Programming', courseCode: 'CSE105', unit: 'Module 1', type: 'NOTE', readTime: '12 min read', pageCount: 18, verified: true, verificationBadge: 'Official Curriculum' }
     ];
 
     return (
@@ -315,7 +328,13 @@ export default function Resources() {
                                                 </div>
 
                                                 <button
-                                                    onClick={() => setSelectedCourse(c)}
+                                                    onClick={() => {
+                                                        if (c.id === 'course-int-nosql' || c.code === 'INT252') {
+                                                            setSelectedCourse({ ...NOSQL_COURSE_INFO, ...c });
+                                                        } else {
+                                                            setSelectedCourse(c);
+                                                        }
+                                                    }}
                                                     className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs py-3 rounded-xl transition flex items-center justify-center gap-2"
                                                 >
                                                     <span>Browse Course Topics</span>

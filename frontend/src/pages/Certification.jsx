@@ -14,29 +14,41 @@ export default function Certification() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
 
-    // User's uploaded certificates (mock data - will be replaced with backend)
-    const [certificates, setCertificates] = useState([
-        {
-            id: 1,
-            name: 'Python for Data Science',
-            platform: 'Coursera',
-            issueDate: '2026-01-15',
-            credentialId: 'ABC123XYZ',
-            credentialUrl: 'https://coursera.org/verify/ABC123XYZ',
-            image: null,
-            category: 'programming'
-        },
-        {
-            id: 2,
-            name: 'AWS Cloud Practitioner',
-            platform: 'AWS',
-            issueDate: '2026-01-28',
-            credentialId: 'AWS-CP-2026',
-            credentialUrl: 'https://aws.amazon.com/verification',
-            image: null,
-            category: 'cloud'
+    // Load initial certificates from localStorage or defaults
+    const [certificates, setCertificates] = useState(() => {
+        const defaultCerts = [
+            {
+                id: 1,
+                name: 'Python for Data Science',
+                platform: 'Coursera',
+                issueDate: '2026-01-15',
+                credentialId: 'ABC123XYZ',
+                credentialUrl: 'https://coursera.org/verify/ABC123XYZ',
+                image: null,
+                category: 'programming'
+            },
+            {
+                id: 2,
+                name: 'AWS Cloud Practitioner',
+                platform: 'AWS',
+                issueDate: '2026-01-28',
+                credentialId: 'AWS-CP-2026',
+                credentialUrl: 'https://aws.amazon.com/verification',
+                image: null,
+                category: 'cloud'
+            }
+        ];
+        try {
+            const saved = JSON.parse(localStorage.getItem('studyspirit_certificates') || '[]');
+            if (saved && saved.length > 0) {
+                const ids = new Set(saved.map(s => s.credentialId));
+                return [...saved, ...defaultCerts.filter(d => !ids.has(d.credentialId))];
+            }
+        } catch (e) {
+            console.error(e);
         }
-    ]);
+        return defaultCerts;
+    });
 
     // Upload form state
     const [uploadForm, setUploadForm] = useState({

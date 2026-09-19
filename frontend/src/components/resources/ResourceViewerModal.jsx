@@ -1,23 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    X, Sparkles, Send, BookOpen, Zap, Copy, Loader2, ArrowLeft, Bot, MessageSquare, Flame, CheckCircle2
+    X, Sparkles, Send, BookOpen, Zap, Copy, Loader2, ArrowLeft, Bot, MessageSquare, Flame, CheckCircle2, Award
 } from 'lucide-react';
 import resourceApi from '../../services/resourceApi';
 import { PYTHON_MODULES } from '../../data/pythonModulesData';
+import { NOSQL_MONGO_MODULES, NOSQL_COURSE_INFO } from '../../data/nosqlMongoModulesData';
+import { NOSQL_MONGO_ASSESSMENT_QUESTIONS } from '../../data/nosqlMongoQuestions';
 
 import RichNotesRenderer from './RichNotesRenderer';
+import MongoNotesRenderer from './MongoNotesRenderer';
+import CourseCertificateModal from './CourseCertificateModal';
 
 export default function ResourceViewerModal({ resource, onClose }) {
     const navigate = useNavigate();
+    const [showCertificateModal, setShowCertificateModal] = useState(false);
 
-    // Find matching Python module from data
-    const matchedModule = PYTHON_MODULES.find(m =>
-        m.id === resource?.id ||
-        (resource?.unit && m.unit.toLowerCase().includes(resource.unit.toLowerCase())) ||
-        (resource?.title && m.title.toLowerCase().includes(resource.title.toLowerCase())) ||
-        (resource?.name && m.title.toLowerCase().includes(resource.name.toLowerCase()))
-    ) || PYTHON_MODULES[0];
+    const isMongo = resource?.id?.startsWith('mongo-') ||
+        resource?.courseCode === 'INT252' ||
+        (resource?.unit && resource.unit.toLowerCase().includes('unit')) ||
+        (resource?.title && resource.title.toLowerCase().includes('nosql')) ||
+        (resource?.title && resource.title.toLowerCase().includes('mongodb'));
+
+    // Find matching module from MongoDB or Python data
+    const matchedModule = isMongo
+        ? (NOSQL_MONGO_MODULES.find(m =>
+            m.id === resource?.id ||
+            (resource?.unit && m.unit.toLowerCase().includes(resource.unit.toLowerCase())) ||
+            (resource?.title && m.title.toLowerCase().includes(resource.title.toLowerCase()))
+        ) || NOSQL_MONGO_MODULES[0])
+        : (PYTHON_MODULES.find(m =>
+            m.id === resource?.id ||
+            (resource?.unit && m.unit.toLowerCase().includes(resource.unit.toLowerCase())) ||
+            (resource?.title && m.title.toLowerCase().includes(resource.title.toLowerCase())) ||
+            (resource?.name && m.title.toLowerCase().includes(resource.name.toLowerCase()))
+        ) || PYTHON_MODULES[0]);
 
     // AI Tool View: 'notes' (Full Notes), 'summary' (Short Notes), 'ask-ai' (AI Chat), 'flashcards' (Flashcards)
     const [activeAiTool, setActiveAiTool] = useState('notes');
@@ -25,20 +42,32 @@ export default function ResourceViewerModal({ resource, onClose }) {
     // Ask AI Chat State
     const [aiQuestion, setAiQuestion] = useState('');
     const [chatHistory, setChatHistory] = useState([
-        { role: 'ai', content: `Hello! I am your StudySpirit AI Tutor for "${matchedModule.title}". Ask me any question about these notes!` }
+        { role: 'ai', content: `Hello! I am your StudySpirit AI Academic Tutor for "${matchedModule.title}". Ask me any question about these notes!` }
     ]);
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [flashcardsList, setFlashcardsList] = useState([]);
 
     // Open Module Quiz Action
     const handleOpenQuiz = () => {
-        navigate('/quiz', {
-            state: {
-                subject: 'Python Programming',
-                module: matchedModule.unit,
-                title: matchedModule.title
-            }
-        });
+        if (isMongo) {
+            navigate('/quiz', {
+                state: {
+                    subject: 'Intelligent NoSQL Databases with MongoDB',
+                    course: 'INT252',
+                    module: matchedModule.unit,
+                    title: matchedModule.title,
+                    questions: NOSQL_MONGO_ASSESSMENT_QUESTIONS
+                }
+            });
+        } else {
+            navigate('/quiz', {
+                state: {
+                    subject: 'Python Programming',
+                    module: matchedModule.unit,
+                    title: matchedModule.title
+                }
+            });
+        }
         if (onClose) onClose();
     };
 
@@ -111,6 +140,15 @@ export default function ResourceViewerModal({ resource, onClose }) {
 
                     {/* Header Controls & Action Buttons */}
                     <div className="flex items-center gap-3">
+                        {/* Course Certificate Button */}
+                        <button
+                            onClick={() => setShowCertificateModal(true)}
+                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md transition"
+                        >
+                            <Award className="w-4 h-4" />
+                            <span className="hidden sm:inline">16h Certificate</span>
+                        </button>
+
                         {/* Direct Module Quiz Button */}
                         <button
                             onClick={handleOpenQuiz}
@@ -188,7 +226,15 @@ export default function ResourceViewerModal({ resource, onClose }) {
                     
                     {/* VIEW 1: Full Course Notes (Rich Modern Interactive Renderer) */}
                     {activeAiTool === 'notes' && (
-                        <RichNotesRenderer moduleData={matchedModule} onStartQuiz={handleOpenQuiz} />
+                        isMongo ? (
+                            <MongoNotesRenderer
+                                moduleData={matchedModule}
+                                onStartQuiz={handleOpenQuiz}
+                                onOpenCertificate={() => setShowCertificateModal(true)}
+                            />
+                        ) : (
+                            <RichNotesRenderer moduleData={matchedModule} onStartQuiz={handleOpenQuiz} />
+                        )
                     )}
 
                     {/* VIEW 2: Summarize / Short Notes (100% Width) */}
@@ -326,6 +372,15 @@ export default function ResourceViewerModal({ resource, onClose }) {
                     )}
                 </div>
             </div>
+
+            {/* Official 16-Hour Course Certificate Generator Modal */}
+            {showCertificateModal && (
+                <CourseCertificateModal
+                    course={NOSQL_COURSE_INFO}
+                    studentName="Abhishek Kumar"
+                    onClose={() => setShowCertificateModal(false)}
+                />
+            )}
         </div>
     );
 }

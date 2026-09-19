@@ -548,8 +548,21 @@ exports.getHubOverview = async (req, res) => {
     try {
         const userId = req.user ? req.user._id : null;
 
-        // Python Programming Courses & Modules
+        // Academic Courses & Modules
         const courses = [
+            {
+                id: 'course-int-nosql',
+                code: 'INT252',
+                name: 'Intelligent NoSQL Databases with MongoDB',
+                category: 'Databases & AI',
+                topicTag: 'INTELLIGENT NOSQL DATABASES',
+                duration: '16 Hours',
+                level: 'Beginner to Intermediate',
+                resourceCount: 32,
+                resourceBreakdown: '13 Modules · 9 Practicals · Mini Project · Assessment · Certificate',
+                progress: 85,
+                color: 'from-emerald-500 via-teal-600 to-cyan-700'
+            },
             {
                 id: 'course-cse105',
                 code: 'CSE105',
@@ -570,8 +583,20 @@ exports.getHubOverview = async (req, res) => {
             }
         ];
 
-        // Continue Learning (Python Modules)
+        // Continue Learning (Python & MongoDB Modules)
         const continueLearning = [
+            {
+                id: 'mongo-mod-1',
+                title: 'Module 1 — Introduction to NoSQL and MongoDB Fundamentals',
+                courseCode: 'INT252',
+                unit: 'Unit I',
+                type: 'NOTE',
+                progressPercent: 100,
+                readTime: '45 min read',
+                pageCount: 22,
+                verified: true,
+                verificationBadge: 'Official Curriculum'
+            },
             {
                 id: 'py-mod-1',
                 title: 'Module 1 — Introduction to Programming',
@@ -595,23 +620,33 @@ exports.getHubOverview = async (req, res) => {
                 pageCount: 16,
                 verified: true,
                 verificationBadge: 'Official Curriculum'
-            },
-            {
-                id: 'py-mod-3',
-                title: 'Module 3 — Data Types & Collections',
-                courseCode: 'CSE105',
-                unit: 'Module 3',
-                type: 'NOTE',
-                progressPercent: 0,
-                readTime: '15 min read',
-                pageCount: 22,
-                verified: true,
-                verificationBadge: 'Official Curriculum'
             }
         ];
 
         // Recommended Resources
         const recommended = [
+            {
+                id: 'mongo-mod-1',
+                title: 'Module 1 — Introduction to NoSQL and MongoDB Fundamentals',
+                courseCode: 'INT252',
+                unit: 'Unit I',
+                type: 'NOTE',
+                readTime: '45 min read',
+                pageCount: 22,
+                verified: true,
+                verificationBadge: 'Official Curriculum'
+            },
+            {
+                id: 'mongo-mod-8',
+                title: 'Module 8 — Indexing Strategies, Covered Queries & explain()',
+                courseCode: 'INT252',
+                unit: 'Unit IV',
+                type: 'NOTE',
+                readTime: '50 min read',
+                pageCount: 24,
+                verified: true,
+                verificationBadge: 'Official Curriculum'
+            },
             {
                 id: 'py-mod-1',
                 title: 'Module 1 — Introduction to Programming',
@@ -622,33 +657,20 @@ exports.getHubOverview = async (req, res) => {
                 pageCount: 18,
                 verified: true,
                 verificationBadge: 'Official Curriculum'
-            },
-            {
-                id: 'py-mod-2',
-                title: 'Module 2 — Variables',
-                courseCode: 'CSE105',
-                unit: 'Module 2',
-                type: 'NOTE',
-                readTime: '10 min read',
-                pageCount: 16,
-                verified: true,
-                verificationBadge: 'Official Curriculum'
-            },
-            {
-                id: 'py-mod-3',
-                title: 'Module 3 — Data Types',
-                courseCode: 'CSE105',
-                unit: 'Module 3',
-                type: 'NOTE',
-                readTime: '15 min read',
-                pageCount: 22,
-                verified: true,
-                verificationBadge: 'Official Curriculum'
             }
         ];
 
         // Recently Added Feed
         const recentlyAdded = [
+            {
+                id: 'mongo-mod-1',
+                title: 'Module 1 — Introduction to NoSQL and MongoDB Fundamentals',
+                courseCode: 'INT252',
+                unit: 'Unit I',
+                type: 'NOTE',
+                addedBy: 'Department of Computer Science',
+                createdAt: new Date(Date.now() - 3600000 * 1)
+            },
             {
                 id: 'py-mod-3',
                 title: 'Module 3 — Data Types & Collections',
@@ -657,15 +679,6 @@ exports.getHubOverview = async (req, res) => {
                 type: 'NOTE',
                 addedBy: 'Department of Computer Science',
                 createdAt: new Date(Date.now() - 3600000 * 2)
-            },
-            {
-                id: 'py-mod-2',
-                title: 'Module 2 — Variables & Memory Model',
-                courseCode: 'CSE105',
-                unit: 'Module 2',
-                type: 'NOTE',
-                addedBy: 'Department of Computer Science',
-                createdAt: new Date(Date.now() - 3600000 * 12)
             }
         ];
 
@@ -686,6 +699,77 @@ exports.getHubOverview = async (req, res) => {
 exports.getCourseDetails = async (req, res) => {
     try {
         const { courseId } = req.params;
+
+        if (courseId === 'course-int-nosql' || courseId === 'INT252' || (courseId && courseId.toLowerCase().includes('nosql'))) {
+            const nosqlCourseInfo = {
+                id: 'course-int-nosql',
+                code: 'INT252',
+                name: 'Intelligent NoSQL Databases with MongoDB',
+                topicTag: 'INTELLIGENT NOSQL DATABASES',
+                duration: '16 Hours',
+                level: 'Beginner to Intermediate',
+                progress: 85,
+                resourceCount: 32,
+                topics: [
+                    {
+                        title: 'Unit I — Introduction to NoSQL & MongoDB Architecture',
+                        resources: [
+                            { id: 'mongo-mod-1', title: 'Module 1 — Introduction to NoSQL and MongoDB Fundamentals', type: 'NOTE', pageCount: 22, readTime: '45 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-mod-2', title: 'Module 2 — MongoDB Environment, mongosh & Cloud Atlas', type: 'NOTE', pageCount: 18, readTime: '35 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-prac-1', title: 'Practical 1 — Create NoSQL Database and Compare with SQL', type: 'ASSIGNMENT', pageCount: 6, readTime: '20 min', verified: true, verificationBadge: 'Lab Experiment' }
+                        ]
+                    },
+                    {
+                        title: 'Unit II — MongoDB Basics, BSON & CRUD Operations',
+                        resources: [
+                            { id: 'mongo-mod-3', title: 'Module 3 — MongoDB Databases, Collections and Documents', type: 'NOTE', pageCount: 20, readTime: '40 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-mod-4', title: 'Module 4 — BSON Data Types & Advanced CRUD Operations', type: 'NOTE', pageCount: 24, readTime: '50 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-prac-2', title: 'Practical 2 — Perform CRUD Operations on Documents', type: 'ASSIGNMENT', pageCount: 8, readTime: '25 min', verified: true, verificationBadge: 'Lab Experiment' },
+                            { id: 'mongo-prac-3', title: 'Practical 3 — Use and Explore BSON Data Types in mongosh', type: 'ASSIGNMENT', pageCount: 6, readTime: '20 min', verified: true, verificationBadge: 'Lab Experiment' }
+                        ]
+                    },
+                    {
+                        title: 'Unit III — Schema Design, Modeling & Validation Constraints',
+                        resources: [
+                            { id: 'mongo-mod-5', title: 'Module 5 — MongoDB Data Modeling & Flexible Schemas', type: 'NOTE', pageCount: 20, readTime: '40 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-mod-6', title: 'Module 6 — Relationships: 1:1, 1:N & M:N Patterns', type: 'NOTE', pageCount: 22, readTime: '45 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-mod-7', title: 'Module 7 — Schema Validation Rules & Enforcing Constraints', type: 'NOTE', pageCount: 16, readTime: '30 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-prac-4', title: 'Practical 4 — Model One-to-One and One-to-Many Relationships', type: 'ASSIGNMENT', pageCount: 8, readTime: '25 min', verified: true, verificationBadge: 'Lab Experiment' },
+                            { id: 'mongo-prac-5', title: 'Practical 5 — Apply Schema Validation and Constraints ($jsonSchema)', type: 'ASSIGNMENT', pageCount: 6, readTime: '20 min', verified: true, verificationBadge: 'Lab Experiment' }
+                        ]
+                    },
+                    {
+                        title: 'Unit IV — Indexing, explain() & Aggregation Framework',
+                        resources: [
+                            { id: 'mongo-mod-8', title: 'Module 8 — Indexing Strategies, Covered Queries & explain()', type: 'NOTE', pageCount: 24, readTime: '50 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-mod-9', title: 'Module 9 — Aggregation Framework & Multi-Stage Pipelines', type: 'NOTE', pageCount: 26, readTime: '55 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-prac-6', title: 'Practical 6 — Create Indexes and Analyze Performance with explain()', type: 'ASSIGNMENT', pageCount: 8, readTime: '25 min', verified: true, verificationBadge: 'Lab Experiment' },
+                            { id: 'mongo-prac-7', title: 'Practical 7 — Build Multi-Stage Aggregation Pipeline ($group, $match)', type: 'ASSIGNMENT', pageCount: 8, readTime: '30 min', verified: true, verificationBadge: 'Lab Experiment' }
+                        ]
+                    },
+                    {
+                        title: 'Unit V — Application Integration (Node.js & Python)',
+                        resources: [
+                            { id: 'mongo-mod-10', title: 'Module 10 — Node.js & Mongoose ODM Application Integration', type: 'NOTE', pageCount: 24, readTime: '50 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-mod-11', title: 'Module 11 — Python & PyMongo Application Integration', type: 'NOTE', pageCount: 22, readTime: '45 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-mod-12', title: 'Module 12 — MongoDB for AI & Predictive Analytics', type: 'NOTE', pageCount: 20, readTime: '40 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-prac-8', title: 'Practical 8 — Integrate MongoDB with Node.js Express & Mongoose', type: 'ASSIGNMENT', pageCount: 10, readTime: '35 min', verified: true, verificationBadge: 'Lab Experiment' },
+                            { id: 'mongo-prac-9', title: 'Practical 9 — Environment Setup & Connection using Python PyMongo', type: 'ASSIGNMENT', pageCount: 10, readTime: '35 min', verified: true, verificationBadge: 'Lab Experiment' }
+                        ]
+                    },
+                    {
+                        title: 'Unit VI — Mini Project, Production Best Practices & Final Assessment',
+                        resources: [
+                            { id: 'mongo-mod-13', title: 'Module 13 — Mini Project Architecture, Best Practices & AutoML', type: 'NOTE', pageCount: 26, readTime: '55 min', verified: true, verificationBadge: 'Official Curriculum' },
+                            { id: 'mongo-project-spec', title: 'Mini Project Blueprint — Student Learning Analytics System', type: 'PDF', pageCount: 14, readTime: '1.5 Hours', verified: true, verificationBadge: 'Capstone Spec' },
+                            { id: 'mongo-assessment-mcq', title: 'Final Assessment — 20 Comprehensive MCQs (CO1 - CO6)', type: 'QUESTION_BANK', questionCount: 20, verified: true, verificationBadge: 'Graded Exam' },
+                            { id: 'mongo-viva-prep', title: 'Comprehensive Viva Voce Guide — Top 25 Technical Questions', type: 'PREVIOUS_PAPER', questionCount: 25, verified: true, verificationBadge: 'Viva Prep' }
+                        ]
+                    }
+                ]
+            };
+            return res.json({ success: true, course: nosqlCourseInfo });
+        }
 
         const courseInfo = {
             id: courseId || 'course-cse105',

@@ -47,6 +47,7 @@ import {
     PYTHON_MODULE_2_VARIABLES_QUESTIONS, 
     PYTHON_MODULE_2_DATA_QUESTIONS 
 } from "../data/pythonQuestions";
+import { NOSQL_MONGO_ASSESSMENT_QUESTIONS } from "../data/nosqlMongoQuestions";
 
 export default function StudySprintQuiz() {
     const { user } = useApp();
@@ -65,23 +66,25 @@ export default function StudySprintQuiz() {
     const [activeTab, setActiveTab] = useState((user?.role === 'teacher' || isForcedTeacherMode) ? "teacher" : "dashboard");
     const [activeRunnerSession, setActiveRunnerSession] = useState(null); // active QuestionPlayer session
 
-    // Auto-launch Python Module Quiz in QuestionPlayer when coming from Study Resources
+    // Auto-launch Python or MongoDB Module Quiz in QuestionPlayer when coming from Study Resources
     useEffect(() => {
-        if (location.state?.module || location.state?.subject) {
+        if (location.state?.module || location.state?.subject || location.state?.questions) {
             const modName = (location.state.module || '').toLowerCase();
-            let qSet = PYTHON_MODULE_1_QUESTIONS;
-            let titleName = 'MODULE 1 : INTRODUCTION TO PROGRAMMING';
+            const subjName = (location.state.subject || '').toLowerCase();
+            let qSet = location.state.questions || PYTHON_MODULE_1_QUESTIONS;
+            let titleName = location.state.title ? location.state.title.toUpperCase() : 'MODULE 1 : INTRODUCTION TO PROGRAMMING';
 
-            if (modName.includes('2') || modName.includes('variable')) {
-                qSet = PYTHON_MODULE_2_VARIABLES_QUESTIONS;
-                titleName = 'MODULE 2 : VARIABLES';
-            } else if (modName.includes('3') || modName.includes('data')) {
-                qSet = PYTHON_MODULE_2_DATA_QUESTIONS;
-                titleName = 'MODULE 3 : DATA TYPES';
-            }
-
-            if (location.state.title) {
-                titleName = location.state.title.toUpperCase();
+            if (subjName.includes('nosql') || subjName.includes('mongo') || location.state.course === 'INT252') {
+                qSet = location.state.questions || NOSQL_MONGO_ASSESSMENT_QUESTIONS;
+                titleName = location.state.title ? location.state.title.toUpperCase() : 'FINAL ASSESSMENT : INTELLIGENT NOSQL DATABASES';
+            } else if (!location.state.questions) {
+                if (modName.includes('2') || modName.includes('variable')) {
+                    qSet = PYTHON_MODULE_2_VARIABLES_QUESTIONS;
+                    titleName = 'MODULE 2 : VARIABLES';
+                } else if (modName.includes('3') || modName.includes('data')) {
+                    qSet = PYTHON_MODULE_2_DATA_QUESTIONS;
+                    titleName = 'MODULE 3 : DATA TYPES';
+                }
             }
 
             setActiveRunnerSession({
