@@ -8,6 +8,7 @@
 
 const questionBankService = require('./questionBankService');
 const fetch = typeof globalThis.fetch === 'function' ? globalThis.fetch : require('node-fetch');
+const { getGroqKeyPool } = require('./groqClient');
 
 // Circuit Breaker state
 let groqFailuresCount = 0;
@@ -17,16 +18,19 @@ const DISABLE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 class AIProviderService {
     constructor() {
-        this.primaryApiKey = process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
+        const pool = getGroqKeyPool(process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY);
+        this.primaryApiKey = pool[0] || process.env.GROQ_API_KEY_INTERVIEW || process.env.GROQ_API_KEY;
     }
 
     /**
      * Check if Groq provider is currently enabled (circuit breaker and config check).
      */
     isGroqEnabled() {
-        if (!this.primaryApiKey || this.primaryApiKey === 'your_groq_api_key_here') {
+        const pool = getGroqKeyPool(this.primaryApiKey);
+        if (pool.length === 0) {
             return false;
         }
+        this.primaryApiKey = pool[0];
         if (groqDisabledUntil && Date.now() < groqDisabledUntil) {
             console.warn(`[AIProviderService] Groq temporarily disabled due to circuit breaker until ${new Date(groqDisabledUntil).toISOString()}`);
             return false;
@@ -292,9 +296,11 @@ class AIProviderService {
         }
 
         const candidateModels = [
+            'openai/gpt-oss-120b',
+            'openai/gpt-oss-20b',
+            'qwen/qwen3.8-27b',
             'llama-3.3-70b-versatile',
-            'llama-3.1-8b-instant',
-            'mixtral-8x7b-32768'
+            'llama-3.1-8b-instant'
         ];
 
         let lastError = null;
@@ -427,9 +433,11 @@ class AIProviderService {
         }`;
 
         const candidateModels = [
+            'openai/gpt-oss-120b',
+            'openai/gpt-oss-20b',
+            'qwen/qwen3.8-27b',
             'llama-3.3-70b-versatile',
-            'llama-3.1-8b-instant',
-            'mixtral-8x7b-32768'
+            'llama-3.1-8b-instant'
         ];
 
         let lastError = null;

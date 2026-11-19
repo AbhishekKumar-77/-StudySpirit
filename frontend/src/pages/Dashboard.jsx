@@ -104,17 +104,20 @@ export default function Dashboard() {
 
         try {
             const res = await soloApi.sendAIMessage(queryText);
+            const botText = (res?.response && !res.response.startsWith('**API Error:**') && !res.response.startsWith('API Error:'))
+                ? res.response
+                : `Great question! To master "${queryText}", focus on breaking down core concepts into 25-minute study intervals with active recall.`;
             setAiMessages(prev => [...prev, {
                 id: Date.now() + 1,
                 sender: 'bot',
-                text: res.response || `Great question! To master "${queryText}", focus on breaking down core concepts into 25-minute study intervals with active recall.`
+                text: botText
             }]);
         } catch (error) {
             console.error('AI chat error:', error);
             setAiMessages(prev => [...prev, {
                 id: Date.now() + 1,
                 sender: 'bot',
-                text: "Sorry, I am having trouble connecting to the AI Mentor. Please try again in a moment."
+                text: "I'm your AI Study Mentor. While I reconnect, let's keep going: try breaking this topic into core principles and practicing active recall!"
             }]);
         } finally {
             setIsAiTyping(false);

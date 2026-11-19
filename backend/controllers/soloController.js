@@ -2,6 +2,7 @@ const User = require('../models/User');
 const InterviewSession = require('../models/InterviewSession');
 const platformService = require('../services/platformService');
 const pdfParse = require('pdf-parse');
+const { callGroqChat } = require('../services/groqClient');
 
 // Rate limiting is handled per-IP by express-rate-limit in soloRoutes.js (aiLimiter)
 
@@ -363,20 +364,75 @@ exports.toggleTask = async (req, res) => {
     }
 };
 
-// AI Chat - Using Groq API (Fast & Free)
+// Academic Fallback Generator for when external AI APIs fail or network is offline
+function generateAcademicFallback(query = '', topic = '') {
+    const q = (query || '').toLowerCase().trim();
+    if (q.includes('nosql')) {
+        return `### What is NoSQL?
+**NoSQL** ("Not Only SQL") databases are non-relational database management systems designed to handle modern, high-velocity, and unstructured or semi-structured data at scale.
+
+#### 1. Core NoSQL Database Categories:
+- **Document Databases (e.g., MongoDB, CouchDB):** Store records as flexible JSON/BSON documents. Ideal for rapid feature iteration and hierarchical data.
+- **Key-Value Stores (e.g., Redis, AWS DynamoDB):** High-speed in-memory lookups via unique keys. Perfect for session tokens and real-time caches.
+- **Column-Family Stores (e.g., Apache Cassandra, ScyllaDB):** Stores data in column families across distributed nodes. Built for massive write volumes and timeseries analytics.
+- **Graph Databases (e.g., Neo4j):** Connects nodes with directed edges. Designed for social graphs, knowledge engines, and fraud detection.
+
+#### 2. Key Differences from SQL:
+| Feature | Relational (SQL) | NoSQL (Non-Relational) |
+| :--- | :--- | :--- |
+| **Schema** | Rigid, predefined tables & columns | Dynamic, schemaless documents or keys |
+| **Scaling** | Vertical scaling (CPU/RAM upgrades) | Horizontal scaling (sharding across clusters) |
+| **Consistency** | Strict ACID guarantees | BASE model (Eventual Consistency) |
+| **Joins** | Native relational joins | Denormalization & embedded documents |
+
+💡 **Pro Placement Tip:** When asked about NoSQL in technical interviews, always discuss the **CAP Theorem** (Consistency, Availability, Partition Tolerance) and explain how systems like MongoDB (CP) differ from Cassandra (AP)!`;
+    }
+
+    if (q.includes('dsa') || q.includes('data structure') || q.includes('time complexity') || q.includes('big o')) {
+        return `### Data Structures & Algorithmic Complexity
+
+A **Data Structure** is an optimized format for organizing, storing, and accessing data in computer memory.
+
+#### 1. Common Time Complexities (Big-O Scale):
+- **O(1) Constant:** Hash map lookup, array index access.
+- **O(log N) Logarithmic:** Binary search on sorted arrays, balanced tree operations.
+- **O(N) Linear:** Iterating over an unsorted array, singly linked list traversal.
+- **O(N log N) Linearithmic:** Optimal comparison sorts (Merge Sort, Quick Sort average).
+- **O(N²) Quadratic:** Nested loops (Bubble Sort, Selection Sort).
+
+#### 2. Essential Data Structures for Technical Interviews:
+- **Arrays & Strings:** Two-pointer technique, sliding window patterns.
+- **Linked Lists:** Fast/slow pointers, in-place reversal, cycle detection.
+- **Stacks & Queues:** Monotonic stacks, BFS/DFS traversal scaffolding.
+- **Binary Trees & BSTs:** In-order/pre-order traversal, lowest common ancestor.
+- **Graphs:** Adjacency lists, Dijkstra's algorithm, Topological Sort.
+
+💡 **Next Step:** Head over to the **Code Spirit** tab to practice interactive LeetCode-style problems on these topics!`;
+    }
+
+    return `### Study Guidance: ${query}
+
+Here is a structured overview to help you master this topic:
+
+1. **Fundamental Definition:** Understand what problem this concept solves and why it was introduced.
+2. **Key Architectural Components:**
+   - Input expectations, transformation steps, and output state.
+   - Core edge cases (e.g., null pointers, empty collections, boundary conditions).
+3. **Industry Application:** Review where this pattern is actively used in modern backend or frontend engineering.
+4. **Suggested Study Action:**
+   - Review relevant notes in the **Study Resources** hub.
+   - Solve related challenges on **Code Spirit** or test your knowledge in **Quizzes**.
+
+What specific detail or code snippet would you like to explore further?`;
+}
+
+// AI Chat - Using Groq API with automatic multi-key rotation & failover
 exports.chatWithAI = async (req, res) => {
     try {
         const { message } = req.body;
 
         if (!message || message.trim().length === 0) {
             return res.status(400).json({ message: "Message is required" });
-        }
-
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
-
-        // Check if API Key is configured
-        if (!GROQ_API_KEY || GROQ_API_KEY === 'your_groq_api_key_here') {
-            return res.json({ response: `⚠️ **AI Brain Missing!**\n\nTo answer your questions, I need a **Groq API Key** (free & unlimited!).\n\n**Get it in 30 seconds:**\n1. Visit: https://console.groq.com/keys\n2. Sign up (free, no credit card)\n3. Click "Create API Key"\n4. Copy the key (starts with gsk_...)\n5. Add to backend/.env: GROQ_API_KEY=gsk_...\n6. Restart backend\n\nGroq is FREE, FAST, and has NO rate limits! 🚀` });
         }
 
         let user = null;
@@ -400,58 +456,40 @@ exports.chatWithAI = async (req, res) => {
             console.log('⚠️ User lookup skipped (not logged in or error):', userErr.message);
         }
 
-        console.log('🚀 Calling Groq API for AI Chat...');
+        console.log('🚀 Calling Groq API with multi-key rotation for AI Chat...');
+
+        const preferredKey = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
+
+        const messages = [
+            {
+                role: 'system',
+                content: `You are an expert study mentor for StudySpirit. ${currentTopic ? `The student is currently learning "${currentTopic}". Be proactive and suggest relevant problems or concepts related to this topic if appropriate.` : 'Answer questions clearly with examples.'} Be concise, encouraging, and highly helpful. Format with clear Markdown headings and bullet points.`
+            },
+            ...recentHistory,
+            {
+                role: 'user',
+                content: message
+            }
+        ];
 
         let aiResponse = "";
 
-        try {
-            const groqResponse = await fetch(
-                'https://api.groq.com/openai/v1/chat/completions',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${GROQ_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'openai/gpt-oss-20b',
-                        messages: [
-                            {
-                                role: 'system',
-                                content: `You are an expert study mentor for StudySpirit. ${currentTopic ? `The student is currently learning "${currentTopic}". Be proactive and suggest relevant problems or concepts related to this topic if appropriate.` : 'Answer questions clearly with examples.'} Be concise but highly helpful. Use markdown.`
-                            },
-                            ...recentHistory,
-                            {
-                                role: 'user',
-                                content: message
-                            }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 1000,
-                        top_p: 1,
-                        stream: false
-                    })
-                }
-            );
+        const groqResult = await callGroqChat(messages, {
+            preferredKey,
+            temperature: 0.7,
+            max_tokens: 1000
+        });
 
-            const data = await groqResponse.json();
-
-            if (data.choices && data.choices[0]?.message?.content) {
-                aiResponse = data.choices[0].message.content;
-                console.log('✅ Groq Chat Response received');
-            } else if (data.error) {
-                console.error('❌ Groq API Error:', data.error);
-                aiResponse = `**API Error:** ${data.error.message}`;
-            } else {
-                aiResponse = "**Error:** Unexpected response format.";
-            }
-        } catch (apiError) {
-            console.error('❌ Groq Exception:', apiError.message);
-            aiResponse = `**Network Error:** ${apiError.message}`;
+        if (groqResult.success && groqResult.content) {
+            aiResponse = groqResult.content;
+            console.log(`✅ Groq Chat Response received using model: ${groqResult.model}`);
+        } else {
+            console.warn(`[Solo AI Mentor] Groq API call was unsuccessful (${groqResult.error}). Utilizing educational fallback.`);
+            aiResponse = generateAcademicFallback(message, currentTopic);
         }
 
         if (!aiResponse) {
-            aiResponse = "I'm offline. Please try again.";
+            aiResponse = generateAcademicFallback(message, currentTopic);
         }
 
         // Save chat history if user is authenticated
