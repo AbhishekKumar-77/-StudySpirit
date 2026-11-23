@@ -22,6 +22,24 @@ export const AppProvider = ({ children }) => {
             if (normalized._id && !normalized.id) {
                 normalized.id = normalized._id;
             }
+            // Ensure top-level stats are mapped from nested stats object
+            if (normalized.stats) {
+                if (normalized.streak === undefined && normalized.stats.streak !== undefined) {
+                    normalized.streak = normalized.stats.streak;
+                }
+                if (normalized.level === undefined && normalized.stats.level !== undefined) {
+                    normalized.level = normalized.stats.level;
+                }
+                if (normalized.xp === undefined && normalized.stats.xp !== undefined) {
+                    normalized.xp = normalized.stats.xp;
+                }
+            }
+            // Defaults for new accounts: streak 1, level 1, xp 0, reputation 0
+            if (normalized.streak === undefined || normalized.streak === null) normalized.streak = 1;
+            if (normalized.level === undefined || normalized.level === null) normalized.level = 1;
+            if (normalized.xp === undefined || normalized.xp === null) normalized.xp = 0;
+            if (normalized.reputation === undefined || normalized.reputation === null) normalized.reputation = 0;
+
             // Admins have isAdmin:true but role may be 'student'/'teacher' in DB
             // Normalize to role:'admin' so RoleGuard works correctly
             if (normalized.isAdmin === true) {

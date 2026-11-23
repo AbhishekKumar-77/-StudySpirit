@@ -43,14 +43,14 @@ export default function Dashboard() {
     // Enhancement 3: Instant AI Mentor Modal State
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const [aiMessages, setAiMessages] = useState([
-        { id: 1, sender: 'bot', text: `Hi ${user?.name || 'sasa'}! 👋 I'm your AI Study Mentor. Ask me any study question or request learning tips!` }
+        { id: 1, sender: 'bot', text: `Hi ${user?.name || 'there'}! 👋 I'm your AI Study Mentor. Ask me any study question or request learning tips!` }
     ]);
     const [aiInput, setAiInput] = useState('');
     const [isAiTyping, setIsAiTyping] = useState(false);
 
     // Enhancement 4: Live Deadlines & Stats State
     const [liveDeadlines, setLiveDeadlines] = useState([]);
-    const [weeklyStats, setWeeklyStats] = useState({ completed: 12, inProgress: 18, pending: 6 });
+    const [weeklyStats, setWeeklyStats] = useState({ completed: 0, inProgress: 0, pending: 0 });
     const [weeklyData, setWeeklyData] = useState([]);
 
     // Pomodoro Focus Timer State (25 mins default = 1500 sec)
@@ -173,24 +173,26 @@ export default function Dashboard() {
 
     // Calculate dynamic SVG curve points for Weekly Progress graph
     const buildWeeklySvgPath = (dataPoints) => {
-        const defaultDays = [
-            { day: 'Mon', val: 35 },
-            { day: 'Tue', val: 50 },
-            { day: 'Wed', val: 65 },
-            { day: 'Thu', val: 60 },
-            { day: 'Fri', val: 78 },
-            { day: 'Sat', val: 92 },
-            { day: 'Sun', val: 75 }
+        let points = [
+            { day: 'Mon', val: 0 },
+            { day: 'Tue', val: 0 },
+            { day: 'Wed', val: 0 },
+            { day: 'Thu', val: 0 },
+            { day: 'Fri', val: 0 },
+            { day: 'Sat', val: 0 },
+            { day: 'Sun', val: 0 }
         ];
 
-        let points = defaultDays;
         if (dataPoints && dataPoints.length > 0) {
-            const maxScore = Math.max(...dataPoints.map(d => (d.hours * 20) + (d.problems * 15)), 1);
-            points = dataPoints.map(d => {
-                const score = (d.hours * 20) + (d.problems * 15);
-                const val = Math.min(95, Math.max(20, Math.round((score / maxScore) * 75 + 20)));
-                return { day: d.day, val };
-            });
+            const totalScore = dataPoints.reduce((acc, d) => acc + ((d.hours || 0) * 20) + ((d.problems || 0) * 15), 0);
+            if (totalScore > 0) {
+                const maxScore = Math.max(...dataPoints.map(d => ((d.hours || 0) * 20) + ((d.problems || 0) * 15)), 1);
+                points = dataPoints.map(d => {
+                    const score = ((d.hours || 0) * 20) + ((d.problems || 0) * 15);
+                    const val = score > 0 ? Math.min(95, Math.max(10, Math.round((score / maxScore) * 85 + 10))) : 0;
+                    return { day: d.day, val };
+                });
+            }
         }
 
         const width = 400;
@@ -331,11 +333,18 @@ export default function Dashboard() {
                         completed: t.status === 'completed',
                         durationMinutes: t.estimatedTime || 45
                     }));
+                } else if (soloData?.learningPath?.topics && soloData.learningPath.topics.length > 0) {
+                    currentTasks = soloData.learningPath.topics.slice(0, 4).map((t, idx) => ({
+                        id: `lp_task_${idx}`,
+                        text: t.name ? `${t.name} — ${t.task || 'Core Concepts'}` : t.task,
+                        completed: false,
+                        durationMinutes: 45
+                    }));
                 } else {
                     currentTasks = [
-                        { id: 'task_1', text: 'Watch Introduction Video', completed: true, durationMinutes: 30 },
-                        { id: 'task_2', text: 'Practice Problems (5/10)', completed: false, durationMinutes: 45 },
-                        { id: 'task_3', text: 'Take Quiz', completed: false, durationMinutes: 25 }
+                        { id: 'task_1', text: 'Explore your personalized learning roadmap', completed: false, durationMinutes: 20 },
+                        { id: 'task_2', text: 'Start Day 1 study session', completed: false, durationMinutes: 30 },
+                        { id: 'task_3', text: 'Try your first practice quiz', completed: false, durationMinutes: 15 }
                     ];
                 }
                 setPlanTasks(currentTasks);
@@ -356,15 +365,15 @@ export default function Dashboard() {
                     }
                 }
 
-                // Populate Weekly Stats & Weekly Chart Data
+                // Populate Weekly Stats & Weekly Chart Data (Real data, zero dummy padding for new accounts)
                 const doneCount = currentTasks.filter(t => t.completed).length + (soloData?.user?.problemsSolvedToday || 0);
-                const inProgCount = currentTasks.filter(t => !t.completed).length + 2;
-                const pendingCount = Math.max(1, (allTasks.length > 0 ? allTasks.length - doneCount : 2));
+                const inProgCount = currentTasks.filter(t => !t.completed).length;
+                const pendingCount = Math.max(0, (allTasks.length > 0 ? (allTasks.length - doneCount) : currentTasks.length));
 
                 setWeeklyStats({
-                    completed: doneCount || 12,
-                    inProgress: inProgCount || 18,
-                    pending: pendingCount || 2
+                    completed: doneCount,
+                    inProgress: inProgCount,
+                    pending: pendingCount
                 });
 
                 if (soloData && soloData.weeklyData) {
@@ -422,8 +431,8 @@ export default function Dashboard() {
     }, [setUser, setStats]);
 
     // Enhancement 5: XP Level Progress Ring Calculation (0 - 100%)
-    const currentXp = user?.xp || 4630;
-    const xpProgressPercent = Math.min(100, Math.max(15, (currentXp % 1000) / 10));
+    const currentXp = user?.xp ?? 0;
+    const xpProgressPercent = Math.min(100, Math.max(0, (currentXp % 1000) / 10));
 
     // Platform features list
     const navFeatures = [
@@ -561,7 +570,7 @@ export default function Dashboard() {
                     {/* WELCOME HERO SECTION */}
                     <div className="welcome-hero-row">
                         <div className="welcome-hero-left">
-                            <h1>Welcome back, <span className="highlight-coral">{user?.name || 'sasa'}</span> 👋</h1>
+                            <h1>Welcome back, <span className="highlight-coral">{user?.name || 'Student'}</span> 👋</h1>
                             <p>Ready to continue your learning journey?</p>
                         </div>
                         <div className="quote-box">
@@ -578,8 +587,8 @@ export default function Dashboard() {
                             </div>
                             <div className="stat-details">
                                 <span className="stat-title">Streak</span>
-                                <div className="stat-value">{user?.streak || 3}</div>
-                                <span className="stat-sub">days in a row</span>
+                                <div className="stat-value">{user?.streak ?? 1}</div>
+                                <span className="stat-sub">{(user?.streak ?? 1) === 1 ? 'day in a row' : 'days in a row'}</span>
                             </div>
                         </div>
 
@@ -589,7 +598,7 @@ export default function Dashboard() {
                             </div>
                             <div className="stat-details">
                                 <span className="stat-title">Level</span>
-                                <div className="stat-value">{user?.level || 3}</div>
+                                <div className="stat-value">{user?.level ?? 1}</div>
                                 <span className="stat-sub">Keep going!</span>
                             </div>
                         </div>
@@ -600,8 +609,8 @@ export default function Dashboard() {
                             </div>
                             <div className="stat-details">
                                 <span className="stat-title">Total XP</span>
-                                <div className="stat-value">{user?.xp || 4630}</div>
-                                <span className="stat-sub positive-text">+120 this week</span>
+                                <div className="stat-value">{(user?.xp ?? 0).toLocaleString()}</div>
+                                <span className="stat-sub positive-text">{(user?.xp ?? 0) > 0 ? `+${user.xp} this week` : 'Start learning to earn XP'}</span>
                             </div>
                         </div>
 
@@ -611,8 +620,8 @@ export default function Dashboard() {
                             </div>
                             <div className="stat-details">
                                 <span className="stat-title">Reputation</span>
-                                <div className="stat-value">{user?.reputation || 20}</div>
-                                <span className="stat-sub">Top 15% learners</span>
+                                <div className="stat-value">{user?.reputation ?? 0}</div>
+                                <span className="stat-sub">{(user?.reputation ?? 0) > 0 ? 'Top 15% learners' : 'New Learner'}</span>
                             </div>
                         </div>
                     </div>
@@ -755,7 +764,7 @@ export default function Dashboard() {
                                                 🤖
                                             </div>
                                             <div className="mentor-text">
-                                                <h4>Hi {user?.name || 'sasa'}! 👋</h4>
+                                                <h4>Hi {user?.name || 'there'}! 👋</h4>
                                                 <p>How can I help you today?</p>
                                             </div>
                                         </div>
@@ -906,7 +915,7 @@ export default function Dashboard() {
                             onClick={fireConfetti}
                             title="Click to Claim Reward!"
                         >
-                            <span className="hex-lvl-number">{user?.level || 4}</span>
+                            <span className="hex-lvl-number">{user?.level ?? 1}</span>
                         </div>
                     </div>
                 </div>

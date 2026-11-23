@@ -69,15 +69,15 @@ export default function Planner() {
     const [state, setState] = useState({
         profile: {
             displayName: user?.name || user?.username || 'Student',
-            level: user?.level || 3,
-            xp: user?.xp || 4630,
-            xpToNextLevel: 6000,
-            currentSemester: 2,
+            level: user?.level ?? 1,
+            xp: user?.xp ?? 0,
+            xpToNextLevel: 1000,
+            currentSemester: 1,
             batch: 'CSE — 2026 Batch',
             department: 'Computer Science & Engineering',
             targetRole: 'Software Engineer',
             targetDate: 'June 2027',
-            currentFocus: { course: 'Data Structures', topic: 'Linked List', masteryPercent: 66 },
+            currentFocus: { course: 'Core Foundations', topic: 'Programming Fundamentals', masteryPercent: 0 },
             careerSteps: []
         },
         semesters: [
@@ -429,7 +429,7 @@ export default function Planner() {
                         <div className="sp-profile-name">
                             {user?.name || state.profile?.displayName || 'Student'} <ShieldCheck size={14} color="#10b981" />
                         </div>
-                        <div className="sp-profile-meta">Level {user?.level || state.profile?.level || 3} • {user?.xp || state.profile?.xp || 4630} XP</div>
+                        <div className="sp-profile-meta">Level {user?.level ?? state.profile?.level ?? 1} • {user?.xp ?? state.profile?.xp ?? 0} XP</div>
                     </div>
                 </div>
             </aside>
