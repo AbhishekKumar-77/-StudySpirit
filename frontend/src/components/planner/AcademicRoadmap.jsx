@@ -7,9 +7,10 @@ export default function AcademicRoadmap({
     setSelectedSemesterNum
 }) {
     const semData = state.semesterData?.[selectedSemesterNum] || { courses: [], skills: [], projects: [] };
+    const currentSemNum = state.profile?.currentSemester || 1;
     const selectedSemObj = (state.semesters || []).find(s => s.number === selectedSemesterNum) || {
         number: selectedSemesterNum,
-        status: selectedSemesterNum === 2 ? 'current' : selectedSemesterNum < 2 ? 'completed' : 'upcoming'
+        status: selectedSemesterNum === currentSemNum ? 'current' : selectedSemesterNum < currentSemNum ? 'completed' : 'upcoming'
     };
 
     return (

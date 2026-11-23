@@ -10,7 +10,7 @@ export default function PlannerOverview({
     handleToggleTask,
     searchQuery
 }) {
-    const currentSemData = state.semesterData?.[selectedSemesterNum] || state.semesterData?.[2] || { courses: [], skills: [], projects: [] };
+    const currentSemData = state.semesterData?.[selectedSemesterNum] || state.semesterData?.[state.profile?.currentSemester || 1] || state.semesterData?.[1] || { courses: [], skills: [], projects: [] };
 
     const filteredCourses = (currentSemData.courses || []).filter(c =>
         c.name.toLowerCase().includes((searchQuery || '').toLowerCase())
@@ -50,7 +50,7 @@ export default function PlannerOverview({
                         <span className="sp-summary-title">Current Semester</span>
                         <div className="sp-summary-icon" style={{ backgroundColor: '#ecfdf5', color: '#10b981' }}>🎓</div>
                     </div>
-                    <div className="sp-summary-value">Semester {state.profile?.currentSemester || 2}</div>
+                    <div className="sp-summary-value">Semester {state.profile?.currentSemester || 1}</div>
                     <div className="sp-summary-subtext">{state.profile?.batch || 'CSE — 2026 Batch'}</div>
                     <button className="sp-summary-link" onClick={() => setActiveTab('roadmap')}>View Roadmap →</button>
                 </div>
@@ -61,8 +61,8 @@ export default function PlannerOverview({
                         <span className="sp-summary-title">Overall Progress</span>
                         <div className="sp-summary-icon" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>📊</div>
                     </div>
-                    <div className="sp-summary-value">{state.stats?.overallProgressPercent || 68}%</div>
-                    <div className="sp-summary-subtext">Ahead of {state.stats?.percentileRank || 65}% of peer learners</div>
+                    <div className="sp-summary-value">{state.stats?.overallProgressPercent ?? 0}%</div>
+                    <div className="sp-summary-subtext">{state.stats?.percentileRank ? `Ahead of ${state.stats.percentileRank}% of peer learners` : 'Starting fresh'}</div>
                     <div style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 600, marginTop: '4px' }}>Keep it up! 🚀</div>
                 </div>
 
@@ -123,7 +123,7 @@ export default function PlannerOverview({
                 {/* Left: Semester Details (3 Columns) */}
                 <div className="sp-section-card">
                     <div className="sp-semester-header">
-                        Semester {state.profile?.currentSemester || 2} Curriculum — Current
+                        Semester {selectedSemesterNum || state.profile?.currentSemester || 1} Curriculum {selectedSemesterNum === (state.profile?.currentSemester || 1) ? '— Current' : ''}
                         <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 500, marginLeft: '8px' }}>
                             ({state.profile?.startDate || 'Feb 2026'} → {state.profile?.endDate || 'Jun 2026'})
                         </span>

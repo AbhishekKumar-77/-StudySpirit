@@ -75,6 +75,12 @@ const userSchema = new mongoose.Schema({
         type: String, // e.g., "Computer Science", "B.Tech"
         trim: true
     },
+    semester: {
+        type: Number,
+        default: 1,
+        min: 1,
+        max: 8
+    },
     reputation: {
         type: Number,
         default: 0

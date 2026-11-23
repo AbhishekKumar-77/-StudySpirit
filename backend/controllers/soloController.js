@@ -1729,7 +1729,7 @@ exports.completeOnboarding = async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-        const { studyGoal, difficultyLevel, university, course } = req.body;
+        const { studyGoal, difficultyLevel, university, course, semester } = req.body;
 
         if (!studyGoal || !difficultyLevel) {
             return res.status(400).json({ success: false, message: 'studyGoal and difficultyLevel are required' });
@@ -1739,11 +1739,14 @@ exports.completeOnboarding = async (req, res) => {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
+        const semNumber = Math.min(8, Math.max(1, Number(semester) || 1));
+
         // Save profile fields
         user.studyGoal = studyGoal;
         user.difficultyLevel = difficultyLevel;
         if (university) user.university = university;
         if (course) user.course = course;
+        user.semester = semNumber;
         user.onboardingCompleted = true;
 
         // ── Generate AI Roadmap via Groq (with callGroqChat for key rotation) ──
@@ -1835,12 +1838,35 @@ Generate 4 weeks × 7 days = 28 day entries (days 1–28), then 2 bonus days (da
 
         await user.save();
 
+        // Sync or initialize StudentProfile for the Study Planner with chosen semester
+        const StudentProfile = require('../models/StudentProfile');
+        await StudentProfile.findOneAndUpdate(
+            { user: userId },
+            {
+                $set: {
+                    displayName: user.name || 'Student',
+                    currentSemester: semNumber,
+                    department: course || user.course || 'Computer Science & Engineering',
+                    batch: `${course || 'CSE'} — ${(new Date().getFullYear())} Batch`,
+                    targetRole: studyGoal ? `${studyGoal} Specialist` : 'Software Engineer',
+                    level: user.stats?.level || 1,
+                    xp: user.stats?.xp || 0,
+                    overallProgressPercent: semNumber > 1 ? Math.min(100, Math.round(((semNumber - 1) / 8) * 100)) : 0,
+                    percentileRank: 50,
+                    weeklyHoursSpent: '0h 0m',
+                    weeklyHoursTarget: '6h 0m'
+                }
+            },
+            { upsert: true, new: true }
+        ).catch(err => console.warn('StudentProfile sync warning:', err.message));
+
         res.json({
             success: true,
             message: 'Onboarding complete! Your roadmap is ready.',
             onboardingCompleted: true,
             studyGoal,
             difficultyLevel,
+            semester: semNumber,
             roadmap: roadmap || null,
             todayMission: roadmap?.todayMission || null
         });

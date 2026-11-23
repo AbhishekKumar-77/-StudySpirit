@@ -21,10 +21,10 @@ export default function ProgressAnalytics({ state }) {
                 <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
                     <div style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>Overall Curriculum Progress</div>
                     <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#10b981', margin: '6px 0' }}>
-                        {stats.overallProgressPercent || 68}%
+                        {stats.overallProgressPercent ?? 0}%
                     </div>
                     <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                        Ahead of {stats.percentileRank || 65}% of learners in your cohort
+                        {stats.percentileRank ? `Ahead of ${stats.percentileRank}% of learners in your cohort` : 'Starting your learning journey'}
                     </div>
                 </div>
 

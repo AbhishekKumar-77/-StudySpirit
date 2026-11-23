@@ -30,7 +30,7 @@ export default function Planner() {
     const [loading, setLoading] = useState(true);
     const [aiLoading, setAiLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedSemesterNum, setSelectedSemesterNum] = useState(2);
+    const [selectedSemesterNum, setSelectedSemesterNum] = useState(user?.semester || 1);
 
     // Modals
     const [showAIPlanModal, setShowAIPlanModal] = useState(false);
@@ -72,35 +72,33 @@ export default function Planner() {
             level: user?.level ?? 1,
             xp: user?.xp ?? 0,
             xpToNextLevel: 1000,
-            currentSemester: 1,
-            batch: 'CSE — 2026 Batch',
-            department: 'Computer Science & Engineering',
+            currentSemester: user?.semester || 1,
+            batch: `${user?.course || 'CSE'} — 2026 Batch`,
+            department: user?.course || 'Computer Science & Engineering',
             targetRole: 'Software Engineer',
             targetDate: 'June 2027',
             currentFocus: { course: 'Core Foundations', topic: 'Programming Fundamentals', masteryPercent: 0 },
             careerSteps: []
         },
-        semesters: [
-            { number: 1, label: 'Semester 1', status: 'completed' },
-            { number: 2, label: 'Semester 2', status: 'current' },
-            { number: 3, label: 'Semester 3', status: 'upcoming' },
-            { number: 4, label: 'Semester 4', status: 'upcoming' },
-            { number: 5, label: 'Semester 5', status: 'upcoming' },
-            { number: 6, label: 'Semester 6', status: 'upcoming' },
-            { number: 7, label: 'Semester 7', status: 'upcoming' },
-            { number: 8, label: 'Semester 8', status: 'upcoming' }
-        ],
+        semesters: [1, 2, 3, 4, 5, 6, 7, 8].map(s => {
+            const currentSem = user?.semester || 1;
+            return {
+                number: s,
+                label: `Semester ${s}`,
+                status: s < currentSem ? 'completed' : s === currentSem ? 'current' : 'upcoming'
+            };
+        }),
         semesterData: {},
         tasks: [],
         milestones: [],
         deadlines: [],
         recommendations: [],
         stats: {
-            overallProgressPercent: 68,
-            percentileRank: 65,
+            overallProgressPercent: 0,
+            percentileRank: 50,
             weeklyHoursSpent: '0h 0m',
             weeklyHoursTarget: '7h 0m',
-            weeklyHoursDiff: '+1h 30m vs last week',
+            weeklyHoursDiff: '+0h 0m vs last week',
             completionRate: 0,
             upcomingDeadlinesCount: 0,
             aiStatusMessage: "AI is planning your study roadmap."
@@ -208,10 +206,7 @@ export default function Planner() {
             });
             const data = await res.json();
             if (data.success && data.task) {
-                setState(prev => ({
-                    ...prev,
-                    tasks: [...(prev.tasks || []), data.task]
-                }));
+                await fetchPlannerState();
                 setActiveTab('week');
             }
             setShowAddTaskModal(false);

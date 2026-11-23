@@ -180,49 +180,73 @@ const SEMESTER_BLUEPRINT = {
     }
 };
 
+// Helper to get active default focus for a given semester
+const getDefaultFocusForSem = (sem) => {
+    const semInt = Math.max(1, Math.min(8, Number(sem) || 1));
+    switch(semInt) {
+        case 1: return { course: 'Python Programming', topic: 'Programming Fundamentals', masteryPercent: 0 };
+        case 2: return { course: 'Data Structures', topic: 'Arrays & Linked Lists', masteryPercent: 0 };
+        case 3: return { course: 'C++ Programming', topic: 'Object Oriented Programming', masteryPercent: 0 };
+        case 4: return { course: 'Operating Systems', topic: 'Processes & Concurrency', masteryPercent: 0 };
+        case 5: return { course: 'Artificial Intelligence', topic: 'Search & ML Foundations', masteryPercent: 0 };
+        case 6: return { course: 'Cloud Computing', topic: 'Containerization & Cloud Arch', masteryPercent: 0 };
+        case 7: return { course: 'Big Data Analytics', topic: 'Distributed Data Processing', masteryPercent: 0 };
+        case 8: return { course: 'Capstone Project', topic: 'Industry Project Deployment', masteryPercent: 0 };
+        default: return { course: 'Core Foundations', topic: 'Programming Fundamentals', masteryPercent: 0 };
+    }
+};
+
 // ═══════════════════════════════════════════════════════════════════
-// SEED DEFAULT DATA (Ensures all 8 semesters exist for the user)
+// SEED DEFAULT DATA (Dynamically tailored to the student's semester)
 // ═══════════════════════════════════════════════════════════════════
 const seedDefaultData = async (userId) => {
+    const u = await User.findById(userId).catch(() => null);
+    const userSem = Math.max(1, Math.min(8, Number(u?.semester || u?.currentSemester || 1)));
+    const userName = u?.name || 'Student';
+    const userCourse = u?.course || 'Computer Science & Engineering';
+    const userGoal = u?.studyGoal || 'Software Engineer';
+
     let profile = await StudentProfile.findOne({ user: userId });
     if (!profile) {
-        const u = await User.findById(userId).catch(() => null);
         profile = await StudentProfile.create({
             user: userId,
-            displayName: u?.name || u?.username || 'sasa',
-            level: 3,
-            xp: 4630,
-            xpToNextLevel: 6000,
-            currentSemester: 2,
-            batch: 'CSE — 2026 Batch',
-            department: 'Computer Science & Engineering',
-            startDate: 'Feb 2026',
+            displayName: userName,
+            level: u?.stats?.level || 1,
+            xp: u?.stats?.xp || 0,
+            xpToNextLevel: 1000,
+            currentSemester: userSem,
+            batch: `${userCourse} — ${(new Date().getFullYear())} Batch`,
+            department: userCourse,
+            startDate: 'Jan 2026',
             endDate: 'Jun 2026',
-            targetRole: 'Software Engineer',
+            targetRole: `${userGoal} Specialist`,
             targetDate: 'June 2027',
-            overallProgressPercent: 68,
-            percentileRank: 65,
-            weeklyHoursSpent: '6h 20m',
-            weeklyHoursTarget: '7h 15m',
-            weeklyHoursDiff: '+1h 30m vs last week',
-            currentFocus: {
-                course: 'Data Structures',
-                topic: 'Linked List',
-                masteryPercent: 66
-            },
+            overallProgressPercent: userSem > 1 ? Math.min(100, Math.round(((userSem - 1) / 8) * 100)) : 0,
+            percentileRank: 50,
+            weeklyHoursSpent: '0h 0m',
+            weeklyHoursTarget: '6h 0m',
+            weeklyHoursDiff: '0h vs last week',
+            currentFocus: getDefaultFocusForSem(userSem),
             careerSteps: [
-                { step: 1, title: 'Master Core Programming (Python, C++)', completed: true },
-                { step: 2, title: 'Build DSA & Problem Solving Skills', completed: false },
-                { step: 3, title: 'Learn Web Development & Databases', completed: false },
-                { step: 4, title: 'Build Real-World Projects & Portfolio', completed: false },
-                { step: 5, title: 'Prepare for Placements & Internships', completed: false }
+                { step: 1, title: 'Master Core Programming & Problem Solving', completed: userSem > 1 },
+                { step: 2, title: 'Core Computer Science & Data Structures', completed: userSem > 2 },
+                { step: 3, title: 'Frameworks, Database Systems & APIs', completed: userSem > 4 },
+                { step: 4, title: 'Real-World Production Projects & Architecture', completed: userSem > 6 },
+                { step: 5, title: 'Placement Preparation, System Design & Mock Interviews', completed: userSem >= 8 }
             ]
         });
+    } else if (u?.semester && profile.currentSemester !== u.semester) {
+        profile.currentSemester = u.semester;
+        profile.currentFocus = getDefaultFocusForSem(u.semester);
+        await profile.save();
     }
 
-    // Courses for all 8 semesters (check per semester)
+    // Courses, Skills, and Projects for all 8 semesters (clean, zero fake mastery for active semester)
     for (const [semNum, data] of Object.entries(SEMESTER_BLUEPRINT)) {
         const num = Number(semNum);
+        const isCompletedSem = num < userSem;
+        const isCurrentSem = num === userSem;
+
         const semCourses = await AcademicCourse.find({ user: userId, semesterNumber: num });
         if (semCourses.length === 0) {
             const coursesToInsert = data.courses.map(c => ({
@@ -230,7 +254,7 @@ const seedDefaultData = async (userId) => {
                 semesterNumber: num,
                 name: c.name,
                 code: c.code,
-                mastery: c.mastery,
+                mastery: isCompletedSem ? 100 : 0,
                 color: c.color
             }));
             await AcademicCourse.insertMany(coursesToInsert);
@@ -243,8 +267,8 @@ const seedDefaultData = async (userId) => {
                 semesterNumber: num,
                 name: sk.name,
                 category: sk.category,
-                mastery: sk.mastery,
-                status: sk.status,
+                mastery: isCompletedSem ? 100 : 0,
+                status: isCompletedSem ? 'Completed' : isCurrentSem ? 'In Progress' : 'Locked',
                 color: sk.color
             }));
             await StudentSkill.insertMany(skillsToInsert);
@@ -257,8 +281,8 @@ const seedDefaultData = async (userId) => {
                 semesterNumber: num,
                 name: p.name,
                 description: p.description,
-                status: p.status,
-                progress: p.progress,
+                status: isCompletedSem ? 'Completed' : 'Not Started',
+                progress: isCompletedSem ? 100 : 0,
                 dueDate: p.dueDate,
                 relatedSkills: p.relatedSkills
             }));
@@ -266,76 +290,88 @@ const seedDefaultData = async (userId) => {
         }
     }
 
-    // Weekly Tasks
+    // Weekly Tasks: clean, personalized tasks for current semester with zero fake completions
     const existingTasks = await LearningTask.find({ user: userId });
     if (existingTasks.length === 0) {
+        const currentSemCourses = SEMESTER_BLUEPRINT[userSem]?.courses || SEMESTER_BLUEPRINT[1].courses;
+        const c1 = currentSemCourses[0]?.name || 'Core Programming';
+        const c2 = currentSemCourses[1]?.name || 'Web Technologies';
+        const c3 = currentSemCourses[2]?.name || 'Computer Fundamentals';
+        const c4 = currentSemCourses[3]?.name || 'Mathematics';
+
         await LearningTask.insertMany([
-            { user: userId, title: 'Arrays & Linked List — Concepts', dayLabel: 'Mon 12', dayOfWeek: 'Mon', durationMinutes: 60, taskType: 'LEARN', status: 'COMPLETED', completed: true, topic: 'Linked List', courseName: 'Data Structures' },
-            { user: userId, title: 'Linked List — Practice Problems', dayLabel: 'Tue 13', dayOfWeek: 'Tue', durationMinutes: 90, taskType: 'PRACTICE', status: 'COMPLETED', completed: true, topic: 'Linked List', courseName: 'Data Structures' },
-            { user: userId, title: 'Linked List — Quiz', dayLabel: 'Wed 14', dayOfWeek: 'Wed', durationMinutes: 30, taskType: 'QUIZ', status: 'COMPLETED', completed: true, score: 92, topic: 'Linked List', courseName: 'Data Structures' },
-            { user: userId, title: 'Stack — Concepts', dayLabel: 'Thu 15', dayOfWeek: 'Thu', durationMinutes: 60, taskType: 'LEARN', status: 'NOT_STARTED', completed: false, topic: 'Stack', courseName: 'Data Structures' },
-            { user: userId, title: 'Stack — Practice Problems', dayLabel: 'Fri 16', dayOfWeek: 'Fri', durationMinutes: 90, taskType: 'PRACTICE', status: 'NOT_STARTED', completed: false, topic: 'Stack', courseName: 'Data Structures' },
-            { user: userId, title: 'Mini Assessment', dayLabel: 'Sat 17', dayOfWeek: 'Sat', durationMinutes: 45, taskType: 'ASSESSMENT', status: 'NOT_STARTED', completed: false, topic: 'Data Structures', courseName: 'Data Structures' },
-            { user: userId, title: 'Project Work — Library Management', dayLabel: 'Sun 18', dayOfWeek: 'Sun', durationMinutes: 120, taskType: 'PROJECT', status: 'NOT_STARTED', completed: false, topic: 'OOP Project', courseName: 'OOP' }
+            { user: userId, title: `${c1} — Syntax & Core Concepts`, dayLabel: 'Mon', dayOfWeek: 'Mon', durationMinutes: 60, taskType: 'LEARN', status: 'NOT_STARTED', completed: false, topic: 'Fundamentals', courseName: c1 },
+            { user: userId, title: `${c1} — Hands-on Practice Problems`, dayLabel: 'Tue', dayOfWeek: 'Tue', durationMinutes: 90, taskType: 'PRACTICE', status: 'NOT_STARTED', completed: false, topic: 'Problem Solving', courseName: c1 },
+            { user: userId, title: `${c2} — Architecture & First Module`, dayLabel: 'Wed', dayOfWeek: 'Wed', durationMinutes: 60, taskType: 'LEARN', status: 'NOT_STARTED', completed: false, topic: 'Architecture', courseName: c2 },
+            { user: userId, title: `${c2} — Practice Exercise & Quiz`, dayLabel: 'Thu', dayOfWeek: 'Thu', durationMinutes: 45, taskType: 'QUIZ', status: 'NOT_STARTED', completed: false, topic: 'Assessment', courseName: c2 },
+            { user: userId, title: `${c3} — Theory & Concept Drill`, dayLabel: 'Fri', dayOfWeek: 'Fri', durationMinutes: 60, taskType: 'LEARN', status: 'NOT_STARTED', completed: false, topic: 'Foundations', courseName: c3 },
+            { user: userId, title: `${c4} — Problem Set & Applications`, dayLabel: 'Sat', dayOfWeek: 'Sat', durationMinutes: 90, taskType: 'PRACTICE', status: 'NOT_STARTED', completed: false, topic: 'Applications', courseName: c4 },
+            { user: userId, title: `Weekly Retrospective & Milestone Review`, dayLabel: 'Sun', dayOfWeek: 'Sun', durationMinutes: 45, taskType: 'ASSESSMENT', status: 'NOT_STARTED', completed: false, topic: 'Weekly Review', courseName: c1 }
         ]);
     }
 
-    // Milestones
+    // Milestones: starting at 0 with no fake achievement claims
     const existingMilestones = await StudentMilestone.find({ user: userId });
     if (existingMilestones.length === 0) {
         await StudentMilestone.insertMany([
-            { user: userId, title: 'First Steps', description: 'Complete your first course.', current: 1, target: 1, completed: true, locked: false, icon: '🎓' },
-            { user: userId, title: 'Problem Solver', description: 'Solve 100 problems.', current: 72, target: 100, completed: false, locked: false, icon: '📜' },
-            { user: userId, title: 'Project Builder', description: 'Build 3 projects.', current: 1, target: 3, completed: false, locked: false, icon: '💻' },
-            { user: userId, title: 'DSA Master', description: 'Solve 200 DSA problems.', current: 72, target: 200, completed: false, locked: false, icon: '🧠' },
-            { user: userId, title: 'Placement Ready', description: 'Complete all required requirements.', current: 0, target: 100, completed: false, locked: true, icon: '🔒' }
+            { user: userId, title: 'First Steps', description: 'Complete your first course or practice session.', current: 0, target: 1, completed: false, locked: false, icon: '🎓' },
+            { user: userId, title: 'Problem Solver', description: 'Solve 100 coding problems.', current: 0, target: 100, completed: false, locked: false, icon: '📜' },
+            { user: userId, title: 'Project Builder', description: 'Build 3 semester projects.', current: 0, target: 3, completed: false, locked: false, icon: '💻' },
+            { user: userId, title: 'DSA Master', description: 'Solve 200 DSA problems.', current: 0, target: 200, completed: false, locked: false, icon: '🧠' },
+            { user: userId, title: 'Placement Ready', description: 'Complete all required semester requirements.', current: 0, target: 100, completed: false, locked: true, icon: '🔒' }
         ]);
     }
 
-    // Deadlines
+    // Deadlines: clean upcoming milestones for current semester courses
     const existingDeadlines = await StudentDeadline.find({ user: userId });
     if (existingDeadlines.length === 0) {
+        const curCourses = SEMESTER_BLUEPRINT[userSem]?.courses || SEMESTER_BLUEPRINT[1].courses;
+        const mainCourse = curCourses[0]?.name || 'Core Engineering';
+        const secondCourse = curCourses[1]?.name || 'Practical Lab';
+
         await StudentDeadline.insertMany([
-            { user: userId, title: 'DBMS Midterm Exam', date: 'May 20, 2026', category: 'Academic', urgency: 'Due this week' },
-            { user: userId, title: 'DSA Assignment 3', date: 'May 25, 2026', category: 'Academic', urgency: 'Due next week' },
-            { user: userId, title: 'Library Management Project', date: 'May 30, 2026', category: 'Projects', urgency: 'Due this month' },
-            { user: userId, title: 'Summer Internship Application', date: 'Jun 10, 2026', category: 'Career', urgency: 'Upcoming' }
+            { user: userId, title: `${mainCourse} Midterm Exam`, date: 'May 20, 2026', category: 'Academic', urgency: 'Due this month' },
+            { user: userId, title: `${mainCourse} Practical Assignment 1`, date: 'May 28, 2026', category: 'Academic', urgency: 'Upcoming' },
+            { user: userId, title: `${secondCourse} Milestone Submission`, date: 'Jun 15, 2026', category: 'Projects', urgency: 'Upcoming' },
+            { user: userId, title: `Semester ${userSem} Comprehensive Assessment`, date: 'Jun 30, 2026', category: 'Career', urgency: 'Upcoming' }
         ]);
     }
 
     // AI Recommendations
     const existingRecs = await AIRecommendation.find({ user: userId });
     if (existingRecs.length === 0) {
+        const curCourses = SEMESTER_BLUEPRINT[userSem]?.courses || SEMESTER_BLUEPRINT[1].courses;
+        const focusCourse = curCourses[0]?.name || 'Programming';
         await AIRecommendation.insertMany([
             {
                 user: userId,
                 recType: 'focus',
                 badgeLabel: 'Focus recommendation',
-                title: 'Focus on Data Structures',
-                description: 'Your DSA accuracy is improving but needs more practice on linked lists and trees.',
+                title: `Focus on ${focusCourse}`,
+                description: `Build consistency on ${focusCourse} concepts with daily 45-minute practice intervals.`,
                 actionText: 'Practice Now →',
                 actionLink: '/planner?tab=week',
-                tag: 'DSA'
+                tag: focusCourse
             },
             {
                 user: userId,
                 recType: 'weak_area',
-                badgeLabel: 'Weak-area recommendation',
-                title: 'Weak Area: Recursion',
-                description: 'We recommend 3 interactive lessons and 5 practice problems to build confidence.',
+                badgeLabel: 'Diagnostic recommendation',
+                title: 'Structured Problem Solving',
+                description: 'Solve interactive coding challenges to build logical confidence and speed.',
                 actionText: 'Start Learning →',
                 actionLink: '/codespirit',
-                tag: 'Recursion'
+                tag: 'Practice'
             },
             {
                 user: userId,
                 recType: 'project',
                 badgeLabel: 'Project recommendation',
-                title: 'Project Suggestion',
-                description: 'Build a To-Do App using C++ and File Handling to solidify OOP concepts.',
+                title: 'Semester Project Kickoff',
+                description: `Plan and build a practical application relevant to Semester ${userSem}.`,
                 actionText: 'Explore →',
                 actionLink: '/project-lab',
-                tag: 'C++'
+                tag: 'Project'
             }
         ]);
     }
@@ -348,28 +384,36 @@ exports.getFullPlannerState = async (req, res) => {
     try {
         const userId = await getUserId(req);
 
-        // Seed data if this user has not been seeded yet
+        // Seed or sync data if needed
         await seedDefaultData(userId);
 
-        const profile = (await StudentProfile.findOne({ user: userId })) || {
-            displayName: req.user?.username || req.user?.name || 'Student',
-            level: 3,
-            xp: 4630,
-            xpToNextLevel: 6000,
-            currentSemester: 2,
-            batch: 'CSE — 2026 Batch',
-            department: 'Computer Science & Engineering',
-            targetRole: 'Software Engineer',
-            targetDate: 'June 2027',
-            currentFocus: { course: 'Data Structures', topic: 'Linked List', masteryPercent: 66 },
-            careerSteps: [
-                { step: 1, title: 'Master Core Programming (Python, C++)', completed: true },
-                { step: 2, title: 'Build DSA & Problem Solving Skills', completed: false },
-                { step: 3, title: 'Learn Web Development & Databases', completed: false },
-                { step: 4, title: 'Build Real-World Projects & Portfolio', completed: false },
-                { step: 5, title: 'Prepare for Placements & Internships', completed: false }
-            ]
-        };
+        const u = await User.findById(userId).catch(() => null);
+        const userSemFromDB = Math.max(1, Math.min(8, Number(u?.semester || u?.currentSemester || 1)));
+
+        let profile = await StudentProfile.findOne({ user: userId });
+        if (!profile) {
+            profile = {
+                displayName: u?.name || 'Student',
+                level: u?.stats?.level || 1,
+                xp: u?.stats?.xp || 0,
+                xpToNextLevel: 1000,
+                currentSemester: userSemFromDB,
+                batch: `${u?.course || 'CSE'} — ${(new Date().getFullYear())} Batch`,
+                department: u?.course || 'Computer Science & Engineering',
+                targetRole: u?.studyGoal ? `${u.studyGoal} Specialist` : 'Software Engineer',
+                targetDate: 'June 2027',
+                currentFocus: getDefaultFocusForSem(userSemFromDB),
+                careerSteps: [
+                    { step: 1, title: 'Master Core Programming & Problem Solving', completed: userSemFromDB > 1 },
+                    { step: 2, title: 'Core Computer Science & Data Structures', completed: userSemFromDB > 2 },
+                    { step: 3, title: 'Frameworks, Database Systems & APIs', completed: userSemFromDB > 4 },
+                    { step: 4, title: 'Real-World Production Projects & Architecture', completed: userSemFromDB > 6 },
+                    { step: 5, title: 'Placement Preparation, System Design & Mock Interviews', completed: userSemFromDB >= 8 }
+                ]
+            };
+        }
+
+        const currSemNum = profile.currentSemester || userSemFromDB || 1;
 
         const allCourses = await AcademicCourse.find({ user: userId }).sort({ semesterNumber: 1 });
         const allSkills = await StudentSkill.find({ user: userId }).sort({ semesterNumber: 1 });
@@ -379,17 +423,18 @@ exports.getFullPlannerState = async (req, res) => {
         const deadlines = await StudentDeadline.find({ user: userId }).sort({ createdAt: 1 });
         const recommendations = await AIRecommendation.find({ user: userId });
 
-        // Organize into 8 semesters map (ensuring complete fallback to blueprint for any semester)
+        // Organize into 8 semesters map
         const semesterData = {};
         for (let sem = 1; sem <= 8; sem++) {
             const semCourses = allCourses.filter(c => c.semesterNumber === sem);
             const semSkills = allSkills.filter(sk => sk.semesterNumber === sem);
             const semProjects = allProjects.filter(p => p.semesterNumber === sem);
 
+            const isPriorSem = sem < currSemNum;
             semesterData[sem] = {
-                courses: semCourses.length > 0 ? semCourses : (SEMESTER_BLUEPRINT[sem]?.courses || []),
-                skills: semSkills.length > 0 ? semSkills : (SEMESTER_BLUEPRINT[sem]?.skills || []),
-                projects: semProjects.length > 0 ? semProjects : (SEMESTER_BLUEPRINT[sem]?.projects || [])
+                courses: semCourses.length > 0 ? semCourses : (SEMESTER_BLUEPRINT[sem]?.courses || []).map(c => ({ ...c, mastery: isPriorSem ? 100 : 0 })),
+                skills: semSkills.length > 0 ? semSkills : (SEMESTER_BLUEPRINT[sem]?.skills || []).map(s => ({ ...s, mastery: isPriorSem ? 100 : 0, status: isPriorSem ? 'Completed' : sem === currSemNum ? 'In Progress' : 'Locked' })),
+                projects: semProjects.length > 0 ? semProjects : (SEMESTER_BLUEPRINT[sem]?.projects || []).map(p => ({ ...p, progress: isPriorSem ? 100 : 0, status: isPriorSem ? 'Completed' : 'Not Started' }))
             };
         }
 
@@ -403,23 +448,26 @@ exports.getFullPlannerState = async (req, res) => {
         let aiAdvice = `Keep going! You're ${completionRate}% towards completing this week's plan.`;
         if (tasks.length === 0) {
             aiAdvice = `Let's build your weekly schedule using AI Plan Builder.`;
+        } else if (completedTasks.length === 0) {
+            aiAdvice = `Welcome to Semester ${currSemNum}! Start your first scheduled task to begin earning XP.`;
         } else if (completionRate < 40) {
-            aiAdvice = `You are behind this week's plan. Let's adjust your schedule to stay on track.`;
+            aiAdvice = `You're making progress! Complete scheduled study blocks to stay on track.`;
         } else if (completionRate >= 90 && completionRate < 100) {
             aiAdvice = `Excellent! You're almost finished with this week's schedule.`;
         } else if (completionRate === 100) {
             aiAdvice = `Amazing! All scheduled tasks for this week are completed! 🚀`;
         }
 
-        // Weighted Overall Progress calculation
-        const currSemNum = profile.currentSemester || 2;
+        // Weighted Overall Progress calculation from actual courses and tasks
         const currentSemCourses = semesterData[currSemNum]?.courses || [];
         const currentSemSkills = semesterData[currSemNum]?.skills || [];
-        const courseAvg = currentSemCourses.length > 0 ? Math.round(currentSemCourses.reduce((s, c) => s + c.mastery, 0) / currentSemCourses.length) : 50;
-        const skillAvg = currentSemSkills.length > 0 ? Math.round(currentSemSkills.reduce((s, sk) => s + sk.mastery, 0) / currentSemSkills.length) : 50;
-        const weightedOverall = Math.round((courseAvg * 0.5) + (skillAvg * 0.3) + (completionRate * 0.2));
+        const courseAvg = currentSemCourses.length > 0 ? Math.round(currentSemCourses.reduce((s, c) => s + (c.mastery || 0), 0) / currentSemCourses.length) : 0;
+        const skillAvg = currentSemSkills.length > 0 ? Math.round(currentSemSkills.reduce((s, sk) => s + (sk.mastery || 0), 0) / currentSemSkills.length) : 0;
+        const priorSemesterProgress = currSemNum > 1 ? Math.round(((currSemNum - 1) / 8) * 100) : 0;
+        const currentSemProgress = Math.round((courseAvg * 0.5) + (skillAvg * 0.3) + (completionRate * 0.2));
+        const weightedOverall = Math.min(100, Math.round(priorSemesterProgress + (currentSemProgress * (1 / 8))));
 
-        // 8 Semesters nodes
+        // 8 Semesters nodes reflecting user's real semester
         const semesters = [1, 2, 3, 4, 5, 6, 7, 8].map(num => ({
             number: num,
             label: `Semester ${num}`,
@@ -437,11 +485,11 @@ exports.getFullPlannerState = async (req, res) => {
                 deadlines,
                 recommendations,
                 stats: {
-                    overallProgressPercent: weightedOverall || 68,
-                    percentileRank: 65,
+                    overallProgressPercent: weightedOverall,
+                    percentileRank: 50,
                     weeklyHoursSpent: `${Math.floor(completedMinutes / 60)}h ${completedMinutes % 60}m`,
                     weeklyHoursTarget: `${Math.floor(totalPlannedMinutes / 60)}h ${totalPlannedMinutes % 60}m`,
-                    weeklyHoursDiff: '+1h 30m vs last week',
+                    weeklyHoursDiff: '+0h vs last week',
                     completionRate,
                     upcomingDeadlinesCount: deadlines.length,
                     aiStatusMessage: aiAdvice

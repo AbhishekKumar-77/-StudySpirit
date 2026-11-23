@@ -115,6 +115,7 @@ export default function Onboarding() {
     const [level, setLevel] = useState('');
     const [university, setUniversity] = useState('');
     const [course, setCourse] = useState('');
+    const [semester, setSemester] = useState(user?.semester || 1);
     const [loading, setLoading] = useState(false);
     const [roadmap, setRoadmap] = useState(null);
     const [error, setError] = useState('');
@@ -132,7 +133,7 @@ export default function Onboarding() {
         setLoading(true);
         setError('');
         try {
-            const res = await completeOnboarding({ studyGoal: goal, difficultyLevel: level, university, course });
+            const res = await completeOnboarding({ studyGoal: goal, difficultyLevel: level, university, course, semester: Number(semester) || 1 });
             if (res && (res.success || res.roadmap)) {
                 const finalRoadmap = res.roadmap || createClientFallbackRoadmap(goal, level);
                 setRoadmap(finalRoadmap);
@@ -143,6 +144,7 @@ export default function Onboarding() {
                     difficultyLevel: level,
                     university: university || user?.university || '',
                     course: course || user?.course || '',
+                    semester: Number(semester) || 1,
                 };
                 setUser(updatedUser);
                 try {
@@ -166,6 +168,7 @@ export default function Onboarding() {
                 difficultyLevel: level,
                 university: university || user?.university || '',
                 course: course || user?.course || '',
+                semester: Number(semester) || 1,
             };
             setUser(updatedUser);
             try {
@@ -350,6 +353,28 @@ export default function Onboarding() {
                                     onFocus={e => e.target.style.borderColor = '#6366f1'}
                                     onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                                 />
+                            </div>
+                            <div>
+                                <label style={{ color: 'rgba(240,246,252,0.6)', fontSize: 13, fontWeight: 600, letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>CURRENT SEMESTER</label>
+                                <select
+                                    value={semester}
+                                    onChange={e => setSemester(Number(e.target.value))}
+                                    style={{
+                                        width: '100%', boxSizing: 'border-box',
+                                        background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.1)',
+                                        borderRadius: 12, padding: '14px 18px', color: '#f0f6fc', fontSize: 15,
+                                        outline: 'none', transition: 'border-color 0.2s',
+                                        fontFamily: 'inherit', cursor: 'pointer'
+                                    }}
+                                    onFocus={e => e.target.style.borderColor = '#6366f1'}
+                                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                                >
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                                        <option key={s} value={s} style={{ background: '#0d1117', color: '#f0f6fc' }}>
+                                            Semester {s} {s === 1 ? '(1st Year — Fresh Start)' : s === 2 ? '(1st Year — 2nd Sem)' : s === 3 ? '(2nd Year — 3rd Sem)' : s === 4 ? '(2nd Year — 4th Sem)' : s <= 6 ? `(3rd Year — ${s}th Sem)` : `(Final Year — ${s}th Sem)`}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
