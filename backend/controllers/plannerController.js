@@ -539,8 +539,23 @@ exports.deleteTask = async (req, res) => {
     }
 };
 
+// Helper to generate 7-day structured study tasks if AI fails or returns empty
+const getRoleWeeklyTasks = (roleTitle, focusArea, dailyHours) => {
+    const hours = Math.max(1, Math.min(8, Number(dailyHours) || 3));
+    const duration = Math.min(180, Math.max(45, hours * 60));
+    return [
+        { title: `Core ${focusArea || roleTitle} Foundations & Syntax Practice`, dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: Math.min(90, duration), courseName: 'Core Foundations' },
+        { title: `Algorithmic Problem Solving & Data Structures Drill`, dayLabel: 'Tue', taskType: 'PRACTICE', durationMinutes: duration, courseName: 'Data Structures' },
+        { title: `Framework Concepts & Speed Knowledge Quiz`, dayLabel: 'Wed', taskType: 'QUIZ', durationMinutes: 45, courseName: 'System Architecture' },
+        { title: `Database Design, Schema Modeling & Queries`, dayLabel: 'Thu', taskType: 'LEARN', durationMinutes: Math.min(90, duration), courseName: 'Database Systems' },
+        { title: `Hands-on Portfolio Capstone Project Module`, dayLabel: 'Fri', taskType: 'PROJECT', durationMinutes: duration, courseName: 'Portfolio Project' },
+        { title: `Coding Sprint & Code Review Best Practices`, dayLabel: 'Sat', taskType: 'PRACTICE', durationMinutes: 60, courseName: 'Software Engineering' },
+        { title: `Weekly Retrospective, Goal Evaluation & Next Sprint Plan`, dayLabel: 'Sun', taskType: 'ASSESSMENT', durationMinutes: 45, courseName: 'Career Growth' }
+    ];
+};
+
 // ═══════════════════════════════════════════════════════════════════
-// AI PLAN BUILDER (Powered by Groq AI API Key from .env)
+// AI PLAN BUILDER (Powered by Groq AI API Key with multi-key failover)
 // ═══════════════════════════════════════════════════════════════════
 exports.buildAIPlan = async (req, res) => {
     try {
@@ -553,11 +568,10 @@ exports.buildAIPlan = async (req, res) => {
 
         let generatedSteps = [];
         let generatedTasks = [];
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_PLANNER || process.env.GROQ_API_KEY;
 
-        if (GROQ_API_KEY && GROQ_API_KEY !== 'your_groq_api_key_here') {
-            try {
-                const prompt = `As an AI Study Planner for a Computer Science student aiming to become a "${roleTitle}" with ${dailyHours} hours/day study time focusing on "${focusArea}":
+        try {
+            const { callGroqChat } = require('../services/groqClient');
+            const prompt = `As an AI Study Planner for a Computer Science student aiming to become a "${roleTitle}" with ${dailyHours} hours/day study time focusing on "${focusArea}":
 Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this exact schema:
 {
   "careerSteps": [
@@ -572,41 +586,36 @@ Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this
     { "title": "Topic or practice name", "dayLabel": "Tue", "taskType": "PRACTICE", "durationMinutes": 90, "courseName": "Algorithms" },
     { "title": "Quiz / Review", "dayLabel": "Wed", "taskType": "QUIZ", "durationMinutes": 45, "courseName": "Web Development" },
     { "title": "Topic or practice name", "dayLabel": "Thu", "taskType": "LEARN", "durationMinutes": 60, "courseName": "Database" },
-    { "title": "Project Coding", "dayLabel": "Fri", "taskType": "PROJECT", "durationMinutes": 120, "courseName": "Software Engineering" }
+    { "title": "Project Coding", "dayLabel": "Fri", "taskType": "PROJECT", "durationMinutes": 120, "courseName": "Software Engineering" },
+    { "title": "Coding Practice", "dayLabel": "Sat", "taskType": "PRACTICE", "durationMinutes": 90, "courseName": "Data Structures" },
+    { "title": "Weekly Assessment & Review", "dayLabel": "Sun", "taskType": "ASSESSMENT", "durationMinutes": 45, "courseName": "Core CS" }
   ]
 }`;
 
-                const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${GROQ_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'llama-3.3-70b-versatile',
-                        messages: [
-                            { role: 'system', content: 'You are an expert AI Career and Study Roadmap Architect. Always output strictly valid JSON.' },
-                            { role: 'user', content: prompt }
-                        ],
-                        temperature: 0.4,
-                        response_format: { type: "json_object" }
-                    })
-                });
+            const aiRes = await callGroqChat([
+                { role: 'system', content: 'You are an expert AI Career and Study Roadmap Architect. Always output strictly valid JSON.' },
+                { role: 'user', content: prompt }
+            ], {
+                temperature: 0.4,
+                max_tokens: 2000,
+                timeoutMs: 25000
+            });
 
-                const groqData = await groqRes.json();
-                const content = groqData.choices?.[0]?.message?.content;
-                if (content) {
-                    const parsed = JSON.parse(content);
-                    if (parsed.careerSteps && Array.isArray(parsed.careerSteps)) {
-                        generatedSteps = parsed.careerSteps;
-                    }
-                    if (parsed.weeklyTasks && Array.isArray(parsed.weeklyTasks)) {
-                        generatedTasks = parsed.weeklyTasks;
-                    }
+            if (aiRes.success && aiRes.content) {
+                let raw = aiRes.content.trim();
+                if (raw.startsWith('```')) {
+                    raw = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
                 }
-            } catch (aiErr) {
-                console.warn('Groq AI Plan call fallback:', aiErr.message);
+                const parsed = JSON.parse(raw);
+                if (parsed.careerSteps && Array.isArray(parsed.careerSteps)) {
+                    generatedSteps = parsed.careerSteps;
+                }
+                if (parsed.weeklyTasks && Array.isArray(parsed.weeklyTasks)) {
+                    generatedTasks = parsed.weeklyTasks;
+                }
             }
+        } catch (aiErr) {
+            console.warn('Groq AI Plan call fallback:', aiErr.message);
         }
 
         // Fallback default roadmap if AI was unavailable
@@ -618,6 +627,11 @@ Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this
                 { step: 4, title: 'Fullstack & Production Portfolio Projects' },
                 { step: 5, title: 'Interview Preparation, System Design & Placements' }
             ];
+        }
+
+        // Fallback default weekly tasks if AI was unavailable or empty
+        if (generatedTasks.length === 0) {
+            generatedTasks = getRoleWeeklyTasks(roleTitle, focusArea, dailyHours);
         }
 
         // Save new career goal and steps to StudentProfile in DB
@@ -633,27 +647,30 @@ Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this
         }));
         await profile.save();
 
-        // If AI generated new weekly tasks, insert them into DB
-        if (generatedTasks.length > 0) {
-            const newTasksToInsert = generatedTasks.map(t => ({
-                user: userId,
-                title: t.title,
-                dayLabel: t.dayLabel || 'Mon',
-                dayOfWeek: t.dayLabel || 'Mon',
-                durationMinutes: t.durationMinutes || 60,
-                taskType: t.taskType || 'LEARN',
-                courseName: t.courseName || 'Data Structures',
-                status: 'NOT_STARTED',
-                completed: false
-            }));
-            await LearningTask.insertMany(newTasksToInsert);
-        }
+        // Clear previous non-completed tasks for a fresh plan
+        await LearningTask.deleteMany({ user: userId, status: { $ne: 'COMPLETED' } }).catch(() => {});
+
+        // Insert fresh weekly tasks into DB
+        const newTasksToInsert = generatedTasks.map(t => ({
+            user: userId,
+            title: t.title,
+            dayLabel: t.dayLabel || 'Mon',
+            dayOfWeek: t.dayLabel || 'Mon',
+            durationMinutes: t.durationMinutes || 60,
+            taskType: t.taskType || 'LEARN',
+            courseName: t.courseName || 'Data Structures',
+            status: 'NOT_STARTED',
+            completed: false
+        }));
+        const insertedTasks = await LearningTask.insertMany(newTasksToInsert);
 
         res.status(200).json({
             success: true,
+            message: `Personalized study plan created for ${roleTitle}!`,
             targetRole: roleTitle,
             careerSteps: profile.careerSteps,
-            generatedTasksCount: generatedTasks.length
+            generatedTasksCount: insertedTasks.length,
+            tasks: insertedTasks
         });
     } catch (error) {
         console.error('AI plan builder error:', error);

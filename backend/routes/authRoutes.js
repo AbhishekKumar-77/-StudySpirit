@@ -30,17 +30,24 @@ router.get('/google/callback',
         // Pass user data to frontend via URL params
         const userData = encodeURIComponent(JSON.stringify({
             id: req.user._id,
+            _id: req.user._id,
             name: req.user.name,
             email: req.user.email,
             role: req.user.isAdmin ? 'admin' : req.user.role,
             isAdmin: req.user.isAdmin || false,
             avatar: req.user.avatar,
-            stats: req.user.stats
+            stats: req.user.stats,
+            onboardingCompleted: req.user.onboardingCompleted ?? false,
+            studyGoal: req.user.studyGoal || '',
+            difficultyLevel: req.user.difficultyLevel || '',
+            university: req.user.university || '',
+            course: req.user.course || ''
         }));
         // Admin check MUST come first
         const targetPath = req.user.isAdmin ? '/admin'
             : req.user.role === 'teacher' ? '/teacher-dashboard'
             : req.user.role === 'recruiter' ? '/recruiter-dashboard'
+            : (req.user.role === 'student' && req.user.onboardingCompleted === false) ? '/onboarding'
             : '/dashboard';
         res.redirect(`${FRONTEND_URL}${targetPath}?user=${userData}`);
     }
@@ -54,18 +61,25 @@ router.get('/github/callback',
     (req, res) => {
         const userData = encodeURIComponent(JSON.stringify({
             id: req.user._id,
+            _id: req.user._id,
             name: req.user.name,
             email: req.user.email,
             role: req.user.isAdmin ? 'admin' : req.user.role,
             isAdmin: req.user.isAdmin || false,
             avatar: req.user.avatar,
             stats: req.user.stats,
+            onboardingCompleted: req.user.onboardingCompleted ?? false,
+            studyGoal: req.user.studyGoal || '',
+            difficultyLevel: req.user.difficultyLevel || '',
+            university: req.user.university || '',
+            course: req.user.course || '',
             githubProfile: req.user.githubProfile
         }));
         // Admin check MUST come first
         const targetPath = req.user.isAdmin ? '/admin'
             : req.user.role === 'teacher' ? '/teacher-dashboard'
             : req.user.role === 'recruiter' ? '/recruiter-dashboard'
+            : (req.user.role === 'student' && req.user.onboardingCompleted === false) ? '/onboarding'
             : '/dashboard';
         res.redirect(`${FRONTEND_URL}${targetPath}?user=${userData}`);
     }

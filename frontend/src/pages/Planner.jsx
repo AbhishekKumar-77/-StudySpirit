@@ -196,8 +196,9 @@ export default function Planner() {
         };
 
         try {
+            const effectiveUserId = user?._id || user?.id;
             const headers = { 'Content-Type': 'application/json' };
-            if (user?._id) headers['x-user-id'] = user._id;
+            if (effectiveUserId) headers['x-user-id'] = effectiveUserId;
 
             const res = await fetch(`${API_BASE}/planner/tasks`, {
                 method: 'POST',
@@ -211,6 +212,7 @@ export default function Planner() {
                     ...prev,
                     tasks: [...(prev.tasks || []), data.task]
                 }));
+                setActiveTab('week');
             }
             setShowAddTaskModal(false);
             setNewTaskForm({ title: '', dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: 60, courseName: 'Data Structures' });
@@ -227,8 +229,9 @@ export default function Planner() {
         }));
 
         try {
+            const effectiveUserId = user?._id || user?.id;
             const headers = { 'Content-Type': 'application/json' };
-            if (user?._id) headers['x-user-id'] = user._id;
+            if (effectiveUserId) headers['x-user-id'] = effectiveUserId;
 
             await fetch(`${API_BASE}/planner/tasks/${taskId}`, {
                 method: 'DELETE',
@@ -245,8 +248,9 @@ export default function Planner() {
         e.preventDefault();
         setAiLoading(true);
         try {
+            const effectiveUserId = user?._id || user?.id;
             const headers = { 'Content-Type': 'application/json' };
-            if (user?._id) headers['x-user-id'] = user._id;
+            if (effectiveUserId) headers['x-user-id'] = effectiveUserId;
 
             const res = await fetch(`${API_BASE}/planner/ai-plan-builder`, {
                 method: 'POST',
@@ -259,6 +263,7 @@ export default function Planner() {
                 // Refresh complete state to load newly generated tasks and roadmap
                 await fetchPlannerState();
                 setShowAIPlanModal(false);
+                setActiveTab('week');
             }
         } catch (err) {
             console.error('AI Plan generation error:', err);

@@ -15,6 +15,13 @@ export const AppProvider = ({ children }) => {
         const normalizeUser = (userData) => {
             if (!userData) return null;
             let normalized = { ...userData };
+            // Ensure both _id and id are accessible
+            if (normalized.id && !normalized._id) {
+                normalized._id = normalized.id;
+            }
+            if (normalized._id && !normalized.id) {
+                normalized.id = normalized._id;
+            }
             // Admins have isAdmin:true but role may be 'student'/'teacher' in DB
             // Normalize to role:'admin' so RoleGuard works correctly
             if (normalized.isAdmin === true) {
@@ -36,21 +43,46 @@ export const AppProvider = ({ children }) => {
                     setUser(userData);
                     localStorage.setItem('studySpiritUser', JSON.stringify(userData));
                 } else {
-                    // No session, clear everything
+                    // Check if we already have a valid cached user before clearing
+                    const existing = localStorage.getItem('studySpiritUser');
+                    if (!existing || existing === 'undefined') {
+                        setUser(null);
+                        localStorage.removeItem('studySpiritUser');
+                    }
+                }
+            } catch (err) {
+                // Network error or 401 — preserve cached user if already present from OAuth URL
+                const existing = localStorage.getItem('studySpiritUser');
+                if (!existing || existing === 'undefined') {
+                    console.log('No active session, user needs to login');
                     setUser(null);
                     localStorage.removeItem('studySpiritUser');
                 }
-            } catch (err) {
-                // 401 or network error — no valid session
-                console.log('No active session, user needs to login');
-                setUser(null);
-                localStorage.removeItem('studySpiritUser');
             } finally {
                 setLoading(false);
             }
         };
 
-        // Immediately show cached user to prevent flicker
+        // 1. Immediately inspect URL search params for ?user= (passed after OAuth redirect)
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userParam = urlParams.get('user');
+            if (userParam) {
+                const parsed = JSON.parse(decodeURIComponent(userParam));
+                const normalized = normalizeUser(parsed);
+                if (normalized?._id || normalized?.id) {
+                    setUser(normalized);
+                    localStorage.setItem('studySpiritUser', JSON.stringify(normalized));
+                    // Clean URL query without reload
+                    const cleanPath = window.location.pathname;
+                    window.history.replaceState({}, document.title, cleanPath);
+                }
+            }
+        } catch (urlErr) {
+            console.warn('Could not parse user from URL search:', urlErr);
+        }
+
+        // 2. Immediately show cached user to prevent flicker
         const storedUser = localStorage.getItem('studySpiritUser');
         if (storedUser && storedUser !== 'undefined') {
             try {
@@ -60,7 +92,7 @@ export const AppProvider = ({ children }) => {
             }
         }
 
-        // Then verify with backend (source of truth)
+        // 3. Reconcile with backend
         fetchUser();
     }, []);
 

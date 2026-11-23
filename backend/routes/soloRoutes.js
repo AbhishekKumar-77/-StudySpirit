@@ -4,6 +4,7 @@ const soloController = require('../controllers/soloController');
 const aiController = require('../controllers/aiController');
 const multer = require('multer');
 const { aiLimiter } = require('../middleware/rateLimiter');
+const User = require('../models/User');
 
 // Configure Multer for PDF Uploads (Memory Storage)
 const upload = multer({
@@ -18,7 +19,38 @@ const upload = multer({
     }
 });
 
-// All routes require authentication (handled by middleware in main app)
+// Auth middleware: session first, then x-user-id header, then bearer token
+const ensureAuth = async (req, res, next) => {
+    // 1. Passport session already set req.user
+    if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        return next();
+    }
+    // 2. Fallback: x-user-id header or Authorization bearer
+    try {
+        const candidateId = req.headers['x-user-id'] || req.headers['x-userid'];
+        let uid = candidateId;
+        if (!uid) {
+            const auth = req.headers['authorization'];
+            if (auth && auth.startsWith('Bearer ')) {
+                const token = auth.substring(7).trim();
+                if (token.match(/^[0-9a-fA-F]{24}$/)) uid = token;
+            }
+        }
+        if (uid && String(uid).match(/^[0-9a-fA-F]{24}$/)) {
+            const foundUser = await User.findById(uid);
+            if (foundUser && !foundUser.isBlocked) {
+                req.user = foundUser;
+                return next();
+            }
+        }
+    } catch (err) {
+        console.warn('Solo auth fallback error:', err.message);
+    }
+    return res.status(401).json({ success: false, message: 'Unauthorized — please log in again' });
+};
+
+// Apply auth to all solo routes
+router.use(ensureAuth);
 
 // Dashboard & Stats
 router.get('/stats', soloController.getDashboardData);

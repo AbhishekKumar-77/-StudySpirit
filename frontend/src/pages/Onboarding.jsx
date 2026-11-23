@@ -17,6 +17,95 @@ const LEVELS = [
     { id: 'Advanced', icon: '⚡', label: 'Advanced', desc: 'Experienced, targeting top companies', color: '#6366f1' },
 ];
 
+const FALLBACK_ROADMAPS = {
+    'DSA': {
+        title: '30-Day DSA & Algorithms Mastery Roadmap',
+        milestones: [
+            { day: 7, label: 'Arrays & Two Pointers', badge: '🌱 Seedling' },
+            { day: 14, label: 'Linked Lists & Trees', badge: '⚡ Builder' },
+            { day: 21, label: 'Graph Algorithms & BFS/DFS', badge: '🔥 Grinder' },
+            { day: 30, label: 'DP & Interview Mastery', badge: '🏆 Master' }
+        ],
+        todayMission: {
+            title: 'Day 1: Arrays Traversal & Two-Pointer Setup',
+            task: 'Solve 3 foundational array problems and master two-pointer technique on sorted arrays.',
+            xp: 50,
+            tag: 'practice'
+        }
+    },
+    'Web Dev': {
+        title: '30-Day Full-Stack Web Development Roadmap',
+        milestones: [
+            { day: 7, label: 'Modern Responsive UI', badge: '🌱 Seedling' },
+            { day: 14, label: 'Interactive JavaScript & APIs', badge: '⚡ Builder' },
+            { day: 21, label: 'React Architecture & Hooks', badge: '🔥 Grinder' },
+            { day: 30, label: 'Full-Stack Production App', badge: '🏆 Master' }
+        ],
+        todayMission: {
+            title: 'Day 1: Modern Web Architecture & HTML/CSS Setup',
+            task: 'Build a semantic landing page with CSS Grid/Flexbox and deploy your first live site.',
+            xp: 50,
+            tag: 'concept'
+        }
+    },
+    'AI/ML': {
+        title: '30-Day AI & Machine Learning Foundations Roadmap',
+        milestones: [
+            { day: 7, label: 'Python & NumPy / Pandas', badge: '🌱 Seedling' },
+            { day: 14, label: 'Supervised ML Models', badge: '⚡ Builder' },
+            { day: 21, label: 'Deep Learning & Neural Nets', badge: '🔥 Grinder' },
+            { day: 30, label: 'Real-world AI Application', badge: '🏆 Master' }
+        ],
+        todayMission: {
+            title: 'Day 1: Python for Data Science & Tensor Operations',
+            task: 'Set up Jupyter notebook, explore NumPy matrix multiplication and vector operations.',
+            xp: 50,
+            tag: 'concept'
+        }
+    },
+    'Interview Prep': {
+        title: '30-Day Software Engineering Placement Roadmap',
+        milestones: [
+            { day: 7, label: 'Coding Patterns & Fast I/O', badge: '🌱 Seedling' },
+            { day: 14, label: 'Tree & Graph Coding Rounds', badge: '⚡ Builder' },
+            { day: 21, label: 'System Design & OS / DBMS', badge: '🔥 Grinder' },
+            { day: 30, label: 'Mock Technical & HR Rounds', badge: '🏆 Master' }
+        ],
+        todayMission: {
+            title: 'Day 1: High-Frequency Coding Patterns',
+            task: 'Practice 2 top interview problems on HashMap lookups and prefix sums under 30 minutes.',
+            xp: 50,
+            tag: 'practice'
+        }
+    },
+    'Competitive': {
+        title: '30-Day Competitive Programming Sprint Roadmap',
+        milestones: [
+            { day: 7, label: 'Math, Modulo & Binary Search', badge: '🌱 Seedling' },
+            { day: 14, label: 'Graph Traversal & Shortest Path', badge: '⚡ Builder' },
+            { day: 21, label: 'Dynamic Programming on Trees', badge: '🔥 Grinder' },
+            { day: 30, label: 'Division 2 Contest Ready', badge: '🏆 Master' }
+        ],
+        todayMission: {
+            title: 'Day 1: Fast I/O & Modular Arithmetic Template',
+            task: 'Implement fast I/O and solve 4 rated Division 3 problems on greedy strategies.',
+            xp: 50,
+            tag: 'practice'
+        }
+    }
+};
+
+const createClientFallbackRoadmap = (goalId, levelName) => {
+    const template = FALLBACK_ROADMAPS[goalId] || FALLBACK_ROADMAPS['Web Dev'];
+    return {
+        title: `30-Day ${goalId || 'Engineering'} Roadmap for ${levelName || 'Beginner'}s`,
+        goal: goalId,
+        level: levelName,
+        milestones: template.milestones,
+        todayMission: template.todayMission
+    };
+};
+
 export default function Onboarding() {
     const { user, setUser } = useApp();
     const navigate = useNavigate();
@@ -44,23 +133,47 @@ export default function Onboarding() {
         setError('');
         try {
             const res = await completeOnboarding({ studyGoal: goal, difficultyLevel: level, university, course });
-            if (res.success) {
-                setRoadmap(res.roadmap);
-                // Update user context with onboardingCompleted flag
-                setUser(prev => ({
-                    ...prev,
+            if (res && (res.success || res.roadmap)) {
+                const finalRoadmap = res.roadmap || createClientFallbackRoadmap(goal, level);
+                setRoadmap(finalRoadmap);
+                const updatedUser = {
+                    ...(user || {}),
                     onboardingCompleted: true,
                     studyGoal: goal,
                     difficultyLevel: level,
-                    university: university || prev?.university,
-                    course: course || prev?.course,
-                }));
+                    university: university || user?.university || '',
+                    course: course || user?.course || '',
+                };
+                setUser(updatedUser);
+                try {
+                    const stored = localStorage.getItem('studySpiritUser');
+                    const parsed = stored ? JSON.parse(stored) : {};
+                    localStorage.setItem('studySpiritUser', JSON.stringify({ ...parsed, ...updatedUser }));
+                } catch (_) {}
                 setLoading(false);
+            } else {
+                throw new Error(res?.message || 'Could not generate roadmap');
             }
         } catch (err) {
+            console.warn('Backend onboarding fallback activated:', err.message);
+            // Immediately apply high-quality client roadmap fallback so student is never stuck
+            const fallback = createClientFallbackRoadmap(goal, level);
+            setRoadmap(fallback);
+            const updatedUser = {
+                ...(user || {}),
+                onboardingCompleted: true,
+                studyGoal: goal,
+                difficultyLevel: level,
+                university: university || user?.university || '',
+                course: course || user?.course || '',
+            };
+            setUser(updatedUser);
+            try {
+                const stored = localStorage.getItem('studySpiritUser');
+                const parsed = stored ? JSON.parse(stored) : {};
+                localStorage.setItem('studySpiritUser', JSON.stringify({ ...parsed, ...updatedUser }));
+            } catch (_) {}
             setLoading(false);
-            setError('Could not generate roadmap. Redirecting you to dashboard...');
-            setTimeout(() => navigate('/dashboard'), 2000);
         }
     };
 
@@ -332,8 +445,27 @@ export default function Onboarding() {
                                 </button>
                             </>
                         ) : (
-                            // Error state
-                            <div style={{ color: '#f87171', fontSize: 15 }}>{error || 'Something went wrong...'}</div>
+                            // Safety state: always offer easy progression
+                            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                                <div style={{ fontSize: 36, marginBottom: 12 }}>🚀</div>
+                                <h3 style={{ color: '#f0f6fc', fontSize: 20, fontWeight: 700, margin: '0 0 8px' }}>
+                                    Your Profile is Configured!
+                                </h3>
+                                <p style={{ color: 'rgba(240,246,252,0.6)', fontSize: 14, margin: '0 0 24px' }}>
+                                    Your {goal || 'study'} preferences have been saved. Head into your dashboard to begin your learning sessions.
+                                </p>
+                                <button
+                                    onClick={() => navigate('/dashboard')}
+                                    style={{
+                                        width: '100%', padding: '16px', borderRadius: 14, cursor: 'pointer', border: 'none',
+                                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                        color: '#fff', fontSize: 16, fontWeight: 700,
+                                        boxShadow: '0 8px 32px rgba(99,102,241,0.35)', fontFamily: 'inherit'
+                                    }}
+                                >
+                                    🚀 Continue to Dashboard
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}

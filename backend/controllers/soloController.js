@@ -1727,16 +1727,17 @@ exports.logHeartbeat = async (req, res) => { res.status(200).json({ success: tru
 // ─────────────────────────────────────────────────────────────────────────────
 exports.completeOnboarding = async (req, res) => {
     try {
-        if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+        if (!req.user) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
         const { studyGoal, difficultyLevel, university, course } = req.body;
 
         if (!studyGoal || !difficultyLevel) {
-            return res.status(400).json({ message: 'studyGoal and difficultyLevel are required' });
+            return res.status(400).json({ success: false, message: 'studyGoal and difficultyLevel are required' });
         }
 
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        const userId = req.user._id || req.user.id;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         // Save profile fields
         user.studyGoal = studyGoal;
@@ -1745,13 +1746,13 @@ exports.completeOnboarding = async (req, res) => {
         if (course) user.course = course;
         user.onboardingCompleted = true;
 
-        // ── Generate AI Roadmap via Groq ──────────────────────────────────
-        const GROQ_API_KEY = process.env.GROQ_API_KEY_SOLOMODE || process.env.GROQ_API_KEY;
+        // ── Generate AI Roadmap via Groq (with callGroqChat for key rotation) ──
         let roadmap = null;
 
-        if (GROQ_API_KEY) {
-            try {
-                const prompt = `You are an expert study planner. Create a structured 30-day study roadmap for a ${difficultyLevel} level student who wants to master "${studyGoal}".
+        try {
+            const { callGroqChat } = require('../services/groqClient');
+
+            const prompt = `You are an expert study planner. Create a structured 30-day study roadmap for a ${difficultyLevel} level student who wants to master "${studyGoal}".
 
 Return ONLY a valid JSON object in exactly this format — no markdown, no explanation:
 {
@@ -1784,40 +1785,39 @@ Return ONLY a valid JSON object in exactly this format — no markdown, no expla
 
 Generate 4 weeks × 7 days = 28 day entries (days 1–28), then 2 bonus days (days 29–30) for revision. Each day must have unique, actionable content specific to ${studyGoal} at ${difficultyLevel} level.`;
 
-                const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${GROQ_API_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'openai/gpt-oss-20b',
-                        messages: [
-                            { role: 'system', content: 'You are an expert study planner. Output ONLY valid JSON. No markdown, no extra text.' },
-                            { role: 'user', content: prompt }
-                        ],
-                        temperature: 0.6,
-                        max_tokens: 4000,
-                        response_format: { type: 'json_object' }
-                    })
-                });
+            const aiResult = await callGroqChat([
+                { role: 'system', content: 'You are an expert study planner. Output ONLY valid JSON. No markdown, no extra text.' },
+                { role: 'user', content: prompt }
+            ], {
+                temperature: 0.6,
+                max_tokens: 4000,
+                timeoutMs: 30000
+            });
 
-                const data = await groqRes.json();
-                if (data.choices?.[0]?.message?.content) {
-                    roadmap = JSON.parse(data.choices[0].message.content);
+            if (aiResult.success && aiResult.content) {
+                // Strip markdown fences if present
+                let raw = aiResult.content.trim();
+                if (raw.startsWith('```')) {
+                    raw = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
                 }
-            } catch (aiErr) {
-                console.error('❌ Onboarding AI roadmap error:', aiErr.message);
-                // Non-fatal: continue without roadmap
+                roadmap = JSON.parse(raw);
             }
+        } catch (aiErr) {
+            console.error('❌ Onboarding AI roadmap error:', aiErr.message);
+            // Non-fatal: will use fallback below
         }
 
-        // Store roadmap on user if generated
+        // ── Robust fallback roadmap if AI was unavailable ──────────────────
+        if (!roadmap) {
+            roadmap = generateFallbackRoadmap(studyGoal, difficultyLevel);
+        }
+
+        // Store roadmap on user
         if (roadmap) {
             user.learningPath = {
                 currentTopic: roadmap.weeks?.[0]?.days?.[0]?.title || studyGoal,
                 overallProgress: 0,
-                roadmap: roadmap, // full roadmap stored
+                roadmap: roadmap,
                 topics: (roadmap.weeks || []).flatMap(w =>
                     (w.days || []).map(d => ({
                         name: d.title,
@@ -1847,7 +1847,247 @@ Generate 4 weeks × 7 days = 28 day entries (days 1–28), then 2 bonus days (da
 
     } catch (error) {
         console.error('Onboarding Error:', error);
-        res.status(500).json({ message: 'Server error during onboarding' });
+        res.status(500).json({ success: false, message: 'Server error during onboarding' });
     }
 };
+
+// ── Fallback roadmap generator (no AI needed) ─────────────────────────────
+function generateFallbackRoadmap(studyGoal, difficultyLevel) {
+    const goalPlans = {
+        'DSA': {
+            weeks: [
+                { week: 1, theme: 'Foundation — Arrays, Strings & Basics', days: [
+                    { day: 1, title: 'Arrays Basics', task: 'Learn array traversal, insertion, deletion with 5 practice problems', xp: 50, tag: 'concept' },
+                    { day: 2, title: 'String Manipulation', task: 'Practice string reversal, palindrome check, anagram detection', xp: 60, tag: 'practice' },
+                    { day: 3, title: 'Two Pointer Technique', task: 'Solve 2-sum, 3-sum, and container with most water problems', xp: 70, tag: 'practice' },
+                    { day: 4, title: 'Sliding Window', task: 'Learn sliding window pattern — max subarray sum, longest substring', xp: 60, tag: 'concept' },
+                    { day: 5, title: 'Hashing & HashMaps', task: 'Use hash maps for frequency counting and pair-finding problems', xp: 70, tag: 'practice' },
+                    { day: 6, title: 'Sorting Algorithms', task: 'Implement bubble, selection, insertion, merge sort from scratch', xp: 80, tag: 'concept' },
+                    { day: 7, title: 'Week 1 Quiz & Review', task: 'Take a timed quiz on arrays, strings, and sorting concepts', xp: 100, tag: 'quiz' },
+                ]},
+                { week: 2, theme: 'Linked Lists, Stacks & Queues', days: [
+                    { day: 8, title: 'Singly Linked List', task: 'Build a linked list from scratch — insert, delete, reverse operations', xp: 60, tag: 'concept' },
+                    { day: 9, title: 'Doubly Linked List', task: 'Implement doubly linked list and solve merge two sorted lists', xp: 70, tag: 'practice' },
+                    { day: 10, title: 'Stack Fundamentals', task: 'Implement stack and solve balanced parentheses, next greater element', xp: 60, tag: 'concept' },
+                    { day: 11, title: 'Queue & Deque', task: 'Implement queue using arrays and linked list, solve BFS problems', xp: 70, tag: 'practice' },
+                    { day: 12, title: 'Monotonic Stack', task: 'Practice stock span, largest rectangle in histogram problems', xp: 80, tag: 'practice' },
+                    { day: 13, title: 'Linked List Advanced', task: 'Detect cycle, find middle node, reverse in groups of K', xp: 80, tag: 'practice' },
+                    { day: 14, title: 'Week 2 Assessment', task: 'Solve 5 mixed problems from linked list, stack and queue topics', xp: 100, tag: 'quiz' },
+                ]},
+                { week: 3, theme: 'Trees, Graphs & Recursion', days: [
+                    { day: 15, title: 'Recursion Fundamentals', task: 'Master base case thinking — factorial, fibonacci, power of N', xp: 60, tag: 'concept' },
+                    { day: 16, title: 'Binary Tree Basics', task: 'Build BST, implement inorder, preorder, postorder traversals', xp: 70, tag: 'concept' },
+                    { day: 17, title: 'Binary Tree Problems', task: 'Solve height, diameter, level-order traversal, zigzag problems', xp: 70, tag: 'practice' },
+                    { day: 18, title: 'BST Operations', task: 'Insert, delete, search in BST — validate BST, kth smallest element', xp: 80, tag: 'practice' },
+                    { day: 19, title: 'Graph Representation', task: 'Learn adjacency list/matrix, implement BFS and DFS from scratch', xp: 70, tag: 'concept' },
+                    { day: 20, title: 'Graph Algorithms', task: 'Solve connected components, shortest path, cycle detection problems', xp: 90, tag: 'practice' },
+                    { day: 21, title: 'Week 3 Challenge', task: 'Solve 5 tree and graph problems under 90 minutes timed session', xp: 120, tag: 'quiz' },
+                ]},
+                { week: 4, theme: 'Dynamic Programming & Interview Prep', days: [
+                    { day: 22, title: 'DP Introduction', task: 'Understand memoization vs tabulation — climbing stairs, coin change', xp: 70, tag: 'concept' },
+                    { day: 23, title: 'Classic DP Problems', task: 'Solve longest common subsequence, 0/1 knapsack, edit distance', xp: 80, tag: 'practice' },
+                    { day: 24, title: 'DP on Strings', task: 'Practice palindromic substrings, word break, regex matching', xp: 90, tag: 'practice' },
+                    { day: 25, title: 'Greedy Algorithms', task: 'Activity selection, fractional knapsack, Huffman coding concepts', xp: 70, tag: 'concept' },
+                    { day: 26, title: 'Backtracking', task: 'N-Queens, Sudoku solver, permutations and combinations generation', xp: 80, tag: 'practice' },
+                    { day: 27, title: 'Mock Interview Round', task: 'Simulate a 60-min coding interview with 2 medium + 1 hard problem', xp: 100, tag: 'practice' },
+                    { day: 28, title: 'Week 4 Final Assessment', task: 'Comprehensive test covering all topics — aim for 80%+ accuracy', xp: 150, tag: 'quiz' },
+                    { day: 29, title: 'Revision Day', task: 'Review weak topics, redo problems you struggled with this month', xp: 60, tag: 'revision' },
+                    { day: 30, title: 'Next Steps Planning', task: 'Identify advanced topics to explore — segment trees, tries, DP optimization', xp: 50, tag: 'planning' },
+                ]}
+            ]
+        },
+        'Web Dev': {
+            weeks: [
+                { week: 1, theme: 'HTML, CSS & Responsive Design', days: [
+                    { day: 1, title: 'HTML Structure', task: 'Build a semantic HTML page with header, nav, main, sections, footer', xp: 50, tag: 'concept' },
+                    { day: 2, title: 'CSS Fundamentals', task: 'Style your page with colors, fonts, box model, and selectors', xp: 60, tag: 'practice' },
+                    { day: 3, title: 'Flexbox Layout', task: 'Create a responsive navbar and card grid using Flexbox', xp: 70, tag: 'practice' },
+                    { day: 4, title: 'CSS Grid', task: 'Build a photo gallery layout with CSS Grid and media queries', xp: 60, tag: 'concept' },
+                    { day: 5, title: 'Responsive Design', task: 'Make your page mobile-friendly with breakpoints and fluid typography', xp: 70, tag: 'practice' },
+                    { day: 6, title: 'CSS Animations', task: 'Add transitions, hover effects, and keyframe animations', xp: 60, tag: 'practice' },
+                    { day: 7, title: 'Portfolio Project', task: 'Build and deploy a personal portfolio using HTML & CSS only', xp: 100, tag: 'project' },
+                ]},
+                { week: 2, theme: 'JavaScript Core & DOM', days: [
+                    { day: 8, title: 'JS Variables & Types', task: 'Learn let/const, data types, operators, and type coercion', xp: 50, tag: 'concept' },
+                    { day: 9, title: 'Functions & Scope', task: 'Practice arrow functions, closures, callbacks, and scope chains', xp: 60, tag: 'concept' },
+                    { day: 10, title: 'Arrays & Objects', task: 'Master map, filter, reduce, destructuring, and spread operator', xp: 70, tag: 'practice' },
+                    { day: 11, title: 'DOM Manipulation', task: 'Build a to-do list with add, delete, toggle using vanilla JS', xp: 70, tag: 'practice' },
+                    { day: 12, title: 'Events & Forms', task: 'Handle click, submit, and keyboard events — build a form validator', xp: 60, tag: 'practice' },
+                    { day: 13, title: 'Async JavaScript', task: 'Understand promises, async/await, fetch API for HTTP requests', xp: 80, tag: 'concept' },
+                    { day: 14, title: 'JS Mini Project', task: 'Build a weather app fetching data from a public API', xp: 100, tag: 'project' },
+                ]},
+                { week: 3, theme: 'React.js & Frontend Framework', days: [
+                    { day: 15, title: 'React Setup & JSX', task: 'Create a React app with Vite, understand JSX and component basics', xp: 60, tag: 'concept' },
+                    { day: 16, title: 'Props & State', task: 'Build a counter app and a user profile card using props and useState', xp: 70, tag: 'concept' },
+                    { day: 17, title: 'useEffect & API Calls', task: 'Fetch and display data from an API using useEffect hook', xp: 70, tag: 'practice' },
+                    { day: 18, title: 'React Router', task: 'Add multi-page navigation with React Router — Home, About, Contact', xp: 70, tag: 'practice' },
+                    { day: 19, title: 'Forms & Validation', task: 'Build a login/register form with controlled inputs and validation', xp: 80, tag: 'practice' },
+                    { day: 20, title: 'Context API & State Mgmt', task: 'Manage global state with Context API — theme toggle, auth state', xp: 80, tag: 'concept' },
+                    { day: 21, title: 'React Dashboard', task: 'Build a student dashboard with charts, cards, and sidebar navigation', xp: 120, tag: 'project' },
+                ]},
+                { week: 4, theme: 'Node.js, Express & Full Stack', days: [
+                    { day: 22, title: 'Node.js Basics', task: 'Set up a Node.js server, understand modules, fs, and path', xp: 60, tag: 'concept' },
+                    { day: 23, title: 'Express.js API', task: 'Build REST API endpoints — GET, POST, PUT, DELETE with Express', xp: 70, tag: 'practice' },
+                    { day: 24, title: 'MongoDB & Mongoose', task: 'Connect to MongoDB, create schemas, perform CRUD operations', xp: 80, tag: 'concept' },
+                    { day: 25, title: 'Authentication', task: 'Implement JWT or session-based login/register with bcrypt', xp: 80, tag: 'practice' },
+                    { day: 26, title: 'Full Stack Integration', task: 'Connect React frontend to Express backend — full CRUD app', xp: 90, tag: 'practice' },
+                    { day: 27, title: 'Deployment', task: 'Deploy frontend on Vercel/Netlify and backend on Render/Railway', xp: 80, tag: 'practice' },
+                    { day: 28, title: 'Portfolio Capstone', task: 'Build a full-stack project and add it to your portfolio', xp: 150, tag: 'project' },
+                    { day: 29, title: 'Code Review Day', task: 'Refactor code, add comments, write README for all projects', xp: 60, tag: 'revision' },
+                    { day: 30, title: 'Next Steps', task: 'Plan TypeScript, Next.js, or DevOps learning path', xp: 50, tag: 'planning' },
+                ]}
+            ]
+        },
+        'AI/ML': {
+            weeks: [
+                { week: 1, theme: 'Python & Math Foundations', days: [
+                    { day: 1, title: 'Python for Data Science', task: 'Review Python basics — lists, dicts, comprehensions, functions', xp: 50, tag: 'concept' },
+                    { day: 2, title: 'NumPy Fundamentals', task: 'Learn array operations, broadcasting, indexing with NumPy', xp: 60, tag: 'practice' },
+                    { day: 3, title: 'Pandas for Data', task: 'Load CSV data, filter rows, group by, merge DataFrames', xp: 60, tag: 'practice' },
+                    { day: 4, title: 'Data Visualization', task: 'Create line charts, bar plots, histograms with Matplotlib & Seaborn', xp: 60, tag: 'practice' },
+                    { day: 5, title: 'Linear Algebra Basics', task: 'Understand vectors, matrices, dot product — essential for ML', xp: 70, tag: 'concept' },
+                    { day: 6, title: 'Statistics for ML', task: 'Mean, variance, distributions, hypothesis testing basics', xp: 70, tag: 'concept' },
+                    { day: 7, title: 'EDA Mini Project', task: 'Perform full exploratory data analysis on a Kaggle dataset', xp: 100, tag: 'project' },
+                ]},
+                { week: 2, theme: 'Machine Learning Fundamentals', days: [
+                    { day: 8, title: 'ML Introduction', task: 'Understand supervised vs unsupervised, train/test split, overfitting', xp: 60, tag: 'concept' },
+                    { day: 9, title: 'Linear Regression', task: 'Implement linear regression from scratch and with scikit-learn', xp: 70, tag: 'practice' },
+                    { day: 10, title: 'Logistic Regression', task: 'Build a binary classifier — understand sigmoid, loss function', xp: 70, tag: 'practice' },
+                    { day: 11, title: 'Decision Trees & RF', task: 'Train decision tree and random forest on a classification dataset', xp: 70, tag: 'practice' },
+                    { day: 12, title: 'SVM & KNN', task: 'Understand SVM hyperplanes and KNN distance-based classification', xp: 70, tag: 'concept' },
+                    { day: 13, title: 'Model Evaluation', task: 'Learn accuracy, precision, recall, F1, ROC-AUC, cross-validation', xp: 80, tag: 'concept' },
+                    { day: 14, title: 'ML Pipeline Project', task: 'Build an end-to-end ML pipeline — preprocess, train, evaluate, save', xp: 100, tag: 'project' },
+                ]},
+                { week: 3, theme: 'Deep Learning & Neural Networks', days: [
+                    { day: 15, title: 'Neural Network Basics', task: 'Understand perceptrons, activation functions, forward propagation', xp: 70, tag: 'concept' },
+                    { day: 16, title: 'Backpropagation', task: 'Learn gradient descent, learning rate, and backprop math', xp: 80, tag: 'concept' },
+                    { day: 17, title: 'TensorFlow/Keras Intro', task: 'Build your first neural network with Keras Sequential API', xp: 70, tag: 'practice' },
+                    { day: 18, title: 'CNN for Images', task: 'Build a convolutional neural network for image classification', xp: 80, tag: 'practice' },
+                    { day: 19, title: 'NLP Basics', task: 'Text preprocessing — tokenization, stemming, TF-IDF, bag of words', xp: 70, tag: 'concept' },
+                    { day: 20, title: 'RNN & LSTM', task: 'Understand sequence models, build a sentiment analysis model', xp: 90, tag: 'practice' },
+                    { day: 21, title: 'DL Mini Project', task: 'Train an image classifier on CIFAR-10 or build a text classifier', xp: 120, tag: 'project' },
+                ]},
+                { week: 4, theme: 'Advanced Topics & Projects', days: [
+                    { day: 22, title: 'Transfer Learning', task: 'Fine-tune a pre-trained model (ResNet/VGG) on custom data', xp: 80, tag: 'practice' },
+                    { day: 23, title: 'Transformers Intro', task: 'Understand attention mechanism and transformer architecture', xp: 80, tag: 'concept' },
+                    { day: 24, title: 'Hugging Face Models', task: 'Use pre-trained transformers for text classification/generation', xp: 80, tag: 'practice' },
+                    { day: 25, title: 'Model Deployment', task: 'Deploy an ML model as a REST API with Flask or FastAPI', xp: 90, tag: 'practice' },
+                    { day: 26, title: 'Kaggle Competition', task: 'Participate in a Kaggle competition — submit your first entry', xp: 100, tag: 'practice' },
+                    { day: 27, title: 'Capstone Project', task: 'Build an end-to-end AI project with dataset, model, and demo', xp: 150, tag: 'project' },
+                    { day: 28, title: 'Portfolio Building', task: 'Document all projects on GitHub with READMEs and notebooks', xp: 80, tag: 'practice' },
+                    { day: 29, title: 'Revision Day', task: 'Review key ML/DL concepts and redo challenging exercises', xp: 60, tag: 'revision' },
+                    { day: 30, title: 'Next Steps', task: 'Plan specialization: Computer Vision, NLP, Reinforcement Learning, or MLOps', xp: 50, tag: 'planning' },
+                ]}
+            ]
+        },
+        'Interview Prep': {
+            weeks: [
+                { week: 1, theme: 'DSA Warm-up & Problem Patterns', days: [
+                    { day: 1, title: 'Arrays & Hashing', task: 'Solve 5 easy array problems — two sum, valid anagram, group anagrams', xp: 50, tag: 'practice' },
+                    { day: 2, title: 'Two Pointers', task: 'Practice two pointer on sorted arrays, container with most water', xp: 60, tag: 'practice' },
+                    { day: 3, title: 'Sliding Window', task: 'Solve max subarray, minimum window substring, longest substring', xp: 70, tag: 'practice' },
+                    { day: 4, title: 'Stack & Queue', task: 'Valid parentheses, daily temperatures, next greater element', xp: 60, tag: 'practice' },
+                    { day: 5, title: 'Linked List', task: 'Reverse list, merge sorted lists, detect cycle, remove nth node', xp: 70, tag: 'practice' },
+                    { day: 6, title: 'Binary Search', task: 'Master binary search patterns — rotated array, peak element, matrix', xp: 70, tag: 'practice' },
+                    { day: 7, title: 'Mock Coding Round', task: 'Simulate a 45-min coding round with 2 problems on a timer', xp: 100, tag: 'quiz' },
+                ]},
+                { week: 2, theme: 'Trees, Graphs & DP', days: [
+                    { day: 8, title: 'Binary Tree Traversals', task: 'Inorder, preorder, postorder, level-order on coding problems', xp: 60, tag: 'practice' },
+                    { day: 9, title: 'BST Operations', task: 'Insert, search, delete, validate BST, kth smallest problems', xp: 70, tag: 'practice' },
+                    { day: 10, title: 'Graph BFS/DFS', task: 'Number of islands, clone graph, course schedule problems', xp: 70, tag: 'practice' },
+                    { day: 11, title: 'DP Basics', task: 'Climbing stairs, house robber, coin change, longest increasing subseq', xp: 80, tag: 'practice' },
+                    { day: 12, title: 'DP Advanced', task: 'Longest common subsequence, edit distance, word break problem', xp: 90, tag: 'practice' },
+                    { day: 13, title: 'Backtracking', task: 'Solve permutations, combinations, N-Queens, Sudoku solver', xp: 80, tag: 'practice' },
+                    { day: 14, title: 'Mock Interview', task: 'Full 60-min mock interview: 1 easy + 1 medium + 1 hard problem', xp: 120, tag: 'quiz' },
+                ]},
+                { week: 3, theme: 'System Design & CS Fundamentals', days: [
+                    { day: 15, title: 'OS Concepts', task: 'Review processes, threads, synchronization, deadlocks, scheduling', xp: 60, tag: 'concept' },
+                    { day: 16, title: 'DBMS Concepts', task: 'SQL queries, normalization, indexing, ACID properties, transactions', xp: 60, tag: 'concept' },
+                    { day: 17, title: 'Networking Basics', task: 'HTTP, TCP/IP, DNS, OSI model — frequently asked interview topics', xp: 60, tag: 'concept' },
+                    { day: 18, title: 'OOP Concepts', task: 'Encapsulation, inheritance, polymorphism, abstraction with examples', xp: 60, tag: 'concept' },
+                    { day: 19, title: 'System Design Intro', task: 'Learn load balancers, caching, CDN, database scaling concepts', xp: 80, tag: 'concept' },
+                    { day: 20, title: 'Design URL Shortener', task: 'Walk through designing a URL shortening system end-to-end', xp: 90, tag: 'practice' },
+                    { day: 21, title: 'Design Chat System', task: 'Design a real-time messaging system with WebSockets, presence', xp: 100, tag: 'practice' },
+                ]},
+                { week: 4, theme: 'HR & Behavioral + Final Mock', days: [
+                    { day: 22, title: 'Resume Optimization', task: 'Craft a one-page ATS-friendly resume with quantified achievements', xp: 60, tag: 'practice' },
+                    { day: 23, title: 'Tell Me About Yourself', task: 'Prepare a 2-min intro pitch — structured, confident, project-focused', xp: 50, tag: 'practice' },
+                    { day: 24, title: 'STAR Method', task: 'Practice 5 behavioral questions using Situation-Task-Action-Result', xp: 60, tag: 'concept' },
+                    { day: 25, title: 'Common HR Questions', task: 'Prepare strengths, weaknesses, conflict resolution, leadership stories', xp: 60, tag: 'practice' },
+                    { day: 26, title: 'Company Research', task: 'Research 3 target companies — culture, products, interview process', xp: 50, tag: 'practice' },
+                    { day: 27, title: 'Full Mock Interview', task: 'Complete mock: 30 min coding + 15 min system design + 15 min HR', xp: 150, tag: 'quiz' },
+                    { day: 28, title: 'Feedback Analysis', task: 'Review all mock performance, identify gaps, create improvement plan', xp: 80, tag: 'revision' },
+                    { day: 29, title: 'Weak Area Drill', task: 'Revisit and drill your weakest 3 topics with fresh problems', xp: 70, tag: 'revision' },
+                    { day: 30, title: 'Ready for Interviews!', task: 'Final checklist: resume, portfolio, LinkedIn, coding practice log', xp: 50, tag: 'planning' },
+                ]}
+            ]
+        },
+        'Competitive': {
+            weeks: [
+                { week: 1, theme: 'Speed Coding & Basic Patterns', days: [
+                    { day: 1, title: 'Input/Output Optimization', task: 'Set up fast I/O templates in C++/Python for competitive coding', xp: 50, tag: 'concept' },
+                    { day: 2, title: 'Brute Force', task: 'Solve 5 easy problems on Codeforces using brute force approaches', xp: 60, tag: 'practice' },
+                    { day: 3, title: 'Sorting & Searching', task: 'Practice custom sorting, binary search on answer technique', xp: 60, tag: 'practice' },
+                    { day: 4, title: 'Greedy Algorithms', task: 'Solve activity selection, fractional knapsack, task scheduling', xp: 70, tag: 'practice' },
+                    { day: 5, title: 'Prefix Sums', task: 'Master prefix sum arrays, 2D prefix sums, range sum queries', xp: 60, tag: 'concept' },
+                    { day: 6, title: 'Bit Manipulation', task: 'XOR tricks, power of 2, count set bits, subset enumeration', xp: 70, tag: 'practice' },
+                    { day: 7, title: 'Virtual Contest', task: 'Participate in a Codeforces Div 2 virtual contest (2 hours)', xp: 100, tag: 'quiz' },
+                ]},
+                { week: 2, theme: 'Graph & Tree Algorithms', days: [
+                    { day: 8, title: 'BFS/DFS Mastery', task: 'Solve 5 graph traversal problems — connected components, bipartite check', xp: 70, tag: 'practice' },
+                    { day: 9, title: 'Shortest Paths', task: 'Implement Dijkstra, Bellman-Ford; solve shortest path problems', xp: 80, tag: 'practice' },
+                    { day: 10, title: 'Union-Find / DSU', task: 'Implement disjoint set union with path compression and union by rank', xp: 70, tag: 'concept' },
+                    { day: 11, title: 'Tree Algorithms', task: 'LCA, tree diameter, DFS ordering, subtree queries', xp: 80, tag: 'practice' },
+                    { day: 12, title: 'Topological Sort', task: 'Practice topological ordering, DAG shortest path, course schedule', xp: 70, tag: 'practice' },
+                    { day: 13, title: 'MST Algorithms', task: "Kruskal and Prim's algorithm — minimum spanning tree problems", xp: 70, tag: 'practice' },
+                    { day: 14, title: 'Contest Practice', task: 'Solve a Codeforces or LeetCode Weekly contest', xp: 100, tag: 'quiz' },
+                ]},
+                { week: 3, theme: 'DP & Number Theory', days: [
+                    { day: 15, title: 'DP on Sequences', task: 'LIS, LCS, edit distance, coin change with optimized DP', xp: 70, tag: 'practice' },
+                    { day: 16, title: 'DP on Trees', task: 'Tree DP — maximum independent set, rerooting technique', xp: 90, tag: 'practice' },
+                    { day: 17, title: 'Bitmask DP', task: 'Travelling salesman, assignment problem with bitmask DP', xp: 90, tag: 'practice' },
+                    { day: 18, title: 'Number Theory', task: 'GCD, modular arithmetic, fast exponentiation, Sieve of Eratosthenes', xp: 70, tag: 'concept' },
+                    { day: 19, title: 'Combinatorics', task: 'nCr with modular inverse, Pascal triangle, stars and bars', xp: 80, tag: 'concept' },
+                    { day: 20, title: 'String Algorithms', task: 'KMP, Z-algorithm, Rabin-Karp for pattern matching problems', xp: 80, tag: 'practice' },
+                    { day: 21, title: 'Rated Contest', task: 'Participate in a rated contest on Codeforces or LeetCode', xp: 120, tag: 'quiz' },
+                ]},
+                { week: 4, theme: 'Advanced Structures & Contest Strategy', days: [
+                    { day: 22, title: 'Segment Tree', task: 'Build segment tree for range query and point update problems', xp: 90, tag: 'concept' },
+                    { day: 23, title: 'Lazy Propagation', task: 'Implement lazy segment tree for range update + range query', xp: 100, tag: 'practice' },
+                    { day: 24, title: 'Fenwick Tree (BIT)', task: 'Binary Indexed Tree for prefix sums and inversions counting', xp: 80, tag: 'practice' },
+                    { day: 25, title: 'Trie Data Structure', task: 'Build trie for auto-complete, XOR maximum pair problems', xp: 80, tag: 'practice' },
+                    { day: 26, title: 'Contest Strategy', task: 'Analyze past contests, learn when to skip vs spend time', xp: 60, tag: 'concept' },
+                    { day: 27, title: 'Speed Drill', task: 'Solve 10 easy-medium problems in 60 minutes — build speed', xp: 100, tag: 'practice' },
+                    { day: 28, title: 'Final Contest', task: 'Full virtual contest — target solving 4+ problems in 2 hours', xp: 150, tag: 'quiz' },
+                    { day: 29, title: 'Upsolving', task: 'Read editorials and solve problems you missed in past contests', xp: 70, tag: 'revision' },
+                    { day: 30, title: 'Rating Goals', task: 'Set rating targets, plan daily practice schedule going forward', xp: 50, tag: 'planning' },
+                ]}
+            ]
+        }
+    };
+
+    const plan = goalPlans[studyGoal] || goalPlans['Web Dev'];
+
+    const title = `30-Day ${studyGoal} Roadmap for ${difficultyLevel}s`;
+    const firstDay = plan.weeks[0].days[0];
+
+    return {
+        title,
+        goal: studyGoal,
+        level: difficultyLevel,
+        weeks: plan.weeks,
+        milestones: [
+            { day: 7, label: 'Week 1 Complete', badge: '🌱 Seedling' },
+            { day: 14, label: 'Week 2 Complete', badge: '⚡ Builder' },
+            { day: 21, label: 'Week 3 Complete', badge: '🔥 Grinder' },
+            { day: 30, label: 'Roadmap Complete', badge: '🏆 Master' }
+        ],
+        todayMission: {
+            title: `Day 1: ${firstDay.title}`,
+            task: firstDay.task,
+            xp: firstDay.xp,
+            tag: firstDay.tag
+        }
+    };
+}
 
