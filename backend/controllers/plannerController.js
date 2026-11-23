@@ -590,16 +590,56 @@ exports.deleteTask = async (req, res) => {
 // Helper to generate 7-day structured study tasks if AI fails or returns empty
 const getRoleWeeklyTasks = (roleTitle, focusArea, dailyHours) => {
     const hours = Math.max(1, Math.min(8, Number(dailyHours) || 3));
-    const duration = Math.min(180, Math.max(45, hours * 60));
-    return [
-        { title: `Core ${focusArea || roleTitle} Foundations & Syntax Practice`, dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: Math.min(90, duration), courseName: 'Core Foundations' },
-        { title: `Algorithmic Problem Solving & Data Structures Drill`, dayLabel: 'Tue', taskType: 'PRACTICE', durationMinutes: duration, courseName: 'Data Structures' },
-        { title: `Framework Concepts & Speed Knowledge Quiz`, dayLabel: 'Wed', taskType: 'QUIZ', durationMinutes: 45, courseName: 'System Architecture' },
-        { title: `Database Design, Schema Modeling & Queries`, dayLabel: 'Thu', taskType: 'LEARN', durationMinutes: Math.min(90, duration), courseName: 'Database Systems' },
-        { title: `Hands-on Portfolio Capstone Project Module`, dayLabel: 'Fri', taskType: 'PROJECT', durationMinutes: duration, courseName: 'Portfolio Project' },
-        { title: `Coding Sprint & Code Review Best Practices`, dayLabel: 'Sat', taskType: 'PRACTICE', durationMinutes: 60, courseName: 'Software Engineering' },
-        { title: `Weekly Retrospective, Goal Evaluation & Next Sprint Plan`, dayLabel: 'Sun', taskType: 'ASSESSMENT', durationMinutes: 45, courseName: 'Career Growth' }
-    ];
+    const slot1 = Math.min(90, hours * 20 + 30);
+    const slot2 = Math.min(120, hours * 25 + 15);
+    const shortSlot = Math.min(60, hours * 12 + 15);
+
+    const ROLE_PLANS = {
+        'dsa': [
+            { title: 'Arrays & Hashing — Two Sum, Contains Duplicate, Group Anagrams', topic: 'Arrays & Hashing', dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: slot1, courseName: 'Data Structures' },
+            { title: 'Linked Lists — Reverse, Merge Two Sorted, Detect Cycle (Floyd)', topic: 'Linked Lists', dayLabel: 'Tue', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Data Structures' },
+            { title: 'Stacks & Queues — Valid Parentheses, Min Stack, Sliding Window Max', topic: 'Stacks & Queues', dayLabel: 'Wed', taskType: 'LEARN', durationMinutes: slot1, courseName: 'Data Structures' },
+            { title: 'Binary Trees — Inorder/Preorder Traversal, Max Depth, Level Order', topic: 'Binary Trees', dayLabel: 'Thu', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Data Structures' },
+            { title: 'Sorting Algorithms — Quick Sort, Merge Sort, Counting Sort Analysis', topic: 'Sorting', dayLabel: 'Fri', taskType: 'LEARN', durationMinutes: slot1, courseName: 'Algorithms' },
+            { title: 'Binary Search — Search Rotated Array, Find Minimum, Koko Bananas', topic: 'Binary Search', dayLabel: 'Sat', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Algorithms' },
+            { title: 'Weekly Assessment — Solve 5 Mixed Problems (Timed 90 min)', topic: 'Mixed Review', dayLabel: 'Sun', taskType: 'ASSESSMENT', durationMinutes: shortSlot, courseName: 'Problem Solving' }
+        ],
+        'web': [
+            { title: 'HTML5 Semantic Layout — Header, Nav, Main, Footer Structure', topic: 'HTML5 Semantics', dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: slot1, courseName: 'Frontend Development' },
+            { title: 'CSS Flexbox & Grid — Build Responsive Dashboard Layout', topic: 'CSS Layout Systems', dayLabel: 'Tue', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Frontend Development' },
+            { title: 'JavaScript ES6+ — Arrow Functions, Destructuring, Promises, Async/Await', topic: 'Modern JavaScript', dayLabel: 'Wed', taskType: 'LEARN', durationMinutes: slot1, courseName: 'JavaScript' },
+            { title: 'React Fundamentals — Components, Props, State, useEffect Hook', topic: 'React.js Core', dayLabel: 'Thu', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'React.js' },
+            { title: 'Node.js & Express — REST API Routes, Middleware, Error Handling', topic: 'Backend with Node.js', dayLabel: 'Fri', taskType: 'PROJECT', durationMinutes: slot2, courseName: 'Backend Development' },
+            { title: 'MongoDB CRUD — Schema Design, Mongoose Models, Aggregation Pipeline', topic: 'Database (MongoDB)', dayLabel: 'Sat', taskType: 'PRACTICE', durationMinutes: slot1, courseName: 'Database Systems' },
+            { title: 'Weekly Review — Deploy Mini-Project to Vercel/Render + Code Review', topic: 'Deployment & Review', dayLabel: 'Sun', taskType: 'ASSESSMENT', durationMinutes: shortSlot, courseName: 'DevOps Basics' }
+        ],
+        'ai': [
+            { title: 'Python for Data Science — NumPy Arrays, Pandas DataFrames, Matplotlib', topic: 'Python & Libraries', dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: slot1, courseName: 'Python for ML' },
+            { title: 'Linear Algebra Essentials — Vectors, Matrices, Eigenvalues for ML', topic: 'Math Foundations', dayLabel: 'Tue', taskType: 'LEARN', durationMinutes: slot1, courseName: 'Mathematics' },
+            { title: 'Supervised Learning — Linear Regression, Logistic Regression, Evaluation Metrics', topic: 'Supervised ML', dayLabel: 'Wed', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Machine Learning' },
+            { title: 'Decision Trees & Random Forests — Entropy, Gini, Feature Importance', topic: 'Tree-Based Models', dayLabel: 'Thu', taskType: 'LEARN', durationMinutes: slot1, courseName: 'Machine Learning' },
+            { title: 'Neural Networks — Perceptron, Backpropagation, Activation Functions', topic: 'Deep Learning Intro', dayLabel: 'Fri', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Deep Learning' },
+            { title: 'Hands-on Kaggle Project — EDA, Feature Engineering, Model Training', topic: 'Applied ML Project', dayLabel: 'Sat', taskType: 'PROJECT', durationMinutes: slot2, courseName: 'Applied AI' },
+            { title: 'Weekly Quiz — ML Concepts, Hyperparameter Tuning, Model Comparison', topic: 'Review & Assessment', dayLabel: 'Sun', taskType: 'ASSESSMENT', durationMinutes: shortSlot, courseName: 'ML Review' }
+        ],
+        'default': [
+            { title: `${focusArea || roleTitle} — Chapter 1: Core Concepts & Terminology`, topic: 'Fundamentals', dayLabel: 'Mon', taskType: 'LEARN', durationMinutes: slot1, courseName: focusArea || 'Core Foundations' },
+            { title: `${focusArea || roleTitle} — Chapter 2: Hands-on Practice Problems`, topic: 'Practice Set 1', dayLabel: 'Tue', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Problem Solving' },
+            { title: `${focusArea || roleTitle} — Chapter 3: Intermediate Techniques & Patterns`, topic: 'Intermediate Topics', dayLabel: 'Wed', taskType: 'LEARN', durationMinutes: slot1, courseName: focusArea || 'Advanced Concepts' },
+            { title: `${focusArea || roleTitle} — Chapter 4: Implementation & Coding Lab`, topic: 'Coding Lab', dayLabel: 'Thu', taskType: 'PRACTICE', durationMinutes: slot2, courseName: 'Implementation' },
+            { title: `${focusArea || roleTitle} — Chapter 5: Build a Mini-Project`, topic: 'Project Work', dayLabel: 'Fri', taskType: 'PROJECT', durationMinutes: slot2, courseName: 'Portfolio Project' },
+            { title: `${focusArea || roleTitle} — Chapter 6: Advanced Patterns & Optimization`, topic: 'Advanced Topics', dayLabel: 'Sat', taskType: 'PRACTICE', durationMinutes: slot1, courseName: 'Advanced Practice' },
+            { title: 'Weekly Assessment — Concept Review, Quiz & Sprint Planning', topic: 'Review & Planning', dayLabel: 'Sun', taskType: 'ASSESSMENT', durationMinutes: shortSlot, courseName: 'Weekly Review' }
+        ]
+    };
+
+    const lower = `${roleTitle} ${focusArea}`.toLowerCase();
+    let key = 'default';
+    if (/dsa|algorithm|data\s*structure|competitive|problem\s*solving/i.test(lower)) key = 'dsa';
+    else if (/web|fullstack|full\s*stack|frontend|backend|mern|react|node|html|css/i.test(lower)) key = 'web';
+    else if (/ai|ml|machine\s*learn|deep\s*learn|data\s*science|nlp|neural/i.test(lower)) key = 'ai';
+
+    return ROLE_PLANS[key];
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -619,33 +659,43 @@ exports.buildAIPlan = async (req, res) => {
 
         try {
             const { callGroqChat } = require('../services/groqClient');
-            const prompt = `As an AI Study Planner for a Computer Science student aiming to become a "${roleTitle}" with ${dailyHours} hours/day study time focusing on "${focusArea}":
+            const prompt = `You are an expert CS study planner creating a DETAILED weekly study plan for a student who wants to become a "${roleTitle}" with ${dailyHours} hours/day study time, focusing on "${focusArea}".
+
 Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this exact schema:
 {
   "careerSteps": [
-    { "step": 1, "title": "Step title description" },
-    { "step": 2, "title": "Step title description" },
-    { "step": 3, "title": "Step title description" },
-    { "step": 4, "title": "Step title description" },
-    { "step": 5, "title": "Step title description" }
+    { "step": 1, "title": "Week 1-2: Specific topic with chapter names" },
+    { "step": 2, "title": "Week 3-4: Next progression topic" },
+    { "step": 3, "title": "Week 5-6: Intermediate topic" },
+    { "step": 4, "title": "Week 7-8: Advanced topic & projects" },
+    { "step": 5, "title": "Week 9-10: Real-world projects & interview prep" }
   ],
   "weeklyTasks": [
-    { "title": "Topic or practice name", "dayLabel": "Mon", "taskType": "LEARN", "durationMinutes": 60, "courseName": "Data Structures" },
-    { "title": "Topic or practice name", "dayLabel": "Tue", "taskType": "PRACTICE", "durationMinutes": 90, "courseName": "Algorithms" },
-    { "title": "Quiz / Review", "dayLabel": "Wed", "taskType": "QUIZ", "durationMinutes": 45, "courseName": "Web Development" },
-    { "title": "Topic or practice name", "dayLabel": "Thu", "taskType": "LEARN", "durationMinutes": 60, "courseName": "Database" },
-    { "title": "Project Coding", "dayLabel": "Fri", "taskType": "PROJECT", "durationMinutes": 120, "courseName": "Software Engineering" },
-    { "title": "Coding Practice", "dayLabel": "Sat", "taskType": "PRACTICE", "durationMinutes": 90, "courseName": "Data Structures" },
-    { "title": "Weekly Assessment & Review", "dayLabel": "Sun", "taskType": "ASSESSMENT", "durationMinutes": 45, "courseName": "Core CS" }
+    { "title": "Chapter: Arrays & Hashing — Two Sum, Contains Duplicate, Group Anagrams", "topic": "Arrays & Hashing", "dayLabel": "Mon", "taskType": "LEARN", "durationMinutes": 60, "courseName": "Data Structures" },
+    { "title": "Practice: Solve 5 Array Problems — Sliding Window & Two Pointers", "topic": "Array Techniques", "dayLabel": "Tue", "taskType": "PRACTICE", "durationMinutes": 90, "courseName": "Problem Solving" },
+    { "title": "Chapter: Linked Lists — Singly, Doubly, Reverse, Merge Sorted", "topic": "Linked Lists", "dayLabel": "Wed", "taskType": "LEARN", "durationMinutes": 60, "courseName": "Data Structures" },
+    { "title": "Lab: Build REST API with Express.js — CRUD Routes & Middleware", "topic": "Backend Development", "dayLabel": "Thu", "taskType": "PROJECT", "durationMinutes": 90, "courseName": "Node.js & Express" },
+    { "title": "Chapter: React Components — Props, State, useEffect, Event Handling", "topic": "React.js Core", "dayLabel": "Fri", "taskType": "LEARN", "durationMinutes": 75, "courseName": "React.js" },
+    { "title": "Practice: Build a Todo App with React + Local Storage", "topic": "React Project", "dayLabel": "Sat", "taskType": "PRACTICE", "durationMinutes": 90, "courseName": "React.js" },
+    { "title": "Quiz: Weekly Review — 20 MCQs on This Week's Topics + Retrospective", "topic": "Weekly Review", "dayLabel": "Sun", "taskType": "ASSESSMENT", "durationMinutes": 45, "courseName": "Review" }
   ]
-}`;
+}
+
+RULES:
+- Each task title MUST include a specific chapter name or specific subtopics (e.g. "Chapter: Binary Trees — BFS, DFS, Level Order Traversal" NOT "Learn data structures").
+- Each task MUST have a "topic" field with the specific subtopic name.
+- Use REAL chapter/topic names relevant to "${focusArea}" and "${roleTitle}".
+- courseName should be a real subject name (e.g. "Data Structures", "React.js", "Machine Learning", "Database Systems").
+- durationMinutes should total roughly ${dailyHours * 60} minutes across all 7 days (avg ${dailyHours * 60 / 7 | 0} min/day).
+- Generate exactly 7 tasks (Mon to Sun), each with unique actionable content.
+- taskType must be one of: LEARN, PRACTICE, QUIZ, ASSESSMENT, PROJECT.`;
 
             const aiRes = await callGroqChat([
-                { role: 'system', content: 'You are an expert AI Career and Study Roadmap Architect. Always output strictly valid JSON.' },
+                { role: 'system', content: 'You are an expert AI study planner who generates detailed, chapter-level study schedules. Output ONLY valid JSON with no extra text.' },
                 { role: 'user', content: prompt }
             ], {
-                temperature: 0.4,
-                max_tokens: 2000,
+                temperature: 0.5,
+                max_tokens: 3000,
                 timeoutMs: 25000
             });
 
@@ -659,7 +709,11 @@ Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this
                     generatedSteps = parsed.careerSteps;
                 }
                 if (parsed.weeklyTasks && Array.isArray(parsed.weeklyTasks)) {
-                    generatedTasks = parsed.weeklyTasks;
+                    generatedTasks = parsed.weeklyTasks.map(t => ({
+                        ...t,
+                        topic: t.topic || t.courseName || '',
+                        title: t.title || `${t.topic || t.courseName || 'Study'} — ${t.taskType || 'LEARN'}`
+                    }));
                 }
             }
         } catch (aiErr) {
@@ -668,13 +722,40 @@ Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this
 
         // Fallback default roadmap if AI was unavailable
         if (generatedSteps.length === 0) {
-            generatedSteps = [
-                { step: 1, title: `Core Foundations for ${roleTitle}` },
-                { step: 2, title: 'Data Structures, Algorithms & Problem Solving' },
-                { step: 3, title: `Frameworks & Database Systems (${focusArea})` },
-                { step: 4, title: 'Fullstack & Production Portfolio Projects' },
-                { step: 5, title: 'Interview Preparation, System Design & Placements' }
-            ];
+            const lower = `${roleTitle} ${focusArea}`.toLowerCase();
+            if (/dsa|algorithm|data\s*struct|competitive|problem/i.test(lower)) {
+                generatedSteps = [
+                    { step: 1, title: 'Week 1-2: Arrays, Strings & Hashing — Two Pointers, Sliding Window' },
+                    { step: 2, title: 'Week 3-4: Linked Lists, Stacks, Queues & Binary Trees (BFS/DFS)' },
+                    { step: 3, title: 'Week 5-6: Graphs — Adjacency List, Dijkstra, Topological Sort' },
+                    { step: 4, title: 'Week 7-8: Dynamic Programming — Knapsack, LCS, Coin Change, Grid DP' },
+                    { step: 5, title: 'Week 9-10: Mock Interviews — System Design + 50 Must-Solve Problems' }
+                ];
+            } else if (/web|fullstack|full\s*stack|frontend|backend|mern|react|node/i.test(lower)) {
+                generatedSteps = [
+                    { step: 1, title: 'Week 1-2: HTML5 Semantics, CSS Grid/Flexbox & Responsive Design' },
+                    { step: 2, title: 'Week 3-4: JavaScript ES6+, DOM, Async/Await & Fetch API' },
+                    { step: 3, title: 'Week 5-6: React.js — Components, Hooks, Routing & State Management' },
+                    { step: 4, title: 'Week 7-8: Node.js, Express REST APIs, MongoDB & Authentication' },
+                    { step: 5, title: 'Week 9-10: Full-Stack Project — Deploy MERN App to Production' }
+                ];
+            } else if (/ai|ml|machine\s*learn|deep\s*learn|data\s*science/i.test(lower)) {
+                generatedSteps = [
+                    { step: 1, title: 'Week 1-2: Python, NumPy, Pandas & Data Visualization (Matplotlib)' },
+                    { step: 2, title: 'Week 3-4: Supervised Learning — Linear/Logistic Regression, SVM, KNN' },
+                    { step: 3, title: 'Week 5-6: Decision Trees, Random Forests, Ensemble Methods & XGBoost' },
+                    { step: 4, title: 'Week 7-8: Neural Networks, CNNs, Transfer Learning (TensorFlow/PyTorch)' },
+                    { step: 5, title: 'Week 9-10: End-to-End ML Project — EDA to Deployment on Kaggle' }
+                ];
+            } else {
+                generatedSteps = [
+                    { step: 1, title: `Week 1-2: ${focusArea || roleTitle} — Core Concepts & Fundamentals` },
+                    { step: 2, title: `Week 3-4: Intermediate ${focusArea || roleTitle} — Patterns & Best Practices` },
+                    { step: 3, title: `Week 5-6: Advanced ${focusArea || roleTitle} — Real-World Techniques` },
+                    { step: 4, title: `Week 7-8: Build a Production Portfolio Project with ${focusArea || roleTitle}` },
+                    { step: 5, title: 'Week 9-10: Interview Preparation, System Design & Mock Interviews' }
+                ];
+            }
         }
 
         // Fallback default weekly tasks if AI was unavailable or empty
@@ -706,7 +787,8 @@ Return a STRICT JSON object (no markdown, no backticks, only valid JSON) in this
             dayOfWeek: t.dayLabel || 'Mon',
             durationMinutes: t.durationMinutes || 60,
             taskType: t.taskType || 'LEARN',
-            courseName: t.courseName || 'Data Structures',
+            courseName: t.courseName || 'General',
+            topic: t.topic || '',
             status: 'NOT_STARTED',
             completed: false
         }));

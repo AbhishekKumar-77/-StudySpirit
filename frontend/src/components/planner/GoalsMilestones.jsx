@@ -7,13 +7,9 @@ export default function GoalsMilestones({
     setShowAIPlanModal
 }) {
     const profile = state.profile || {};
-    const careerSteps = profile.careerSteps || [
-        { step: 1, title: 'Master Core Programming (Python, C++)', completed: true },
-        { step: 2, title: 'Build DSA & Problem Solving Skills', completed: false },
-        { step: 3, title: 'Learn Web Development & Databases', completed: false },
-        { step: 4, title: 'Build Real-World Projects & Portfolio', completed: false },
-        { step: 5, title: 'Prepare for Placements & Internships', completed: false }
-    ];
+    const careerSteps = profile.careerSteps || [];
+
+    const hasSteps = careerSteps.length > 0;
 
     return (
         <div className="sp-section-card">
@@ -68,23 +64,23 @@ export default function GoalsMilestones({
 
                 {/* Stepper Flow */}
                 <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {careerSteps.map((step, idx) => (
+                    {hasSteps ? careerSteps.map((step, idx) => (
                         <div
                             key={step.step || idx}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '14px',
-                                padding: '12px 16px',
+                                padding: '14px 18px',
                                 background: step.completed ? '#ffffff' : '#f8fafc',
-                                borderRadius: '10px',
-                                border: step.completed ? '1px solid #bbf7d0' : '1px solid #e2e8f0',
+                                borderRadius: '12px',
+                                border: step.completed ? '1.5px solid #bbf7d0' : '1px solid #e2e8f0',
                                 boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
                             }}
                         >
                             <div style={{
-                                width: '28px',
-                                height: '28px',
+                                width: '30px',
+                                height: '30px',
                                 borderRadius: '50%',
                                 background: step.completed ? '#10b981' : '#e2e8f0',
                                 color: step.completed ? '#ffffff' : '#64748b',
@@ -100,12 +96,19 @@ export default function GoalsMilestones({
                             <span style={{
                                 fontSize: '0.92rem',
                                 fontWeight: step.completed ? 700 : 500,
-                                color: step.completed ? '#0f172a' : '#64748b'
+                                color: step.completed ? '#0f172a' : '#475569',
+                                lineHeight: 1.4
                             }}>
                                 {step.title}
                             </span>
                         </div>
-                    ))}
+                    )) : (
+                        <div style={{ textAlign: 'center', padding: '24px', color: '#64748b', fontSize: '0.9rem' }}>
+                            <div style={{ fontSize: '1.6rem', marginBottom: '8px' }}>🎯</div>
+                            <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>No career steps defined yet</div>
+                            <p>Use the <strong>AI Plan Builder</strong> to generate a personalized career progression roadmap.</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
